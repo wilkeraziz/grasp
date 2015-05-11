@@ -63,6 +63,7 @@ class Agenda(object):
     def store_complete(self, item):
         """Stores a complete state, this is syntactic sugar for makePassive in case the input state is complete."""
         assert item.is_complete(), 'This state is not complete: %s' % item
+        # TODO: [(item.start, item.rule.lhs)][item.dot].add(item)
         self._complete[(item.start, item.rule.lhs)].add(item)
 
     def itercomplete(self):
