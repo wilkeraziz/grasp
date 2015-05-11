@@ -46,53 +46,39 @@ class Earley(object):
         it = 0
         while agenda:
             it += 1
-            item = agenda.pop_active()
+            item = agenda.pop()
 
-            if item is None:
-                break
+            # sometimes there are no active items left in the agenda
+            if not item.is_active():
+                continue
 
-            if item.is_complete(): 
-                status = self.complete_others(item)
-
-                # root symbol spanning from a start wfsa state to a final wfsa state
-                # is added as complete regardless the status (since sometimes it won't be able to complete anything else)
+            if item.is_complete():
+                # complete root item spanning from a start wfsa state to a final wfsa state
                 if item.rule.lhs == root and item.start in wfsa.initial_states and item.dot in wfsa.final_states:
                     agenda.store_complete(item)
                     new_roots.add((root, item.start, item.dot))
-                    item.make_passive()
-                elif status >= 0: # any other state is only kept in case it is useful to complete others
-                    agenda.store_complete(item)
-                    item.make_passive()
+                    agenda.make_passive(item)
                 else:
-                    agenda.discard(item)
+                    if self.complete_others(item): 
+                        agenda.store_complete(item)
+                        agenda.make_passive(item)
+                    else:  # a complete state is only kept in case it could potentially complete others
+                        agenda.discard(item)
             else: 
-
-                # this variable is going to indicate the status of the operations performed over the current state
-                status = -1 # -1 indicates that nothing could be done
-
                 if isinstance(item.next, Terminal):
                     # fire the operation 'scan'
-                    status = self.scan(item)
+                    self.scan(item)
+                    agenda.discard(item)  # scanning renders incomplete items of this kind useless
                 else: 
-                    status = self.prediction(item)
-
-                    # if prediction did not result in the creation of active items
-                    # because such states have already been created (status == 0)
-                    # then we must check whether or not this state is waiting for the completion of some other
-                    # that is, we fire 'complete-itself' which attempts to generate active states from the current state
-                    # by checking if there is any complete state that could be used to make the current one progress
-                    if status == 0:
-                        self.complete_itself(item)
-
-                # if the current state has produced active states (status > 0)
-                # or it could have produced some if they had not yet been produced (status == 0)
-                # we make it passive
-                if status >= 0:
-                    agenda.make_passive(item)
-                # notice that otherwise (status == -1) we discard the state
-                # discarding means that it has been popped from the active list
-                # but it won't be added to the passive one
-                # this should happen only with unreachable states
+                    if item.next not in wcfg:  # if the NT does not exist this item is useless
+                        agenda.discard(item)
+                    else:
+                        if (item.start, item.next) not in self.predictions:
+                            self.prediction(item)
+                            self.predictions[(item.start, item.next)] = True
+                        else:
+                            self.complete_itself(item)
+                        agenda.make_passive(item)
 
         # the intersected grammar
         if new_roots:
@@ -184,10 +170,8 @@ class Earley(object):
         assert item.is_complete(), 'Complete (others) can only handle complete states.'
         incompletes = self._agenda.match_items_waiting_completion(item)
         new_items = [self._ifactory.get_item(incomplete.rule, item.dot, incomplete.inner + (incomplete.dot,)) for incomplete in incompletes]
-        if len(new_items) == 0:
-            return -1
-        else:
-            return self._agenda.extend(new_items)
+        self._agenda.extend(new_items)
+        return len(new_items) > 0 
 
     def complete_itself(self, item):
         """
