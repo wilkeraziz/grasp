@@ -17,11 +17,17 @@ class CFG(object):
     def add(self, rule):
         self._rules_by_lhs[rule.lhs].add(rule)
 
+    def __contains__(self, lhs):
+        return lhs in self._rules_by_lhs
+
     def __getitem__(self, lhs):
         return self._rules_by_lhs.get(lhs, frozenset())
 
     def __iter__(self):
         return chain(*self._rules_by_lhs.itervalues())
+
+    def get(self, lhs, default=None):
+        return self._rules_by_lhs.get(lhs, default)
     
     def iteritems(self):
         return self._rules_by_lhs.iteritems()
@@ -42,11 +48,17 @@ class FrozenCFG(object):
                     for lhs, group in groupby(sorted(rules, key=lambda r: r.lhs), key=lambda r: r.lhs)}
                 )
 
+    def __contains__(self, lhs):
+        return lhs in self._rules_by_lhs
+
     def __getitem__(self, lhs):
         return self._rules_by_lhs.get(lhs, frozenset())
 
     def __iter__(self):
         return chain(*self._rules_by_lhs.itervalues())
+    
+    def get(self, lhs, default=None):
+        return self._rules_by_lhs.get(lhs, default)
 
     def iteritems(self):
         return self._rules_by_lhs.iteritems()

@@ -39,6 +39,10 @@ class Terminal(object):
             obj._surface = surface
         return obj
 
+    @property
+    def surface(self):
+        return self._surface
+
     def __repr__(self):
         return '%s(%s)' % (Terminal.__name__, repr(self._surface))
 
@@ -73,8 +77,16 @@ class Nonterminal(object):
             obj._label = label
         return obj
 
+    @property
+    def label(self):
+        return self._label
+
     def __repr__(self):
         return '%s(%s)' % (Nonterminal.__name__, repr(self._label))
 
     def __str__(self):
         return '[{0}]'.format(self._label)
+
+
+def make_symbol(base_symbol, sfrom, sto):
+    return base_symbol if isinstance(base_symbol, Terminal) else Nonterminal('%s:%d-%d' % (base_symbol.label, sfrom, sto))
