@@ -7,21 +7,22 @@ import itertools
 import argparse
 import sys
 from fsa import make_linear_fsa
-from ply_cfg import read_grammar
+from ply_scfg import read_grammar
+from scfg import SCFG
 from cfg import FrozenCFG
 from earley import Earley
 from semiring import Prob
 
 def main(args):
-    wcfg = read_grammar(args.grammar)
-    print 'GRAMMAR'
-    print wcfg
+    scfg = read_grammar(args.grammar)
+    print 'SCFG'
+    print scfg
 
     for input_str in args.input:
-        wfsa = make_linear_fsa(input_str, Prob)
+        wfsa = make_linear_fsa(input_str, semiring=Prob)
         print 'FSA'
         print wfsa
-        parser = Earley(wcfg, wfsa, semiring=Prob)
+        parser = Earley(scfg.f_projection(semiring=Prob, marginalise=False), wfsa, semiring=Prob, scfg=scfg)
         status, R = parser.do()
         if not status:
             print 'NO PARSE FOUND'
@@ -35,14 +36,14 @@ def main(args):
 def argparser():
     """parse command line arguments"""
 
-    parser = argparse.ArgumentParser(prog='parse')
+    parser = argparse.ArgumentParser(prog='decode')
 
-    parser.description = 'Earley parser'
+    parser.description = 'Decode using Earley intersection'
     parser.formatter_class = argparse.ArgumentDefaultsHelpFormatter
 
     parser.add_argument('grammar',
             type=argparse.FileType('r'), 
-            help='CFG rules')
+            help='SCFG rules')
     parser.add_argument('input', nargs='?', 
             type=argparse.FileType('r'), default=sys.stdin,
             help='input corpus (one sentence per line)')

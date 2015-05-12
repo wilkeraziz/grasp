@@ -5,10 +5,12 @@
 import logging
 import collections
 import itertools
+import numpy as np
+from itertools import ifilter
 from weakref import WeakValueDictionary
 from collections import defaultdict
 from symbol import Terminal, Nonterminal, make_symbol
-from rule import CFGProduction as Rule
+from rule import project_rhs, CFGProduction, SCFGProduction
 
 
 EMPTY_SET = frozenset()
@@ -152,7 +154,7 @@ class Earley(object):
     Weights are interpreted as log-probabilities.
     """
 
-    def __init__(self, wcfg, wfsa):
+    def __init__(self, wcfg, wfsa, semiring, scfg=None):
         """
         @param wcfg: is the set or rules
         @type RuleSet
@@ -164,6 +166,8 @@ class Earley(object):
         self._wfsa = wfsa
         self._agenda = Agenda()
         self._predictions = set()
+        self._scfg = scfg
+        self._semiring = semiring
 
     def _initialize(self):
         pass
@@ -219,9 +223,9 @@ class Earley(object):
         # the intersected grammar
         if new_roots:
             # converts complete items into rules
-            R = set(self.get_intersected_rules())
+            R = set(self.get_intersected_cfg_rules())
             for sym, si, sf in new_roots:
-                R.add(Rule(goal, [make_symbol(sym, si, sf)], 0.0))
+                R.add(CFGProduction(goal, [make_symbol(sym, si, sf)], 0.0))
             return True, R
         else:
             return False, frozenset()
@@ -278,16 +282,16 @@ class Earley(object):
                 else:  # here we found a nondeterminism, we create all relevant items and add them to the agenda
                     # create items
                     for sto, w in arcs:
-                        rule = Rule(item.rule.lhs, item.rule.rhs, item.rule.weight + weight + w)
-                        new = self.get_item(rule, sto, item.inner + tuple(states))
+                        #rule = Rule(item.rule.lhs, item.rule.rhs, item.rule.weight + weight + w)
+                        new = self.get_item(item.rule, sto, item.inner + tuple(states))
                         self._agenda.extend([new])
                     return True
             else:  # that's it, scan bumped into a nonterminal symbol, time to wrap up
                 break
         # here we should have scanned at least one terminal symbol 
         # and we defined a deterministic path
-        rule = Rule(item.rule.lhs, item.rule.rhs, item.rule.weight + weight)
-        new = self.get_item(rule, states[-1], item.inner + tuple(states[:-1]))
+        #rule = CFGProduction(item.rule.lhs, item.rule.rhs, item.rule.weight + weight)
+        new = self.get_item(item.rule, states[-1], item.inner + tuple(states[:-1]))
         self._agenda.extend([new])
         return True
 
@@ -310,9 +314,29 @@ class Earley(object):
         new_items = [self.get_item(item.rule, destination, item.inner + (item.dot,)) for destination in destinations]
         return len(destinations) > 0
 
-    def get_intersected_rules(self):
+    def get_intersected_cfg_rules(self):
+        semiring = self._semiring
+        for item in self._agenda.itercomplete():
+            lhs = make_symbol(item.rule.lhs, item.start, item.dot)
+            fsa_states = item.inner + (item.dot,)
+
+            fsa_weights = []
+            for i, sym in ifilter(lambda (_, s): isinstance(s, Terminal), enumerate(item.rule.rhs)):
+                fsa_weights.append(self._wfsa.arc_weight(fsa_states[i], fsa_states[i + 1], sym))
+            weight = reduce(semiring.times, fsa_weights, item.rule.weight)
+
+            rhs = [make_symbol(sym, fsa_states[i], fsa_states[i + 1]) for i, sym in enumerate(item.rule.rhs)] 
+            yield CFGProduction(lhs, rhs, weight)
+
+    """
+    def get_intersected_scfg_rules(self):
         for item in self._agenda.itercomplete():
             lhs = make_symbol(item.rule.lhs, item.start, item.dot)
             positions = item.inner + (item.dot,)
-            rhs = [make_symbol(sym, positions[i], positions[i + 1]) for i, sym in enumerate(item.rule.rhs)] 
-            yield Rule(lhs, rhs, item.rule.weight)
+            f_rhs = [make_symbol(sym, positions[i], positions[i + 1]) for i, sym in enumerate(item.rule.rhs)]
+            for syncr in self._projector.iterrulesbyf(item.rule.lhs, item.rule.rhs):
+                yield SCFGProduction(lhs, f_rhs, syncr.e_rhs, syncr.alignment, times(item.rule.weight, reduce(plus, )))
+                e_rhs = project_rhs(f_rhs, syncr.e_rhs, syncr.alignment)
+                print '>', e_rhs
+                yield CFGProduction(lhs, e_rhs, )
+    """

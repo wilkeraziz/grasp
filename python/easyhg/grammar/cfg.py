@@ -18,6 +18,7 @@ class CFG(object):
         self._rules_by_lhs[rule.lhs].add(rule)
 
     def __contains__(self, lhs):
+        """Tests whether a given nonterminal can be rewritten"""
         return lhs in self._rules_by_lhs
 
     def __getitem__(self, lhs):

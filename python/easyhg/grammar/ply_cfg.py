@@ -28,7 +28,7 @@ class CFGLex(object):
             #'FNAME', 
             'FVALUE',
             'BAR', 
-            #'EQUALS'
+            #'EQUALS'.
             )
 
     t_BAR    = r'[\|]{3}'
@@ -89,12 +89,13 @@ class CFGYacc(object):
     "[X] ||| '2' ||| 0.25"
     """
 
-    def __init__(self, cfg_lexer=None):
+    def __init__(self, cfg_lexer=None, transform=None):
         if cfg_lexer is None:
             cfg_lexer = CFGLex()
             cfg_lexer.build(debug=False, nowarn=True)
         CFGYacc.tokens = cfg_lexer.tokens
         CFGYacc.lexer = cfg_lexer.lexer
+        self.transform_ = transform
 
     def p_rule_and_weights(self, p):
         'rule : NONTERMINAL BAR rhs BAR weight'
@@ -112,11 +113,10 @@ class CFGYacc(object):
 
     def p_weight(self, p):
         'weight : FVALUE'
-        p[0] = p[1]
-
-    #def p_empty(self, p):
-    #    'empty :'
-    #    pass
+        if self.transform_:
+            p[0] = self.transform_(p[1])
+        else:
+            p[0] = p[1]
 
     def p_error(self, p):
         print("Syntax error at '%s'" % p)
@@ -126,19 +126,20 @@ class CFGYacc(object):
         return self
 
     def parse(self, lines):
-        for line in ifilter(None, lines):
+        for line in lines:
+            if line.startswith('#') or not line.strip():
+                continue
             production = self.parser.parse(line, lexer=self.lexer)
             yield production
 
 
-def read_grammar(istream):
+def read_grammar(istream, transform=None):
     """Read a grammar parsed with CFGYacc from an input stream"""
-    parser = CFGYacc()
+    parser = CFGYacc(transform=transform)
     parser.build(debug=False, write_tables=False)
     return FrozenCFG(parser.parse(istream.readlines()))
 
 if __name__ == '__main__':
     import sys
-    from wcfg import CFG, FrozenCFG
     print read_grammar(sys.stdin)
 

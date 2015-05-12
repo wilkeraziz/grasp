@@ -2,7 +2,11 @@
 @author wilkeraziz
 """
 
+import re
+import logging
 from weakref import WeakValueDictionary
+from itertools import ifilter
+from symbol import Terminal, Nonterminal
 
 
 class CFGProduction(object):
@@ -22,7 +26,7 @@ class CFGProduction(object):
 
     _rules = WeakValueDictionary()
 
-    def __new__(cls, lhs, rhs, weight=0.0):
+    def __new__(cls, lhs, rhs, weight):
         """The symbols in lhs and rhs must be hashable"""
         skeleton = (lhs, tuple(rhs), weight)
         obj = CFGProduction._rules.get(skeleton, None)
@@ -51,3 +55,101 @@ class CFGProduction(object):
         return '%s ||| %s ||| %s' % (self.lhs, ' '.join(str(s) for s in self.rhs), self.weight)
 
 
+def project_rhs(f_rhs, e_rhs, alignment):
+    """Computes the target context-free production by projecting source labels through nonterminal alignment"""
+    alignment = iter(alignment)
+    f_nts = tuple(ifilter(lambda s: isinstance(s, Nonterminal), f_rhs))
+    return tuple(s if isinstance(s, Terminal) else f_nts[next(alignment) - 1] for s in e_rhs)
+
+
+class SCFGProduction(object):
+    """
+    Implements a synchronous context-free production. Unlike CFGProduction, this class offers no reference management.
+    """
+
+    F_NT_INDEX_RE = re.compile('^([^,]+)(,(\d+))?$')
+    E_NT_INDEX_RE = re.compile('^(([^,]+),)?(\d+)$')
+
+    def __init__(self, lhs, f_rhs, e_rhs, nt_alignment, weight):
+        self._lhs = lhs
+        self._f_rhs = tuple(f_rhs)
+        self._e_rhs = tuple(e_rhs)
+        self._nt_aligment = tuple(nt_alignment)
+        self._weight = weight
+
+    @staticmethod
+    def create(lhs, f_rhs, e_rhs, weight):
+        f_rhs = list(f_rhs)
+        e_rhs = list(e_rhs)
+        f_nts = [i for i, sym in ifilter(lambda (_, s): isinstance(s, Nonterminal), enumerate(f_rhs))]
+        e_nts = [j for j, sym in ifilter(lambda (_, s): isinstance(s, Nonterminal), enumerate(e_rhs))]
+   
+        # adjust source RHS nonterminal symbols
+        for k, i in enumerate(f_nts):
+            f_sym = f_rhs[i].label
+            result = SCFGProduction.F_NT_INDEX_RE.search(f_sym)
+            if result is None or len(result.groups()) != 3:
+                raise ValueError('Invalid source right-hand side nonterminal symbol: %s' % f_sym)
+            label, index = result.group(1), result.group(3)
+            if index is not None:
+                index = int(index)
+                if index != k + 1:
+                    logging.warning('I am discarding the index of a source right-hand side nonterminal symbol for it is inconsistent. Expected %d, got %d.' % (k + 1, index))
+            f_rhs[i] = Nonterminal(label)
+    
+        nt_alignment = []
+        # adjust target RHS nonterminal symbols
+        for j in e_nts:
+            e_sym = e_rhs[j].label
+            result = SCFGProduction.E_NT_INDEX_RE.search(e_sym)
+            if result is None or len(result.groups()) != 3:
+                raise ValueError('Invalid target right-hand side nonterminal symbol: %s' % e_sym)
+            label, index = result.group(2), int(result.group(3))
+            if not (0 < index <= len(f_nts)):
+                raise ValueError('Reference to a nonexistent source right-hand side nonterminal: %d/%d' % (index, len(f_nts)))
+            f_sym = f_rhs[f_nts[index - 1]]
+            if label is None:
+                label = f_sym
+            elif label != f_sym.label:
+                logging.warning('I am discaring a target right-hand side label for it differs from its aligned source label. Expected %s, got %s.' % (f_sym.label, label))
+            e_rhs[j] = Nonterminal(label)
+            nt_alignment.append(index)
+
+        # stores the source production
+        # and the target projection
+        return SCFGProduction(lhs, f_rhs, e_rhs, nt_alignment, weight)
+
+    @property
+    def lhs(self):
+        return self._lhs
+
+    @property
+    def f_rhs(self):
+        return self._f_rhs
+
+    @property
+    def e_rhs(self):
+        return self._e_rhs
+    
+    @property
+    def weight(self):
+        return self._weight
+
+    @property
+    def alignment(self):
+        return self._nt_aligment
+
+    def __str__(self):
+        A = iter(self.alignment)
+        return '%s ||| %s ||| %s ||| %s' % (
+            self.lhs,
+            ' '.join(str(s) for s in self.f_rhs),
+            ' '.join(str(s) if isinstance(s, Terminal) else '[%d]' % (next(A)) for s in self.e_rhs),
+            self.weight)
+
+    def project_rhs(self, f_rhs=None):
+        """Computes the target context-free production by projecting source labels through nonterminal alignment"""
+        if f_rhs is None:
+            f_rhs = self.f_rhs
+        return project_rhs(f_rhs, self.e_rhs, self.alignment)
+    

@@ -1,0 +1,14 @@
+# we only accept comments at the beginning of the line
+# our format is much like cdec's
+[S] ||| [X,1] ||| [X,1] ||| 1.0 
+# the target RHS does not have to be labelled (but must be indexed)
+[X] ||| [X,1] [X,2] ||| [1] [2] ||| 0.25
+# the source RHS does not have to be indexed (in fact we will disregard whatever indexes you may add)
+[X] ||| [X] [X] ||| [2] [1] ||| 0.25
+# unlike cdec, we mark terminal symbols with quotes
+[X] ||| '1' ||| '1' ||| 0.1
+[X] ||| '2' ||| '2' ||| 0.1
+[X] ||| '3' ||| '3' ||| 0.1
+[X] ||| '4' ||| '4' ||| 0.1
+[X] ||| '5' ||| '5' ||| 0.1
+
