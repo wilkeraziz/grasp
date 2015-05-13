@@ -23,6 +23,9 @@ class WDFSA(object):
             return True
         return False
 
+    def iterstates(self):
+        return xrange(len(self._arcs))
+
     def add_arc(self, sfrom, sto, symbol, weight):
         self._create_state(sfrom)  # create sfrom if necessary
         self._create_state(sto)  # create sto if necessary
