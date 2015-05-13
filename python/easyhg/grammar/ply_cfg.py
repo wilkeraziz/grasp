@@ -137,7 +137,7 @@ def read_grammar(istream, transform=None):
     """Read a grammar parsed with CFGYacc from an input stream"""
     parser = CFGYacc(transform=transform)
     parser.build(debug=False, write_tables=False)
-    return CFG(parser.parse(istream.readlines()))
+    return CFG(parser.parse(istream))
 
 if __name__ == '__main__':
     import sys

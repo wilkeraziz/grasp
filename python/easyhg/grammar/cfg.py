@@ -39,6 +39,9 @@ class CFG(object):
     def __getitem__(self, lhs):
         return self._rules_by_lhs.get(lhs, frozenset())
 
+    def iterrules(self, lhs):
+        return iter(self._rules_by_lhs.get(lhs, frozenset()))
+
     def __iter__(self):
         return chain(*self._rules_by_lhs.itervalues())
 
@@ -100,4 +103,13 @@ class _FrozenCFG(object):
             for rule in rules:
                 lines.append(str(rule))
         return '\n'.join(lines)
+
+def stars(rules):
+    backward = defaultdict(set)
+    forward = defaultdict(set)
+    for r in rules:
+        backward[r.lhs].add(r)
+        [forward[sym].add(r) for sym in frozenset(r.rhs)]
+    return backward, forward
+
 

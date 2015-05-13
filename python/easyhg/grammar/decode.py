@@ -39,7 +39,7 @@ def main(args):
                 [1], 
                 semiring.one))  # TODO: generalise S and X
             scfg.add(SCFGProduction(Nonterminal('S'), 
-                [Nonterminal('X'), Nonterminal('X')], 
+                [Nonterminal('S'), Nonterminal('X')], 
                 [Nonterminal('1'), Nonterminal('2')], 
                 [1, 2], 
                 semiring.one))  # TODO: generalise S and X
