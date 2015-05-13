@@ -16,8 +16,8 @@ class CKY(object):
         self._scfg = scfg
         self._make_symbol = make_symbol
         self._sorted = list(topsort_cfg(self._wcfg))[1:]  # we do not care about terminals
-        self._agenda = deque() 
-        self._passive = defaultdict(set) 
+        self._active = deque() 
+        self._waiting = defaultdict(set) 
         self._complete = defaultdict(lambda : defaultdict(set))
 
     def do(self, root=Nonterminal('S'), goal=Nonterminal('GOAL')):
@@ -40,23 +40,24 @@ class CKY(object):
             ____________________________________________________
                      [X -> alpha Y * beta, q, r]:u
         """
-        agenda = self._agenda
-        self.axioms()
-        while agenda:
-            item = agenda.popleft()
-            print 'POP', item
-            
-            if item.is_complete():
-                print ' Complete'
-                # merge with passive
-                self._complete[(item.start, item.next)][item.dot].add(item)
-                self.merge(item)
-            elif isinstance(item.next, Terminal):
-                self.scan(item)
-            else:
-                self.complete(item)
-                self._passive[(item.dot, item.next)].add(item)
-                #item.make_passive()
+        active = self._active
+        for symbols in self._sorted:
+            self.axioms(symbols)
+            while active:
+                item = active.popleft()
+                print 'POP', item
+                
+                if item.is_complete():
+                    print ' Complete', item
+                    # merge with passive
+                    self.merge(item)
+                    self._complete[(item.start, item.rule.lhs)][item.dot].add(item)
+                elif isinstance(item.next, Terminal):
+                    self.scan(item)
+                else:
+                    self.complete(item)
+                    self._waiting[(item.dot, item.next)].add(item)
+                    #item.make_passive()
 
         print 'FOREST'
         for (sfrom, lhs), items_by_sto in self._complete.iteritems():
@@ -65,14 +66,13 @@ class CKY(object):
                     print item
 
 
-    def axioms(self):
-        for level, group in enumerate(self._sorted):
-            for lhs in group:
-                for rule in self._wcfg.get(lhs, set()):
-                    for q in self._wfsa.iterstates():
-                        item = Item(rule, q)
-                        self._agenda.append(item)
-                        print '+', item
+    def axioms(self, symbols):
+        for lhs in symbols:
+            for rule in self._wcfg.get(lhs, set()):
+                for q in self._wfsa.iterstates():
+                    item = Item(rule, q)
+                    self._active.append(item)
+                    print 'A', item
 
     def scan(self, item):
         for sto, w in self._wfsa.get_arcs(item.dot, item.next):
@@ -80,7 +80,8 @@ class CKY(object):
             #if new_item.is_complete():
             #    completions[(new_item.start, new_item.rule.lhs)].add(new_item.dot)
             #    self._complete[(new_item.start, new_item.rule.lhs)][new_item.dot].add(new_item)
-            self._agenda.appendleft(new_item)
+            print ' S', new_item
+            self._active.append(new_item)
 
     def complete(self, item):
         for sto in self._complete.get((item.dot, item.next), {}).iterkeys():
@@ -88,11 +89,14 @@ class CKY(object):
             #if new_item.is_complete():
             #    completions[(new_item.start, new_item.rule.lhs)].add(new_item.dot)
             #    self._complete[(new_item.start, new_item.rule.lhs)][new_item.dot].add(new_item)
-            self._agenda.appendleft(new_item)
+            print ' C', new_item
+            self._active.append(new_item)
 
     def merge(self, complete):
-        for waiting in self._passive.get((complete.start, complete.rule.lhs), set()):
-            self._agenda.appendleft(Item(waiting.rule, complete.dot, waiting.inner + (waiting.dot,)))
+        for waiting in self._waiting.get((complete.start, complete.rule.lhs), set()):
+            new_item = Item(waiting.rule, complete.dot, waiting.inner + (waiting.dot,))
+            self._active.append(new_item)
+            print ' M', new_item
 
 
 if __name__ == '__main__':
