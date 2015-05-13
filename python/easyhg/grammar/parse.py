@@ -8,7 +8,7 @@ import argparse
 import sys
 from fsa import make_linear_fsa
 from ply_cfg import read_grammar
-from cfg import FrozenCFG
+from cfg import CFG
 from earley import Earley
 from semiring import Prob
 
@@ -26,7 +26,7 @@ def main(args):
         if not status:
             print 'NO PARSE FOUND'
             continue
-        forest = FrozenCFG(R)
+        forest = CFG(R)
         print 'FOREST'
         print forest
 

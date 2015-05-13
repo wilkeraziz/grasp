@@ -55,13 +55,6 @@ class CFGProduction(object):
         return '%s ||| %s ||| %s' % (self.lhs, ' '.join(str(s) for s in self.rhs), self.weight)
 
 
-def project_rhs(f_rhs, e_rhs, alignment):
-    """Computes the target context-free production by projecting source labels through nonterminal alignment"""
-    alignment = iter(alignment)
-    f_nts = tuple(ifilter(lambda s: isinstance(s, Nonterminal), f_rhs))
-    return tuple(s if isinstance(s, Terminal) else f_nts[next(alignment) - 1] for s in e_rhs)
-
-
 class SCFGProduction(object):
     """
     Implements a synchronous context-free production. Unlike CFGProduction, this class offers no reference management.
@@ -147,9 +140,10 @@ class SCFGProduction(object):
             ' '.join(str(s) if isinstance(s, Terminal) else '[%d]' % (next(A)) for s in self.e_rhs),
             self.weight)
 
-    def project_rhs(self, f_rhs=None):
+    def project_rhs(self):
         """Computes the target context-free production by projecting source labels through nonterminal alignment"""
-        if f_rhs is None:
-            f_rhs = self.f_rhs
-        return project_rhs(f_rhs, self.e_rhs, self.alignment)
+        alignment = iter(self.alignment)
+        f_nts = tuple(ifilter(lambda s: isinstance(s, Nonterminal), self.f_rhs))
+        return tuple(s if isinstance(s, Terminal) else f_nts[next(alignment) - 1] for s in self.e_rhs)
     
+

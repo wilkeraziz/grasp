@@ -2,7 +2,6 @@
 @author wilkeraziz
 """
 
-from numpy import log
 import ply.lex as lex
 import ply.yacc as yacc
 from ply_cfg import CFGLex
@@ -33,7 +32,7 @@ class SCFGYacc(object):
 
     def p_rule_and_weights(self, p):
         'rule : NONTERMINAL BAR srhs BAR trhs BAR weight'
-        p[0] = SCFGProduction.create(p[1], p[3], p[5], log(p[7]))
+        p[0] = SCFGProduction.create(p[1], p[3], p[5], p[7])
 
     def p_srhs(self, p):
         'srhs : rhs'
@@ -67,19 +66,32 @@ class SCFGYacc(object):
         self.parser = yacc.yacc(module=self, **kwargs)
         return self
 
-    def parse(self, lines):
-        for line in lines:
+    def parse(self, istream):
+        for line in istream:
             if line.startswith('#') or not line.strip():
                 continue
             production = self.parser.parse(line, lexer=self.lexer)
             yield production
 
+def cdec_adaptor(istream):
+    for line in istream:
+        if line.startswith('#') or not line.strip():
+            continue
+        fields = line.split('|||')
+        lhs = fields[0]
+        f_rhs = ' '.join(s if s.startswith('[') and s.endswith(']') else "'%s'" % s for s in fields[1].split())
+        e_rhs = ' '.join(s if s.startswith('[') and s.endswith(']') else "'%s'" % s for s in fields[2].split())
+        weight = '1.0'
+        yield ' ||| '.join((lhs, f_rhs, e_rhs, weight))
 
-def read_grammar(istream, transform=None):
+def read_grammar(istream, transform=None, cdec_adapt=False):
     """Read a grammar parsed with CFGYacc from an input stream"""
     parser = SCFGYacc(transform=transform)
     parser.build(debug=False, write_tables=False)
-    return SCFG(parser.parse(istream.readlines()))
+    if cdec_adapt:
+        return SCFG(parser.parse(cdec_adaptor(istream)))
+    else:
+        return SCFG(parser.parse(istream))
 
 if __name__ == '__main__':
     import sys

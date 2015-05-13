@@ -9,8 +9,8 @@ import numpy as np
 from itertools import ifilter
 from weakref import WeakValueDictionary
 from collections import defaultdict
-from symbol import Terminal, Nonterminal, make_symbol
-from rule import project_rhs, CFGProduction, SCFGProduction
+from symbol import Terminal, Nonterminal, make_flat_symbol, make_recursive_symbol
+from rule import CFGProduction, SCFGProduction
 
 
 EMPTY_SET = frozenset()
@@ -154,7 +154,7 @@ class Earley(object):
     Weights are interpreted as log-probabilities.
     """
 
-    def __init__(self, wcfg, wfsa, semiring, scfg=None):
+    def __init__(self, wcfg, wfsa, semiring, scfg=None, make_symbol=make_flat_symbol):
         """
         @param wcfg: is the set or rules
         @type RuleSet
@@ -168,6 +168,7 @@ class Earley(object):
         self._predictions = set()
         self._scfg = scfg
         self._semiring = semiring
+        self._make_symbol = make_symbol
 
     def _initialize(self):
         pass
@@ -223,9 +224,10 @@ class Earley(object):
         # the intersected grammar
         if new_roots:
             # converts complete items into rules
-            R = set(self.get_intersected_cfg_rules())
-            for sym, si, sf in new_roots:
-                R.add(CFGProduction(goal, [make_symbol(sym, si, sf)], 0.0))
+            if self._scfg is None:
+                R = set(self.get_intersected_cfg_rules(new_roots, goal))
+            else:
+                R = set(self.get_intersected_scfg_rules(new_roots, goal))
             return True, R
         else:
             return False, frozenset()
@@ -314,12 +316,12 @@ class Earley(object):
         new_items = [self.get_item(item.rule, destination, item.inner + (item.dot,)) for destination in destinations]
         return len(destinations) > 0
 
-    def get_intersected_cfg_rules(self):
+    def get_intersected_cfg_rules(self, new_roots, goal):
         semiring = self._semiring
+        make_symbol = self._make_symbol
         for item in self._agenda.itercomplete():
             lhs = make_symbol(item.rule.lhs, item.start, item.dot)
             fsa_states = item.inner + (item.dot,)
-
             fsa_weights = []
             for i, sym in ifilter(lambda (_, s): isinstance(s, Terminal), enumerate(item.rule.rhs)):
                 fsa_weights.append(self._wfsa.arc_weight(fsa_states[i], fsa_states[i + 1], sym))
@@ -327,16 +329,21 @@ class Earley(object):
 
             rhs = [make_symbol(sym, fsa_states[i], fsa_states[i + 1]) for i, sym in enumerate(item.rule.rhs)] 
             yield CFGProduction(lhs, rhs, weight)
+        for sym, si, sf in new_roots:
+            yield CFGProduction(goal, [make_symbol(sym, si, sf)], semiring.one)
 
-    """
-    def get_intersected_scfg_rules(self):
+    def get_intersected_scfg_rules(self, new_roots, goal):
+        semiring = self._semiring
+        make_symbol = self._make_symbol
         for item in self._agenda.itercomplete():
             lhs = make_symbol(item.rule.lhs, item.start, item.dot)
-            positions = item.inner + (item.dot,)
-            f_rhs = [make_symbol(sym, positions[i], positions[i + 1]) for i, sym in enumerate(item.rule.rhs)]
-            for syncr in self._projector.iterrulesbyf(item.rule.lhs, item.rule.rhs):
-                yield SCFGProduction(lhs, f_rhs, syncr.e_rhs, syncr.alignment, times(item.rule.weight, reduce(plus, )))
-                e_rhs = project_rhs(f_rhs, syncr.e_rhs, syncr.alignment)
-                print '>', e_rhs
-                yield CFGProduction(lhs, e_rhs, )
-    """
+            fsa_states = item.inner + (item.dot,)
+            fsa_weights = []
+            for i, sym in ifilter(lambda (_, s): isinstance(s, Terminal), enumerate(item.rule.rhs)):
+                fsa_weights.append(self._wfsa.arc_weight(fsa_states[i], fsa_states[i + 1], sym))
+            weight = reduce(semiring.times, fsa_weights, item.rule.weight)
+            f_rhs = [make_symbol(sym, fsa_states[i], fsa_states[i + 1]) for i, sym in enumerate(item.rule.rhs)]  
+            for syncr in self._scfg.iterrulesbyf(item.rule.lhs, item.rule.rhs):
+                yield SCFGProduction(lhs, f_rhs, syncr.e_rhs, syncr.alignment, semiring.times(weight, syncr.weight))
+        for sym, si, sf in new_roots:
+            yield SCFGProduction(goal, [make_symbol(sym, si, sf)], [Nonterminal('1')], [1], semiring.one)

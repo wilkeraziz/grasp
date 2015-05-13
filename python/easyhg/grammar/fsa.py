@@ -73,6 +73,10 @@ class WDFSA(object):
     def final_states(self):
         return self._final_states
 
+    @property
+    def vocabulary(self):
+        return self._vocabulary
+
     def __str__(self):
         lines = []
         for sfrom, arcs_by_sym in enumerate(self._arcs):
