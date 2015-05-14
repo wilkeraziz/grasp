@@ -55,29 +55,6 @@ def topsort(dependencies, independent=None):
         raise ValueError('Cyclic dependencies were encountered: %s' % dependencies)
 
 
-def topsort_cfg(cfg):
-    """
-    Finds a partial ordering of the symbols in a CFG.
-    The algorithm will throw an exception if a cycle is detected (except for self dependencies of the kind 'S -> S X').
-
-    >>> from symbol import Terminal, Nonterminal
-    >>> from ply_cfg import read_grammar
-    >>> cfg = read_grammar(_EXAMPLE_GRAMAR_)
-    >>> order = list(topsort_cfg(cfg))
-    >>> len(order)
-    3
-    >>> expected = [set([Terminal('a'), Terminal('b'), Terminal('c'), Terminal('d'), Terminal('e')]), set([Nonterminal('X'), Nonterminal('Y')]), set([Nonterminal('S')])]
-    >>> order == expected
-    True
-    """
-    # make dependencies
-    D = defaultdict(set)  
-    for v in cfg.nonterminals:
-        deps = D[v]
-        for r in cfg.iterrules(v):
-            deps.update(r.rhs)
-    
-    return topsort(D, cfg.terminals)
 
 
 _EXAMPLE_GRAMAR_ = ["[S] ||| [X] ||| 1.0", 

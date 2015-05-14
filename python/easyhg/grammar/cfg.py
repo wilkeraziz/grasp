@@ -5,6 +5,7 @@
 from collections import defaultdict, deque
 from itertools import chain, groupby, ifilter
 from symbol import Terminal, Nonterminal
+from topsort import topsort
 
 
 class CFG(object):
@@ -77,54 +78,11 @@ class CFG(object):
                         Q.append(nt)
                         seen.add(nt)
 
-
-class _FrozenCFG(object):
-
-    def __init__(self, rules):
-        self._rules_by_lhs = defaultdict(None,
-                {lhs: frozenset(group) 
-                    for lhs, group in groupby(sorted(rules, key=lambda r: r.lhs), key=lambda r: r.lhs)}
-                )
-
-        self._nonterminals = set()
-        self._terminals = set()
-        for r in self:
-            self._nonterminals.add(r.lhs)
-            for s in r.rhs:
-                if isinstance(s, Terminal):
-                    self._terminals.add(s)
-                else:
-                    self._nonterminals.add(s)
-        self._nonterminals = frozenset(self._nonterminals)
-        self._terminals = frozenset(self._terminals)
-    
-    def unknown_words(self, words):
-        return set(words) - self._terminals
-
-    def __contains__(self, lhs):
-        return lhs in self._rules_by_lhs
-
-    def __getitem__(self, lhs):
-        return self._rules_by_lhs.get(lhs, frozenset())
-
-    def __iter__(self):
-        return chain(*self._rules_by_lhs.itervalues())
-    
-    def get(self, lhs, default=None):
-        return self._rules_by_lhs.get(lhs, default)
-
-    def iteritems(self):
-        return self._rules_by_lhs.iteritems()
-    
-    def __str__(self):
-        lines = []
-        for lhs, rules in self.iteritems():
-            for rule in rules:
-                lines.append(str(rule))
-        return '\n'.join(lines)
-
-
-
+    def iterrules_topdown(self, consistent=True):
+        for group in reversed(list(topsort_cfg(self))):
+            for sym in sorted(group, key=lambda s: str(s)):
+                for rule in sorted(self._rules_by_lhs.get(sym, set()), key=lambda r: str(r)):
+                    yield rule
 
 
 def stars(rules):
@@ -135,4 +93,13 @@ def stars(rules):
         [forward[sym].add(r) for sym in frozenset(r.rhs)]
     return backward, forward
 
+
+def topsort_cfg(cfg):
+    # make dependencies
+    D = defaultdict(set)  
+    for v in cfg.nonterminals:
+        deps = D[v]
+        for r in cfg.iterrules(v):
+            deps.update(r.rhs)
+    return topsort(D, cfg.terminals)
 

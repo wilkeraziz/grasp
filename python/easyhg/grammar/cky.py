@@ -13,7 +13,7 @@ This is an implementation of a CKY-inspired bottom-up intersection as presented 
 
 from collections import defaultdict, deque
 from symbol import Terminal, Nonterminal, make_flat_symbol, make_recursive_symbol
-from topsort import topsort_cfg
+from cfg import topsort_cfg
 from dottedrule import DottedRule as Item
 from rule import CFGProduction
 from agenda import ActiveSet, Agenda, make_cfg

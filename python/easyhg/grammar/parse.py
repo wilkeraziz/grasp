@@ -45,7 +45,8 @@ def main(args):
             logging.error('NO PARSE FOUND')
             continue
         if args.forest:
-            print forest
+            for r in forest.iterrules_topdown():
+                print r
             print
 
 
