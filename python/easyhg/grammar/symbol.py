@@ -89,7 +89,11 @@ class Nonterminal(object):
 
 
 def make_flat_symbol(base_symbol, sfrom, sto):
+    if sfrom is None and sto is None:
+        return base_symbol
     return base_symbol if isinstance(base_symbol, Terminal) else Nonterminal('%s:%d-%d' % (base_symbol.label, sfrom, sto))
 
 def make_recursive_symbol(base_symbol, sfrom, sto):
+    if sfrom is None and sto is None:
+        return base_symbol
     return base_symbol if isinstance(base_symbol, Terminal) else Nonterminal((base_symbol.label, sfrom, sto))

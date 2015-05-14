@@ -11,7 +11,7 @@ class WDFSA(object):
 
     def __init__(self):
     
-        self._arcs = []
+        self._arcs = []  # sfrom -> sym -> sto -> weight
         self._initial_states = set()
         self._final_states = set()
         self._vocabulary = set()
@@ -25,6 +25,27 @@ class WDFSA(object):
 
     def iterstates(self):
         return xrange(len(self._arcs))
+
+    def iterinitial(self):
+        return iter(self._initial_states)
+    
+    def iterfinal(self):
+        return iter(self._final_states)
+
+    def iterarcs(self):
+        for sfrom, arcs_by_sym in enumerate(self._arcs):
+            for sym, w_by_sto in arcs_by_sym.iteritems():
+                for sto, w in w_by_sto.iteritems():
+                    yield (sfrom, sto, sym, w)
+
+    def itersymbols(self):
+        return iter(self._vocabulary)
+
+    def is_initial(self, state):
+        return state in self._initial_states
+
+    def is_final(self, state):
+        return state in self._final_states
 
     def add_arc(self, sfrom, sto, symbol, weight):
         self._create_state(sfrom)  # create sfrom if necessary
