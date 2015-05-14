@@ -1,4 +1,7 @@
 """
+This module is an interface for parsing as intersection.
+One can choose from all available implementations.
+
 @author wilkeraziz
 """
 

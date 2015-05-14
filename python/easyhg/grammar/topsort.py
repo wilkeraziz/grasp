@@ -1,6 +1,10 @@
 """
+This is a standard implementation of topological sorting.
+Dependencies are encoded through a dictionary and a partial ordering generator is returned.
+
 @author wilkeraziz
 """
+
 from collections import defaultdict
 from itertools import chain
 

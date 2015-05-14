@@ -1,4 +1,6 @@
 """
+This is an implementation of Earley intersection as presented in (Dyer and Resnik, 2010).
+
 @author wilkeraziz
 """
 
