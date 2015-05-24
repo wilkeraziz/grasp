@@ -104,22 +104,3 @@ class Nederhof(object):
                 self._agenda.itergenerating, self._agenda.itercomplete, 
                 self._wfsa, self._semiring, self._make_symbol)
 
-
-if __name__ == '__main__':
-    import sys
-    from fsa import make_linear_fsa
-    from semiring import Prob
-    from ply_cfg import read_grammar
-    from cfg import CFG
-    from topsort import topsort_cfg
-    cfg = read_grammar(open('../../example/cfg', 'r'))
-
-    for input_str in sys.stdin:
-        fsa = make_linear_fsa(input_str, Prob)
-        for word in fsa.itersymbols():
-            if not cfg.is_terminal(word):
-                p = CFGProduction(Nonterminal('X'), [word], Prob.one)
-                cfg.add(p)
-        parser = Nederhof(cfg, fsa, semiring=Prob)
-        forest = parser.do()
-        print forest

@@ -11,7 +11,7 @@ import argparse
 import sys
 from fsa import make_linear_fsa
 from ply_cfg import read_grammar
-from symbol import Nonterminal
+from symbol import Nonterminal, make_flat_symbol, make_recursive_symbol
 from rule import CFGProduction
 from cfg import CFG, topsort_cfg
 from earley import Earley
@@ -19,8 +19,10 @@ from cky import CKY
 from nederhof import Nederhof
 from utils import make_nltk_tree
 from semiring import Prob, SumTimes, MaxTimes, Count
-from inference import inside, sample, optimise
+from inference import inside, sample, optimise, total_weight
+from kbest import KBest
 from collections import Counter
+import projection
 
 
 def main(args):
@@ -40,13 +42,13 @@ def main(args):
                 if not cfg.is_terminal(word):
                     cfg.add(CFGProduction(Nonterminal(args.default_symbol), [word], semiring.one))
                     logging.debug('Passthrough rule for %s', word)
-
+        make_symbol = make_flat_symbol
         if args.algorithm == 'earley':
-            parser = Earley(cfg, fsa, semiring=semiring)
+            parser = Earley(cfg, fsa, semiring=semiring, make_symbol=make_symbol)
         elif args.algorithm == 'nederhof':
-            parser = Nederhof(cfg, fsa, semiring=semiring)
+            parser = Nederhof(cfg, fsa, semiring=semiring, make_symbol=make_symbol)
         else: 
-            parser = CKY(cfg, fsa, semiring=semiring)
+            parser = CKY(cfg, fsa, semiring=semiring, make_symbol=make_symbol)
 
         forest = parser.do(root=Nonterminal(args.start), goal=Nonterminal(args.goal))
         if not forest:
@@ -65,15 +67,26 @@ def main(args):
             count = Counter(sample(forest, topsorted[-1], semiring, Iv=Iv, N=args.samples))
             for d, n in reversed(count.most_common()):
                 t = make_nltk_tree(d)
-                print '%d (%f) %s' % (n, float(n)/args.samples, t)
+                p = total_weight(d, SumTimes, Iv[topsorted[-1]])
+                print '%d (emp=%f) (exact=%f) %s' % (n, float(n)/args.samples, semiring.as_real(p), t)
                 print
-        if args.nbest > 0:  # TODO: enumerate n-best for n > 1 (Huang and Chiang, 2005)
-            print '# NBEST: size=%d' % args.nbest
+        if args.kbest == 1:
+            print '# VITERBI'
             Iv = inside(forest, topsorted, MaxTimes)
             d = optimise(forest, topsorted[-1], MaxTimes, Iv=Iv)
             t = make_nltk_tree(d)
             print '%d (%f) %s' % (1, Iv[topsorted[-1]], t)
             print
+        if args.kbest > 1:
+            print '# K-BEST: size=%d' % args.kbest
+            kbest = KBest(forest, topsorted[-1], args.kbest, MaxTimes, traversal=projection.string, uniqueness=False).do()
+            for k, d in enumerate(kbest.iterderivations()):
+                t = make_nltk_tree(d)
+                print '%d (%f) %s' % (k + 1, total_weight(d, MaxTimes), t)
+                print
+
+
+
 
 
 def argparser():
@@ -114,7 +127,7 @@ def argparser():
     parser.add_argument('--samples', 
             type=int, default=0,
             help='number of samples')
-    parser.add_argument('--nbest', 
+    parser.add_argument('--kbest', 
             type=int, default=0,
             help='number of top scoring solutions')
     parser.add_argument('--verbose', '-v',

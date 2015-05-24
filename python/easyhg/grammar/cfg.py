@@ -37,7 +37,6 @@ class CFG(object):
         self._nonterminals.update(ifilter(lambda s: isinstance(s, Nonterminal), rule.rhs))
         self._sigma.update(ifilter(lambda s: isinstance(s, Terminal), rule.rhs))
         
-
     def __contains__(self, lhs):
         """Tests whether a given nonterminal can be rewritten"""
         return lhs in self._rules_by_lhs
@@ -47,6 +46,9 @@ class CFG(object):
 
     def iterrules(self, lhs=None):
         return chain(*self._rules_by_lhs.itervalues()) if lhs is None else iter(self._rules_by_lhs.get(lhs, frozenset()))
+
+    def itersymbols(self, terminals=True, nonterminals=True):
+        return chain(self._sigma, self._nonterminals)
 
     def __iter__(self):
         return chain(*self._rules_by_lhs.itervalues())

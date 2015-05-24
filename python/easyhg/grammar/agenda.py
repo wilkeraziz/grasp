@@ -110,10 +110,9 @@ class Agenda(object):
         Returns False if the symbol already exists, True otherwise.
         """
         destinations = self._generating[sym][sfrom]
-        if sto in destinations:  # stop if this is known to be a generating symbol
-            return False
-        destinations.add(sto)  # mark as generating
-        return True
+        n = len(destinations)
+        destinations.add(sto)
+        return len(destinations) > n  
 
     def make_passive(self, item):
         """
@@ -121,15 +120,14 @@ class Agenda(object):
         Returns False if the item is already passive, True otherwise.
         """
         waiting = self._passive[(item.next, item.dot)]
-        if item in waiting:
-            return False
+        n = len(waiting)
         waiting.add(item)
-        return True
+        return len(waiting) > n
 
     def make_complete(self, item):
         """Stores a complete item"""
         self._complete[(item.rule.lhs, item.start, item.dot)].add(item)
-        self._generating[item.rule.lhs][item.start].add(item.dot)
+        self.add_generating(item.rule.lhs, item.start, item.dot)
 
     def discard(self, item):
         waiting = self._passive.get((item.next, item.dot), None)

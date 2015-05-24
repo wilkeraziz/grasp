@@ -1,5 +1,9 @@
 """
-This module implements the Inside-Outside algorithm and related quantities (Baker, 1970).
+This module implements the Inside-Outside algorithm (Baker, 1970) and inference agorithms related to those quantities.
+
+It implements 
+    i) PCFG sampling (Chappelier and Rajman, 2000)
+    ii) the Viterbi algorithm
 
 @author wilkeraziz
 """
@@ -122,7 +126,7 @@ def sample(forest, root, semiring, Iv, Ie=None, N=1, omega=lambda e: e.weight):
             edge = sample_edge(incoming)
             derivation.append(edge)
             Q.extend(edge.rhs)
-        return tuple(derivation)
+        return tuple(derivation) #, semiring.divide(reduce(semiring.times, (e.weight for e in derivation), semiring.one), Iv[root])
 
     if N < 0:
         while True:
@@ -159,5 +163,17 @@ def optimise(forest, root, semiring, Iv, Ie=None, omega=lambda e: e.weight, maxi
         edge = choice(incoming, key=lambda e: Ie[e])
         derivation.append(edge)
         Q.extend(edge.rhs)
-    return tuple(derivation)
+    return tuple(derivation) #, Iv[root]
 
+
+def total_weight(derivation, semiring, Z=None):
+    """
+    Compute the total weight of a derivation (as a sequence of edges) under a semiring
+    @params derivation: sequence of edges
+    @params semiring: requires `one` and `times` (and may require `divide`, see Z below)
+    @params Z: inside of the root node, if provided, the total weight will be normalised 
+    """
+    if Z is None:
+        return reduce(semiring.times, (e.weight for e in derivation), semiring.one)
+    else:
+        return semiring.divide(reduce(semiring.times, (e.weight for e in derivation), semiring.one), Z)

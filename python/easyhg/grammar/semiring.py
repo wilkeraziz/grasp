@@ -1,3 +1,24 @@
+"""
+This module specifies several semirings. 
+
+A semiring must define the following 
+
+    one => the multiplicative identity
+    zero => the additive identity (and multiplicative annihilator)
+    plus => addition
+    times => multiplication
+
+A semiring may define the following 
+
+    divide => division
+    as_real => return a Real number
+    from_real => constructs from a Real number
+    gt => comparison '>'
+    heapify => return a value compatible with the logic of a heap (smaller first)
+
+"""
+__author__ = 'wilkeraziz'
+
 import numpy as np
 import operator
 
@@ -12,6 +33,7 @@ class Prob(object):
     as_real = float
     from_real = float
     gt = np.greater
+    heapify = operator.neg 
 
 class SumTimes(object):
 
@@ -23,6 +45,7 @@ class SumTimes(object):
     as_real = np.exp
     from_real = np.log
     gt = np.greater
+    heapify = operator.neg 
 
 class MaxTimes(object):
 
@@ -34,6 +57,7 @@ class MaxTimes(object):
     as_real = np.exp
     from_real = np.log
     gt = np.greater
+    heapify = operator.neg
 
 class Count(object):
 
@@ -44,3 +68,5 @@ class Count(object):
     divide = None
     as_real = float
     from_real = lambda x: int(bool(x))
+    heapify = operator.neg 
+

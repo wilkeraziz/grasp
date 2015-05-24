@@ -160,34 +160,9 @@ class Earley(object):
                 self._wfsa, self._semiring, self._make_symbol)
 
         # converts complete items into rules
-        if self._scfg is None:
-            if new_roots:
-                return self.get_intersected_cfg(new_roots, goal)
-            else:
-                return CFG()
-        else:
-            if new_roots:
-                return self.get_intersected_scfg(new_roots, goal)
-            else:
-                return SCFG()
 
-    def get_intersected_cfg(self, new_roots, goal):
-        semiring = self._semiring
-        make_symbol = self._make_symbol
-        G = CFG()
-        for item in self._agenda.itercomplete():
-            lhs = make_symbol(item.rule.lhs, item.start, item.dot)
-            fsa_states = item.inner + (item.dot,)
-            fsa_weights = []
-            for i, sym in ifilter(lambda (_, s): isinstance(s, Terminal), enumerate(item.rule.rhs)):
-                fsa_weights.append(self._wfsa.arc_weight(fsa_states[i], fsa_states[i + 1], sym))
-            weight = reduce(semiring.times, fsa_weights, item.rule.weight)
 
-            rhs = [make_symbol(sym, fsa_states[i], fsa_states[i + 1]) for i, sym in enumerate(item.rule.rhs)] 
-            G.add(CFGProduction(lhs, rhs, weight))
-        for sym, si, sf in new_roots:
-            G.add(CFGProduction(goal, [make_symbol(sym, si, sf)], semiring.one))
-
+    # TODO: create a make_scfg
     def get_intersected_scfg(self, new_roots, goal):
         semiring = self._semiring
         make_symbol = self._make_symbol

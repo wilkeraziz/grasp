@@ -60,12 +60,11 @@ class CKY(object):
         Special treatment for top-level (root) symbols:
             * only initial states are used
         """
-        fsa_states = self._wfsa.iterstates() if not top_level else self._wfsa.iterinitial()
+        iter_fsa_states = self._wfsa.iterstates if not top_level else self._wfsa.iterinitial
         for lhs in symbols:
             for rule in self._wcfg.get(lhs, set()):
-                for q in fsa_states:
-                    item = Item(rule, q)
-                    self._agenda.add(item)
+                for q in iter_fsa_states():
+                    self._agenda.add(Item(rule, q))
     
     def scan(self, item):
         """scans every transition in the fsa from item.dot whose symbol is item.next"""
@@ -103,30 +102,8 @@ class CKY(object):
                 else:
                     self.complete_itself(item)
                     agenda.make_passive(item)
-       
+
         return make_cfg(goal, root, 
                 self._agenda.itergenerating, self._agenda.itercomplete, 
                 self._wfsa, self._semiring, self._make_symbol)
 
-
-if __name__ == '__main__':
-    import sys
-    from fsa import make_linear_fsa
-    from semiring import Prob
-    from ply_cfg import read_grammar
-    from cfg import CFG
-    from topsort import topsort_cfg
-    cfg = read_grammar(open('../../example/cfg', 'r'))
-
-    for input_str in sys.stdin:
-        fsa = make_linear_fsa(input_str, Prob)
-        for word in fsa.itersymbols():
-            if not cfg.is_terminal(word):
-                p = CFGProduction(Nonterminal('X'), [word], Prob.one)
-                cfg.add(p)
-        parser = CKY(cfg, fsa, semiring=Prob)
-        forest = parser.do()
-        if not forest:
-            print 'NO PARSE FOUND'
-            continue
-        print forest
