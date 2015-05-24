@@ -107,13 +107,9 @@ def sample(forest, root, semiring, Iv, Ie=None, N=1, omega=lambda e: e.weight):
         Ie = LazyEdgeInside(semiring, Iv, omega=omega)  # we require normalisation
 
     def sample_edge(edges):
-        th = semiring.from_real(np.random.uniform(0, 1.0))  # works with normalised edge inside
-        acc = semiring.zero
-        for edge in edges:
-            acc = semiring.plus(acc, Ie[edge])
-            if semiring.gt(acc, th):
-                return edge
-        raise ValueError('Edges do not seem to sum to %s' % (semiring.as_real(th)))
+        edges = list(edges)
+        i = np.random.choice(len(edges), p=[semiring.as_real(Ie[e]) for e in edges])
+        return edges[i]
     
     def sample_derivation():
         derivation = []
@@ -134,4 +130,34 @@ def sample(forest, root, semiring, Iv, Ie=None, N=1, omega=lambda e: e.weight):
     else:
         for i in range(N):
             yield sample_derivation()
+
+
+def optimise(forest, root, semiring, Iv, Ie=None, omega=lambda e: e.weight, maximisation=True):
+    """
+    Returns a generator for random samples
+
+    @param forest
+    @param root: where to start sampling from
+    @param semiring: plus and times are necessary 
+    @param Iv: inside for nodes
+    @param Ie: if provided, should be normalised wrt to head nodes
+    @param omega: a function that weighs edges/rules (serves as a bypass)
+    @param maximisation: whether we solve a maximisation or a minimisation problem
+    """
+    if Ie is None:
+        Ie = LazyEdgeInside(semiring, Iv, omega=omega)  # we require normalisation
+
+    choice = max if maximisation else min
+
+    derivation = []
+    Q = deque([root])
+    while Q:
+        parent = Q.popleft()
+        incoming = forest.get(parent, None)
+        if incoming is None:  # terminal node
+            continue  
+        edge = choice(incoming, key=lambda e: Ie[e])
+        derivation.append(edge)
+        Q.extend(edge.rhs)
+    return tuple(derivation)
 

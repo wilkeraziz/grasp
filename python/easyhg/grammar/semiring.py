@@ -37,8 +37,8 @@ class MaxTimes(object):
 
 class Count(object):
 
-    one = 1.0
-    zero = 0.0
+    one = 1
+    zero = 0
     plus = np.add
     times = np.multiply
     divide = None

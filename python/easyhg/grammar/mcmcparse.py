@@ -31,8 +31,8 @@ def main(args):
     else:
         logging.basicConfig(level=logging.INFO, format='%(levelname)s %(message)s')
 
-    cfg = read_grammar(args.grammar)
     semiring = SumTimes
+    cfg = read_grammar(args.grammar, transform=semiring.from_real)
 
     for input_str in args.input:
         fsa = make_linear_fsa(input_str, semiring)
@@ -52,7 +52,7 @@ def main(args):
             forest = parser.do(root=Nonterminal(args.start), goal=goal)
             if not forest:
                 logging.debug('NO PARSE FOUND')
-                u.reset()
+                u.reset()  # reset the slice variables (keeping conditions unchanged if any)
                 continue
             topsorted = list(chain(*topsort_cfg(forest)))
             uniformdist = parser.reweight(forest)
@@ -77,7 +77,7 @@ def main(args):
         count = Counter(samples[args.burn:])
         for d, n in reversed(count.most_common()):
             t = make_nltk_tree(d)
-            print '%dx %s' % (n, t)
+            print '%d (%f) %s' % (n, float(n)/args.samples, t)
             print
             #t.draw()
 
@@ -125,7 +125,7 @@ def argparser():
             type=int, default=0,
             help='number of initial samples to be discarded (burn-in time) - but also consider --restart')
     parser.add_argument('--restart', 
-            type=float, default=0.01,
+            type=float, default=0.0,
             help='chance of random restart (note that burn-in always burns the first samples, regardless of random restarts)')
     parser.add_argument('--batch', 
             type=int, default=1,
