@@ -43,9 +43,9 @@ def main(args):
                     cfg.add(CFGProduction(Nonterminal(args.default_symbol), [word], semiring.one))
                     logging.debug('Passthrough rule for %s', word)
         make_symbol = make_flat_symbol
-        if args.algorithm == 'earley':
+        if args.intersection == 'earley':
             parser = Earley(cfg, fsa, semiring=semiring, make_symbol=make_symbol)
-        elif args.algorithm == 'nederhof':
+        elif args.intersection == 'nederhof':
             parser = Nederhof(cfg, fsa, semiring=semiring, make_symbol=make_symbol)
         else: 
             parser = CKY(cfg, fsa, semiring=semiring, make_symbol=make_symbol)
@@ -106,8 +106,8 @@ def argparser():
     parser.add_argument('output', nargs='?', 
             type=argparse.FileType('w'), default=sys.stdout,
             help='directs output to a file')
-    parser.add_argument('--algorithm', 
-            type=str, default='earley', choices=['earley', 'cky', 'nederhof'],
+    parser.add_argument('--intersection', 
+            type=str, default='nederhof', choices=['nederhof', 'cky', 'earley'],
             help='default goal symbol (root after intersection)')
     parser.add_argument('--forest', 
             action='store_true',
