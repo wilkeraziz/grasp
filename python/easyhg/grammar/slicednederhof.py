@@ -87,7 +87,7 @@ class Nederhof(object):
         The axioms of the program are based on the FSA transitions. 
         """
         # you may interpret the following as a sort of lazy axiom (based on grammar rules)
-        for r in self._wcfg.iterrules():
+        for r in self._wcfg:
             self._firstsym[r.rhs[0]].add(r)
         # these are axioms based on the transitions of the automaton
         for sfrom, sto, sym, w in self._wfsa.iterarcs():

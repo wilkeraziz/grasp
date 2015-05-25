@@ -1,5 +1,7 @@
 """
-@author wilkeraziz
+Contains class definitions for symbols (e.g. Terminal and Nonterminal) and other utilitary functions involving them.
+
+:Authors: - Wilker Aziz
 """
 
 from weakref import WeakValueDictionary
@@ -31,7 +33,8 @@ class Terminal(object):
     _vocabulary = WeakValueDictionary()
 
     def __new__(cls, surface):
-        """The surface has to be hashable"""
+        """The surface has to be hashable."""
+
         obj = Terminal._vocabulary.get(surface, None)
         if not obj:
             obj = object.__new__(cls)
@@ -41,6 +44,7 @@ class Terminal(object):
 
     @property
     def surface(self):
+        """The underlying object that uniquely represent the symbol."""
         return self._surface
 
     def __repr__(self):
@@ -69,7 +73,7 @@ class Nonterminal(object):
     _categories = WeakValueDictionary()
 
     def __new__(cls, label):
-        """The label has to be hashable"""
+        """The label has to be hashable."""
         obj = Nonterminal._categories.get(label, None)
         if not obj:
             obj = object.__new__(cls)
@@ -79,6 +83,7 @@ class Nonterminal(object):
 
     @property
     def label(self):
+        """The underlying object that uniquely represents the symbol."""
         return self._label
 
     def __repr__(self):
@@ -89,11 +94,34 @@ class Nonterminal(object):
 
 
 def make_flat_symbol(base_symbol, sfrom, sto):
+    """Return a symbol of same type (Terminal or Nonterminal) as `base_symbol`.
+    If Nonterminal, the symbol is annotated with the span [sfrom, sto].
+
+    >>> t = Terminal('a')
+    >>> n = Nonterminal('X')
+    >>> make_flat_symbol(t, 0, 1)
+    Terminal('a')
+    >>> make_flat_symbol(n, 1, 2)
+    Nonterminal('X:1-2')
+    """
+
     if sfrom is None and sto is None:
         return base_symbol
     return base_symbol if isinstance(base_symbol, Terminal) else Nonterminal('%s:%d-%d' % (base_symbol.label, sfrom, sto))
 
 def make_recursive_symbol(base_symbol, sfrom, sto):
+    """
+    Return a symbol of same type (Terminal or Nonterminal) as `base_symbol`.
+    If nonterminal, the label will be the tuple (base_symbol, sfrom, sto).
+
+    >>> t = Terminal('a')
+    >>> n = Nonterminal('X')
+    >>> make_recursive_symbol(t, 0, 1)
+    Terminal('a')
+    >>> make_recursive_symbol(n, 1, 2)
+    Nonterminal((Nonterminal('X'), 1, 2))
+    """
+
     if sfrom is None and sto is None:
         return base_symbol
     return base_symbol if isinstance(base_symbol, Terminal) else Nonterminal((base_symbol, sfrom, sto))

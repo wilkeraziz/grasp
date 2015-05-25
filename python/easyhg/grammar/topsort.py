@@ -2,7 +2,7 @@
 This is a standard implementation of topological sorting.
 Dependencies are encoded through a dictionary and a partial ordering generator is returned.
 
-@author wilkeraziz
+:Authors: - Wilker Aziz
 """
 
 from collections import defaultdict
@@ -10,9 +10,14 @@ from itertools import chain
 
 
 def topsort(dependencies, independent=None):
-    """
-    Finds a partial ordering of the given objects.
-    You may specify which objects are known to be independent or let the algorithm find that out for you.
+    """Find a partial ordering of the given objects.
+    
+    :param dependencies:
+        dictionary o dependencies (object -> set of dependencies).
+    :param independent: 
+        independent objects.
+    :returns:
+        a generator which produces groups of objects in bottom-up order
 
     >>> # in this case we specify the independent objects
     >>> D = {'S': {'S','X'}, 'X': {'X', 'Y', 'a', 'b', 'c'}, 'Y':{'.'}}
@@ -56,7 +61,7 @@ def topsort(dependencies, independent=None):
         ordered = set(k for k, deps in dependencies.iteritems() if len(deps) == 0)  # items with no dependencies
     
     if dependencies:
-        raise ValueError('Cyclic dependencies were encountered: %s' % dependencies)
+        raise ValueError('Cyclic or incomplete dependencies were encountered: %s' % dependencies)
 
 
 

@@ -75,7 +75,7 @@ class Earley(object):
         failed = False
         for sym in item.nextsymbols():
             if isinstance(sym, Terminal):
-                arcs = self._wfsa.get_arcs(sfrom=states[-1], symbol=sym)
+                arcs = self._wfsa.get_arcs(origin=states[-1], symbol=sym)
                 if len(arcs) == 0:  # cannot scan the symbol
                     return False
                 elif len(arcs) == 1:  # symbol is scanned deterministically
@@ -119,7 +119,7 @@ class Earley(object):
 
         # start items of the kind 
         # GOAL -> * ROOT, where * is an intial state of the wfsa
-        if not any(self.axioms(root, start) for start in wfsa.initial_states):
+        if not any(self.axioms(root, start) for start in wfsa.iterinitial()):
             raise ValueError('No rule for the start symbol %s' % root)
         new_roots = set()
         
@@ -132,7 +132,7 @@ class Earley(object):
 
             if item.is_complete():
                 # complete root item spanning from a start wfsa state to a final wfsa state
-                if item.rule.lhs == root and item.start in wfsa.initial_states and item.dot in wfsa.final_states:
+                if item.rule.lhs == root and wfsa.is_initial(item.start) and wfsa.is_final(item.dot):
                     agenda.make_complete(item)
                     new_roots.add((root, item.start, item.dot))
                     agenda.make_passive(item)
@@ -148,7 +148,7 @@ class Earley(object):
                     self.scan(item)
                     agenda.discard(item)  # scanning renders incomplete items of this kind useless
                 else: 
-                    if item.next not in wcfg:  # if the NT does not exist this item is useless
+                    if not wcfg.can_rewrite(item.next):  # if the NT does not exist this item is useless
                         agenda.discard(item)
                     else:
                         if not self.prediction(item):  # try to predict, otherwise try to complete itself

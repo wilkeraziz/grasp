@@ -57,7 +57,7 @@ def main(args):
             topsorted = list(chain(*topsort_cfg(forest)))
             uniformdist = parser.reweight(forest)
             #Ic = inside(forest, topsorted, Count, omega=lambda e: 1)
-            #logging.debug('FOREST: %d edges, %d nodes and %d paths' % (len(forest), len(forest.nonterminals), Ic[topsorted[-1]]))
+            #logging.debug('FOREST: %d edges, %d nodes and %d paths' % (len(forest), forest.n_nonterminals(), Ic[topsorted[-1]]))
             Iv = inside(forest, topsorted, semiring, omega=lambda e: uniformdist[e])
             batch = list(sample(forest, goal, semiring, Iv=Iv, N=args.batch, omega=lambda e: uniformdist[e]))
             if len(batch) > 1:  # resampling step

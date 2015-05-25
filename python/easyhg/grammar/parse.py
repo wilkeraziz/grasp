@@ -56,10 +56,9 @@ def main(args):
             continue
         topsorted = list(chain(*topsort_cfg(forest)))
         Ic = inside(forest, topsorted, Count, omega=lambda e: 1)
-        print '# FOREST: edges=%d nodes=%d paths=%d' % (len(forest), len(forest.nonterminals), Ic[topsorted[-1]])
+        print '# FOREST: edges=%d nodes=%d paths=%d' % (len(forest), forest.n_nonterminals(), Ic[topsorted[-1]])
         if args.forest:
-            for r in forest.iterrules_topdown():
-                print r
+            print forest
             print
         if args.samples > 0:
             print '# SAMPLE: size=%d' % args.samples

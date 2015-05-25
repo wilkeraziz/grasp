@@ -1,5 +1,7 @@
 """
-@author wilkeraziz
+This module contains class definitions for rules, such as a context-free production.
+
+:Authors: - Wilker Aziz
 """
 
 import re
@@ -11,7 +13,9 @@ from symbol import Terminal, Nonterminal
 
 class CFGProduction(object):
     """
-    Implements a context-free production. References to productions are managed by the CFGProduction class.
+    Implements a context-free production. 
+    
+    References to productions are managed by the CFGProduction class.
     We use WeakValueDictionary for builtin reference counting.
     The symbols in the production must all be immutable (thus hashable).
 
@@ -27,7 +31,7 @@ class CFGProduction(object):
     _rules = WeakValueDictionary()
 
     def __new__(cls, lhs, rhs, weight):
-        """The symbols in lhs and rhs must be hashable"""
+        """The symbols in lhs and in the rhs must be hashable."""
         skeleton = (lhs, tuple(rhs), weight)
         obj = CFGProduction._rules.get(skeleton, None)
         if not obj:
@@ -38,10 +42,12 @@ class CFGProduction(object):
     
     @property
     def lhs(self):
+        """Return the LHS symbol (a Nonterminal) aka the head."""
         return self._skeleton[0]
 
     @property
     def rhs(self):
+        """A tuple of symbols (terminals and nonterminals) representing the RHS aka the tail."""
         return self._skeleton[1]
     
     @property
@@ -55,9 +61,11 @@ class CFGProduction(object):
         return '%s ||| %s ||| %s' % (self.lhs, ' '.join(str(s) for s in self.rhs), self.weight)
 
 
-class SCFGProduction(object):
+class SCFGProduction(object):  #TODO: check this
     """
-    Implements a synchronous context-free production. Unlike CFGProduction, this class offers no reference management.
+    Implements a synchronous context-free production. 
+    
+    Unlike CFGProduction, this class offers no reference management.
     """
 
     F_NT_INDEX_RE = re.compile('^([^,]+)(,(\d+))?$')
@@ -141,7 +149,7 @@ class SCFGProduction(object):
             self.weight)
 
     def project_rhs(self):
-        """Computes the target context-free production by projecting source labels through nonterminal alignment"""
+        """Computes the target context-free production by projecting source labels through nonterminal alignment."""
         alignment = iter(self.alignment)
         f_nts = tuple(ifilter(lambda s: isinstance(s, Nonterminal), self.f_rhs))
         return tuple(s if isinstance(s, Terminal) else f_nts[next(alignment) - 1] for s in self.e_rhs)
