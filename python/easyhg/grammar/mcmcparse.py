@@ -32,7 +32,12 @@ def main(args):
         logging.basicConfig(level=logging.INFO, format='%(levelname)s %(message)s')
 
     semiring = SumTimes
-    cfg = read_grammar(args.grammar, transform=semiring.from_real)
+    logging.info('Loading grammar...')
+    if args.log:
+        cfg = read_grammar(args.grammar, transform=semiring.from_real)
+    else:
+        cfg = read_grammar(args.grammar)
+    logging.info('Done: rules=%d', len(cfg))
 
     for input_str in args.input:
         fsa = make_linear_fsa(input_str, semiring)
@@ -100,6 +105,9 @@ def argparser():
     parser.add_argument('output', nargs='?', 
             type=argparse.FileType('w'), default=sys.stdout,
             help='directs output to a file')
+    parser.add_argument('--log',
+            action='store_true', 
+            help='apply the log transform to the grammar (by default we assume this has already been done)')
     parser.add_argument('--intersection', 
             type=str, default='nederhof', choices=['nederhof'],
             help='default goal symbol (root after intersection)')

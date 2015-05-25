@@ -32,7 +32,12 @@ def main(args):
         logging.basicConfig(level=logging.INFO, format='%(levelname)s %(message)s')
 
     semiring = SumTimes
-    cfg = read_grammar(args.grammar, transform=semiring.from_real)
+    logging.info('Loading grammar...')
+    if args.log:
+        cfg = read_grammar(args.grammar, transform=semiring.from_real)
+    else:
+        cfg = read_grammar(args.grammar)
+    logging.info('Done: rules=%d', len(cfg))
 
     for input_str in args.input:
         fsa = make_linear_fsa(input_str, semiring)
@@ -105,6 +110,9 @@ def argparser():
     parser.add_argument('output', nargs='?', 
             type=argparse.FileType('w'), default=sys.stdout,
             help='directs output to a file')
+    parser.add_argument('--log',
+            action='store_true', 
+            help='apply the log transform to the grammar (by default we assume this has already been done)')
     parser.add_argument('--intersection', 
             type=str, default='nederhof', choices=['nederhof', 'cky', 'earley'],
             help='default goal symbol (root after intersection)')
@@ -129,6 +137,9 @@ def argparser():
     parser.add_argument('--kbest', 
             type=int, default=0,
             help='number of top scoring solutions')
+    parser.add_argument('--report-top',
+            action='store_true',
+            help='report the top symbol(s) in the grammar and quit')
     parser.add_argument('--verbose', '-v',
             action='store_true',
             help='increase the verbosity level')
