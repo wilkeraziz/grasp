@@ -61,12 +61,12 @@ class MaxTimes(object):
 
 class Count(object):
 
-    one = 1
-    zero = 0
-    plus = np.add
-    times = np.multiply
+    one = 1L
+    zero = 0L
+    plus = operator.add  # np.add
+    times = operator.mul  # np.multiply
     divide = None
     as_real = float
-    from_real = lambda x: int(bool(x))
+    from_real = lambda x: long(bool(x))
     heapify = operator.neg 
 

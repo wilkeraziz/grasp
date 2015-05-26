@@ -70,10 +70,8 @@ class Nederhof(object):
         """
         if item.is_complete(): # complete others
             # slice check  (TODO: incorporate weights from intersected transitions before performing the check)
-            u_s = self._u[(item.rule.lhs, item.start, item.dot)]
-            if self._semiring.as_real(item.rule.weight) < u_s:  # for now this check ignores the intersection and relies on the parameters of the CFG alone
+            if self._u.is_outside((item.rule.lhs, item.start, item.dot), self._semiring.as_real(item.rule.weight)):
                 self._agenda.discard(item)  # should I keep it (perhaps 'block' it somehow)?
-                #print >> sys.stderr, 'below threshold (%s): %s' % (u_s, item)
             else:
                 self.add_symbol(item.rule.lhs, item.start, item.dot)
                 self._agenda.make_complete(item)

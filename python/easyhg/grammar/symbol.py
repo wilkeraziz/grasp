@@ -52,6 +52,14 @@ class Terminal(object):
 
     def __str__(self):
         return "'{0}'".format(self._surface)
+    
+    def flatten(self):
+        try:
+            if isinstance(self._surface[0], Terminal):
+                return self._surface[0]
+        except:
+            pass
+        return self
 
 
 class Nonterminal(object):
@@ -92,6 +100,14 @@ class Nonterminal(object):
     def __str__(self):
         return '[{0}]'.format(self._label)
 
+    def flatten(self):
+        try:
+            if isinstance(self._label[0], Nonterminal):
+                return self._label[0]
+        except:
+            pass
+        return self
+
 
 def make_flat_symbol(base_symbol, sfrom, sto):
     """Return a symbol of same type (Terminal or Nonterminal) as `base_symbol`.
@@ -107,7 +123,7 @@ def make_flat_symbol(base_symbol, sfrom, sto):
 
     if sfrom is None and sto is None:
         return base_symbol
-    return base_symbol if isinstance(base_symbol, Terminal) else Nonterminal('%s:%d-%d' % (base_symbol.label, sfrom, sto))
+    return base_symbol if isinstance(base_symbol, Terminal) else Nonterminal('%s:%s-%s' % (base_symbol.label, sfrom, sto))
 
 def make_recursive_symbol(base_symbol, sfrom, sto):
     """
@@ -122,6 +138,7 @@ def make_recursive_symbol(base_symbol, sfrom, sto):
     Nonterminal((Nonterminal('X'), 1, 2))
     """
 
-    if sfrom is None and sto is None:
-        return base_symbol
+    #if sfrom is None and sto is None:
+    #    return base_symbol
     return base_symbol if isinstance(base_symbol, Terminal) else Nonterminal((base_symbol, sfrom, sto))
+
