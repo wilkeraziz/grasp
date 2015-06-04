@@ -25,6 +25,8 @@ from utils import make_nltk_tree, inlinetree
 from collections import Counter
 from symbol import make_recursive_symbol
 import heuristic
+from reader import load_grammar
+from sentence import make_sentence
 
 def make_conditions(d, semiring):
     conditions = {r.lhs.label: semiring.as_real(r.weight) for r in d}
@@ -60,31 +62,26 @@ def main(args):
         logging.basicConfig(level=logging.INFO, format='%(asctime)-15s %(levelname)s %(message)s')
 
     semiring = SumTimes
+
     logging.info('Loading grammar...')
-    if args.log:
-        cfg = read_grammar(args.grammar, transform=semiring.from_real)
-    else:
-        cfg = read_grammar(args.grammar)
+    cfg = load_grammar(args.grammar, args.grammarfmt, args.log)
     logging.info('Done: rules=%d', len(cfg))
 
     for input_str in args.input:
-        logging.info('Input: %s', input_str.strip())
-        fsa = make_linear_fsa(input_str, semiring)
+        # get an input automaton
+        sentence, extra_rules = make_sentence(input_str, semiring, cfg.lexicon, args.unkmodel, args.default_symbol)
+        cfg.update(extra_rules)
 
-        if args.pass_through:
-            for word in fsa.itersymbols():
-                if not cfg.is_terminal(word):
-                    cfg.add(CFGProduction(Nonterminal(args.default_symbol), [word], semiring.one))
-                    logging.debug('Passthrough rule for %s', word)
-
+        # get a heuristic
         heuristic = make_heuristic(args, cfg, semiring)
 
+        # configure slice variables
         u = SliceVariables({}, a=args.beta_a[0], b=args.beta_b[0], heuristic=heuristic)
         samples = []
         goal = Nonterminal(args.goal)
         checkpoint = 100
         while len(samples) < args.samples + args.burn:
-            parser = Nederhof(cfg, fsa, semiring=semiring, slice_variables=u, make_symbol=make_recursive_symbol)
+            parser = Nederhof(cfg, sentence.fsa, semiring=semiring, slice_variables=u, make_symbol=make_recursive_symbol)
             logging.debug('Parsing...')
             forest = parser.do(root=Nonterminal(args.start), goal=goal)
             if not forest:
@@ -92,8 +89,13 @@ def main(args):
                 u.reset()  # reset the slice variables (keeping conditions unchanged if any)
                 continue
             topsorted = list(chain(*topsort_cfg(forest)))
-            Ic = inside(forest, topsorted, Count, omega=lambda e: Count.one)
-            logging.debug('Done! Forest: %d edges, %d nodes and %d paths' % (len(forest), forest.n_nonterminals(), Ic[topsorted[-1]]))
+
+            if args.count:
+                Ic = inside(forest, topsorted, Count, omega=lambda e: Count.one)
+                logging.debug('Done! Forest: %d edges, %d nodes and %d paths' % (len(forest), forest.n_nonterminals(), Ic[topsorted[-1]]))
+            else:
+                logging.debug('Done! Forest: %d edges, %d nodes' % (len(forest), forest.n_nonterminals()))
+
             uniformdist = parser.reweight(forest)
             Iv = inside(forest, topsorted, semiring, omega=lambda e: uniformdist[e])
             logging.debug('Sampling...')
@@ -122,14 +124,18 @@ def argparser():
     parser.formatter_class = argparse.ArgumentDefaultsHelpFormatter
 
     parser.add_argument('grammar',
-            type=argparse.FileType('r'), 
-            help='CFG rules')
+            type=str,
+            help='grammar file (or prefix to grammar files)')
     parser.add_argument('input', nargs='?', 
             type=argparse.FileType('r'), default=sys.stdin,
             help='input corpus (one sentence per line)')
     parser.add_argument('output', nargs='?', 
             type=argparse.FileType('w'), default=sys.stdout,
             help='directs output to a file')
+    parser.add_argument('--grammarfmt',
+            type=str, default='bar',
+            choices=['bar', 'discodop'],
+            help="grammar format ('bar' is the native cdec-inspired format; if 'discodop' the grammar path is interpreted as a prefix)")
     parser.add_argument('--log',
             action='store_true', 
             help='apply the log transform to the grammar (by default we assume this has already been done)')
@@ -139,9 +145,10 @@ def argparser():
     parser.add_argument('--sampler', 
             type=str, default='slice', choices=['slice'],
             help='default goal symbol (root after intersection)')
-    parser.add_argument('--pass-through', 
-            action='store_true',
-            help='add pass through rules for unknown terminals')
+    parser.add_argument('--unkmodel',
+            type=str, default=None,
+            choices=['passthrough', 'stfdbase', 'stfd4', 'stfd6'],
+            help="unknown word model")
     parser.add_argument('--default-symbol', 
             type=str, default='X',
             help='default nonterminal (use for pass through rules)')
@@ -175,6 +182,9 @@ def argparser():
     parser.add_argument('--heuristic-uniform-params', 
             type=float, nargs=2, default=[0, 100], 
             help='the lower and upper percentiles for heuristic "uniform"')
+    parser.add_argument('--count',
+            action='store_true',
+            help='report the number of derivations in the forest')
     parser.add_argument('--verbose', '-v',
             action='store_true',
             help='increase the verbosity level')

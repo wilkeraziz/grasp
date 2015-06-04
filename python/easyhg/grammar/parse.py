@@ -65,11 +65,15 @@ def main(args):
 
         logging.info('Done! Top-sorting...')
         topsorted = list(chain(*topsort_cfg(forest)))
-        logging.info('Done! Couting...')
-        Ic = inside(forest, topsorted, Count, omega=lambda e: 1)
-        logging.info('Done! Forest: edges=%d nodes=%d paths=%d', len(forest), forest.n_nonterminals(), Ic[topsorted[-1]])
+        if args.count:
+            logging.info('Done! Counting...')
+            Ic = inside(forest, topsorted, Count, omega=lambda e: 1)
+            logging.info('Done! Forest: edges=%d nodes=%d paths=%d', len(forest), forest.n_nonterminals(), Ic[topsorted[-1]])
+            print '# FOREST: edges=%d nodes=%d paths=%d' % (len(forest), forest.n_nonterminals(), Ic[topsorted[-1]])
+        else:
+            logging.info('Done! Forest: edges=%d nodes=%d', len(forest), forest.n_nonterminals())
+            print '# FOREST: edges=%d nodes=%d' % (len(forest), forest.n_nonterminals())
 
-        print '# FOREST: edges=%d nodes=%d paths=%d' % (len(forest), forest.n_nonterminals(), Ic[topsorted[-1]])
         if args.forest:
             print forest
             print
@@ -156,6 +160,9 @@ def argparser():
     parser.add_argument('--report-top',
             action='store_true',
             help='report the top symbol(s) in the grammar and quit')
+    parser.add_argument('--count',
+            action='store_true',
+            help='report the number of derivations in the forest')
     parser.add_argument('--verbose', '-v',
             action='store_true',
             help='increase the verbosity level')

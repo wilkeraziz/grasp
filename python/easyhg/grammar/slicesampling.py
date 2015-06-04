@@ -53,15 +53,27 @@ class SliceVariables(object):
     def b(self):
         return self._b
 
+
     def pr(self, s, theta, slice_only=True):
         """returns p(r_s|u) where lhs(r) == s and theta = p(rhs(r)|s)"""
         u_s = self[s]
         if u_s < theta:
-            return 1.0 / (np.power(u_s, self._a - 1) * np.power(1 - u_s, self._b - 1)) 
+            return 1.0 / beta.pdf(u_s, self._a, self._b) #(np.power(u_s, self._a - 1) * np.power(1 - u_s, self._b - 1))
         elif slice_only:
             raise ValueError('I received a variable outside the slice: s=%s theta=%s u_s=%s' % (s, theta, u_s))
         else:
             return 0.0
+
+    def logpr(self, s, theta, slice_only=True):
+        """returns p(r_s|u) where lhs(r) == s and theta = p(rhs(r)|s)"""
+        u_s = self[s]
+        if theta > u_s:
+            return - beta.logpdf(u_s, self._a, self._b)
+        elif slice_only:
+            raise ValueError('I received a variable outside the slice: s=%s theta=%s u_s=%s' % (s, theta, u_s))
+        else:
+            return 0.0
+
 
     def reset(self, conditions=None, a=None, b=None):
         self._u = defaultdict(None)
@@ -74,6 +86,30 @@ class SliceVariables(object):
             self._b = b
 
     def __getitem__(self, s):
+        """
+        Returns u_s sampling it if necessary.
+
+        >>> d = {(0, 'X', 1): 0.6, (1, 'X', 2): 0.5, (0, 'X', 2): 0.5, (2, 'X', 3): 0.3, (3, 'X', 4):0.7, (2, 'X', 4):0.9, (0, 'S', 4): 1.0}
+        >>> u = SliceVariables(d, 5, 1)
+        >>> u[(0, 'X', 2)] < d[(0,'X',2)]
+        True
+        >>> u[(2, 'X', 4)] < d[(2,'X',4)]
+        True
+        >>> u[(0, 'S', 4)] < d[(0,'S',4)]
+        True
+        """
+
+        u_s = self._u.get(s, None)
+        if u_s is None:  # the slice variable has not been sampled yet
+            theta_r_s = self._conditions.get(s, None)  # so we check if we have observed real conditions
+            if theta_r_s is None: # there is no r in d for which lhs(r) == s
+                u_s = np.random.beta(self._a, self._b)  # in this case we sample u_s from a beta
+            else:  # theta_r_s is the parameter associated with r in d for which lhs(r) == s
+                u_s = np.random.uniform(0, theta_r_s)  # in this case we sample uniformly from [0, theta_r_s)
+            self._u[s] = u_s
+        return u_s
+
+    def __getitem__2(self, s):
         """
         Returns u_s sampling it if necessary.
 

@@ -25,6 +25,8 @@ import operator
 
 class Prob(object):
 
+    LOG = False
+
     one = 1.0
     zero = 0
     plus = np.add
@@ -36,6 +38,8 @@ class Prob(object):
     heapify = operator.neg 
 
 class SumTimes(object):
+
+    LOG = True
 
     one = 0.0
     zero = -np.inf
@@ -49,6 +53,8 @@ class SumTimes(object):
 
 class MaxTimes(object):
 
+    LOG = True
+
     one = 0.0
     zero = -np.inf
     plus = max
@@ -60,6 +66,8 @@ class MaxTimes(object):
     heapify = operator.neg
 
 class Count(object):
+
+    LOG = False
 
     one = 1L
     zero = 0L
