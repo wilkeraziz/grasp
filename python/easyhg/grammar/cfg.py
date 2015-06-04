@@ -76,6 +76,10 @@ class CFG(object):
         """Count the total number of rules."""
         return sum(len(rules) for rules in self._rules_by_lhs.itervalues())
 
+    @property
+    def lexicon(self):
+        return self._sigma
+
     def n_nonterminals(self):
         return len(self._nonterminals)
 
@@ -147,6 +151,10 @@ class CFG(object):
             return True
         else:
             return False
+
+    def update(self, rules):
+        """Adds multiple rules"""
+        [self.add(r) for r in rules]
         
     def topsort(self):
         """Compute a partial ordering of symbols.
@@ -165,9 +173,9 @@ class CFG(object):
     def __str__(self):
         """String representation of the (top-sorted) CFG."""
         lines = []
-        for group in self.topsort():
-            for sym in sorted(group, key=lambda s: str(s)):
-                lines.extend(sorted((str(r) for r in self.iterrules(sym))))
+        for lhs, rules in sorted(self._rules_by_lhs.iteritems(), key=lambda pair: str(pair[0])):
+            for rule in sorted(rules, key=lambda r: str(r)):
+                lines.append(str(rule))
         return '\n'.join(lines)
 
 

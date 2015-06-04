@@ -9,10 +9,9 @@ import logging
 from itertools import chain
 import argparse
 import sys
-from fsa import make_linear_fsa
-from ply_cfg import read_grammar
+
+from sentence import make_sentence
 from symbol import Nonterminal, make_flat_symbol, make_recursive_symbol
-from rule import CFGProduction
 from cfg import CFG, topsort_cfg
 from earley import Earley
 from cky import CKY
@@ -23,6 +22,19 @@ from inference import inside, sample, optimise, total_weight
 from kbest import KBest
 from collections import Counter
 import projection
+from reader import load_grammar
+
+
+def get_parser(cfg, fsa, semiring, make_symbol, algorithm):
+    if algorithm == 'earley':
+        parser = Earley(cfg, fsa, semiring=semiring, make_symbol=make_symbol)
+    elif algorithm == 'nederhof':
+        parser = Nederhof(cfg, fsa, semiring=semiring, make_symbol=make_symbol)
+    elif algorithm == 'cky':
+        parser = CKY(cfg, fsa, semiring=semiring, make_symbol=make_symbol)
+    else:
+        raise NotImplementedError("I don't know this intersection algorithm: %s" % algorithm)
+    return parser
 
 
 def main(args):
@@ -32,33 +44,24 @@ def main(args):
         logging.basicConfig(level=logging.INFO, format='%(levelname)s %(message)s')
 
     semiring = SumTimes
+
     logging.info('Loading grammar...')
-    if args.log:
-        cfg = read_grammar(args.grammar, transform=semiring.from_real)
-    else:
-        cfg = read_grammar(args.grammar)
+    cfg = load_grammar(args.grammar, args.grammarfmt, args.log)
     logging.info('Done: rules=%d', len(cfg))
 
     for input_str in args.input:
-        fsa = make_linear_fsa(input_str, semiring)
-
-        if args.pass_through:
-            for word in fsa.itersymbols():
-                if not cfg.is_terminal(word):
-                    cfg.add(CFGProduction(Nonterminal(args.default_symbol), [word], semiring.one))
-                    logging.debug('Passthrough rule for %s', word)
-        make_symbol = make_flat_symbol
-        if args.intersection == 'earley':
-            parser = Earley(cfg, fsa, semiring=semiring, make_symbol=make_symbol)
-        elif args.intersection == 'nederhof':
-            parser = Nederhof(cfg, fsa, semiring=semiring, make_symbol=make_symbol)
-        else: 
-            parser = CKY(cfg, fsa, semiring=semiring, make_symbol=make_symbol)
-
+        # get an input automaton
+        sentence, extra_rules = make_sentence(input_str, semiring, cfg.lexicon, args.unkmodel, args.default_symbol)
+        cfg.update(extra_rules)
+        # get a parser
+        parser = get_parser(cfg, sentence.fsa, semiring, make_flat_symbol, args.intersection)
+        # make a forest
         forest = parser.do(root=Nonterminal(args.start), goal=Nonterminal(args.goal))
+
         if not forest:
             logging.error('NO PARSE FOUND')
             continue
+
         topsorted = list(chain(*topsort_cfg(forest)))
         Ic = inside(forest, topsorted, Count, omega=lambda e: 1)
         print '# FOREST: edges=%d nodes=%d paths=%d' % (len(forest), forest.n_nonterminals(), Ic[topsorted[-1]])
@@ -102,8 +105,8 @@ def argparser():
     parser.formatter_class = argparse.ArgumentDefaultsHelpFormatter
 
     parser.add_argument('grammar',
-            type=argparse.FileType('r'), 
-            help='CFG rules')
+            type=str,
+            help='grammar file (or prefix to grammar files)')
     parser.add_argument('input', nargs='?', 
             type=argparse.FileType('r'), default=sys.stdin,
             help='input corpus (one sentence per line)')
@@ -113,18 +116,23 @@ def argparser():
     parser.add_argument('--log',
             action='store_true', 
             help='apply the log transform to the grammar (by default we assume this has already been done)')
+    parser.add_argument('--grammarfmt',
+            type=str, default='bar',
+            choices=['bar', 'discodop'],
+            help="grammar format ('bar' is the native cdec-inspired format; if 'discodop' the grammar path is interpreted as a prefix)")
     parser.add_argument('--intersection', 
             type=str, default='nederhof', choices=['nederhof', 'cky', 'earley'],
             help='default goal symbol (root after intersection)')
     parser.add_argument('--forest', 
             action='store_true',
             help='dump forest (chart)')
-    parser.add_argument('--pass-through', 
-            action='store_true',
-            help='add pass through rules for unknown terminals')
+    parser.add_argument('--unkmodel',
+            type=str, default=None,
+            choices=['passthrough', 'stfdbase', 'stfd4', 'stfd6'],
+            help="unknown word model")
     parser.add_argument('--default-symbol', 
             type=str, default='X',
-            help='default nonterminal (use for pass through rules)')
+            help='default nonterminal (use for pass-through rules)')
     parser.add_argument('--start', 
             type=str, default='S',
             help='default start symbol')

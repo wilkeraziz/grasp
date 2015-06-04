@@ -2,14 +2,13 @@
 @author wilkeraziz
 """
 
-from numpy import log
-from itertools import ifilter
 import ply.lex as lex
 import ply.yacc as yacc
 
 from symbol import Terminal, Nonterminal
 from rule import CFGProduction
-from cfg import CFG 
+from cfg import CFG
+from utils import smart_open
 
 
 _EXAMPLE_GRAMMAR_ = """
@@ -17,6 +16,7 @@ _EXAMPLE_GRAMMAR_ = """
 [X] ||| [X] [X] ||| 0.5
 [X] ||| '1' ||| 0.25
 [X] ||| '2' ||| 0.25
+[NP-SBJ|<UCP,,>] ||| 'x' ||| 1.0
 """
 
 class CFGLex(object):
@@ -41,7 +41,7 @@ class CFGLex(object):
         return t
 
     def t_NONTERMINAL(self, t):
-        r"\[([^ \[\]]+)\]"
+        r"\[([^ ]+)\]"
         t.value = Nonterminal(t.value[1:-1])
         return t
 
@@ -78,7 +78,7 @@ class CFGYacc(object):
     >>> _ = parser.build(debug=False, write_tables=False)
     >>> G = [r for r in parser.parse(_EXAMPLE_GRAMMAR_.splitlines())]
     >>> len(G)
-    4
+    5
     >>> G[0]
     CFGProduction(Nonterminal('S'), (Terminal('<s>'), Nonterminal('X'), Terminal('<s>')), 1.0)
     >>> str(G[0])
@@ -133,11 +133,11 @@ class CFGYacc(object):
             yield production
 
 
-def read_grammar(istream, transform=None):
+def read_grammar(path, transform=None):
     """Read a grammar parsed with CFGYacc from an input stream"""
     parser = CFGYacc(transform=transform)
     parser.build(debug=False, write_tables=False)
-    return CFG(parser.parse(istream))
+    return CFG(parser.parse(smart_open(path)))
 
 if __name__ == '__main__':
     import sys

@@ -140,12 +140,12 @@ class WDFSA(object):
         return '\n'.join(lines)
 
 
-def make_linear_fsa(input_str, semiring, terminal_constructor=Terminal):
+def make_linear_fsa(sentence, semiring, terminal_constructor=Terminal):
     """
     Return a linea (unweighted) FSA representing an input sentence.
 
-    :param input_str:
-        a (string) sentence.
+    :param sentence:
+        a string or a sequence of tokens
     :param semiring:
         how we perform operations.
     :param terminal_constructor:
@@ -168,7 +168,10 @@ def make_linear_fsa(input_str, semiring, terminal_constructor=Terminal):
     """
 
     wfsa = WDFSA()
-    tokens = input_str.split()
+    if type(sentence) is str:
+        tokens = sentence.split()
+    else:
+        tokens = list(sentence)
     for i, token in enumerate(tokens):
         wfsa.add_arc(i, i + 1, terminal_constructor(token), semiring.one)
     wfsa.make_initial(0)

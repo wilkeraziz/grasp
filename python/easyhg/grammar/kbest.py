@@ -141,8 +141,8 @@ class KBest(object):
         self._uniqueness = uniqueness
         
         # node derivation states
-        # one state variable for each hode
-        self._nds = defaultdict(None, ((v, NodeDerivationState(uniqueness)) for v in forest.itersymbols(terminals=True, nonterminals=True)))
+        # one state variable for each node
+        self._nds = defaultdict(None, ((v, NodeDerivationState(uniqueness)) for v in forest.itersymbols()))
 
         # I use the following lambda functions to keep the terminology compatible with that of hypergraphs
         self.weight = lambda r: r.weight  # abstracts the weight of an edge (a rule's weight)
