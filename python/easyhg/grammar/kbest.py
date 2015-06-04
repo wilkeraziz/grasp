@@ -112,7 +112,7 @@ class NodeDerivationState(object):
     def is_unique(self, projection):
         """uniqueness test for the given projection"""
         if self._projections is None:  # we do not care about uniqueness
-            return true
+            return True
         else:
             n = len(self._projections)
             self._projections.add(tuple(projection))

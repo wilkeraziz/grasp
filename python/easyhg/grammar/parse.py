@@ -16,7 +16,7 @@ from cfg import CFG, topsort_cfg
 from earley import Earley
 from cky import CKY
 from nederhof import Nederhof
-from utils import make_nltk_tree
+from utils import make_nltk_tree, inlinetree
 from semiring import Prob, SumTimes, MaxTimes, Count
 from inference import inside, sample, optimise, total_weight
 from kbest import KBest
@@ -37,11 +37,12 @@ def get_parser(cfg, fsa, semiring, make_symbol, algorithm):
     return parser
 
 
+
 def main(args):
     if args.verbose:
-        logging.basicConfig(level=logging.DEBUG, format='%(levelname)s %(message)s')
+        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
     else:
-        logging.basicConfig(level=logging.INFO, format='%(levelname)s %(message)s')
+        logging.basicConfig(level=logging.INFO, format='%(asctime)-15s %(levelname)s %(message)s')
 
     semiring = SumTimes
 
@@ -62,38 +63,45 @@ def main(args):
             logging.error('NO PARSE FOUND')
             continue
 
+        logging.info('Done! Top-sorting...')
         topsorted = list(chain(*topsort_cfg(forest)))
+        logging.info('Done! Couting...')
         Ic = inside(forest, topsorted, Count, omega=lambda e: 1)
+        logging.info('Done! Forest: edges=%d nodes=%d paths=%d', len(forest), forest.n_nonterminals(), Ic[topsorted[-1]])
+
         print '# FOREST: edges=%d nodes=%d paths=%d' % (len(forest), forest.n_nonterminals(), Ic[topsorted[-1]])
         if args.forest:
             print forest
             print
         if args.samples > 0:
-            print '# SAMPLE: size=%d' % args.samples
+            logging.info('Inside...')
             Iv = inside(forest, topsorted, semiring)
+            logging.info('Done! Sampling...')
             count = Counter(sample(forest, topsorted[-1], semiring, Iv=Iv, N=args.samples))
+            print '# SAMPLE: size=%d' % args.samples
             for d, n in reversed(count.most_common()):
                 t = make_nltk_tree(d)
                 p = total_weight(d, SumTimes, Iv[topsorted[-1]])
-                print '%d (emp=%f) (exact=%f) %s' % (n, float(n)/args.samples, semiring.as_real(p), t)
-                print
+                print '# n={0} emp={1} exact={2}\n{3}'.format(n, float(n)/args.samples, semiring.as_real(p), inlinetree(t))
+            print
         if args.kbest == 1:
-            print '# VITERBI'
+            logging.info('Inside...')
             Iv = inside(forest, topsorted, MaxTimes)
+            logging.info('Done! Viterbi...')
             d = optimise(forest, topsorted[-1], MaxTimes, Iv=Iv)
             t = make_nltk_tree(d)
-            print '%d (%f) %s' % (1, Iv[topsorted[-1]], t)
+            print '# VITERBI'
+            print '# k={0} score={1}\n{2}'.format(1, Iv[topsorted[-1]], inlinetree(t))
             print
         if args.kbest > 1:
-            print '# K-BEST: size=%d' % args.kbest
+            logging.info('K-best...')
             kbest = KBest(forest, topsorted[-1], args.kbest, MaxTimes, traversal=projection.string, uniqueness=False).do()
+            print '# K-BEST: size=%d' % args.kbest
             for k, d in enumerate(kbest.iterderivations()):
                 t = make_nltk_tree(d)
-                print '%d (%f) %s' % (k + 1, total_weight(d, MaxTimes), t)
-                print
-
-
-
+                print '# k={0} score={1}\n{2}'.format(k + 1, total_weight(d, MaxTimes), inlinetree(t))
+            print
+        logging.info('Finished!')
 
 
 def argparser():

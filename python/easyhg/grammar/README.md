@@ -45,3 +45,6 @@ For now it only implements the slice sampler proposed by Blunsom and Cohn (2010)
 I do intend to add 2 more methods, namely, the Gibbs sampler in (Bouchard-Cote et al, 2009) and a new importance sampler.
 
 For exact sampling from the forest check `parse.py` with the option `--samples {n}`.
+
+
+        time echo "these parts are provided to conduct rainwater" | python mcmcparse.py /Users/waziz/workspace/github/pcfg-sampling/examples/reordering/en-ja.pcfg --intersection nederhof --pass-through --log --default-symbol UNK --start ROOT -v --samples 10000 --beta-a 0.1 1.4 --beta-b 0.4 1.2 --batch 100 > x
