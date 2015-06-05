@@ -46,14 +46,14 @@ def cmd_grammar(group):
     group.add_argument('--grammarfmt',
             type=str, default='bar', metavar='FMT',
             choices=['bar', 'discodop'],
-            help="grammar format ('bar' is the native cdec-inspired format; if 'discodop' the grammar path is interpreted as a prefix)")
+            help="grammar format: bar, discodop")
 
 
 def cmd_parser(group):
     group.add_argument('--intersection',
             type=str, default='nederhof', choices=['nederhof', 'cky', 'earley'],
             metavar='ALG',
-            help='default goal symbol (root after intersection)')
+            help='intersection algorithms: nederhof, cky, earley')
     group.add_argument('--goal',
             type=str, default='GOAL', metavar='LABEL',
             help='default goal symbol (root after intersection)')
@@ -63,7 +63,7 @@ def cmd_tagger(group):
     group.add_argument('--unkmodel',
             type=str, default=None, metavar='MODEL',
             choices=['passthrough', 'stfdbase', 'stfd4', 'stfd6'],
-            help="unknown word model")
+            help="unknown word model: passthrough, stfdbase, stfd4, stfd6")
     group.add_argument('--default-symbol',
             type=str, default='X', metavar='LABEL',
             help='default nonterminal (use for pass-through rules)')
@@ -98,7 +98,7 @@ def cmd_sampling(group):
     group.add_argument('--sampler',
             type=str, default='ancestral', choices=['ancestral', 'slice'],
             metavar='ALG',
-            help='sampling algorithm)')
+            help='sampling algorithm: ancestral, slice')
 
 def cmd_slice(group):
     group.add_argument('--burn',
@@ -115,7 +115,7 @@ def cmd_slice(group):
             help="Beta's shape parameter before and after we have something to condition on")
     group.add_argument('--heuristic',
             type=str, choices=['empdist', 'uniform'], metavar='STRATEGY',
-            help='pick a heuristic for the first slice')
+            help='pick a heuristic for the first slice: empdist, uniform')
     group.add_argument('--heuristic-empdist-alpha',
             type=float, default=1.0, metavar='FLOAT',
             help='the heuristic "empdist" can peak/flatten the distribution using this parameter')
