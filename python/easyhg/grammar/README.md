@@ -2,15 +2,26 @@
 
 
 `parse.py` is the main program, you can use `--help` to get a complete list of options.
+This is an example run:
 
-This gives an idea of the basic command:
+    
+        echo 'I was given a million dollars !!!' | python parse.py --log --grammarfmt discodop ../../tests/ptb/wsj00 --unkmodel stfd6 --count -v --samples 1000
 
 
-      echo '1 2 3 4' | python parse.py ../../example/binary --pass-through
+For more details about the options, check the instructions below.
 
+## Grammar
 
-There are 3 algorithms for intersection between wCFGs and wFSAs.
-In this toolkit, such algorithms are used for monolingual parsing:
+* By defaul we expect grammars to have a single start symbol (S), in case you want to specify a different symbol, use `--start LABEL`.
+
+* We expect grammar files to contain log probabilities, in case you have a file with standard probabilities use the switch `--log` to tell the parser to apply the log transform.
+
+* We support 2 grammar formats, one inspired by Moses and cdec (which we call 'bar'), and the format produced by [discodop](https://github.com/andreasvc/disco-dop), you can switch between formats using `--grammarfmt FMT`. The default format is 'bar', in which case the grammar is expected to be in a single file. Discodop splits the grammar into two files, namely, a set of rules and the lexicon. If you are using discodop's grammars, then all you need to provide is the prefix to the grammar, the parser will complete it with '.rules.gz' and '.lex.gz'.
+
+## Parser
+
+In this toolkit, parsing is done using more general algorithms for intersection between wCFGs and wFSA:
+You will find implementations of 3 such algorithms:
 
 * `--intersection nederhof` is CKY+ as in (Nederhof and Satta, 2003)
 * `--intersection cky` is CKY+ as in (Dyer, 2010)
@@ -18,40 +29,65 @@ In this toolkit, such algorithms are used for monolingual parsing:
 
 The advantage of using such algorithms is that support to wFSA input is straightforward.
 
-You can use different inference algorithms:
+You might want to choose the label of the goal node after intersection `--goal LABEL`
 
-* Sampling `--samples 1000`
-* Viterbi `--kbest 1`
-* K-best `--kbest 100`
+## POS tagger
 
-I am soon going to implement a few decision rules on top of sampling (e.g. `--map` and `--mbr {metric}`).
+You might want the parser to deal with unknown words in special ways. We have implemented the switch `--unkmodel MODEL`, where model takes one of the following values:
 
-I might also add support to loss-augmented and loss-diminished decoding.
+* a `passthrough` model, here we simply add a dummy rule which produces the unknown word with probability 1.0, to configure the LHS of this rule use `--default-symbol LABEL`;
+* `stfdbase`, `stfd4` and `stfd6` are models used by the Stanford parser, our implementation is a verbatim copy from discodop's;
 
-I might add support to some simple pruning strategy.
+## Info
 
-You can also use grammars trained by [discodop](https://github.com/andreasvc/disco-dop)
+You might be interested in some specific information about the parser, the grammar, the chart, etc. Here you find some options.
 
-    
-        echo 'I was given a million dollars !!!' | python parse.py --log --grammarfmt discodop /Users/waziz/workspace/ptb/WSJ/ORIGINAL_READABLE_CLEANED/bintrees/sample/pcfg --unkmodel stfd6 --count --intersection nederhof -v --samples 1000
+* `--forest` dumps the forest as a grammar (in 'bar' format)
+* `--report-top` tries to top-sort the grammar in order to report its start symbols and exit
+* `--count` reports the number of derivations in the forest (note that this requires running the inside algorithm)
+* `--verbose` increases the verbosity level of the parser
+
+## Viterbi
+
+This parser can enumerate derivations sorted by weight.
+
+* `--kbest K` specifies the number of derivations, use K=1 to retrieve the Viterbi derivation
+
+## Sampling
+
+You might want to sample from the distribution defined by the forest.
+
+* `--samples N` draws N random samples from the forest
+* `--sampler ALG` specifies a sampling algorithm
+
+Use `--sampler ancestral` (which is also the default) to sample exactly from the forest.
+
+### Slice sampling
+
+For large grammars, slice sampling (Blunsom and Cohn, 2010) might be a better idea `--sampler slice`.
+
+* `--burn N` burns the first N samples
+* `--batch K` samples K derivations per iteration (defaults to 1)
+* `--beta-a FIRST OTHERS` specify the first parameter of the Beta distribution BEFORE and AFTER the first derivation is found
+* `--beta-b FIRST OTHERS` specify the second parameter of the Beta distribution BEFORE and AFTER the first derivation is found
+* `--heuristic STRATEGY` specifies a heuristic to find an initial derivation
+    * `empdist` samples slice variables from the conditional p(rhs|lhs)
+    * `uniform` samples slice variables uniformly within an interval (see below) 
+* `--heuristic-empdist-alpha FLOAT` peaks the distribution for the heuristic `empdist`
+* `--heuristic-uniform-params LOWER UPPER` the interval for the heuristic `uniform` specified in terms of percentiles of the condition p(rhs|lhs)
+
+The intuition behind the heuristics is to heavily prune the number of rules for each LHS symbol. 
+These heuristics turned out to be quite innefective either prunning to heavily to the point that no parse can be found or prunning too little to the point that the first iteration is too slow (and might still result in a forest without any parses).
+
+For now slice sampling only supports `--intersection nederhof`.
 
 
+## Ongoing work
 
-## MCMC monolingual parsing
+* better heuristics for the initial derivation in slice sampling
+* decision rules such as `--map` and `--mbr METRIC`
+* loss-augmented and loss-diminished decoding
+* a simple pruning strategy for Viterbi
+* Gibbs sampler (Bouchard-Cote et al, 2009).
+* Importance sampler (Aziz, 2015)
 
-`mcmcparse.py` implements an MCMC approach to parsing. The difference between this and `parse.py` is that here a complete chart is (probably) never instantiated.
-
-The basic command looks like the following:
-
-    echo '1 2 3 4' | python mcmcparse.py ../../example/binary --pass-through --beta-a 0.5 --samples 1000
-
-
-For now it only supports `--intersection nederhof`, but `--intersection earley` is on its way.
-
-For now it only implements the slice sampler proposed by Blunsom and Cohn (2010).
-I do intend to add 2 more methods, namely, the Gibbs sampler in (Bouchard-Cote et al, 2009) and a new importance sampler.
-
-For exact sampling from the forest check `parse.py` with the option `--samples {n}`.
-
-
-        time echo "these parts are provided to conduct rainwater" | python mcmcparse.py /Users/waziz/workspace/github/pcfg-sampling/examples/reordering/en-ja.pcfg --intersection nederhof --pass-through --log --default-symbol UNK --start ROOT -v --samples 10000 --beta-a 0.1 1.4 --beta-b 0.4 1.2 --batch 100 > x

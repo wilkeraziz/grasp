@@ -26,44 +26,47 @@ def argparser():
 
     cmd_grammar(parser.add_argument_group('Grammar'))
     cmd_parser(parser.add_argument_group('Parser'))
-    cmd_tagging(parser.add_argument_group('POS tagger'))
+    cmd_tagger(parser.add_argument_group('POS tagger'))
     cmd_info(parser.add_argument_group('Info'))
     cmd_viterbi(parser.add_argument_group('Viterbi'))
-    cmd_ancestral(parser.add_argument_group('Sampling'))
+    cmd_sampling(parser.add_argument_group('Sampling'))
     cmd_slice(parser.add_argument_group('Slice sampling'))
 
     return parser
 
 
-def cmd_parser(group):
-    group.add_argument('--intersection',
-            type=str, default='nederhof', choices=['nederhof', 'cky', 'earley'],
-            help='default goal symbol (root after intersection)')
-    group.add_argument('--goal',
-            type=str, default='GOAL',
-            help='default goal symbol (root after intersection)')
-
-
-def cmd_tagging(group):
-    group.add_argument('--unkmodel',
-            type=str, default=None,
-            choices=['passthrough', 'stfdbase', 'stfd4', 'stfd6'],
-            help="unknown word model")
-    group.add_argument('--default-symbol',
-            type=str, default='X',
-            help='default nonterminal (use for pass-through rules)')
-
 def cmd_grammar(group):
     group.add_argument('--start',
             type=str, default='S',
+            metavar='LABEL',
             help='default start symbol')
     group.add_argument('--log',
             action='store_true',
             help='apply the log transform to the grammar (by default we assume this has already been done)')
     group.add_argument('--grammarfmt',
-            type=str, default='bar',
+            type=str, default='bar', metavar='FMT',
             choices=['bar', 'discodop'],
             help="grammar format ('bar' is the native cdec-inspired format; if 'discodop' the grammar path is interpreted as a prefix)")
+
+
+def cmd_parser(group):
+    group.add_argument('--intersection',
+            type=str, default='nederhof', choices=['nederhof', 'cky', 'earley'],
+            metavar='ALG',
+            help='default goal symbol (root after intersection)')
+    group.add_argument('--goal',
+            type=str, default='GOAL', metavar='LABEL',
+            help='default goal symbol (root after intersection)')
+
+
+def cmd_tagger(group):
+    group.add_argument('--unkmodel',
+            type=str, default=None, metavar='MODEL',
+            choices=['passthrough', 'stfdbase', 'stfd4', 'stfd6'],
+            help="unknown word model")
+    group.add_argument('--default-symbol',
+            type=str, default='X', metavar='LABEL',
+            help='default nonterminal (use for pass-through rules)')
 
 
 def cmd_info(group):
@@ -84,39 +87,40 @@ def cmd_info(group):
 
 def cmd_viterbi(group):
     group.add_argument('--kbest',
-        type=int, default=0,
+        type=int, default=0, metavar='K',
         help='number of top scoring solutions')
 
 
-def cmd_ancestral(group):
+def cmd_sampling(group):
     group.add_argument('--samples',
-            type=int, default=0,
+            type=int, default=0, metavar='N',
             help='number of samples')
     group.add_argument('--sampler',
             type=str, default='ancestral', choices=['ancestral', 'slice'],
+            metavar='ALG',
             help='sampling algorithm)')
 
 def cmd_slice(group):
     group.add_argument('--burn',
-            type=int, default=0,
+            type=int, default=0, metavar='N',
             help='number of initial samples to be discarded (burn-in time) - but also consider --restart')
     group.add_argument('--batch',
-            type=int, default=1,
+            type=int, default=1, metavar='K',
             help='number of samples per slice')
     group.add_argument('--beta-a',
-            type=float, nargs=2, default=[0.1, 0.3],
+            type=float, nargs=2, default=[0.1, 0.3], metavar='BEFORE AFTER',
             help="Beta's shape parameter before and after we have something to condition on")
     group.add_argument('--beta-b',
-            type=float, nargs=2, default=[1.0, 1.0],
+            type=float, nargs=2, default=[1.0, 1.0], metavar='BEFORE AFTER',
             help="Beta's shape parameter before and after we have something to condition on")
     group.add_argument('--heuristic',
-            type=str, choices=['empdist', 'uniform'],
+            type=str, choices=['empdist', 'uniform'], metavar='STRATEGY',
             help='pick a heuristic for the first slice')
     group.add_argument('--heuristic-empdist-alpha',
-            type=float, default=1.0,
+            type=float, default=1.0, metavar='FLOAT',
             help='the heuristic "empdist" can peak/flatten the distribution using this parameter')
     group.add_argument('--heuristic-uniform-params',
-            type=float, nargs=2, default=[0, 100],
+            type=float, nargs=2, default=[0, 100], metavar='LOWER UPPER',
             help='the lower and upper percentiles for heuristic "uniform"')
 
 
