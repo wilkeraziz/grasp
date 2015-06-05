@@ -30,6 +30,13 @@ I might also add support to loss-augmented and loss-diminished decoding.
 
 I might add support to some simple pruning strategy.
 
+You can also use grammars trained by [discodop](https://github.com/andreasvc/disco-dop)
+
+    
+        echo 'I was given a million dollars !!!' | python parse.py --log --grammarfmt discodop /Users/waziz/workspace/ptb/WSJ/ORIGINAL_READABLE_CLEANED/bintrees/sample/pcfg --unkmodel stfd6 --count --intersection nederhof -v --samples 1000
+
+
+
 ## MCMC monolingual parsing
 
 `mcmcparse.py` implements an MCMC approach to parsing. The difference between this and `parse.py` is that here a complete chart is (probably) never instantiated.

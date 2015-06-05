@@ -125,7 +125,7 @@ if __name__ == '__main__':
     from ply_cfg import read_grammar
     from cfg import CFG, topsort_cfg
     from rule import CFGProduction
-    from slicesampling import SliceVariables
+    from slicevars import SliceVariables
     from inference import inside, sample, normalised_edge_inside
     from itertools import chain
     from utils import make_nltk_tree

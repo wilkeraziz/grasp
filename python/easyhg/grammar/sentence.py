@@ -39,15 +39,15 @@ class Sentence(object):
 
 
 def make_sentence(input_str, semiring, lexicon, unkmodel=None, default_symbol=DEFAULT_SYMBOL):
-    words = [Terminal(t) for t in input_str.split()]
+    words = input_str.split()
     signatures = list(words)
     extra_rules = []
-    str_lexicon = None
+    str_lexicon = [t.surface for t in lexicon]
     for i, word in enumerate(words):
-        if word not in lexicon and unkmodel is not None:
+        if word not in str_lexicon and unkmodel is not None:
             # special treatment for unknown words
                 if unkmodel == PASSTHROUGH:
-                    extra_rules.append(CFGProduction(Nonterminal(default_symbol), [word], semiring.one))
+                    extra_rules.append(CFGProduction(Nonterminal(default_symbol), [Terminal(word)], semiring.one))
                     logging.debug('Passthrough rule for %s: %s', word, extra_rules[-1])
                 else:
                     if unkmodel == STFDBASE:
@@ -60,11 +60,12 @@ def make_sentence(input_str, semiring, lexicon, unkmodel=None, default_symbol=DE
                         raise NotImplementedError('I do not know this model: %s' % unkmodel)
                     if str_lexicon is None:
                         str_lexicon = set(t.surface for t in lexicon)
-                    signatures[i] = Terminal(get_signature(word.surface, i, str_lexicon))
+                    signatures[i] = get_signature(word, i, str_lexicon)
+                    logging.debug('Unknown word model (%s): i=%d word=%s signature=%s', unkmodel, i, word, signatures[i])
 
     fsa = WDFSA()
     for i, word in enumerate(signatures):
-        fsa.add_arc(i, i + 1, word, semiring.one)
+        fsa.add_arc(i, i + 1, Terminal(word), semiring.one)
     fsa.make_initial(0)
     fsa.make_final(len(signatures))
     return Sentence(words, signatures, fsa), extra_rules

@@ -56,7 +56,7 @@ class ActiveQueue(object):
 
     def pop(self):
         """Returns the next active item"""
-        return self._active.popleft()
+        return self._active.pop()  # we see it as a stack (last in, first out)
 
     def add(self, item):
         """Add an active item if possible"""

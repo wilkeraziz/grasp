@@ -1,149 +1,109 @@
 """
-This implements slice variables to be used in MCMC for CFGs as described in (Blunsom and Cohn, 2010).
+This module is an interface for parsing as intersection.
+One can choose from all available implementations.
 
-@author wilkeraziz
+:Authors: - Wilker Aziz
 """
 
-import numpy as np
 import logging
-from scipy.stats import beta
+import argparse
 from collections import defaultdict
-
-class SliceVariables(object):
-    """
-    Slice variables are indexed by nodes (typically chart cells).
-    They are resampled on the basis of a conditioning derivation (which is given) or on the basis of a Beta distribution (whose parameters are given).
-
-    This follows the idea in (Blunsom and Cohn, 2010):
-
-        u_s ~ p(u_s|d) = uniform(0, theta_{r_s}) if r_s in d else beta(u_s; a, b)
-        where theta_{r_s} is the parameter associated with a rule in d whose LHS corresponds to the index s.
-
-    """
-
-    def __init__(self, conditions={}, a=1, b=1, heuristic=None, mask=lambda s: s[0]):
-        """
-        :param conditions: 
-            dict of conditioning parameters, i.e., maps an index s to a parameter theta_{r_s}.
-        :param a: 
-            first shape parameter of the Beta distribution.
-        :param b: 
-            second shape parameter of the Beta distribution.
-        :param preconditions:
-            heuristic preconditions that apply to items which are equivalent under a certain mask.
-        :param mask:
-            a function which takes an item's signature and return a key in preconditions.
-        """
-        self._conditions = defaultdict(None, conditions)
-        self._a = a
-        self._b = b
-        self._u = defaultdict(None)
-        self._heuristic = heuristic
-        self._mask = mask
-
-    @property
-    def conditions(self):
-        return self._conditions
-
-    @property
-    def a(self):
-        return self._a
-
-    @property
-    def b(self):
-        return self._b
+from symbol import Nonterminal
+from semiring import SumTimes, Count
+from cfg import topsort_cfg
+from slicevars import SliceVariables
+from slicednederhof import Nederhof
+from inference import inside, sample
+from itertools import chain
+from utils import make_nltk_tree, inlinetree
+from collections import Counter
+from symbol import make_recursive_symbol
+import heuristic
+from reader import load_grammar
+from sentence import make_sentence
 
 
-    def pr(self, s, theta, slice_only=True):
-        """returns p(r_s|u) where lhs(r) == s and theta = p(rhs(r)|s)"""
-        u_s = self[s]
-        if u_s < theta:
-            return 1.0 / beta.pdf(u_s, self._a, self._b) #(np.power(u_s, self._a - 1) * np.power(1 - u_s, self._b - 1))
-        elif slice_only:
-            raise ValueError('I received a variable outside the slice: s=%s theta=%s u_s=%s' % (s, theta, u_s))
+def make_conditions(d, semiring):
+    conditions = {r.lhs.label: semiring.as_real(r.weight) for r in d}
+    return conditions
+
+
+def make_batch_conditions(D, semiring):
+    if len(D) == 1:
+        d = D[0]
+        conditions = {r.lhs.label: semiring.as_real(r.weight) for r in d}
+    else:
+        conditions = defaultdict(set)
+        for d in D:
+            [conditions[r.lhs.label].add(semiring.as_real(r.weight)) for r in d]
+        conditions = {s: min(thetas) for s, thetas in conditions.iteritems()}
+    return conditions
+
+
+def make_heuristic(args, cfg, semiring):
+    if not args.heuristic:
+        return None
+    if args.heuristic == 'empdist':
+        return heuristic.empdist(cfg, semiring, args.heuristic_empdist_alpha)
+    elif args.heuristic == 'uniform':
+        return heuristic.uniform(cfg, semiring, args.heuristic_uniform_params[0], args.heuristic_uniform_params[1])
+    else:
+        raise ValueError('Unknown heuristic')
+
+
+def slice_sampling(cfg, sentence, semiring, args):
+    # get a heuristic
+    heuristic = make_heuristic(args, cfg, semiring)
+    # configure slice variables
+    u = SliceVariables({}, a=args.beta_a[0], b=args.beta_b[0], heuristic=heuristic)
+    samples = []
+    goal = Nonterminal(args.goal)
+    checkpoint = 100
+    while len(samples) < args.samples + args.burn:
+        parser = Nederhof(cfg, sentence.fsa, semiring=semiring, slice_variables=u, make_symbol=make_recursive_symbol)
+        logging.debug('Parsing...')
+        forest = parser.do(root=Nonterminal(args.start), goal=goal)
+        if not forest:
+            logging.debug('NO PARSE FOUND')
+            u.reset()  # reset the slice variables (keeping conditions unchanged if any)
+            continue
+        topsorted = list(chain(*topsort_cfg(forest)))
+
+        if args.count:
+            Ic = inside(forest, topsorted, Count, omega=lambda e: Count.one)
+            logging.debug('Done! Forest: %d edges, %d nodes and %d paths' % (len(forest), forest.n_nonterminals(), Ic[topsorted[-1]]))
         else:
-            return 0.0
+            logging.debug('Done! Forest: %d edges, %d nodes' % (len(forest), forest.n_nonterminals()))
 
-    def logpr(self, s, theta, slice_only=True):
-        """returns p(r_s|u) where lhs(r) == s and theta = p(rhs(r)|s)"""
-        u_s = self[s]
-        if theta > u_s:
-            return - beta.logpdf(u_s, self._a, self._b)
-        elif slice_only:
-            raise ValueError('I received a variable outside the slice: s=%s theta=%s u_s=%s' % (s, theta, u_s))
-        else:
-            return 0.0
+        uniformdist = parser.reweight(forest)
+        Iv = inside(forest, topsorted, semiring, omega=lambda e: uniformdist[e])
+        logging.debug('Sampling...')
+        D = list(sample(forest, topsorted[-1], semiring, Iv=Iv, N=args.batch, omega=lambda e: uniformdist[e]))
+        assert D, 'The slice should never be empty'
+        u.reset(make_batch_conditions(D, semiring), a=args.beta_a[1], b=args.beta_b[1])
+        samples.extend(D)
+        if len(samples) > checkpoint:
+            logging.info('sampling... %d/%d', len(samples), args.samples + args.burn)
+            checkpoint =  len(samples) + 100
+
+    count = Counter(samples[args.burn:])
+    for d, n in reversed(count.most_common()):
+        t = make_nltk_tree(d)
+        print '# count=%d prob=%f\n%s' % (n, float(n)/args.samples, inlinetree(t))
+    print
 
 
-    def reset(self, conditions=None, a=None, b=None):
-        self._u = defaultdict(None)
-        if conditions is not None:
-            self._conditions = defaultdict(None, conditions)
-            self._heuristic = None  # as soon as we get real conditions, heuristics are discarded for good
-        if a is not None:
-            self._a = a
-        if b is not None:
-            self._b = b
+def main(args):
 
-    def __getitem__(self, s):
-        """
-        Returns u_s sampling it if necessary.
+    semiring = SumTimes
 
-        >>> d = {(0, 'X', 1): 0.6, (1, 'X', 2): 0.5, (0, 'X', 2): 0.5, (2, 'X', 3): 0.3, (3, 'X', 4):0.7, (2, 'X', 4):0.9, (0, 'S', 4): 1.0}
-        >>> u = SliceVariables(d, 5, 1)
-        >>> u[(0, 'X', 2)] < d[(0,'X',2)]
-        True
-        >>> u[(2, 'X', 4)] < d[(2,'X',4)]
-        True
-        >>> u[(0, 'S', 4)] < d[(0,'S',4)]
-        True
-        """
+    logging.info('Loading grammar...')
+    cfg = load_grammar(args.grammar, args.grammarfmt, args.log)
+    logging.info('Done: rules=%d', len(cfg))
 
-        u_s = self._u.get(s, None)
-        if u_s is None:  # the slice variable has not been sampled yet
-            theta_r_s = self._conditions.get(s, None)  # so we check if we have observed real conditions
-            if theta_r_s is None: # there is no r in d for which lhs(r) == s
-                u_s = np.random.beta(self._a, self._b)  # in this case we sample u_s from a beta
-            else:  # theta_r_s is the parameter associated with r in d for which lhs(r) == s
-                u_s = np.random.uniform(0, theta_r_s)  # in this case we sample uniformly from [0, theta_r_s)
-            self._u[s] = u_s
-        return u_s
+    for input_str in args.input:
+        # get an input automaton
+        sentence, extra_rules = make_sentence(input_str, semiring, cfg.lexicon, args.unkmodel, args.default_symbol)
+        cfg.update(extra_rules)
+        slice_sampling(cfg, sentence, semiring, args)
 
-    def __getitem__2(self, s):
-        """
-        Returns u_s sampling it if necessary.
-
-        >>> d = {(0, 'X', 1): 0.6, (1, 'X', 2): 0.5, (0, 'X', 2): 0.5, (2, 'X', 3): 0.3, (3, 'X', 4):0.7, (2, 'X', 4):0.9, (0, 'S', 4): 1.0}
-        >>> u = SliceVariables(d, 5, 1)
-        >>> u[(0, 'X', 2)] < d[(0,'X',2)]
-        True
-        >>> u[(2, 'X', 4)] < d[(2,'X',4)]
-        True
-        >>> u[(0, 'S', 4)] < d[(0,'S',4)]
-        True
-        """
-
-        u_s = self._u.get(s, None)
-        if u_s is None:  # the slice variable has not been sampled yet
-            # u_s will depend on whether or not we are conditioning on some theta_r_s
-            theta_r_s = None
-            if self._heuristic is None:  # we are not employing heuristics
-                theta_r_s = self._conditions.get(s, None)  # so we check if we have observed real conditions 
-            else:  # we might sample conditions from some heuristic distribution
-                dist = self._heuristic.get(self._mask(s), None)
-                if dist is None:  # no known heuristic for this cell
-                    theta_r_s = None
-                else:
-                    theta_r_s = dist.sample()  # draw a condition 
-            if theta_r_s is None: # there is no r in d for which lhs(r) == s
-                u_s = np.random.beta(self._a, self._b)  # in this case we sample u_s from a beta
-            else:  # theta_r_s is the parameter associated with r in d for which lhs(r) == s
-                u_s = np.random.uniform(0, theta_r_s)  # in this case we sample uniformly from [0, theta_r_s)
-            self._u[s] = u_s
-        return u_s
-    
-    def is_inside(self, s, theta):
-        return theta > self[s] 
-    
-    def is_outside(self, s, theta):
-        return theta <= self[s] 
