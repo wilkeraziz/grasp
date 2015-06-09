@@ -9,6 +9,7 @@ import logging
 from weakref import WeakValueDictionary
 from itertools import ifilter
 from symbol import Terminal, Nonterminal
+from collections import defaultdict
 
 
 class CFGProduction(object):
@@ -29,6 +30,7 @@ class CFGProduction(object):
     """
 
     _rules = WeakValueDictionary()
+    #_rules = defaultdict(None)
 
     def __new__(cls, lhs, rhs, weight):
         """The symbols in lhs and in the rhs must be hashable."""

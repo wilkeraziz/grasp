@@ -5,6 +5,8 @@ Contains class definitions for symbols (e.g. Terminal and Nonterminal) and other
 """
 
 from weakref import WeakValueDictionary
+from collections import defaultdict
+
 
 class Terminal(object):
     """
@@ -31,6 +33,7 @@ class Terminal(object):
     """
 
     _vocabulary = WeakValueDictionary()
+    #_vocabulary = defaultdict(None)
 
     def __new__(cls, surface):
         """The surface has to be hashable."""
@@ -79,6 +82,7 @@ class Nonterminal(object):
     """
 
     _categories = WeakValueDictionary()
+    #_categories = defaultdict(None)
 
     def __new__(cls, label):
         """The label has to be hashable."""

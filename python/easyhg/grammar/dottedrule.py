@@ -9,6 +9,8 @@ from weakref import WeakValueDictionary
 from symbol import Terminal
 from rule import CFGProduction
 from itertools import ifilter
+from collections import defaultdict
+
 
 class DottedRule(object):
     """
@@ -23,6 +25,7 @@ class DottedRule(object):
     """
 
     _instances = WeakValueDictionary()
+    #_instances = defaultdict(None)
 
     def __new__(cls, rule, dot, inner=[]):
         """The symbols in lhs and rhs must be hashable"""
@@ -34,6 +37,7 @@ class DottedRule(object):
             obj._skeleton = skeleton
             obj._start = inner[0] if inner else dot
             obj._next = rule.rhs[len(inner)] if len(inner) < len(rule.rhs) else None
+            obj._complete = len(inner) == len(rule.rhs)
         return obj
     
     @property
@@ -63,11 +67,11 @@ class DottedRule(object):
 
     def nextsymbols(self):
         """iterates through the symbols ahead of the dot"""
-        return tuple(self.rule.rhs[len(self.inner):])
+        return self.rule.rhs[len(self.inner):]
 
     def is_complete(self):
         """whether the dot has reached the end of the rule"""
-        return len(self.inner) == len(self.rule.rhs)
+        return self._complete  # len(self.inner) == len(self.rule.rhs)
 
     def advance(self, dot):
         """returns a new item whose dot has been advanced"""

@@ -48,7 +48,7 @@ class ActiveQueue(object):
     
     def __init__(self):
         self._active = deque()  # items to be processed
-        self._queuing = set()  # items that are queuing (or have already left the queue)
+        self._seen = set()  # items that are queuing (or have already left the queue)
     
     def __len__(self):
         """Number of active items queuing to be processed"""
@@ -60,11 +60,12 @@ class ActiveQueue(object):
 
     def add(self, item):
         """Add an active item if possible"""
-        if item is not self._queuing:
+        if item not in self._seen:
             self._active.append(item)
-            self._queuing.add(item)
+            self._seen.add(item)
             return True
-        return False
+        else:
+            return False
 
 
 class Agenda(object):
@@ -80,7 +81,7 @@ class Agenda(object):
     def __init__(self, active_container_type=ActiveQueue):
         self._active_container_type = active_container_type
         self._active = active_container_type()  # items to be processed
-        self._passive = defaultdict(set)  # passive items waiting for completion: (LHS, start) -> items
+        self._waiting = defaultdict(set)  # passive items waiting for completion: (LHS, start) -> items
         self._generating = defaultdict(lambda : defaultdict(set))  # generating symbols: LHS -> start -> ends
         self._complete = defaultdict(set)  # complete items
 
@@ -102,7 +103,13 @@ class Agenda(object):
     
     def is_passive(self, item):
         """Whether or not an item is passive"""
-        return item in self._passive.get((item.next, item.dot), set())
+        if item.is_complete():
+            return item in self._complete.get((item.rule.lhs, item.start, item.dot), set())
+        else:
+            return item in self._waiting.get((item.next, item.dot), set())
+
+    def is_generating(self, sym, sfrom, sto):
+        return sto in self._generating.get(sym, {}).get(sfrom, set())
 
     def add_generating(self, sym, sfrom, sto):
         """
@@ -119,21 +126,28 @@ class Agenda(object):
         Tries to make passive an active item.
         Returns False if the item is already passive, True otherwise.
         """
-        waiting = self._passive[(item.next, item.dot)]
+        waiting = self._waiting[(item.next, item.dot)]
         n = len(waiting)
         waiting.add(item)
         return len(waiting) > n
 
     def make_complete(self, item):
-        """Stores a complete item"""
-        self._complete[(item.rule.lhs, item.start, item.dot)].add(item)
-        self.add_generating(item.rule.lhs, item.start, item.dot)
+        """Stores a complete item and returns whether a new generating symbol has been discovered"""
+        items = self._complete[(item.rule.lhs, item.start, item.dot)]
+        is_first = len(items) == 0
+        items.add(item)
+        if is_first:
+            self.add_generating(item.rule.lhs, item.start, item.dot)
+        return is_first
 
     def discard(self, item):
-        waiting = self._passive.get((item.next, item.dot), None)
-        if waiting:
+        if item.is_complete():
+            items = self._complete.get((item.rule.lhs, item.start, item.dot), None)
+        else:
+            items = self._waiting.get((item.next, item.dot), None)
+        if items:
             try:
-                waiting.remove(item)
+                items.remove(item)
             except KeyError:
                 pass
     
@@ -150,7 +164,7 @@ class Agenda(object):
             
     def iterwaiting(self, sym, start):
         """Returns items waiting for a certain symbol to complete from a certain state"""
-        return iter(self._passive.get((sym, start), frozenset()))
+        return iter(self._waiting.get((sym, start), frozenset()))
 
     def itercompletions(self, sym, start):
         """Return possible completions of the given item"""

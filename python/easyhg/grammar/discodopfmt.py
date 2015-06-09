@@ -11,6 +11,7 @@ from symbol import Terminal, Nonterminal
 from rule import CFGProduction
 from cfg import CFG
 from utils import smart_open
+import logging
 
 
 def iterrules(path, transform):
@@ -25,6 +26,8 @@ def iterrules(path, transform):
         num = float(num)
         den = float(den)
         rhs = fields[1:-2]  # fields[-2] is the yield function, which we are ignoring
+        #if len(rhs) != 2:
+        #    logging.debug('Unary rule: %s %s' % (lhs, rhs))
         yield CFGProduction(Nonterminal(lhs), [Nonterminal(s) for s in rhs], transform(num/den))
 
 

@@ -5,7 +5,7 @@
 This is an example run:
 
     
-        echo 'I was given a million dollars !!!' | python parse.py --log --grammarfmt discodop ../../tests/ptb/wsj00 --unkmodel stfd6 --count -v --samples 1000
+        echo 'I was given a million dollars !!!' | python parse.py --log --grammarfmt discodop ../../tests/ptb/wsj00 --unkmodel stfd6 --start TOP --count -v --samples 1000
 
 
 For more details about the options, check the instructions below.
@@ -90,4 +90,19 @@ For now slice sampling only supports `--intersection nederhof`.
 * a simple pruning strategy for Viterbi
 * Gibbs sampler (Bouchard-Cote et al, 2009).
 * Importance sampler (Aziz, 2015)
+
+
+# Profiling
+
+First get a `pstats` report using `cProfile`
+
+
+        echo 'I was given a million dollars .' | python -m cProfile -o NEDERHOF.pstats parse.py --log --grammarfmt discodop ../../tests/ptb/wsj00 --unkmodel stfd6 --count -v --kbest 1 --intersection nederhof
+
+
+Then convert the report to a graph using `gprof2dot`
+
+    
+        gprof2dot -f pstats NEDERHOF.pstats | dot -Tpng -o NEDERHOF.png
+
 

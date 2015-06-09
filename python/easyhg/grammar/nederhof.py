@@ -46,8 +46,6 @@ class Nederhof(object):
             2) instantiate delayed axioms
         Returns False if the annotated symbol had already been added, True otherwise
         """
-        if not self._agenda.add_generating(sym, sfrom, sto):  # stop if this is known to be a generating symbol
-            return False
 
         # every item waiting for `sym` from `sfrom`
         for item in self._agenda.iterwaiting(sym, sfrom):
@@ -59,21 +57,6 @@ class Nederhof(object):
             self._agenda.add(Item(r, sto, inner=(sfrom,)))  # can be interpreted as a lazy axiom
 
         return True
-    
-    def add_item(self, item):
-        """
-        This operation:
-            1) complete other items (by calling add_symbol), in case the input item is complete
-            2) merges the input item with previously completed items effectively moving the input item's dot forward
-
-        """
-        if item.is_complete(): # complete others
-            self.add_symbol(item.rule.lhs, item.start, item.dot)
-            self._agenda.make_complete(item)
-        else:  # complete itself
-            if self._agenda.make_passive(item):  # if not already passive
-                for sto in self._agenda.itercompletions(item.next, item.dot):
-                    self._agenda.add(item.advance(sto))  # move the dot forward
 
     def axioms(self):
         """
@@ -92,9 +75,18 @@ class Nederhof(object):
 
     def inference(self):
         """Exhausts the queue of active items"""
-        while self._agenda:
-            item = self._agenda.pop()
-            self.add_item(item)
+        agenda = self._agenda
+        while agenda:
+            item = agenda.pop()  # always returns an ACTIVE item
+            # complete other items (by calling add_symbol), in case the input item is complete
+            if item.is_complete():
+                if agenda.make_complete(item):  # if we have discovered a new generating symbol
+                    self.add_symbol(item.rule.lhs, item.start, item.dot)
+            else:
+                # merges the input item with previously completed items effectively moving the input item's dot forward
+                agenda.make_passive(item)
+                for sto in agenda.itercompletions(item.next, item.dot):
+                    agenda.add(item.advance(sto))  # move the dot forward
 
     def do(self, root=Nonterminal('S'), goal=Nonterminal('GOAL')):
         """Runs the program and returns the intersected CFG"""

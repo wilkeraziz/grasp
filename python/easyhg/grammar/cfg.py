@@ -80,6 +80,9 @@ class CFG(object):
     def lexicon(self):
         return self._sigma
 
+    def n_symbols(self):
+        return len(self._nonterminals) + len(self._sigma)
+
     def n_nonterminals(self):
         return len(self._nonterminals)
 
@@ -167,7 +170,8 @@ class CFG(object):
         """
 
         if self._topsort is None:
-            self._topsort = tuple(frozenset(group) for group in topsort_cfg(self))
+            #self._topsort = tuple(frozenset(group) for group in topsort_cfg(self))
+            self._topsort = tuple(topsort2(self))
         return self._topsort
 
     def __str__(self):
@@ -216,4 +220,56 @@ def topsort_cfg(cfg):
         for rule in rules:
             deps.update(rule.rhs)
     return topsort(D, cfg.iterterminals())
+
+
+def topsort2(forest):
+    """
+    Partial ordering of nodes in the forest.
+    :return: list of nodes ordered from leaves to root
+    """
+
+    dependencies = defaultdict(set)
+    dependants = defaultdict(set)
+    for lhs, rules in forest.iteritems():
+        for rule in rules:
+            dependencies[lhs].update(rule.rhs)
+            for s in rule.rhs:
+                dependants[s].add(lhs)
+
+    for sym, deps in dependencies.iteritems():
+        try:
+            deps.remove(sym)
+        except KeyError:
+            pass
+
+    sorting = deque(forest.iterterminals())
+
+    # L, top ordered nodes
+    ordered = []
+
+    while sorting:
+        # remove and return a node from sorting
+        node = sorting.popleft()
+
+        # append node to L
+        ordered.append(node)
+
+        parents = dependants.get(node, None)
+        if parents:
+            for parent in parents:
+                deps = dependencies.get(parent, None)
+                if deps is not None:
+                    try:
+                        deps.remove(node)
+                    except KeyError:
+                        pass
+                    if len(deps) == 0:
+                        sorting.append(parent)
+                        del dependencies[parent]
+                else:
+                    sorting.append(parent)
+
+
+    return ordered
+
 

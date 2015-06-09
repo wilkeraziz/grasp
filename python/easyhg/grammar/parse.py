@@ -81,7 +81,16 @@ def parse(cfg, sentence, semiring, args):
         return False
 
     logging.info('Top-sorting...')
-    topsorted = list(chain(*topsort_cfg(forest)))
+    #topsorted = list(chain(*topsort_cfg(forest)))
+    topsorted = forest.topsort()
+
+    logging.info('Topsorted=%d symbols=%d', len(topsorted), forest.n_symbols())
+    print topsorted[-1]
+    #S = set(forest.iternonterminals())
+    #S.update(forest.iterterminals())
+    #for s in S.difference(set(topsorted)):
+    #    print s
+
 
     if args.count:
         logging.info('Counting...')
