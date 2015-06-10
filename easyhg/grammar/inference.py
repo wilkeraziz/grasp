@@ -43,7 +43,7 @@ def outside(forest, topsorted, semiring, I=None, omega=lambda e: e.weight):
     topsorted = list(topsorted)
     if I is None:
         I = inside(forest, topsorted, semiring, omega)
-    O = defaultdict(lambda : semiring.zero)
+    O = defaultdict(lambda: semiring.zero)
     O[topsorted[-1]] = semiring.one  # this assumes a single root node
     # we go top-down
     for parent in reversed(topsorted):

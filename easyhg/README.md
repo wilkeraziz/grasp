@@ -1,7 +1,3 @@
-# Tests
-
-python -m grammar.tests -v
-
 # TODO
 
 This is a list of things to do:
