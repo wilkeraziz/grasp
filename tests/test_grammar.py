@@ -1,22 +1,22 @@
 import unittest
 import doctest
-from . import symbol
-from . import rule
-from . import topsort
-from . import cfg
-from . import fsa
-from . import semiring
-from . import dottedrule
-from . import agenda
-from . import inference
-from . import kbest
-from . import ply_cfg
-from . import sentence
-from . import earley
-from . import nederhof
-#from . import cky
-from . import slicednederhof
-from . import slicevars
+from easyhg.grammar import symbol
+from easyhg.grammar import rule
+from easyhg.grammar import topsort
+from easyhg.grammar import cfg
+from easyhg.grammar import fsa
+from easyhg.grammar import semiring
+from easyhg.grammar import dottedrule
+from easyhg.grammar import agenda
+from easyhg.grammar import inference
+from easyhg.grammar import kbest
+from easyhg.grammar import ply_cfg
+from easyhg.grammar import sentence
+from easyhg.grammar import earley
+from easyhg.grammar import nederhof
+#from easyhg.grammar import cky
+from easyhg.grammar import slicednederhof
+from easyhg.grammar import slicevars
 
 
 def load_tests(loader, tests, ignore):

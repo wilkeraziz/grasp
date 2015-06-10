@@ -5,7 +5,7 @@
 This is an example run:
 
     
-        echo 'I was given a million dollars !!!' | python parse.py --log --grammarfmt discodop ../../tests/ptb/wsj00 --unkmodel stfd6 --start TOP --count -v --samples 1000
+        echo 'I was given a million dollars !!!' | python -m easyhg.grammar.parse --log --grammarfmt discodop tests/ptb/wsj00 --unkmodel stfd6 --start TOP --count -v --samples 1000
 
 
 For more details about the options, check the instructions below.
@@ -97,7 +97,7 @@ For now slice sampling only supports `--intersection nederhof`.
 First get a `pstats` report using `cProfile`
 
 
-        echo 'I was given a million dollars .' | python -m cProfile -o NEDERHOF.pstats parse.py --log --grammarfmt discodop ../../tests/ptb/wsj00 --unkmodel stfd6 --count -v --kbest 1 --intersection nederhof
+        echo 'I was given a million dollars .' | python -m easyhg.grammar.parse --log --grammarfmt discodop tests/ptb/wsj00 --unkmodel stfd6 --start TOP --count -v --intersection nederhof --profile NEDERHOF.pstats
 
 
 Then convert the report to a graph using `gprof2dot`
