@@ -90,6 +90,9 @@ def cmd_info(group):
 
 
 def cmd_viterbi(group):
+    group.add_argument('--viterbi',
+        action='store_true',
+        help='best derivation')
     group.add_argument('--kbest',
         type=int, default=0, metavar='K',
         help='number of top scoring solutions')

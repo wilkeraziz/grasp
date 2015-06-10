@@ -71,8 +71,6 @@ class CFG(object):
         self._sigma = set()  # terminals
         for rule in rules:
             self.add(rule)
-        self._topsort = None
-        self._start = None
 
     def __len__(self):
         """Count the total number of rules."""
@@ -149,7 +147,6 @@ class CFG(object):
         n = len(group)
         group.add(rule)
         if len(group) > n:
-            self._topsort = None  # invalidate the partial order
             self._nonterminals.add(rule.lhs)
             self._nonterminals.update(filter(lambda s: isinstance(s, Nonterminal), rule.rhs))
             self._sigma.update(filter(lambda s: isinstance(s, Terminal), rule.rhs))
@@ -160,41 +157,6 @@ class CFG(object):
     def update(self, rules):
         """Adds multiple rules"""
         [self.add(r) for r in rules]
-        
-    def topsort(self):
-        """Compute a partial ordering of symbols.
-        
-        If a rule is added to the grammar the partial ordering is invalidated.
-        To recompute a **valid** partial ordering, simply call ``self.topsort()`` again.
-        
-        :returns:
-            a tuple of frozensets of symbols, bottom symbols first. 
-        """
-
-        if self._topsort is None:
-            # gathers the dependencies between nonterminals
-            deps = defaultdict(set)
-            for lhs, rules in self.iteritems():
-                syms = deps[lhs]
-                for rule in rules:
-                    syms.update(filter(lambda s: isinstance(s, Nonterminal), rule.rhs))
-            order = robust_topological_sort(deps)
-            order.appendleft(frozenset(self.iterterminals()))
-            self._topsort = order
-
-        return self._topsort
-
-    def start(self):
-        if self._start is None:
-            order = self.topsort()
-            if len(order[-1]) > 1:
-                raise ValueError('I expected a single bucket instead of %d' % len(order[-1]))
-            top = order[-1]
-            if len(top) > 1:
-                raise ValueError('I expected a single start symbol instead of %d' % len(top))
-            self._start = next(iter(top))
-        return self._start
-
 
     def __str__(self):
         """String representation of the (top-sorted) CFG."""
@@ -230,37 +192,19 @@ def stars(cfg):
 
 class TopSortTable(object):
 
-    def __init__(self, forest, include_terminals=False):
-        self._forest = forest
-        self._topsort = None
-        self._include_terminals = include_terminals
-
-    def reset(self):
-        self._topsort = None
+    def __init__(self, forest):  # TODO: implement callback to update the table when the forest changes
+        # gathers the dependencies between nonterminals
+        deps = defaultdict(set)
+        for lhs, rules in forest.iteritems():
+            syms = deps[lhs]
+            for rule in rules:
+                syms.update(filter(lambda s: isinstance(s, Nonterminal), rule.rhs))
+        order = robust_topological_sort(deps)
+        # adds terminals to the bottom-level
+        order.appendleft(frozenset(frozenset([t]) for t in forest.iterterminals()))
+        self._topsort = order
 
     def topsort(self):
-        """Compute a partial ordering of symbols.
-
-        If a rule is added to the grammar the partial ordering is invalidated.
-        To recompute a **valid** partial ordering, simply call ``self.topsort()`` again.
-
-        :returns:
-            a tuple of frozensets of symbols, bottom symbols first.
-        """
-
-        if self._topsort is None:
-            # gathers the dependencies between nonterminals
-            deps = defaultdict(set)
-            for lhs, rules in self._forest.iteritems():
-                syms = deps[lhs]
-                for rule in rules:
-                    syms.update(filter(lambda s: isinstance(s, Nonterminal), rule.rhs))
-            order = robust_topological_sort(deps)
-            if self._include_terminals:
-                # adds terminals to the bottom-level
-                order.appendleft(frozenset(frozenset([t]) for t in self._forest.iterterminals()))
-            self._topsort = order
-
         return self._topsort
 
     def itertopbuckets(self):
@@ -270,7 +214,7 @@ class TopSortTable(object):
     def iterbottombuckets(self):
         return iter(self.topsort()[0])
 
-    def start(self):
+    def root(self):
         """
         Return the start/root/goal symbol/node of the grammar/forest/hypergraph
         :return: node
@@ -319,4 +263,22 @@ class TopSortTable(object):
         for buckets in iterator:
             for bucket in buckets:
                 yield bucket
+
+    def __str__(self):
+        lines = []
+        for i, level in enumerate(self.iterlevels()):
+            lines.append('level=%d' % i)
+            for bucket in level:
+                if len(bucket) > 1:
+                    lines.append(' (loopy) {0}'.format(' '.join(str(x) for x in bucket)))
+                else:
+                    lines.append(' {0}'.format(' '.join(str(x) for x in bucket)))
+        return '\n'.join(lines)
+
+
+
+
+
+
+
 

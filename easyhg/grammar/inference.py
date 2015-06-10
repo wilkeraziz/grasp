@@ -34,6 +34,30 @@ def inside(forest, topsorted, semiring, omega=lambda e: e.weight):
     return I
 
 
+def robust_inside(forest, tsort, semiring, omega=lambda e: e.weight):
+    """
+    Returns inside weights in a given semiring.
+    This is a bottom-up pass through the forest, thus runs in O(|forest|).
+    @param omega: a function that weighs edges/rules (serves as a bypass)
+    """
+    I = defaultdict(lambda: semiring.one)
+    # we go bottom-up
+    for bucket in tsort.iterbuckets(skip=1):  # we skip the terminals
+        if len(bucket) == 1:  # non-loopy
+            for parent in bucket:  # the inside of a node
+                incoming = forest.get(parent, None)
+                if incoming is None:  # a terminal node
+                    I[parent] = semiring.one
+                    continue
+                # the inside of a nonterminal node is a sum over all of its incoming edges (rewrites)
+                # for each rewriting rule, we get the product of the RHS nodes' insides times the rule weight
+                partials = (reduce(semiring.times, (I[child] for child in rule.rhs), omega(rule)) for rule in forest.get(parent, set()))
+                I[parent] = reduce(semiring.plus, partials, semiring.zero)
+        else:
+            raise NotImplementedError('I do not yet know how to compute infinite sums.')
+    return I
+
+
 def outside(forest, topsorted, semiring, I=None, omega=lambda e: e.weight):
     """
     Returns otuside weights in a given semiring (it also computes inside weights, unless given).

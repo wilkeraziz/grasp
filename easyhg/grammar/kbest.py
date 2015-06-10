@@ -56,6 +56,9 @@ class Derivation(object):
     def projection(self):
         return self._projection
 
+    def __lt__(self, other):  # TODO: check why this is necessary!
+        return self.weight > other.weight
+
 
 class NodeDerivationState(object):
     """
@@ -107,7 +110,7 @@ class NodeDerivationState(object):
 
     def pop(self):
         """pop the cheapest derivation in the heap (with heapq this means the first item)"""
-        _, d = heapq.heappop(self._candidates)
+        (w, d) = heapq.heappop(self._candidates)
         return d
 
     def is_unique(self, projection):

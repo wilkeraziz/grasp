@@ -7,7 +7,6 @@ One can choose from all available implementations.
 
 import logging
 from collections import Counter
-
 from .cmdline import argparser
 from .sentence import make_sentence
 from .symbol import Nonterminal, make_flat_symbol
@@ -16,10 +15,11 @@ from .earley import Earley
 from .nederhof import Nederhof
 from .utils import make_nltk_tree, inlinetree
 from .semiring import Prob, SumTimes, MaxTimes, Count
-from .inference import inside, sample, optimise, total_weight
+from .inference import inside, robust_inside, sample, optimise, total_weight
 from .kbest import KBest
 from . import projection
 from .reader import load_grammar
+from .cfg import TopSortTable
 
 
 def get_parser(cfg, fsa, semiring, make_symbol, algorithm):
@@ -35,33 +35,33 @@ def get_parser(cfg, fsa, semiring, make_symbol, algorithm):
     return parser
 
 
-def ancestral_sampling(forest, topsorted, args, semiring=SumTimes):
+def ancestral_sampling(forest, tsort, args, semiring=SumTimes):
     logging.info('Inside...')
-    Iv = inside(forest, topsorted, semiring)
+    Iv = robust_inside(forest, tsort, semiring)
     logging.info('Done! Sampling...')
-    count = Counter(sample(forest, topsorted[-1], semiring, Iv=Iv, N=args.samples))
+    count = Counter(sample(forest, tsort.root(), semiring, Iv=Iv, N=args.samples))
     print('# SAMPLE: size=%d' % args.samples)
-    for d, n in reversed(count.most_common()):
+    for d, n in count.most_common():
         t = make_nltk_tree(d)
-        p = total_weight(d, SumTimes, Iv[topsorted[-1]])
+        p = total_weight(d, SumTimes, Iv[tsort.root()])
         print('# n={0} emp={1} exact={2}\n{3}'.format(n, float(n)/args.samples, semiring.as_real(p), inlinetree(t)))
     print()
 
 
-def viterbi(forest, topsorted, args, semiring=MaxTimes):
+def viterbi(forest, tsort, args, semiring=MaxTimes):
     logging.info('Inside...')
-    Iv = inside(forest, topsorted, semiring)
+    Iv = robust_inside(forest, tsort, semiring)
     logging.info('Done! Viterbi...')
-    d = optimise(forest, topsorted[-1], semiring, Iv=Iv)
+    d = optimise(forest, tsort.root(), semiring, Iv=Iv)
     t = make_nltk_tree(d)
     print('# VITERBI')
-    print('# k={0} score={1}\n{2}'.format(1, Iv[topsorted[-1]], inlinetree(t)))
+    print('# k={0} score={1}\n{2}'.format(1, Iv[tsort.root()], inlinetree(t)))
     print()
 
 
-def kbest(forest, topsorted, args, semiring=MaxTimes):
+def kbest(forest, tsort, args, semiring=MaxTimes):  # TODO: kbest only needs to know the root (no tsort is needed)
     logging.info('K-best...')
-    kbest = KBest(forest, topsorted[-1], args.kbest, semiring, traversal=projection.string, uniqueness=False).do()
+    kbest = KBest(forest, tsort.root(), args.kbest, semiring, traversal=projection.string, uniqueness=False).do()
     print('# K-BEST: size=%d' % args.kbest)
     for k, d in enumerate(kbest.iterderivations()):
         t = make_nltk_tree(d)
@@ -80,22 +80,19 @@ def parse(cfg, sentence, semiring, args):
         return False
 
     logging.info('Top-sorting...')
-    #topsorted = list(chain(*topsort_cfg(forest)))
-    topsorted = forest.topsort()
+    tsort = TopSortTable(forest)
+    logging.info('Top symbol: %s', tsort.root())
 
-    logging.info('Topsorted=%d symbols=%d', len(topsorted), forest.n_symbols())
-    print(topsorted[-1])
     #S = set(forest.iternonterminals())
     #S.update(forest.iterterminals())
     #for s in S.difference(set(topsorted)):
     #    print s
 
-
     if args.count:
         logging.info('Counting...')
-        Ic = inside(forest, topsorted, Count, omega=lambda e: 1)
-        logging.info('Forest: edges=%d nodes=%d paths=%d', len(forest), forest.n_nonterminals(), Ic[topsorted[-1]])
-        print('# FOREST: edges=%d nodes=%d paths=%d' % (len(forest), forest.n_nonterminals(), Ic[topsorted[-1]]))
+        Ic = robust_inside(forest, tsort, Count, omega=lambda e: 1)
+        logging.info('Forest: edges=%d nodes=%d paths=%d', len(forest), forest.n_nonterminals(), Ic[tsort.root()])
+        print('# FOREST: edges=%d nodes=%d paths=%d' % (len(forest), forest.n_nonterminals(), Ic[tsort.root()]))
     else:
         logging.info('Forest: edges=%d nodes=%d', len(forest), forest.n_nonterminals())
         print('# FOREST: edges=%d nodes=%d' % (len(forest), forest.n_nonterminals()))
@@ -105,13 +102,13 @@ def parse(cfg, sentence, semiring, args):
         print()
 
     if args.samples > 0:
-        ancestral_sampling(forest, topsorted, args)
+        ancestral_sampling(forest, tsort, args)
 
-    if args.kbest == 1:
-        viterbi(forest, topsorted, args)
+    if args.viterbi or args.kbest == 1:
+        viterbi(forest, tsort, args)
 
     if args.kbest > 1:
-        kbest(forest, topsorted, args)
+        kbest(forest, tsort, args)
 
     logging.info('Finished!')
 

@@ -2,7 +2,7 @@
 
 This is a list of things to do:
 
-* robust topsort (e.g. Tarjan's algorithm)
+* check k-best enumeration
 * infinite summation for Inside-Outside
 * more unit tests
 * migrate core code to Cython
