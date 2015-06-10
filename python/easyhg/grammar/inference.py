@@ -9,7 +9,8 @@ It implements
 """
 
 import numpy as np
-from itertools import ifilter
+from functools import reduce
+
 from collections import defaultdict, deque
 
 

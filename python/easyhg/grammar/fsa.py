@@ -5,8 +5,7 @@ This module contains class definitions for wFSAs.
 """
 
 from collections import defaultdict
-from symbol import Terminal
-import numpy as np
+from .symbol import Terminal
 
 class WDFSA(object):
     """
@@ -41,13 +40,13 @@ class WDFSA(object):
 
         if len(self._arcs) <= state:
             for i in range(len(self._arcs), state + 1):
-                self._arcs.append(defaultdict(lambda : defaultdict(float)))
+                self._arcs.append(defaultdict(lambda: defaultdict(float)))
             return True
         return False
 
     def iterstates(self):
         """Iterate through all states in order of allocation."""
-        return xrange(len(self._arcs))
+        return range(len(self._arcs))
 
     def iterinitial(self):
         """Iterate through all initial states in no particular order."""
@@ -69,8 +68,8 @@ class WDFSA(object):
         """
 
         for sfrom, arcs_by_sym in enumerate(self._arcs):
-            for sym, w_by_sto in arcs_by_sym.iteritems():
-                for sto, w in w_by_sto.iteritems():
+            for sym, w_by_sto in arcs_by_sym.items():
+                for sto, w in w_by_sto.items():
                     yield (sfrom, sto, sym, w)
     
     def get_arcs(self, origin, symbol):
@@ -81,7 +80,7 @@ class WDFSA(object):
         """
         if len(self._arcs) <= origin:
             raise ValueError('Origin state %d does not exist' % origin)
-        return list(self._arcs[origin].get(symbol, {}).iteritems())
+        return list(self._arcs[origin].get(symbol, {}).items())
         
     def is_initial(self, state):
         """Whether or not a state is initial."""
@@ -109,7 +108,7 @@ class WDFSA(object):
     def path_weight(self, path, semiring): 
         """Returns the weight of a path given by a sequence of tuples of the kind (origin, destination, sym)"""
         total = semiring.one
-        for (origin, destination, sym) in arcs:
+        for (origin, destination, sym) in path:
             arcs = self._arcs[origin].get(sym, None)
             if arcs is None:
                 raise ValueError('Invalid transition origin=%s sym=%s' % (origin, sym))
@@ -134,8 +133,8 @@ class WDFSA(object):
     def __str__(self):
         lines = []
         for origin, arcs_by_sym in enumerate(self._arcs):
-            for symbol, arcs in arcs_by_sym.iteritems():
-                for destination, weight in sorted(arcs.iteritems(), key=lambda (s,w): s):
+            for symbol, arcs in arcs_by_sym.items():
+                for destination, weight in sorted(arcs.items()):
                     lines.append('(%d, %d, %s, %s)' % (origin, destination, symbol, weight))
         return '\n'.join(lines)
 
@@ -153,7 +152,7 @@ def make_linear_fsa(sentence, semiring, terminal_constructor=Terminal):
     :returns:
         WDFSA
 
-    >>> from semiring import Prob
+    >>> from .semiring import Prob
     >>> fsa = make_linear_fsa('a dog barks', Prob)
     >>> fsa.n_states()
     4

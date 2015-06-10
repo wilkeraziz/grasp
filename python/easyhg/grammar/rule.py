@@ -7,8 +7,8 @@ This module contains class definitions for rules, such as a context-free product
 import re
 import logging
 from weakref import WeakValueDictionary
-from itertools import ifilter
-from symbol import Terminal, Nonterminal
+
+from .symbol import Terminal, Nonterminal
 from collections import defaultdict
 
 
@@ -24,7 +24,6 @@ class CFGProduction(object):
     CFGProduction(1, (1, 2, 3), 0.0)
     >>> CFGProduction(('S', 1, 3), [('X', 1, 2), ('X', 2, 3)], 0.0)  # tuples are hashable
     CFGProduction(('S', 1, 3), (('X', 1, 2), ('X', 2, 3)), 0.0)
-    >>> from symbol import Terminal, Nonterminal
     >>> CFGProduction(Nonterminal('S'), [Terminal('<s>'), Nonterminal('X'), Terminal('</s>')], 0.0)  # Terminals and Nonterminals are also hashable
     CFGProduction(Nonterminal('S'), (Terminal('<s>'), Nonterminal('X'), Terminal('</s>')), 0.0)
     """
@@ -84,8 +83,8 @@ class SCFGProduction(object):  #TODO: check this
     def create(lhs, f_rhs, e_rhs, weight):
         f_rhs = list(f_rhs)
         e_rhs = list(e_rhs)
-        f_nts = [i for i, sym in ifilter(lambda (_, s): isinstance(s, Nonterminal), enumerate(f_rhs))]
-        e_nts = [j for j, sym in ifilter(lambda (_, s): isinstance(s, Nonterminal), enumerate(e_rhs))]
+        f_nts = [i for i, sym in filter(lambda i_s: isinstance(i_s[1], Nonterminal), enumerate(f_rhs))]
+        e_nts = [j for j, sym in filter(lambda i_s: isinstance(i_s[1], Nonterminal), enumerate(e_rhs))]
    
         # adjust source RHS nonterminal symbols
         for k, i in enumerate(f_nts):
@@ -153,7 +152,7 @@ class SCFGProduction(object):  #TODO: check this
     def project_rhs(self):
         """Computes the target context-free production by projecting source labels through nonterminal alignment."""
         alignment = iter(self.alignment)
-        f_nts = tuple(ifilter(lambda s: isinstance(s, Nonterminal), self.f_rhs))
+        f_nts = tuple(filter(lambda s: isinstance(s, Nonterminal), self.f_rhs))
         return tuple(s if isinstance(s, Terminal) else f_nts[next(alignment) - 1] for s in self.e_rhs)
     
 

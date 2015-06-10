@@ -12,11 +12,11 @@ This is an implementation of a CKY-inspired bottom-up intersection as presented 
 """
 
 from collections import defaultdict, deque
-from symbol import Terminal, Nonterminal, make_flat_symbol, make_recursive_symbol
-from cfg import topsort_cfg
-from dottedrule import DottedRule as Item
-from rule import CFGProduction
-from agenda import ActiveSet, Agenda, make_cfg
+from .symbol import Terminal, Nonterminal, make_flat_symbol, make_recursive_symbol
+from .cfg import topsort_cfg
+from .dottedrule import DottedRule as Item
+from .rule import CFGProduction
+from .agenda import ActiveSet, Agenda, make_cfg
 
 
 class CKY(object):
@@ -68,12 +68,12 @@ class CKY(object):
     
     def scan(self, item):
         """scans every transition in the fsa from item.dot whose symbol is item.next"""
-        for sto, w in self._wfsa.get_arcs(item.dot, item.next):
+        for sto, w in self._wfsa.get_arcs(item.dot, item.__next__):
             self._agenda.add(item.advance(sto))
 
     def complete_itself(self, item):
         """completes item.next (a nonterminal) from item.dot"""
-        for sto in self._agenda.itercompletions(item.next, item.dot):
+        for sto in self._agenda.itercompletions(item.__next__, item.dot):
             self._agenda.add(item.advance(sto))
 
     def complete_others(self, complete):
@@ -97,7 +97,7 @@ class CKY(object):
                     self.complete_others(item)
                     # store complete item
                     agenda.make_complete(item)
-                elif isinstance(item.next, Terminal):
+                elif isinstance(item.__next__, Terminal):
                     self.scan(item)
                 else:
                     self.complete_itself(item)

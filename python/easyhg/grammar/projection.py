@@ -1,4 +1,4 @@
-from symbol import Terminal
+from .symbol import Terminal
 
 _LB_ = '('
 _RB_ = ')'

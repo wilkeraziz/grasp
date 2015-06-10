@@ -13,6 +13,7 @@ Heuristics: for each lhs symbol, returns
 import numpy as np
 from collections import defaultdict
 
+
 class EmpiricalDistribution(object):
     """
     Heuristically sample a condition (a value of theta) from the empirical distribution associated with the conditional p(rule|lhs).
@@ -67,6 +68,7 @@ def empdist(cfg, semiring, alpha=1.0):
             ((lhs, EmpiricalDistribution([semiring.as_real(r.weight) for r in rules], alpha)) 
                 for lhs, rules in cfg.iteritems()))
     return distributions
+
 
 def uniform(cfg, semiring, a, b):
     """

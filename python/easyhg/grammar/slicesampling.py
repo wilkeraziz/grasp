@@ -6,21 +6,19 @@ One can choose from all available implementations.
 """
 
 import logging
-import argparse
-from collections import defaultdict
-from symbol import Nonterminal
-from semiring import SumTimes, Count
-from cfg import topsort_cfg
-from slicevars import SliceVariables
-from slicednederhof import Nederhof
-from inference import inside, sample
+from collections import defaultdict, Counter
 from itertools import chain
-from utils import make_nltk_tree, inlinetree
-from collections import Counter
-from symbol import make_recursive_symbol
-import heuristic
-from reader import load_grammar
-from sentence import make_sentence
+
+from .symbol import Nonterminal, make_recursive_symbol
+from .semiring import SumTimes, Count
+from .cfg import topsort_cfg
+from .slicevars import SliceVariables
+from .slicednederhof import Nederhof
+from .inference import inside, sample
+from .utils import make_nltk_tree, inlinetree
+from . import heuristic
+from .reader import load_grammar
+from .sentence import make_sentence
 
 
 def make_conditions(d, semiring):
@@ -36,7 +34,7 @@ def make_batch_conditions(D, semiring):
         conditions = defaultdict(set)
         for d in D:
             [conditions[r.lhs.label].add(semiring.as_real(r.weight)) for r in d]
-        conditions = {s: min(thetas) for s, thetas in conditions.iteritems()}
+        conditions = {s: min(thetas) for s, thetas in conditions.items()}
     return conditions
 
 
@@ -84,13 +82,13 @@ def slice_sampling(cfg, sentence, semiring, args):
         samples.extend(D)
         if len(samples) > checkpoint:
             logging.info('sampling... %d/%d', len(samples), args.samples + args.burn)
-            checkpoint =  len(samples) + 100
+            checkpoint = len(samples) + 100
 
     count = Counter(samples[args.burn:])
     for d, n in reversed(count.most_common()):
         t = make_nltk_tree(d)
-        print '# count=%d prob=%f\n%s' % (n, float(n)/args.samples, inlinetree(t))
-    print
+        print('# count=%d prob=%f\n%s' % (n, float(n)/args.samples, inlinetree(t)))
+    print()
 
 
 def main(args):

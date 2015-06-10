@@ -5,9 +5,10 @@ This module contains class definitions for weighted context-free grammars and ut
 """
 
 from collections import defaultdict, deque
-from itertools import chain, groupby, ifilter
-from symbol import Terminal, Nonterminal
-from topsort import topsort
+from itertools import chain
+from .symbol import Terminal, Nonterminal
+from .topsort import topsort
+from .rule import CFGProduction
 
 
 class CFG(object):
@@ -15,7 +16,6 @@ class CFG(object):
 
     An object which acts much like a dictionary (and sometimes a set).
 
-    >>> from rule import CFGProduction
     >>> cfg = CFG([CFGProduction(Nonterminal('S'), [Terminal('BOS'), Nonterminal('X'), Terminal('EOS')], 1.0)])
     >>> # let's start testing length
     >>> cfg.n_nonterminals()
@@ -74,7 +74,7 @@ class CFG(object):
 
     def __len__(self):
         """Count the total number of rules."""
-        return sum(len(rules) for rules in self._rules_by_lhs.itervalues())
+        return sum(len(rules) for rules in self._rules_by_lhs.values())
 
     @property
     def lexicon(self):
@@ -119,15 +119,15 @@ class CFG(object):
     
     def __iter__(self):
         """Iterate through rules in no particular order."""
-        return chain(*self._rules_by_lhs.itervalues())
+        return chain(*iter(self._rules_by_lhs.values()))
     
     def iterrules(self, lhs):
         """Iterate through rules rewriting a given LHS symbol."""
-        return chain(*self._rules_by_lhs.itervalues()) if lhs is None else iter(self._rules_by_lhs.get(lhs, frozenset()))
+        return chain(*iter(self._rules_by_lhs.values())) if lhs is None else iter(self._rules_by_lhs.get(lhs, frozenset()))
 
     def iteritems(self):
         """Iterate through pairs ``(lhs, rules)`` in no particular order."""
-        return self._rules_by_lhs.iteritems() 
+        return iter(self._rules_by_lhs.items()) 
 
     def __getitem__(self, lhs):
         """Return the set of rules (or an empty set) rewriting the given LHS symbol."""
@@ -149,8 +149,8 @@ class CFG(object):
         if len(group) > n:
             self._topsort = None  # invalidate the partial order
             self._nonterminals.add(rule.lhs)
-            self._nonterminals.update(ifilter(lambda s: isinstance(s, Nonterminal), rule.rhs))
-            self._sigma.update(ifilter(lambda s: isinstance(s, Terminal), rule.rhs))
+            self._nonterminals.update(filter(lambda s: isinstance(s, Nonterminal), rule.rhs))
+            self._sigma.update(filter(lambda s: isinstance(s, Terminal), rule.rhs))
             return True
         else:
             return False
@@ -177,7 +177,7 @@ class CFG(object):
     def __str__(self):
         """String representation of the (top-sorted) CFG."""
         lines = []
-        for lhs, rules in sorted(self._rules_by_lhs.iteritems(), key=lambda pair: str(pair[0])):
+        for lhs, rules in sorted(iter(self._rules_by_lhs.items()), key=lambda pair: str(pair[0])):
             for rule in sorted(rules, key=lambda r: str(r)):
                 lines.append(str(rule))
         return '\n'.join(lines)
@@ -236,7 +236,7 @@ def topsort2(forest):
             for s in rule.rhs:
                 dependants[s].add(lhs)
 
-    for sym, deps in dependencies.iteritems():
+    for sym, deps in dependencies.items():
         try:
             deps.remove(sym)
         except KeyError:

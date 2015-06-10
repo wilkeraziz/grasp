@@ -13,20 +13,20 @@ HASNONDIGIT = re.compile(r"\D", re.UNICODE)
 # NB: includes '-', hyphen, non-breaking hyphen
 # does NOT include: figure-dash, em-dash, en-dash (these are punctuation,
 # not word-combining) u2012-u2015; nb: these are hex values.
-HASDASH = re.compile("[-\u2010\u2011]")
+HASDASH = re.compile("[-\\u2010\\u2011]")
 # FIXME: exclude accented characters for model 6?
 HASLOWER = re.compile('[a-z\xe7\xe9\xe0\xec\xf9\xe2\xea\xee\xf4\xfb\xeb'
-                      '\xef\xfc\xff\u0153\xe6]')
+                      '\xef\xfc\xff\\u0153\xe6]')
 HASUPPER = re.compile('[A-Z\xc7\xc9\xc0\xcc\xd9\xc2\xca\xce\xd4\xdb\xcb'
-                      '\xcf\xdc\u0178\u0152\xc6]')
+                      '\xcf\xdc\\u0178\\u0152\xc6]')
 HASLETTER = re.compile('[A-Za-z\xe7\xe9\xe0\xec\xf9\xe2\xea\xee\xf4\xfb'
-                       '\xeb\xef\xfc\xff\u0153\xe6\xc7\xc9\xc0\xcc\xd9\xc2\xca\xce\xd4'
-                       '\xdb\xcb\xcf\xdc\u0178\u0152\xc6]')
+                       '\xeb\xef\xfc\xff\\u0153\xe6\xc7\xc9\xc0\xcc\xd9\xc2\xca\xce\xd4'
+                       '\xdb\xcb\xcf\xdc\\u0178\\u0152\xc6]')
 # Cf. http://en.wikipedia.org/wiki/French_alphabet
 LOWER = ('abcdefghijklmnopqrstuvwxyz\xe7\xe9\xe0\xec\xf9\xe2\xea\xee\xf4\xfb'
-         '\xeb\xef\xfc\xff\u0153\xe6')
+         '\xeb\xef\xfc\xff\\u0153\xe6')
 UPPER = ('ABCDEFGHIJKLMNOPQRSTUVWXYZ\xc7\xc9\xc0\xcc\xd9\xc2\xca\xce\xd4\xdb'
-         '\xcb\xcf\xdc\u0178\u0152\xc6')
+         '\xcb\xcf\xdc\\u0178\\u0152\xc6')
 LOWERUPPER = LOWER + UPPER
 
 

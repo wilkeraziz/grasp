@@ -13,16 +13,13 @@ This is an implementation of the bottom-up intersection by Nederhof and Satta (2
     }
 
 
-@author wilkeraziz
+:Authors: - Wilker Aziz
 """
 
-from collections import defaultdict, deque
-from itertools import ifilter
-from symbol import Nonterminal, make_flat_symbol
-from dottedrule import DottedRule as Item
-from rule import CFGProduction
-from cfg import CFG
-from agenda import ActiveQueue, Agenda, make_cfg
+from collections import defaultdict
+from .symbol import Nonterminal, make_flat_symbol
+from .dottedrule import DottedRule as Item
+from .agenda import ActiveQueue, Agenda, make_cfg
 
 
 class Nederhof(object):

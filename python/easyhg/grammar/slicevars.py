@@ -1,11 +1,10 @@
 """
 This implements slice variables to be used in MCMC for CFGs as described in (Blunsom and Cohn, 2010).
 
-@author wilkeraziz
+:Authors: - Wilker Aziz
 """
 
 import numpy as np
-import logging
 from scipy.stats import beta
 from collections import defaultdict
 
@@ -58,7 +57,7 @@ class SliceVariables(object):
         """returns p(r_s|u) where lhs(r) == s and theta = p(rhs(r)|s)"""
         u_s = self[s]
         if u_s < theta:
-            return 1.0 / beta.pdf(u_s, self._a, self._b) #(np.power(u_s, self._a - 1) * np.power(1 - u_s, self._b - 1))
+            return 1.0 / beta.pdf(u_s, self._a, self._b)  # (np.power(u_s, self._a - 1) * np.power(1 - u_s, self._b - 1))
         elif slice_only:
             raise ValueError('I received a variable outside the slice: s=%s theta=%s u_s=%s' % (s, theta, u_s))
         else:

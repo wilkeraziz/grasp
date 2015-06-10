@@ -36,18 +36,18 @@ def topsort(dependencies, independent=None):
     >>> list(topsort(D)) == expected
     True
     """
-    dependencies = {k: set(deps) for k, deps in dependencies.iteritems()}
+    dependencies = {k: set(deps) for k, deps in dependencies.items()}
 
     if independent:  # independent items are given
         ordered = set(independent) 
     else:  # we must find the independent items
         # values with no dependencies
-        ordered = set(chain(*dependencies.itervalues())) - set(dependencies.iterkeys())
+        ordered = set(chain(*iter(dependencies.values()))) - set(dependencies.keys())
         # keys with no dependencies
-        ordered.update(k for k, deps in dependencies.iteritems() if len(deps) == 0)
+        ordered.update(k for k, deps in dependencies.items() if len(deps) == 0)
     
     # ignore self dependencies
-    [deps.discard(k) for k, deps in dependencies.iteritems()]
+    [deps.discard(k) for k, deps in dependencies.items()]
    
     # sort
     while ordered:
@@ -56,9 +56,9 @@ def topsort(dependencies, independent=None):
         for o in ordered:
             dependencies.pop(o, None)
         # update dependencies
-        dependencies = {k: (deps - ordered) for k, deps in dependencies.iteritems()}
+        dependencies = {k: (deps - ordered) for k, deps in dependencies.items()}
         # check which items had their dependencies all sorted
-        ordered = set(k for k, deps in dependencies.iteritems() if len(deps) == 0)  # items with no dependencies
+        ordered = set(k for k, deps in dependencies.items() if len(deps) == 0)  # items with no dependencies
     
     if dependencies:
         raise ValueError('Cyclic or incomplete dependencies were encountered: %s' % dependencies)

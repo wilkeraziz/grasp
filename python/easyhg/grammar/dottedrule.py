@@ -2,13 +2,14 @@
 This module implements a dotted rule which is common to several logic programs.
 A dotted rule is an immutable object and its instances are managed by the class DottedRule.
 
-@author wilkeraziz
+:Authors: - Wilker Aziz
 """
 
 from weakref import WeakValueDictionary
-from symbol import Terminal
-from rule import CFGProduction
-from itertools import ifilter
+from .symbol import Terminal, Nonterminal
+from .rule import CFGProduction
+from functools import reduce
+
 from collections import defaultdict
 
 
@@ -22,6 +23,24 @@ class DottedRule(object):
     Moreover, dotted rules are immutable objects.
     
     This class implements instance management.
+
+    >>> item = DottedRule(CFGProduction(Nonterminal('S'), [Nonterminal('X'), Terminal('a')], 1.0), 0)
+    >>> item2 = DottedRule(CFGProduction(Nonterminal('S'), [Nonterminal('X'), Terminal('a')], 1.0), 0)
+    >>> item is item2
+    True
+    >>> item == item2
+    True
+    >>> item.dot
+    0
+    >>> item3 = item.advance(1)
+    >>> item3 is not item
+    True
+    >>> item3 != item
+    True
+    >>> str(item)
+    "[S] ||| [X] 'a' ||| 1.0 ||| () ||| 0"
+    >>> str(item3)
+    "[S] ||| [X] 'a' ||| 1.0 ||| (0,) ||| 1"
     """
 
     _instances = WeakValueDictionary()
@@ -85,7 +104,7 @@ class DottedRule(object):
         """
         fsa_states = self.inner + (self.dot,)
         fsa_weights = [wfsa.arc_weight(fsa_states[i], fsa_states[i + 1], sym) 
-                for i, sym in ifilter(lambda (_, s): isinstance(s, Terminal), enumerate(self.rule.rhs))]
+                for i, sym in filter(lambda i_s: isinstance(i_s[1], Terminal), enumerate(self.rule.rhs))]
         return reduce(semiring.times, fsa_weights, self.rule.weight)
 
     def cfg_production(self, wfsa, semiring, make_symbol):
@@ -98,7 +117,7 @@ class DottedRule(object):
             raise ValueError('An incomplete item cannot be converted to a CFG production: %s' % str(self))
         fsa_states = self.inner + (self.dot,)
         fsa_weights = [wfsa.arc_weight(fsa_states[i], fsa_states[i + 1], sym) 
-                for i, sym in ifilter(lambda (_, s): isinstance(s, Terminal), enumerate(self.rule.rhs))]
+                for i, sym in filter(lambda i_s: isinstance(i_s[1], Terminal), enumerate(self.rule.rhs))]
         weight = reduce(semiring.times, fsa_weights, self.rule.weight)
         return CFGProduction(make_symbol(self.rule.lhs, self.start, self.dot), 
                 (make_symbol(sym, fsa_states[i], fsa_states[i + 1]) for i, sym in enumerate(self.rule.rhs)),

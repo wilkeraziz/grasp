@@ -1,12 +1,12 @@
 """
 
-:Authors: Wilker Aziz
+:Authors: - Wilker Aziz
 """
 
 
 import numpy as np
-import ply_cfg
-import discodopfmt
+from . import ply_cfg
+from . import discodopfmt
 
 
 def load_grammar(path, grammarfmt, log_transform):

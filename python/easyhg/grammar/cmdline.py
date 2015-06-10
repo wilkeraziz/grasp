@@ -84,6 +84,10 @@ def cmd_info(group):
             action='store_true',
             help='increase the verbosity level')
 
+    group.add_argument('--profile',
+            type=str, metavar='PSTATS',
+            help='use cProfile and save a pstats report')
+
 
 def cmd_viterbi(group):
     group.add_argument('--kbest',

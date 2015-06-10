@@ -4,11 +4,12 @@
 
 import ply.lex as lex
 import ply.yacc as yacc
+import sys
 
-from symbol import Terminal, Nonterminal
-from rule import CFGProduction
-from cfg import CFG
-from utils import smart_open
+from .symbol import Terminal, Nonterminal
+from .rule import CFGProduction
+from .cfg import CFG
+from .utils import smart_open
 
 
 _EXAMPLE_GRAMMAR_ = """
@@ -58,7 +59,7 @@ class CFGLex(object):
         t.lexer.lineno += t.value.count("\n")
 
     def t_error(self, t):
-        print("Illegal character '%s'" % t.value[0])
+        print("Illegal character '%s'" % t.value[0], file=sys.stderr)
         t.lexer.skip(1)
 
     def build(self, **kwargs):
@@ -119,7 +120,7 @@ class CFGYacc(object):
             p[0] = p[1]
 
     def p_error(self, p):
-        print("Syntax error at '%s'" % p)
+        print("Syntax error at '%s'" % p, file=sys.stderr)
     
     def build(self, **kwargs):
         self.parser = yacc.yacc(module=self, **kwargs)
@@ -141,5 +142,5 @@ def read_grammar(path, transform=None):
 
 if __name__ == '__main__':
     import sys
-    print read_grammar(sys.stdin)
+    print(read_grammar(sys.stdin))
 

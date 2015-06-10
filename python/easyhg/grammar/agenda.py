@@ -8,42 +8,64 @@ We offer two types of containers for active items:
 
 This module also provides a top-down algorithm that constructs products that are all reachable from the goal item.
 
-@author wilkeraziz
+:Authors: - Wilker Aziz
 """
 
 from collections import deque, defaultdict
-from itertools import ifilter, chain
-from symbol import Nonterminal
-from rule import CFGProduction
-from cfg import CFG
+from itertools import chain
+from .symbol import Nonterminal
+from .rule import CFGProduction
+from .cfg import CFG
 
 
 class ActiveSet(object):
     """
-    Implement a set of active items
+    Implement a set of active items.
+
+    >>> S = ActiveSet()
+    >>> S.add(1)
+    True
+    >>> S.add(1)
+    False
+    >>> S.pop()
+    1
+    >>> S.add(1)  # note how this differs for ActiveQueue (#TODO: should this behave like ActiveQueue?)
+    True
     """
 
     def __init__(self):
         self._active = set()
+        self._seen = set()
     
     def __len__(self):
-        """Number of active items queuing to be processed"""
+        """Number of active items waiting to be processed"""
         return len(self._active)
 
     def pop(self):
-        """Returns the next active item"""
+        """Returns an arbitrary item"""
         return self._active.pop()
 
     def add(self, item):
-        """Add an active item if possible"""
+        """Add an active item if possible and return whether or not the item was added"""
+        n = len(self._active)
         self._active.add(item)
-        return True
+        return len(self._active) > n
 
 
 class ActiveQueue(object):
     """
     Implement a queue of active items.
     However the queue guarantee that an item never queues more than once.
+
+    >>> Q = ActiveQueue()
+    >>> Q.add(1)
+    True
+    >>> Q.add(1)
+    False
+    >>> Q.pop()
+    1
+    >>> Q.add(1)  # cannot queue more than once
+    False
     """
     
     def __init__(self):
@@ -70,7 +92,7 @@ class ActiveQueue(object):
 
 class Agenda(object):
     """
-    This is a CKY agenda which implements the algorithm by Nederhof and Satta (2008).
+    This is an agenda for item-based parsing/intersection.
     It consists of:
         1) a queue of active items
         2) a set of generating intersected nonterminals
@@ -82,7 +104,7 @@ class Agenda(object):
         self._active_container_type = active_container_type
         self._active = active_container_type()  # items to be processed
         self._waiting = defaultdict(set)  # passive items waiting for completion: (LHS, start) -> items
-        self._generating = defaultdict(lambda : defaultdict(set))  # generating symbols: LHS -> start -> ends
+        self._generating = defaultdict(lambda: defaultdict(set))  # generating symbols: LHS -> start -> ends
         self._complete = defaultdict(set)  # complete items
 
     def __len__(self):
@@ -153,14 +175,14 @@ class Agenda(object):
     
     def itergenerating(self, sym):
         """Returns an iterator to pairs of the kind (start, set of ends) for generating items based on a given symbol"""
-        return self._generating.get(sym, {}).iteritems()
+        return iter(self._generating.get(sym, {}).items())
             
     def itercomplete(self, lhs=None, start=None, end=None):
         """
         Iterates through complete items whose left hand-side is (start, lhs, end)
         or through all of them if lhs is None
         """
-        return chain(*self._complete.itervalues()) if lhs is None else iter(self._complete.get((lhs, start, end), set()))
+        return chain(*iter(self._complete.values())) if lhs is None else iter(self._complete.get((lhs, start, end), set()))
             
     def iterwaiting(self, sym, start):
         """Returns items waiting for a certain symbol to complete from a certain state"""
@@ -190,7 +212,7 @@ def make_cfg(goal, root, itergenerating, itercomplete, fsa, semiring, make_symbo
             for item in itercomplete(lhs, start, end):
                 G.add(item.cfg_production(fsa, semiring, make_symbol))
                 fsa_states = item.inner + (item.dot,)
-                for i, sym in ifilter(lambda (_, s): isinstance(s, Nonterminal), enumerate(item.rule.rhs)):
+                for i, sym in filter(lambda i_s: isinstance(i_s[1], Nonterminal), enumerate(item.rule.rhs)):
                     if (sym, fsa_states[i], fsa_states[i + 1]) not in processed:  # Nederhof does not perform this test, but in python it turned out crucial
                         make_rules(sym, fsa_states[i], fsa_states[i + 1])
 
@@ -198,7 +220,7 @@ def make_cfg(goal, root, itergenerating, itercomplete, fsa, semiring, make_symbo
         for start, ends in itergenerating(root):
             if not fsa.is_initial(start):
                 continue
-            for end in ifilter(lambda q: fsa.is_final(q), ends):
+            for end in filter(lambda q: fsa.is_final(q), ends):
                 make_rules(root, start, end)
                 G.add(CFGProduction(make_symbol(goal, None, None),
                     [make_symbol(root, start, end)],
@@ -214,7 +236,7 @@ def make_cfg(goal, root, itergenerating, itercomplete, fsa, semiring, make_symbo
         for start, ends in itergenerating(root):
             if not fsa.is_initial(start):  # must span from an initial state
                 continue
-            for end in ifilter(lambda q: fsa.is_final(q), ends):  # to a final state
+            for end in filter(lambda q: fsa.is_final(q), ends):  # to a final state
                 Q.append((root, start, end)) 
                 queuing.add((root, start, end)) 
                 G.add(CFGProduction(make_symbol(goal, None, None),
@@ -226,7 +248,7 @@ def make_cfg(goal, root, itergenerating, itercomplete, fsa, semiring, make_symbo
             for item in itercomplete(lhs, start, end):
                 G.add(item.cfg_production(fsa, semiring, make_symbol))
                 fsa_states = item.inner + (item.dot,)
-                for i, sym in ifilter(lambda (_, s): isinstance(s, Nonterminal), enumerate(item.rule.rhs)):
+                for i, sym in filter(lambda i_s: isinstance(i_s[1], Nonterminal), enumerate(item.rule.rhs)):
                     if (sym, fsa_states[i], fsa_states[i + 1]) not in queuing:  # make sure the same symbol never queues more than once
                         Q.append((sym, fsa_states[i], fsa_states[i + 1]))
                         queuing.add((sym, fsa_states[i], fsa_states[i + 1]))

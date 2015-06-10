@@ -4,10 +4,11 @@
 
 import numpy as np
 from collections import defaultdict
-from itertools import chain, groupby, ifilter
-from rule import CFGProduction
-from cfg import CFG
-from symbol import Terminal, Nonterminal
+from itertools import chain, groupby
+from .rule import CFGProduction
+from .cfg import CFG
+from .symbol import Terminal, Nonterminal
+from functools import reduce
 
 
 class SCFG(object):
@@ -24,9 +25,9 @@ class SCFG(object):
             self._syncrules_by_lhs[srule.lhs].add(srule)
             self._srules[srule.lhs][srule.f_rhs].add(srule)
             self._nonterminals.add(srule.lhs)
-            self._nonterminals.update(ifilter(lambda s: isinstance(s, Nonterminal), srule.f_rhs))
-            self._sigma.update(ifilter(lambda s: isinstance(s, Terminal), srule.f_rhs))
-            self._delta.update(ifilter(lambda s: isinstance(s, Terminal), srule.e_rhs))
+            self._nonterminals.update(filter(lambda s: isinstance(s, Nonterminal), srule.f_rhs))
+            self._sigma.update(filter(lambda s: isinstance(s, Terminal), srule.f_rhs))
+            self._delta.update(filter(lambda s: isinstance(s, Terminal), srule.e_rhs))
     
     @property
     def sigma(self):
@@ -44,9 +45,9 @@ class SCFG(object):
         self._syncrules_by_lhs[srule.lhs].add(srule)
         self._srules[srule.lhs][srule.f_rhs].add(srule)
         self._nonterminals.add(srule.lhs)
-        self._nonterminals.update(ifilter(lambda s: isinstance(s, Nonterminal), srule.f_rhs))
-        self._sigma.update(ifilter(lambda s: isinstance(s, Terminal), srule.f_rhs))
-        self._delta.update(ifilter(lambda s: isinstance(s, Terminal), srule.e_rhs))
+        self._nonterminals.update(filter(lambda s: isinstance(s, Nonterminal), srule.f_rhs))
+        self._sigma.update(filter(lambda s: isinstance(s, Terminal), srule.f_rhs))
+        self._delta.update(filter(lambda s: isinstance(s, Terminal), srule.e_rhs))
 
 
     def __contains__(self, lhs):
@@ -56,17 +57,17 @@ class SCFG(object):
         return self._syncrules_by_lhs.get(lhs, frozenset())
 
     def __iter__(self):
-        return chain(*self._syncrules_by_lhs.itervalues())
+        return chain(*iter(self._syncrules_by_lhs.values()))
 
     def get(self, lhs, default=None):
         return self._syncrules_by_lhs.get(lhs, default)
     
     def iteritems(self):
-        return self._syncrules_by_lhs.iteritems()
+        return iter(self._syncrules_by_lhs.items())
     
     def __str__(self):
         lines = []
-        for lhs, rules in self.iteritems():
+        for lhs, rules in self.items():
             for rule in rules:
                 lines.append(str(rule))
         return '\n'.join(lines)
@@ -79,12 +80,12 @@ class SCFG(object):
         """
         # group rules by projection
         aux = defaultdict(list)
-        for syncr in chain(*self._syncrules_by_lhs.itervalues()):
+        for syncr in chain(*iter(self._syncrules_by_lhs.values())):
             aux[(syncr.lhs, syncr.f_rhs)].append(syncr.weight)
         if not marginalise:
-            return CFG(CFGProduction(lhs, f_rhs, semiring.one) for (lhs, f_rhs), weights in aux.iteritems())
+            return CFG(CFGProduction(lhs, f_rhs, semiring.one) for (lhs, f_rhs), weights in aux.items())
         else: 
-            return CFG(CFGProduction(lhs, f_rhs, reduce(semiring.plus, weights)) for (lhs, f_rhs), weights in aux.iteritems())
+            return CFG(CFGProduction(lhs, f_rhs, reduce(semiring.plus, weights)) for (lhs, f_rhs), weights in aux.items())
 
     def e_projection(self, semiring, marginalise=False):
         """
@@ -94,12 +95,12 @@ class SCFG(object):
         """
         # group rules by projection
         aux = defaultdict(list)
-        for syncr in chain(*self._syncrules_by_lhs.itervalues()):
+        for syncr in chain(*iter(self._syncrules_by_lhs.values())):
             aux[(syncr.lhs, syncr.project_rhs())].append(syncr.weight)
         if not marginalise:
-            return CFG(CFGProduction(lhs, e_rhs, semiring.one) for (lhs, e_rhs), weights in aux.iteritems())
+            return CFG(CFGProduction(lhs, e_rhs, semiring.one) for (lhs, e_rhs), weights in aux.items())
         else: 
-            return CFG(CFGProduction(lhs, e_rhs, reduce(semiring.plus, weights)) for (lhs, e_rhs), weights in aux.iteritems())
+            return CFG(CFGProduction(lhs, e_rhs, reduce(semiring.plus, weights)) for (lhs, e_rhs), weights in aux.items())
 
     def iterrulesbyf(self, lhs, f_rhs):
         srules = self._srules.get(lhs, None)

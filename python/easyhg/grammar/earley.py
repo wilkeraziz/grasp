@@ -1,22 +1,12 @@
 """
 This is an implementation of Earley intersection as presented in (Dyer and Resnik, 2010).
 
-@author wilkeraziz
+:Authors: - Wilker Aziz
 """
 
-import logging
-import collections
-import itertools
-import numpy as np
-from itertools import ifilter
-from weakref import WeakValueDictionary
-from collections import defaultdict
-from symbol import Terminal, Nonterminal, make_flat_symbol, make_recursive_symbol
-from rule import CFGProduction, SCFGProduction
-from dottedrule import DottedRule as Item
-from agenda import ActiveQueue, Agenda, make_cfg
-from cfg import CFG
-from scfg import SCFG
+from .symbol import Terminal, Nonterminal, make_flat_symbol
+from .dottedrule import DottedRule as Item
+from .agenda import ActiveQueue, Agenda, make_cfg
 
 EMPTY_SET = frozenset()
 
@@ -157,24 +147,3 @@ class Earley(object):
         return make_cfg(goal, root, 
                 self._agenda.itergenerating, self._agenda.itercomplete, 
                 self._wfsa, self._semiring, self._make_symbol)
-
-        # converts complete items into rules
-
-
-    # TODO: create a make_scfg
-    def get_intersected_scfg(self, new_roots, goal):
-        semiring = self._semiring
-        make_symbol = self._make_symbol
-        G = SCFG()
-        for item in self._agenda.itercomplete():
-            lhs = make_symbol(item.rule.lhs, item.start, item.dot)
-            fsa_states = item.inner + (item.dot,)
-            fsa_weights = []
-            for i, sym in ifilter(lambda (_, s): isinstance(s, Terminal), enumerate(item.rule.rhs)):
-                fsa_weights.append(self._wfsa.arc_weight(fsa_states[i], fsa_states[i + 1], sym))
-            weight = reduce(semiring.times, fsa_weights, item.rule.weight)
-            f_rhs = [make_symbol(sym, fsa_states[i], fsa_states[i + 1]) for i, sym in enumerate(item.rule.rhs)]  
-            for syncr in self._scfg.iterrulesbyf(item.rule.lhs, item.rule.rhs):
-                G.add(SCFGProduction(lhs, f_rhs, syncr.e_rhs, syncr.alignment, semiring.times(weight, syncr.weight)))
-        for sym, si, sf in new_roots:
-            G.add(SCFGProduction(goal, [make_symbol(sym, si, sf)], [Nonterminal('1')], [1], semiring.one))

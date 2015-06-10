@@ -1,28 +1,27 @@
 """
-Read grammars encoded in bitpar/discodop's format.
+Read grammars encoded in discodop's format.
 
-:Authors: Wilker Aziz
+:Authors: - Wilker Aziz
 """
 
 import sys
 import numpy as np
 from itertools import chain
-from symbol import Terminal, Nonterminal
-from rule import CFGProduction
-from cfg import CFG
-from utils import smart_open
-import logging
+from .symbol import Terminal, Nonterminal
+from .rule import CFGProduction
+from .cfg import CFG
+from .utils import smart_open
 
 
 def iterrules(path, transform):
-    fi = smart_open(path)
+    fi = smart_open(path, 'rt')
     for line in fi:
         line = line.strip()
         if not line:
             continue
         fields = line.split()
         lhs = fields[0]
-        num, den = fields[-1].split('/')
+        (num, den) = fields[-1].split('/')
         num = float(num)
         den = float(den)
         rhs = fields[1:-2]  # fields[-2] is the yield function, which we are ignoring
@@ -32,7 +31,7 @@ def iterrules(path, transform):
 
 
 def iterlexicon(path, transform):
-    fi = smart_open(path)
+    fi = smart_open(path, 'rt')
     for line in fi:
         line = line.strip()
         if not line:
@@ -53,6 +52,6 @@ def read_grammar(rules_file, lexicon_file, transform=np.log):
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:
-        print >> sys.stderr, 'Usage: %s rules lexicon' % (sys.argv[0])
+        print('Usage: %s rules lexicon' % (sys.argv[0]), file=sys.stderr)
         sys.exit(0)
-    print read_grammar(sys.argv[1], sys.argv[2])
+    print(read_grammar(sys.argv[1], sys.argv[2]))

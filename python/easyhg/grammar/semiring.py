@@ -24,11 +24,34 @@ import operator
 
 
 class Prob(object):
+    """
+    >>> semi = Prob
+    >>> semi.one
+    1.0
+    >>> semi.zero
+    0.0
+    >>> semi.plus(semi.one, semi.zero)  # additive identity
+    1.0
+    >>> semi.plus(semi.one, semi.one)
+    2.0
+    >>> semi.times(semi.one, semi.zero)  # multiplicative annihilator
+    0.0
+    >>> semi.times(semi.one, semi.from_real(0.5))  # multiplicative identity
+    0.5
+    >>> semi.divide(semi.from_real(0.5), semi.from_real(0.2))
+    2.5
+    >>> semi.gt(semi.from_real(0.6), semi.from_real(0.1))
+    True
+    >>> semi.gt(semi.heapify(semi.from_real(0.6)), semi.heapify(semi.from_real(0.1)))
+    False
+    >>> semi.as_real(semi.from_real(0.5))
+    0.5
+    """
 
     LOG = False
 
     one = 1.0
-    zero = 0
+    zero = 0.0
     plus = np.add
     times = np.multiply
     divide = np.divide
@@ -37,7 +60,31 @@ class Prob(object):
     gt = np.greater
     heapify = operator.neg 
 
+
 class SumTimes(object):
+    """
+    >>> semi = SumTimes
+    >>> semi.one
+    0.0
+    >>> semi.zero
+    -inf
+    >>> semi.plus(semi.one, semi.zero)  # additive identity
+    0.0
+    >>> semi.plus(semi.one, semi.one)  # doctest: +ELLIPSIS
+    0.6931...
+    >>> semi.times(semi.one, semi.zero)  # multiplicative annihilator
+    -inf
+    >>> semi.times(semi.one, semi.from_real(0.5))  # multiplicative identity # doctest: +ELLIPSIS
+    -0.6931...
+    >>> semi.divide(semi.from_real(0.5), semi.from_real(0.2))  # doctest: +ELLIPSIS
+    0.9162...
+    >>> semi.gt(semi.from_real(0.6), semi.from_real(0.1))
+    True
+    >>> semi.gt(semi.heapify(semi.from_real(0.6)), semi.heapify(semi.from_real(0.1)))
+    False
+    >>> semi.as_real(semi.from_real(0.5))
+    0.5
+    """
 
     LOG = True
 
@@ -51,7 +98,31 @@ class SumTimes(object):
     gt = np.greater
     heapify = operator.neg 
 
+
 class MaxTimes(object):
+    """
+    >>> semi = MaxTimes
+    >>> semi.one
+    0.0
+    >>> semi.zero
+    -inf
+    >>> semi.plus(semi.one, semi.zero)  # additive identity
+    0.0
+    >>> semi.plus(semi.one, semi.one)  # max
+    0.0
+    >>> semi.times(semi.one, semi.zero)  # multiplicative annihilator
+    -inf
+    >>> semi.times(semi.one, semi.from_real(0.5))  # multiplicative identity # doctest: +ELLIPSIS
+    -0.6931...
+    >>> semi.divide(semi.from_real(0.5), semi.from_real(0.2))  # doctest: +ELLIPSIS
+    0.9162...
+    >>> semi.gt(semi.from_real(0.6), semi.from_real(0.1))
+    True
+    >>> semi.gt(semi.heapify(semi.from_real(0.6)), semi.heapify(semi.from_real(0.1)))
+    False
+    >>> semi.as_real(semi.from_real(0.5))
+    0.5
+    """
 
     LOG = True
 
@@ -65,16 +136,83 @@ class MaxTimes(object):
     gt = np.greater
     heapify = operator.neg
 
+
 class Count(object):
+    """
+    >>> semi = Count
+    >>> semi.one
+    1
+    >>> semi.zero
+    0
+    >>> semi.plus(semi.one, semi.zero)  # additive identity
+    1
+    >>> semi.plus(semi.one, semi.one)  # sum
+    2
+    >>> semi.times(semi.one, semi.zero)  # multiplicative annihilator
+    0
+    >>> semi.from_real(0.5)
+    0
+    >>> semi.from_real(2.5)
+    2
+    >>> semi.times(semi.one, semi.from_real(2.5))  # multiplicative identity # doctest: +ELLIPSIS
+    2
+    >>> semi.gt(semi.from_real(0.6), semi.from_real(0.1))
+    False
+    >>> semi.gt(semi.heapify(semi.from_real(0.6)), semi.heapify(semi.from_real(0.1)))
+    False
+    >>> semi.as_real(semi.from_real(1.5))
+    1.0
+    """
 
     LOG = False
 
-    one = 1L
-    zero = 0L
+    one = 1
+    zero = 0
     plus = operator.add  # np.add
     times = operator.mul  # np.multiply
     divide = None
     as_real = float
-    from_real = lambda x: long(bool(x))
-    heapify = operator.neg 
+    from_real = int
+    gt = np.greater
+    heapify = operator.neg
+
+
+class Boolean(object):
+    """
+    >>> semi = Boolean
+    >>> semi.one
+    True
+    >>> semi.zero
+    False
+    >>> semi.plus(semi.one, semi.zero)  # additive identity
+    True
+    >>> semi.plus(semi.one, semi.one)  # sum
+    True
+    >>> semi.times(semi.one, semi.zero)  # multiplicative annihilator
+    False
+    >>> semi.from_real(1.0)
+    True
+    >>> semi.from_real(0.0)
+    False
+    >>> semi.times(semi.one, semi.from_real(0))  # multiplicative identity # doctest: +ELLIPSIS
+    False
+    >>> semi.gt(semi.from_real(0), semi.from_real(1))
+    False
+    >>> semi.gt(semi.heapify(semi.from_real(0)), semi.heapify(semi.from_real(1)))
+    True
+    >>> semi.as_real(semi.from_real(2))
+    1.0
+    """
+
+    LOG = False
+
+    one = True
+    zero = False
+    plus = operator.or_  # np.add
+    times = operator.and_  # np.multiply
+    divide = None
+    as_real = float
+    from_real = bool
+    gt = np.greater
+    heapify = operator.neg
 

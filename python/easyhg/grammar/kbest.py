@@ -14,12 +14,12 @@ The algorithm is due to Huang and Chiang (2005).
         Year = {2005}
         }
 
+
+:Authors: - Wilker Aziz
 """
-__author__ = 'wilkeraziz'
 
 import heapq
 from collections import deque, defaultdict
-from itertools import izip
 
 
 class Derivation(object):
@@ -80,12 +80,13 @@ class NodeDerivationState(object):
         """whether the state is empty (i.e. no derivations have been enumerated, nor there are derivations queueing)"""
         return len(self._candidates) + len(self._derivations) == 0
 
-    def __contains__(self, (e, J)):
+    def __contains__(self, e_J):
         """
         whether a certain derivation (signature) has been seen
         @param e: edge
         @param J: backpointers
         """
+        (e, J) = e_J
         return (e, tuple(J)) in self._queueing
 
     def has_candidates(self):
@@ -251,7 +252,7 @@ class KBest(object):
 
     def iterderivations(self):
         """returns an iterator for up to k-best derivations and their weights"""
-        for k in xrange(self._k):
+        for k in range(self._k):
             Q = deque([(self._root, k)])
             edges = []
             weights = []
@@ -265,6 +266,6 @@ class KBest(object):
                 d = state.D[i]
                 weights.append(d.weight)
                 edges.append(d.edge)
-                Q.extend(izip(self.tail(d.edge), d.J))
+                Q.extend(zip(self.tail(d.edge), d.J))
             yield tuple(edges)  #, weights[0]  # the total weight
         

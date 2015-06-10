@@ -1,12 +1,11 @@
 """
-:Authors: Wilker Aziz
+:Authors: - Wilker Aziz
 """
 
-import unknownmodel
-from fsa import make_linear_fsa
-from symbol import Nonterminal, Terminal
-from rule import CFGProduction
-from fsa import WDFSA
+from . import unknownmodel
+from .symbol import Nonterminal, Terminal
+from .rule import CFGProduction
+from .fsa import WDFSA
 import logging
 
 PASSTHROUGH = 'passthrough'
@@ -14,6 +13,7 @@ STFDBASE = 'stfdbase'
 STFD4 = 'stfd4'
 STFD6 = 'stfd6'
 DEFAULT_SYMBOL = 'X'
+
 
 class Sentence(object):
 
@@ -39,6 +39,36 @@ class Sentence(object):
 
 
 def make_sentence(input_str, semiring, lexicon, unkmodel=None, default_symbol=DEFAULT_SYMBOL):
+    """
+
+    :param input_str:
+    :param semiring:
+    :param lexicon:
+    :param unkmodel:
+    :param default_symbol:
+    :return: a Sentence object
+
+    >>> from .semiring import Prob
+    >>> from .symbol import Terminal
+    >>> input_str = 'The dog barked'
+    >>> lexicon = {Terminal(x) for x in 'the dog barked'.split()}
+    >>> snt, extra = make_sentence(input_str, Prob, lexicon, unkmodel=STFDBASE)
+    >>> snt.words
+    ('The', 'dog', 'barked')
+    >>> snt.signatures
+    ('_UNK-C', 'dog', 'barked')
+    >>> snt, extra = make_sentence(input_str, Prob, lexicon, unkmodel=STFD4)
+    >>> snt.signatures
+    ('_UNK-SC', 'dog', 'barked')
+    >>> snt, extra = make_sentence(input_str, Prob, lexicon, unkmodel=STFD6)
+    >>> snt.signatures
+    ('_UNK-INITC-KNOWNLC', 'dog', 'barked')
+    >>> snt, extra = make_sentence(input_str, Prob, lexicon, unkmodel=PASSTHROUGH)
+    >>> snt.signatures
+    ('The', 'dog', 'barked')
+    >>> extra[0]
+    CFGProduction(Nonterminal('X'), (Terminal('The'),), 1.0)
+    """
     words = input_str.split()
     signatures = list(words)
     extra_rules = []
@@ -58,8 +88,6 @@ def make_sentence(input_str, semiring, lexicon, unkmodel=None, default_symbol=DE
                         get_signature = unknownmodel.unknownword6
                     else:
                         raise NotImplementedError('I do not know this model: %s' % unkmodel)
-                    if str_lexicon is None:
-                        str_lexicon = set(t.surface for t in lexicon)
                     signatures[i] = get_signature(word, i, str_lexicon)
                     logging.debug('Unknown word model (%s): i=%d word=%s signature=%s', unkmodel, i, word, signatures[i])
 

@@ -1,6 +1,6 @@
 from nltk.tree import Tree
 from collections import defaultdict
-from symbol import Terminal, Nonterminal
+from .symbol import Terminal
 import re
 import gzip
 
