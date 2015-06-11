@@ -96,7 +96,7 @@ class Parser(object):
             forest = self.forest()
             tsort = self.tsort()
             logging.info('Inside semiring=%s ...', str(semiring.__name__))
-            itable = robust_inside(forest, tsort, semiring)
+            itable = robust_inside(forest, tsort, semiring, infinity=self.options.generations)
             logging.info('Inside goal-value=%f', itable[self.root])
             self._inside[semiring] = itable
         return itable
@@ -133,16 +133,17 @@ class Parser(object):
         inside_nodes = self.inside(SumTimes)
         count = Counter(sample(forest, self.root, SumTimes, Iv=inside_nodes, N=self.options.samples))
         n_samples = self.options.samples
-        print('# SAMPLE: size=%d' % n_samples)
+        print('# SAMPLE: size=%d Z=%s' % (n_samples, inside_nodes[self.root]))
         for d, n in count.most_common():
             t = make_nltk_tree(d)
-            p = total_weight(d, SumTimes, inside_nodes[self.root])
-            print('# n={0} emp={1} exact={2}\n{3}'.format(n, float(n)/n_samples, SumTimes.as_real(p), inlinetree(t)))
+            score = total_weight(d, SumTimes)
+            p = SumTimes.divide(score, inside_nodes[self.root])
+            print('# n={0} estimate={1} exact={2} score={3}\n{4}'.format(n, float(n)/n_samples, SumTimes.as_real(p), score, inlinetree(t)))
         print()
 
     def count(self, forest, tsort):
         logging.info('Inside semiring=%s ...', str(Count.__name__))
-        Ic = robust_inside(forest, tsort, Count, omega=lambda e: Count.one)
+        Ic = robust_inside(forest, tsort, Count, omega=lambda e: Count.one, infinity=self.options.generations)
         logging.info('Forest: edges=%d nodes=%d paths=%d', len(forest), forest.n_nonterminals(), Ic[self.root])
         print('# FOREST edges=%d nodes=%d paths=%d' % (len(forest), forest.n_nonterminals(), Ic[self.root]))
 

@@ -2,8 +2,7 @@
 
 This is a list of things to do:
 
-* check k-best enumeration
-* infinite summation for Inside-Outside
+* approximate the supremum in Outside
 * more unit tests
 * migrate core code to Cython
 * support to SCFG

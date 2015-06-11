@@ -9,52 +9,84 @@ It implements
 """
 
 import numpy as np
+import logging
 from functools import reduce
-
 from collections import defaultdict, deque
 
 
 def inside(forest, topsorted, semiring, omega=lambda e: e.weight):
     """
-    Returns inside weights in a given semiring.
-    This is a bottom-up pass through the forest, thus runs in O(|forest|).
-    @param omega: a function that weighs edges/rules (serves as a bypass)
+    Returns items' values in a given semiring.
+    This is a bottom-up pass through the forest which runs in O(|forest|).
+    :param forest: an acyclic hypergraph-like object.
+    :param tsort: a TopSortTable object.
+    :param semiring: must define zero, one, sum and times.
+    :param omega: a function that weighs edges/rules (defaults to the edge's weight).
+        You might want to use this to, for instance, convert between semirings.
+    :return:
     """
     I = defaultdict(None)
     # we go bottom-up
     for parent in topsorted:  # the inside of a node
-        incoming = forest.get(parent, None)
-        if incoming is None:  # a terminal node
+        incoming = forest.get(parent, set())
+        if not incoming:  # a terminal node
             I[parent] = semiring.one
             continue
         # the inside of a nonterminal node is a sum over all of its incoming edges (rewrites)
         # for each rewriting rule, we get the product of the RHS nodes' insides times the rule weight
-        partials = (reduce(semiring.times, (I[child] for child in rule.rhs), omega(rule)) for rule in forest.get(parent, set()))
+        partials = (reduce(semiring.times, (I[child] for child in rule.rhs), omega(rule)) for rule in incoming)
         I[parent] = reduce(semiring.plus, partials, semiring.zero)
     return I
 
 
-def robust_inside(forest, tsort, semiring, omega=lambda e: e.weight):
+def robust_inside(forest, tsort, semiring, omega=lambda e: e.weight, infinity=20):
     """
-    Returns inside weights in a given semiring.
-    This is a bottom-up pass through the forest, thus runs in O(|forest|).
-    @param omega: a function that weighs edges/rules (serves as a bypass)
+    Returns items' values in a given semiring.
+    This is a bottom-up pass through the forest which runs in O(|forest|).
+    :param forest: a hypergraph-like object.
+    :param tsort: a TopSortTable object.
+    :param semiring: must define zero, one, sum and times.
+    :param omega: a function that weighs edges/rules (defaults to the edge's weight).
+        You might want to use this to, for instance, convert between semirings.
+    :param infinity: the maximum number of generations in supremum computations.
+    :return:
     """
     I = defaultdict(lambda: semiring.one)
     # we go bottom-up
     for bucket in tsort.iterbuckets(skip=1):  # we skip the terminals
         if len(bucket) == 1:  # non-loopy
             parent = next(iter(bucket))
-            incoming = forest.get(parent, None)
-            if incoming is None:  # a terminal node
+            incoming = forest.get(parent, set())
+            if not incoming:  # a terminal node
                 I[parent] = semiring.one
                 continue
             # the inside of a nonterminal node is a sum over all of its incoming edges (rewrites)
             # for each rewriting rule, we get the product of the RHS nodes' insides times the rule weight
-            partials = (reduce(semiring.times, (I[child] for child in rule.rhs), omega(rule)) for rule in forest.get(parent, set()))
+            partials = (reduce(semiring.times, (I[child] for child in rule.rhs), omega(rule)) for rule in incoming)
             I[parent] = reduce(semiring.plus, partials, semiring.zero)
         else:
-            raise NotImplementedError('I do not yet know how to compute infinite sums.')
+            V = defaultdict(lambda: semiring.zero)  # this will hold partial inside values for loopy nodes
+            for g in range(infinity):  # we iterate to "infinity"
+                _V = defaultdict(lambda: semiring.zero)  # this is the current generation
+                for parent in bucket:
+                    incoming = forest.get(parent, set())
+                    if not incoming:
+                        value = semiring.one
+                    else:
+                        partials = (reduce(semiring.times,
+                                           (V[child] if child in bucket else I[child] for child in rule.rhs),
+                                           omega(rule))
+                                    for rule in incoming)
+                        value = reduce(semiring.plus, partials, semiring.zero)
+                    _V[parent] = value
+                if V == _V:
+                    # if the values of all items have remained unchanged, they have all converged to their supremum values
+                    #logging.info('bucket-size=%d g=%d/%d', len(bucket), g, infinity)
+                    break
+                else:
+                    V = _V
+            for node, value in V.items():
+                I[node] = value
     return I
 
 

@@ -61,7 +61,10 @@ def cmd_parser(group):
             type=str, default='exact', choices=['exact', 'slice', 'gibbs'],
             metavar='FRAMEWORK',
             help="inference framework: 'exact', 'slice' sampling, 'gibbs' sampling")
-
+    group.add_argument('--generations',
+            type=int, default=10,
+            metavar='MAX',
+            help="maximum number of generations in approximating supremum values (for cyclic forests)")
 
 def cmd_tagger(group):
     group.add_argument('--unkmodel',

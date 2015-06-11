@@ -13,7 +13,7 @@ from .symbol import Nonterminal, make_recursive_symbol
 from .semiring import SumTimes, Count
 from .slicevars import SliceVariables
 from .slicednederhof import Nederhof
-from .inference import robust_inside, sample
+from .inference import robust_inside, sample, total_weight
 from .utils import make_nltk_tree, inlinetree
 from . import heuristic
 from .reader import load_grammar
@@ -72,13 +72,14 @@ def slice_sampling(cfg, sentence, args, semiring=SumTimes):
         #logging.debug('Top symbol: %s', tsort.root())
 
         if args.count:
-            Ic = robust_inside(forest, tsort, Count, omega=lambda e: Count.one)
+            Ic = robust_inside(forest, tsort, Count, omega=lambda e: Count.one, infinity=args.generations)
             logging.info('Done! Forest: %d edges, %d nodes and %d paths' % (len(forest), forest.n_nonterminals(), Ic[tsort.root()]))
         else:
             logging.info('Done! Forest: %d edges, %d nodes' % (len(forest), forest.n_nonterminals()))
 
+        logging.debug('Inside...')
         uniformdist = parser.reweight(forest)
-        Iv = robust_inside(forest, tsort, semiring, omega=lambda e: uniformdist[e])
+        Iv = robust_inside(forest, tsort, semiring, omega=lambda e: uniformdist[e], infinity=args.generations)
         logging.debug('Sampling...')
         D = list(sample(forest, tsort.root(), semiring, Iv=Iv, N=args.batch, omega=lambda e: uniformdist[e]))
         assert D, 'The slice should never be empty'
@@ -91,5 +92,6 @@ def slice_sampling(cfg, sentence, args, semiring=SumTimes):
     count = Counter(samples[args.burn:])
     for d, n in count.most_common():
         t = make_nltk_tree(d)
-        print('# count=%d prob=%f\n%s' % (n, float(n)/args.samples, inlinetree(t)))
+        score = total_weight(d, SumTimes)
+        print('# n=%d estimate=%f score=%f\n%s' % (n, float(n)/args.samples, score, inlinetree(t)))
     print()
