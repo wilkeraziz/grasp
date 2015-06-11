@@ -204,6 +204,21 @@ class TopSortTable(object):
         order.appendleft(frozenset(frozenset([t]) for t in forest.iterterminals()))
         self._topsort = order
 
+    def n_levels(self):
+        return len(self._topsort)
+
+    def n_top_symbols(self):
+        return sum(len(b) for b in self.itertopbuckets())
+
+    def n_top_buckets(self):
+        return len(self._topsort[-1])
+
+    def n_loopy_symbols(self):
+        return sum(len(buckets) for buckets in filter(lambda b: len(b) > 1, self.iterbuckets()))
+
+    def n_cycles(self):
+        return sum(1 for _ in filter(lambda b: len(b) > 1, self.iterbuckets()))
+
     def topsort(self):
         return self._topsort
 

@@ -11,14 +11,14 @@ from itertools import chain
 
 from .symbol import Nonterminal, make_recursive_symbol
 from .semiring import SumTimes, Count
-from .cfg import topsort_cfg
 from .slicevars import SliceVariables
 from .slicednederhof import Nederhof
-from .inference import inside, sample
+from .inference import robust_inside, sample
 from .utils import make_nltk_tree, inlinetree
 from . import heuristic
 from .reader import load_grammar
 from .sentence import make_sentence
+from .cfg import TopSortTable
 
 
 def make_conditions(d, semiring):
@@ -49,7 +49,7 @@ def make_heuristic(args, cfg, semiring):
         raise ValueError('Unknown heuristic')
 
 
-def slice_sampling(cfg, sentence, semiring, args):
+def slice_sampling(cfg, sentence, args, semiring=SumTimes):
     # get a heuristic
     heuristic = make_heuristic(args, cfg, semiring)
     # configure slice variables
@@ -65,18 +65,22 @@ def slice_sampling(cfg, sentence, semiring, args):
             logging.debug('NO PARSE FOUND')
             u.reset()  # reset the slice variables (keeping conditions unchanged if any)
             continue
-        topsorted = list(chain(*topsort_cfg(forest)))
+
+
+        logging.debug('Topsort...')
+        tsort = TopSortTable(forest)
+        #logging.debug('Top symbol: %s', tsort.root())
 
         if args.count:
-            Ic = inside(forest, topsorted, Count, omega=lambda e: Count.one)
-            logging.debug('Done! Forest: %d edges, %d nodes and %d paths' % (len(forest), forest.n_nonterminals(), Ic[topsorted[-1]]))
+            Ic = robust_inside(forest, tsort, Count, omega=lambda e: Count.one)
+            logging.info('Done! Forest: %d edges, %d nodes and %d paths' % (len(forest), forest.n_nonterminals(), Ic[tsort.root()]))
         else:
-            logging.debug('Done! Forest: %d edges, %d nodes' % (len(forest), forest.n_nonterminals()))
+            logging.info('Done! Forest: %d edges, %d nodes' % (len(forest), forest.n_nonterminals()))
 
         uniformdist = parser.reweight(forest)
-        Iv = inside(forest, topsorted, semiring, omega=lambda e: uniformdist[e])
+        Iv = robust_inside(forest, tsort, semiring, omega=lambda e: uniformdist[e])
         logging.debug('Sampling...')
-        D = list(sample(forest, topsorted[-1], semiring, Iv=Iv, N=args.batch, omega=lambda e: uniformdist[e]))
+        D = list(sample(forest, tsort.root(), semiring, Iv=Iv, N=args.batch, omega=lambda e: uniformdist[e]))
         assert D, 'The slice should never be empty'
         u.reset(make_batch_conditions(D, semiring), a=args.beta_a[1], b=args.beta_b[1])
         samples.extend(D)
@@ -85,23 +89,7 @@ def slice_sampling(cfg, sentence, semiring, args):
             checkpoint = len(samples) + 100
 
     count = Counter(samples[args.burn:])
-    for d, n in reversed(count.most_common()):
+    for d, n in count.most_common():
         t = make_nltk_tree(d)
         print('# count=%d prob=%f\n%s' % (n, float(n)/args.samples, inlinetree(t)))
     print()
-
-
-def main(args):
-
-    semiring = SumTimes
-
-    logging.info('Loading grammar...')
-    cfg = load_grammar(args.grammar, args.grammarfmt, args.log)
-    logging.info('Done: rules=%d', len(cfg))
-
-    for input_str in args.input:
-        # get an input automaton
-        sentence, extra_rules = make_sentence(input_str, semiring, cfg.lexicon, args.unkmodel, args.default_symbol)
-        cfg.update(extra_rules)
-        slice_sampling(cfg, sentence, semiring, args)
-

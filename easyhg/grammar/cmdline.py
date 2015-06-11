@@ -51,12 +51,16 @@ def cmd_grammar(group):
 
 def cmd_parser(group):
     group.add_argument('--intersection',
-            type=str, default='nederhof', choices=['nederhof', 'cky', 'earley'],
+            type=str, default='nederhof', choices=['nederhof', 'earley'],
             metavar='ALG',
-            help='intersection algorithms: nederhof, cky, earley')
+            help='intersection algorithms: nederhof, earley')
     group.add_argument('--goal',
             type=str, default='GOAL', metavar='LABEL',
             help='default goal symbol (root after intersection)')
+    group.add_argument('--framework',
+            type=str, default='exact', choices=['exact', 'slice', 'gibbs'],
+            metavar='FRAMEWORK',
+            help="inference framework: 'exact', 'slice' sampling, 'gibbs' sampling")
 
 
 def cmd_tagger(group):
@@ -70,20 +74,24 @@ def cmd_tagger(group):
 
 
 def cmd_info(group):
-    group.add_argument('--forest',
-            action='store_true',
-            help='dump forest as a grammar')
     group.add_argument('--report-top',
             action='store_true',
-            help='report the top symbol(s) of the grammar and quit')
+            help='topsort the grammar, report the top symbol(s), and quit')
+    group.add_argument('--report-tsort',
+            action='store_true',
+            help='topsort the grammar, report the partial ordering of symbols, and quit')
+    group.add_argument('--report-cycles',
+            action='store_true',
+            help='topsort the grammar, report cycles, and quit')
     group.add_argument('--count',
             action='store_true',
             help='report the number of derivations in the forest')
-
+    group.add_argument('--forest',
+            action='store_true',
+            help='dump unpruned forest as a grammar')
     group.add_argument('--verbose', '-v',
             action='store_true',
             help='increase the verbosity level')
-
     group.add_argument('--profile',
             type=str, metavar='PSTATS',
             help='use cProfile and save a pstats report')
@@ -92,20 +100,19 @@ def cmd_info(group):
 def cmd_viterbi(group):
     group.add_argument('--viterbi',
         action='store_true',
-        help='best derivation')
+        help='best derivation (via max-times semiring)')
     group.add_argument('--kbest',
         type=int, default=0, metavar='K',
-        help='number of top scoring solutions')
+        help='top scoring derivations (Huang and Chiang, 2005)')
 
 
 def cmd_sampling(group):
     group.add_argument('--samples',
             type=int, default=0, metavar='N',
             help='number of samples')
-    group.add_argument('--sampler',
-            type=str, default='ancestral', choices=['ancestral', 'slice'],
-            metavar='ALG',
-            help='sampling algorithm: ancestral, slice')
+    group.add_argument('--resample',
+            action='store_true',
+            help='enable a resampling step')
 
 def cmd_slice(group):
     group.add_argument('--burn',
