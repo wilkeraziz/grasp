@@ -21,12 +21,14 @@ from .reader import load_grammar
 from .cfg import CFG, TopSortTable
 from .slicesampling import slice_sampling
 import sys
+from itertools import chain
 
 
 class Parser(object):
 
-    def __init__(self, grammar, input, options):
+    def __init__(self, grammar, input, options, glue_grammars=[]):
         self._grammar = grammar
+        self._glue_grammars = glue_grammars
         self._input = input
         self._options = options
 
@@ -57,12 +59,13 @@ class Parser(object):
     def get_parser(self, algorithm):
         cfg = self._grammar
         fsa = self._input.fsa
+        glue = self._glue_grammars
         semiring = SumTimes
         make_symbol = make_flat_symbol
         if algorithm == 'earley':
-            parser = Earley(cfg, fsa, semiring=semiring, make_symbol=make_symbol)
+            parser = Earley(cfg, fsa, glue_grammars=glue, semiring=semiring, make_symbol=make_symbol)
         elif algorithm == 'nederhof':
-            parser = Nederhof(cfg, fsa, semiring=semiring, make_symbol=make_symbol)
+            parser = Nederhof(cfg, fsa, glue_grammars=glue, semiring=semiring, make_symbol=make_symbol)
         else:
             raise NotImplementedError("I don't know this intersection algorithm: %s" % algorithm)
         return parser
@@ -187,8 +190,6 @@ class Parser(object):
             raise NotImplementedError('I do not yet know how to perform inference in this framework: %s' % self.options.framework)
 
 
-
-
 def report_info(cfg, args):
     if args.report_top or args.report_tsort or args.report_cycles:
         tsort = TopSortTable(cfg)
@@ -222,19 +223,45 @@ def report_info(cfg, args):
 def core(args):
     semiring = SumTimes
 
-    logging.info('Loading grammar...')
+    # Load main grammars
+    logging.info('Loading main grammar...')
     cfg = load_grammar(args.grammar, args.grammarfmt, args.log)
-    logging.info('Grammar: terminals=%d nonterminals=%d productions=%d', cfg.n_terminals(), cfg.n_nonterminals(), len(cfg))
+    logging.info('Main grammar: terminals=%d nonterminals=%d productions=%d', cfg.n_terminals(), cfg.n_nonterminals(), len(cfg))
 
+    # Load additional grammars
+    main_grammars = [cfg]
+    if args.extra_grammar:
+        for grammar_path in args.extra_grammar:
+            logging.info('Loading additional grammar: %s', grammar_path)
+            grammar = load_grammar(grammar_path, args.grammarfmt, args.log)
+            logging.info('Additional grammar: terminals=%d nonterminals=%d productions=%d', grammar.n_terminals(), grammar.n_nonterminals(), len(grammar))
+            main_grammars.append(grammar)
+
+    # Load glue grammars
+    glue_grammars = []
+    if args.glue_grammar:
+        for glue_path in args.glue_grammar:
+            logging.info('Loading glue grammar: %s', glue_path)
+            glue = load_grammar(glue_path, args.grammarfmt, args.log)
+            logging.info('Glue grammar: terminals=%d nonterminals=%d productions=%d', glue.n_terminals(), glue.n_nonterminals(), len(glue))
+            glue_grammars.append(glue)
+
+    # Report information about the main grammar
     report_info(cfg, args)
 
+    # Make surface lexicon
+    surface_lexicon = set()
+    for grammar in chain(main_grammars, glue_grammars):
+        surface_lexicon.update(t.surface for t in grammar.iterterminals())
+
+    # Parse sentence by sentence
     for input_str in args.input:
         # get an input automaton
-        sentence, extra_rules = make_sentence(input_str, semiring, cfg.lexicon, args.unkmodel, args.default_symbol)
-        grammars = [cfg]
+        sentence, extra_rules = make_sentence(input_str, semiring, surface_lexicon, args.unkmodel, args.default_symbol)
+        grammars = list(main_grammars)
         if extra_rules:  # it is trivial to parse with multiple grammars
             grammars.append(CFG(extra_rules))
-        parser = Parser(grammars, sentence, args)
+        parser = Parser(grammars, sentence, args, glue_grammars=glue_grammars)
         parser.do()
 
 

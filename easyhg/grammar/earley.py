@@ -8,6 +8,7 @@ from .symbol import Terminal, Nonterminal, make_flat_symbol
 from .dottedrule import DottedRule as Item
 from .agenda import ActiveQueue, Agenda, make_cfg
 from .grammar import Grammar
+from itertools import chain
 import logging
 
 
@@ -18,13 +19,17 @@ class Earley(object):
     """
     """
 
-    def __init__(self, grammars, wfsa, semiring, scfg=None, make_symbol=make_flat_symbol):
+    def __init__(self, grammars,
+                 wfsa,
+                 semiring,
+                 glue_grammars=[],
+                 make_symbol=make_flat_symbol):
         """
 
         :param grammars: one or more CFGs
         :param wfsa:
         :param semiring:
-        :param scfg:
+        :param glue grammars: one or more glue CFGs (glue rules are only applied to initial states)
         :param make_symbol:
         :return:
         """
@@ -33,27 +38,47 @@ class Earley(object):
             self._grammars = [grammars]
         else:
             self._grammars = list(grammars)
+
+        if isinstance(glue_grammars, Grammar):
+            self._glue = [glue_grammars]
+        else:
+            self._glue = list(glue_grammars)
+
         self._wfsa = wfsa
         self._agenda = Agenda(active_container_type=ActiveQueue)
         self._predictions = set()  # (LHS, start)
-        self._scfg = scfg
         self._semiring = semiring
         self._make_symbol = make_symbol
 
-    def can_rewrite(self, symbol):
-        return any(grammar.can_rewrite(symbol) for grammar in self._grammars)
-    
+    def itergrammar(self, origin):
+        """Returns an iterator over grammars which depends on the origin state.
+        If the origin is an initial FSA state, then we include glue grammars."""
+
+        if self._wfsa.is_initial(origin):
+            return chain(self._grammars, self._glue)
+        else:
+            return iter(self._grammars)
+
+    def can_rewrite(self, symbol, origin):
+        """
+        Whether or not any of the grammars can rewrite the a certain nonterminal symbol.
+        For glue grammars, it matters whether the origin state is initial.
+        :param symbol: a Nonterminal
+        :param origin: a state
+        """
+        return any(grammar.can_rewrite(symbol) for grammar in self.itergrammar(origin))
+
     def axioms(self, symbol, start):
         """
         Apply the axioms using all grammars
         :param symbol:
-        :param start:
+        :param start: an initial FSA symbol
         :return:
         """
         if (symbol, start) in self._predictions:  # already predicted
             return True
         status = False
-        for grammar in self._grammars:
+        for grammar in self.itergrammar(start):
             rules = grammar.get(symbol, set())
             if not rules:  # impossible to rewrite the symbol
                 continue
@@ -73,7 +98,8 @@ class Earley(object):
         if key in self._predictions:  # prediction already happened
             return False
         self._predictions.add(key)
-        for grammar in self._grammars:
+
+        for grammar in self.itergrammar(item.dot):
             self._agenda.extend(Item(rule, item.dot) for rule in grammar.get(item.next, frozenset()))
         return True
 
@@ -156,7 +182,7 @@ class Earley(object):
                     self.scan(item)
                     discard = True  # scanning renders incomplete items of this kind useless
                 else:
-                    if not self.can_rewrite(item.next):  # if the NT does not exist this item is useless
+                    if not self.can_rewrite(item.next, item.dot):  # if the NT does not exist this item is useless
                         discard = True
                     else:
                         if not self.prediction(item):  # try to predict, otherwise try to complete itself

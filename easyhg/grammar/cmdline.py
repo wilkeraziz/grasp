@@ -47,6 +47,12 @@ def cmd_grammar(group):
             type=str, default='bar', metavar='FMT',
             choices=['bar', 'discodop'],
             help="grammar format: bar, discodop")
+    group.add_argument('--extra-grammar',
+                       action='append', default=[], metavar='PATH',
+                       help="path to an additional grammar (multiple allowed)")
+    group.add_argument('--glue-grammar',
+                       action='append', default=[], metavar='PATH',
+                       help="glue rules are only applied to initial states (multiple allowed)")
 
 
 def cmd_parser(group):

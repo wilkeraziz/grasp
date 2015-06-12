@@ -28,13 +28,17 @@ class Nederhof(object):
     This is an implementation of the CKY-inspired intersection due to Nederhof and Satta (2008).
     """
 
-    def __init__(self, grammars, wfsa, semiring, scfg=None, make_symbol=make_flat_symbol):
+    def __init__(self, grammars,
+                 wfsa,
+                 semiring,
+                 glue_grammars=[],
+                 make_symbol=make_flat_symbol):
         """
 
         :param grammars: one or more CFGs
         :param wfsa:
         :param semiring:
-        :param scfg:
+        :param glue_grammars: one or more glue CFGs (glue rules are only applied to initial states)
         :param make_symbol:
         :return:
         """
@@ -42,12 +46,16 @@ class Nederhof(object):
             self._grammars = [grammars]
         else:
             self._grammars = list(grammars)
+        if isinstance(glue_grammars, Grammar):
+            self._glue = [glue_grammars]
+        else:
+            self._glue = list(glue_grammars)
         self._wfsa = wfsa
         self._semiring = semiring
-        self._scfg = scfg
         self._make_symbol = make_symbol
         self._agenda = Agenda(active_container_type=ActiveQueue)
         self._firstsym = defaultdict(set)  # index rules by their first RHS symbol
+        self._glue_firstsym = defaultdict(set)  # index glue rules by their first RHS symbol
         
     def add_symbol(self, sym, sfrom, sto):
         """
@@ -66,16 +74,27 @@ class Nederhof(object):
         for r in self._firstsym.get(sym, set()):  
             self._agenda.add(Item(r, sto, inner=(sfrom,)))  # can be interpreted as a lazy axiom
 
+        # again for glue rules, however, only if the origin state is initial in the FSA
+        if self._wfsa.is_initial(sfrom):
+            for r in self._glue_firstsym.get(sym, set()):
+                self._agenda.add(Item(r, sto, inner=(sfrom,)))  # can be interpreted as a lazy axiom
+
         return True
 
     def axioms(self):
         """
         The axioms of the program are based on the FSA transitions. 
         """
+
         # you may interpret the following as a sort of lazy axiom (based on grammar rules)
         for grammar in self._grammars:
             for r in grammar:
                 self._firstsym[r.rhs[0]].add(r)
+        # again for glue grammars
+        for grammar in self._glue:
+            for r in grammar:
+                self._glue_firstsym[r.rhs[0]].add(r)
+
         # these are axioms based on the transitions of the automaton
         for sfrom, sto, sym, w in self._wfsa.iterarcs():
             self.add_symbol(sym, sfrom, sto)  

@@ -43,7 +43,7 @@ def make_sentence(input_str, semiring, lexicon, unkmodel=None, default_symbol=DE
 
     :param input_str:
     :param semiring:
-    :param lexicon:
+    :param lexicon: surface terminals
     :param unkmodel:
     :param default_symbol:
     :return: a Sentence object
@@ -51,7 +51,7 @@ def make_sentence(input_str, semiring, lexicon, unkmodel=None, default_symbol=DE
     >>> from .semiring import Prob
     >>> from .symbol import Terminal
     >>> input_str = 'The dog barked'
-    >>> lexicon = {Terminal(x) for x in 'the dog barked'.split()}
+    >>> lexicon = set('the dog barked'.split())
     >>> snt, extra = make_sentence(input_str, Prob, lexicon, unkmodel=STFDBASE)
     >>> snt.words
     ('The', 'dog', 'barked')
@@ -72,9 +72,8 @@ def make_sentence(input_str, semiring, lexicon, unkmodel=None, default_symbol=DE
     words = input_str.split()
     signatures = list(words)
     extra_rules = []
-    str_lexicon = [t.surface for t in lexicon]
     for i, word in enumerate(words):
-        if word not in str_lexicon and unkmodel is not None:
+        if word not in lexicon and unkmodel is not None:
             # special treatment for unknown words
                 if unkmodel == PASSTHROUGH:
                     extra_rules.append(CFGProduction(Nonterminal(default_symbol), [Terminal(word)], semiring.one))
@@ -88,7 +87,7 @@ def make_sentence(input_str, semiring, lexicon, unkmodel=None, default_symbol=DE
                         get_signature = unknownmodel.unknownword6
                     else:
                         raise NotImplementedError('I do not know this model: %s' % unkmodel)
-                    signatures[i] = get_signature(word, i, str_lexicon)
+                    signatures[i] = get_signature(word, i, lexicon)
                     logging.debug('Unknown word model (%s): i=%d word=%s signature=%s', unkmodel, i, word, signatures[i])
 
     fsa = WDFSA()

@@ -18,6 +18,24 @@ For more details about the options, check the instructions below.
 
 * We support 2 grammar formats, one inspired by Moses and cdec (which we call 'bar'), and the format produced by [discodop](https://github.com/andreasvc/disco-dop), you can switch between formats using `--grammarfmt FMT`. The default format is 'bar', in which case the grammar is expected to be in a single file. Discodop splits the grammar into two files, namely, a set of rules and the lexicon. If you are using discodop's grammars, then all you need to provide is the prefix to the grammar, the parser will complete it with '.rules.gz' and '.lex.gz'.
 
+* We support multiple grammars and glue grammars (glue rules are special in that they only apply to initial states)
+
+        
+           time echo 'I was given a million dollars .' | python -m easyhg.grammar.parse 
+            cfg/grammar
+            --extra-grammar cfg/hook
+            --glue-grammar cfg/glue 
+            --unkmodel passthrough
+            --log
+            --viterbi 
+            -v
+            
+    The grammars are all in `bar` format and we apply the `log` transform to all of them (for now you cannot set these options separately for each grammar).
+    The main grammar is `cfg/grammar`, if you use one of the report options below, they will only apply to the main grammar.
+    In this example, we have an additional grammar `cfg/hook` which from the point of view of the parser is no different from the main grammar.
+    Finally, we have a glue grammar, which is special in the sense that its rules can only span from an initial state of the input automaton.
+    Bot `--extra-grammar` and `--glue-grammar` can be used multiple times to specify a set of grammars and glue grammars.
+
 ## Parser
 
 In this toolkit, parsing is done using more general algorithms for intersection between wCFGs and wFSA:
