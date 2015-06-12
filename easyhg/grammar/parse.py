@@ -18,7 +18,7 @@ from .inference import inside, robust_inside, sample, optimise, total_weight
 from .kbest import KBest
 from . import projection
 from .reader import load_grammar
-from .cfg import TopSortTable
+from .cfg import CFG, TopSortTable
 from .slicesampling import slice_sampling
 import sys
 
@@ -231,9 +231,11 @@ def core(args):
     for input_str in args.input:
         # get an input automaton
         sentence, extra_rules = make_sentence(input_str, semiring, cfg.lexicon, args.unkmodel, args.default_symbol)
-        cfg.update(extra_rules)
-        #parser(cfg, sentence, semiring, args)
-        Parser(cfg, sentence, args).do()
+        grammars = [cfg]
+        if extra_rules:  # it is trivial to parse with multiple grammars
+            grammars.append(CFG(extra_rules))
+        parser = Parser(grammars, sentence, args)
+        parser.do()
 
 
 def configure():

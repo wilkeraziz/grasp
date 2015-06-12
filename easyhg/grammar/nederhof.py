@@ -20,6 +20,7 @@ from collections import defaultdict
 from .symbol import Nonterminal, make_flat_symbol
 from .dottedrule import DottedRule as Item
 from .agenda import ActiveQueue, Agenda, make_cfg
+from .grammar import Grammar
 
 
 class Nederhof(object):
@@ -27,8 +28,20 @@ class Nederhof(object):
     This is an implementation of the CKY-inspired intersection due to Nederhof and Satta (2008).
     """
 
-    def __init__(self, wcfg, wfsa, semiring, scfg=None, make_symbol=make_flat_symbol):
-        self._wcfg = wcfg
+    def __init__(self, grammars, wfsa, semiring, scfg=None, make_symbol=make_flat_symbol):
+        """
+
+        :param grammars: one or more CFGs
+        :param wfsa:
+        :param semiring:
+        :param scfg:
+        :param make_symbol:
+        :return:
+        """
+        if isinstance(grammars, Grammar):
+            self._grammars = [grammars]
+        else:
+            self._grammars = list(grammars)
         self._wfsa = wfsa
         self._semiring = semiring
         self._scfg = scfg
@@ -60,8 +73,9 @@ class Nederhof(object):
         The axioms of the program are based on the FSA transitions. 
         """
         # you may interpret the following as a sort of lazy axiom (based on grammar rules)
-        for r in self._wcfg:
-            self._firstsym[r.rhs[0]].add(r)
+        for grammar in self._grammars:
+            for r in grammar:
+                self._firstsym[r.rhs[0]].add(r)
         # these are axioms based on the transitions of the automaton
         for sfrom, sto, sym, w in self._wfsa.iterarcs():
             self.add_symbol(sym, sfrom, sto)  

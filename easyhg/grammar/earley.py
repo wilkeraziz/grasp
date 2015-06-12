@@ -7,6 +7,9 @@ This is an implementation of Earley intersection as presented in (Dyer and Resni
 from .symbol import Terminal, Nonterminal, make_flat_symbol
 from .dottedrule import DottedRule as Item
 from .agenda import ActiveQueue, Agenda, make_cfg
+from .grammar import Grammar
+import logging
+
 
 EMPTY_SET = frozenset()
 
@@ -15,43 +18,63 @@ class Earley(object):
     """
     """
 
-    def __init__(self, wcfg, wfsa, semiring, scfg=None, make_symbol=make_flat_symbol):
-        """
-        @param wcfg: is the set or rules
-        @type RuleSet
-        @param fsaId2Symbol: a dictionary that maps fsa ids in terminal symbols of the wcfg
-        @param log: whether or not output log information
+    def __init__(self, grammars, wfsa, semiring, scfg=None, make_symbol=make_flat_symbol):
         """
 
-        self._wcfg = wcfg
+        :param grammars: one or more CFGs
+        :param wfsa:
+        :param semiring:
+        :param scfg:
+        :param make_symbol:
+        :return:
+        """
+
+        if isinstance(grammars, Grammar):
+            self._grammars = [grammars]
+        else:
+            self._grammars = list(grammars)
         self._wfsa = wfsa
         self._agenda = Agenda(active_container_type=ActiveQueue)
         self._predictions = set()  # (LHS, start)
         self._scfg = scfg
         self._semiring = semiring
         self._make_symbol = make_symbol
+
+    def can_rewrite(self, symbol):
+        return any(grammar.can_rewrite(symbol) for grammar in self._grammars)
     
     def axioms(self, symbol, start):
-        rules = self._wcfg.get(symbol, None)
-        if rules is None:  # impossible to rewrite the symbol
-            return False
+        """
+        Apply the axioms using all grammars
+        :param symbol:
+        :param start:
+        :return:
+        """
         if (symbol, start) in self._predictions:  # already predicted
-            return True 
+            return True
+        status = False
+        for grammar in self._grammars:
+            rules = grammar.get(symbol, set())
+            if not rules:  # impossible to rewrite the symbol
+                continue
+            self._agenda.extend(Item(rule, start) for rule in rules)
+            status = True
         # otherwise add rewritings to the agenda
         self._predictions.add((symbol, start))
-        self._agenda.extend(Item(rule, start) for rule in rules)
-        return True
-    
+        return status
+
     def prediction(self, item):
         """
-        This operation tris to create items from the rules associated with the nonterminal ahead of the dot.
-        It returns True when prediction happens, and False if it already happened before.
+        Prediction using all grammars.
+        :param item:
+        :return:
         """
         key = (item.next, item.dot)
         if key in self._predictions:  # prediction already happened
             return False
         self._predictions.add(key)
-        self._agenda.extend(Item(rule, item.dot) for rule in self._wcfg.get(item.next, frozenset()))
+        for grammar in self._grammars:
+            self._agenda.extend(Item(rule, item.dot) for rule in grammar.get(item.next, frozenset()))
         return True
 
     def scan(self, item):
@@ -102,17 +125,17 @@ class Earley(object):
     def do(self, root=Nonterminal('S'), goal=Nonterminal('GOAL')):
 
         wfsa = self._wfsa
-        wcfg = self._wcfg
         agenda = self._agenda
 
         # start items of the kind 
         # GOAL -> * ROOT, where * is an intial state of the wfsa
-        if not any(self.axioms(root, start) for start in wfsa.iterinitial()):
+        for start in wfsa.iterinitial():
+            self.axioms(root, start)
+        if not agenda:
             raise ValueError('No rule for the start symbol %s' % root)
 
         while agenda:
             item = agenda.pop()
-
             # sometimes there are no active items left in the agenda
             #assert not agenda.is_passive(item), 'This is strange!'
 
@@ -133,7 +156,7 @@ class Earley(object):
                     self.scan(item)
                     discard = True  # scanning renders incomplete items of this kind useless
                 else:
-                    if not wcfg.can_rewrite(item.next):  # if the NT does not exist this item is useless
+                    if not self.can_rewrite(item.next):  # if the NT does not exist this item is useless
                         discard = True
                     else:
                         if not self.prediction(item):  # try to predict, otherwise try to complete itself

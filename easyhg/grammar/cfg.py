@@ -9,9 +9,9 @@ from itertools import chain
 from .symbol import Terminal, Nonterminal
 from .topsort import robust_topological_sort
 from .rule import CFGProduction
+from .grammar import Grammar
 
-
-class CFG(object):
+class CFG(Grammar):
     """A context-free grammar.
 
     An object which acts much like a dictionary (and sometimes a set).
@@ -65,7 +65,7 @@ class CFG(object):
         :params rules:
             an iterable over CFG productions
         """
-
+        super()
         self._rules_by_lhs = defaultdict(set)
         self._nonterminals = set()
         self._sigma = set()  # terminals
