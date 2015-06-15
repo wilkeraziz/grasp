@@ -45,8 +45,8 @@ def cmd_grammar(group):
             help='apply the log transform to the grammar (by default we assume this has already been done)')
     group.add_argument('--grammarfmt',
             type=str, default='bar', metavar='FMT',
-            choices=['bar', 'discodop'],
-            help="grammar format: bar, discodop")
+            choices=['bar', 'discodop', 'cdec'],
+            help="grammar format: bar, discodop, cdec")
     group.add_argument('--extra-grammar',
                        action='append', default=[], metavar='PATH',
                        help="path to an additional grammar (multiple allowed)")
@@ -77,7 +77,7 @@ def cmd_tagger(group):
             type=str, default=None, metavar='MODEL',
             choices=['passthrough', 'stfdbase', 'stfd4', 'stfd6'],
             help="unknown word model: passthrough, stfdbase, stfd4, stfd6")
-    group.add_argument('--default-symbol',
+    group.add_argument('--unklhs',
             type=str, default='X', metavar='LABEL',
             help='default nonterminal (use for pass-through rules)')
 

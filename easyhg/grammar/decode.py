@@ -1,102 +1,127 @@
 """
-@author wilkeraziz
+:Authors: - Wilker Aziz
 """
 
 import logging
-import itertools
-import argparse
-import sys
-from fsa import make_linear_fsa
-from ply_scfg import read_grammar
-from scfg import SCFG
-from cfg import CFG
-from symbol import Terminal, Nonterminal
-from rule import SCFGProduction
-from earley import Earley
-from semiring import Prob
-from symbol import make_flat_symbol, make_recursive_symbol
+from .cmdline import argparser
+from itertools import chain
+from .semiring import SumTimes
+from .cdec_format import load_grammar
+from .sentence import make_sentence
+from .rule import get_oov_scfg_productions
+from .symbol import make_flat_symbol, Nonterminal
+from .scfg import SCFG
+from .nederhof import Nederhof
+from .cfg import TopSortTable
+from .inference import robust_inside
+from .model import cdec_basic
 
-def main(args):
-    scfg = read_grammar(args.grammar, cdec_adapt=args.cdec)
-    print 'SCFG'
-    print scfg
+def core(args):
+    semiring = SumTimes
 
+    # Load main grammars
+    logging.info('Loading main grammar...')
+    if args.grammarfmt != 'cdec':
+        raise ValueError("For now I only recognise cdec's format: %s" % args.grammarfmt)
+
+    linear_model = cdec_basic()
+
+    scfg = load_grammar(args.grammar, linear_model)
+    logging.info('Main grammar: terminals=%d nonterminals=%d productions=%d', scfg.n_terminals(), scfg.n_nonterminals(), len(scfg))
+
+    # Load additional grammars
+    main_grammars = [scfg]
+    if args.extra_grammar:
+        for grammar_path in args.extra_grammar:
+            logging.info('Loading additional grammar: %s', grammar_path)
+            grammar = load_grammar(grammar_path, linear_model)
+            logging.info('Additional grammar: terminals=%d nonterminals=%d productions=%d', grammar.n_terminals(), grammar.n_nonterminals(), len(grammar))
+            main_grammars.append(grammar)
+
+    # Load glue grammars
+    glue_grammars = []
+    if args.glue_grammar:
+        for glue_path in args.glue_grammar:
+            logging.info('Loading glue grammar: %s', glue_path)
+            glue = load_grammar(glue_path, linear_model)
+            logging.info('Glue grammar: terminals=%d nonterminals=%d productions=%d', glue.n_terminals(), glue.n_nonterminals(), len(glue))
+            glue_grammars.append(glue)
+
+    # Report information about the main grammar
+    # report_info(cfg, args)
+
+    # Make surface lexicon
+    surface_lexicon = set()
+    for grammar in chain(main_grammars, glue_grammars):
+        surface_lexicon.update(t.surface for t in grammar.sigma)
+
+    # Parse sentence by sentence
     for input_str in args.input:
-        semiring = Prob
 
-        # input sentence
-        wfsa = make_linear_fsa(input_str, semiring=semiring)
+        # get an input automaton
+        sentence = make_sentence(input_str, semiring, surface_lexicon, args.unkmodel)
+        grammars = list(main_grammars)
 
-        # add unknown rules
-        for unk in wfsa.vocabulary - scfg.sigma:
-            scfg.add(SCFGProduction(Nonterminal('X'), [unk], [unk], [1], semiring.one))  # TODO: generalise X
+        if args.unkmodel == 'passthrough':
+            grammars.append(SCFG(get_oov_scfg_productions(sentence.oovs, args.unklhs, semiring.one)))
 
-        # add glue rules
-        if args.glue:
-            scfg.add(SCFGProduction(Nonterminal('S'), 
-                [Nonterminal('X')], 
-                [Nonterminal('1')], 
-                [1], 
-                semiring.one))  # TODO: generalise S and X
-            scfg.add(SCFGProduction(Nonterminal('S'), 
-                [Nonterminal('S'), Nonterminal('X')], 
-                [Nonterminal('1'), Nonterminal('2')], 
-                [1, 2], 
-                semiring.one))  # TODO: generalise S and X
+        logging.info('Parsing %d words: %s', len(sentence), sentence)
 
-        print 'F-CFG'
-        f_cfg = scfg.f_projection(semiring=Prob, marginalise=False)
-        print f_cfg
-        
-        print 'FSA'
-        print wfsa
-        
-        # parsing
-        parser = Earley(f_cfg, wfsa, semiring=semiring, scfg=scfg, make_symbol=make_flat_symbol)
-        status, R = parser.do()
+        # 1) get a parser
+        parser = Nederhof([g.f_projection(semiring, marginalise=False) for g in grammars],
+                          sentence.fsa,
+                          glue_grammars=[g.f_projection(semiring, marginalise=False) for g in glue_grammars],
+                          semiring=semiring,
+                          make_symbol=make_flat_symbol)
 
-        if not status:
-            print 'NO PARSE FOUND'
+        # 2) make a forest
+        logging.info('Parsing...')
+        forest = parser.do(root=Nonterminal(args.start), goal=Nonterminal(args.goal))
+        if not forest:
+            logging.error('NO PARSE FOUND')
+            print()
             continue
-        forest = SCFG(R)
-        print 'FOREST'
-        print forest
-        print 'E-CFG'
-        print forest.e_projection(semiring=Prob, marginalise=True)
 
-        # TODO: generalise feature representation and transform (to include dot product)
-        # write a version of Earley taylored to single sentence input
+        print(forest)
+
+        logging.info('Top-sorting...')
+        tsort = TopSortTable(forest)
+        logging.info('Top symbol: %s', tsort.root())
+        root = tsort.root()
+
+        logging.info('Inside semiring=%s ...', str(semiring.__name__))
+        itable = robust_inside(forest, tsort, semiring, infinity=args.generations)
+        logging.info('Inside goal-value=%f', itable[root])
 
 
 
-def argparser():
-    """parse command line arguments"""
 
-    parser = argparse.ArgumentParser(prog='decode')
+def configure():
+    args = argparser().parse_args()
 
-    parser.description = 'Decode using Earley intersection'
-    parser.formatter_class = argparse.ArgumentDefaultsHelpFormatter
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s')
+    else:
+        logging.basicConfig(level=logging.INFO, format='%(asctime)-15s %(levelname)s %(message)s')
 
-    parser.add_argument('grammar',
-            type=argparse.FileType('r'), 
-            help='SCFG rules')
-    parser.add_argument('input', nargs='?', 
-            type=argparse.FileType('r'), default=sys.stdin,
-            help='input corpus (one sentence per line)')
-    #parser.add_argument('output', nargs='?', 
-    #        type=argparse.FileType('w'), default=sys.stdout,
-    #        help='parse trees')
-    parser.add_argument('--glue',
-            action='store_true',
-            help='add glue grammars')
-    parser.add_argument('--cdec',
-            action='store_true',
-            help='read cdec-formatted grammars')
-    parser.add_argument('--verbose', '-v',
-            action='store_true',
-            help='increase the verbosity level')
+    return args
 
-    return parser
+
+def main():
+    args = configure()
+
+    if args.profile:
+        import cProfile
+        pr = cProfile.Profile()
+        pr.enable()
+        core(args)
+        pr.disable()
+        pr.dump_stats(args.profile)
+    else:
+        core(args)
+
+
+
 
 if __name__ == '__main__':
-    main(argparser().parse_args())
+    main()

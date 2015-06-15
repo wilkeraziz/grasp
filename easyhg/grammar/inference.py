@@ -65,6 +65,7 @@ def robust_inside(forest, tsort, semiring, omega=lambda e: e.weight, infinity=20
             partials = (reduce(semiring.times, (I[child] for child in rule.rhs), omega(rule)) for rule in incoming)
             I[parent] = reduce(semiring.plus, partials, semiring.zero)
         else:
+            logging.debug('Loopy bucket: %d', len(bucket))
             V = defaultdict(lambda: semiring.zero)  # this will hold partial inside values for loopy nodes
             for g in range(infinity):  # we iterate to "infinity"
                 _V = defaultdict(lambda: semiring.zero)  # this is the current generation

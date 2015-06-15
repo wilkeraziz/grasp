@@ -9,7 +9,7 @@ import logging
 from collections import Counter
 from .cmdline import argparser
 from .sentence import make_sentence
-from .symbol import Nonterminal, make_flat_symbol
+from .symbol import Terminal, Nonterminal, make_flat_symbol
 from .earley import Earley
 from .nederhof import Nederhof
 from .utils import make_nltk_tree, inlinetree
@@ -19,6 +19,7 @@ from .kbest import KBest
 from . import projection
 from .reader import load_grammar
 from .cfg import CFG, TopSortTable
+from .rule import get_oov_cfg_productions
 from .slicesampling import slice_sampling
 import sys
 from itertools import chain
@@ -261,10 +262,13 @@ def core(args):
     # Parse sentence by sentence
     for input_str in args.input:
         # get an input automaton
-        sentence, extra_rules = make_sentence(input_str, semiring, surface_lexicon, args.unkmodel, args.default_symbol)
+        sentence = make_sentence(input_str, semiring, surface_lexicon, args.unkmodel)
         grammars = list(main_grammars)
-        if extra_rules:  # it is trivial to parse with multiple grammars
-            grammars.append(CFG(extra_rules))
+
+        if args.unkmodel == 'passthrough':
+            grammars.append(CFG(get_oov_cfg_productions(sentence.oovs, args.unklhs, semiring.one)))
+
+        logging.info('Parsing %d words: %s', len(sentence), sentence)
         parser = Parser(grammars, sentence, args, glue_grammars=glue_grammars)
         parser.do()
 

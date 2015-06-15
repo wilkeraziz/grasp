@@ -154,5 +154,17 @@ class SCFGProduction(object):  #TODO: check this
         alignment = iter(self.alignment)
         f_nts = tuple(filter(lambda s: isinstance(s, Nonterminal), self.f_rhs))
         return tuple(s if isinstance(s, Terminal) else f_nts[next(alignment) - 1] for s in self.e_rhs)
-    
 
+
+def get_oov_cfg_productions(oovs, unk_lhs, weight):
+    for word in oovs:
+        r = CFGProduction(Nonterminal(unk_lhs), [Terminal(word)], weight)
+        logging.debug('Passthrough rule for %s: %s', word, r)
+        yield r
+
+
+def get_oov_scfg_productions(oovs, unk_lhs, weight):
+    for word in oovs:
+        r = SCFGProduction.create(Nonterminal(unk_lhs), [Terminal(word)], [Terminal(word)], weight)
+        logging.debug('Passthrough rule for %s: %s', word, r)
+        yield r

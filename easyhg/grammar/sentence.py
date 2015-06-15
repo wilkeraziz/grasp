@@ -12,15 +12,18 @@ PASSTHROUGH = 'passthrough'
 STFDBASE = 'stfdbase'
 STFD4 = 'stfd4'
 STFD6 = 'stfd6'
-DEFAULT_SYMBOL = 'X'
 
 
 class Sentence(object):
 
-    def __init__(self, words, signatures, fsa):
+    def __init__(self, words, signatures, oovs, fsa):
         self._words = tuple(words)
         self._signatures = tuple(signatures)
+        self._oovs = frozenset(oovs)
         self._fsa = fsa
+
+    def __len__(self):
+        return len(self.words)
 
     @property
     def words(self):
@@ -31,6 +34,10 @@ class Sentence(object):
         return self._signatures
 
     @property
+    def oovs(self):
+        return self._oovs
+
+    @property
     def fsa(self):
         return self._fsa
 
@@ -38,7 +45,7 @@ class Sentence(object):
         return ' '.join(self.words)
 
 
-def make_sentence(input_str, semiring, lexicon, unkmodel=None, default_symbol=DEFAULT_SYMBOL):
+def make_sentence(input_str, semiring, lexicon, unkmodel=None):
     """
 
     :param input_str:
@@ -71,13 +78,15 @@ def make_sentence(input_str, semiring, lexicon, unkmodel=None, default_symbol=DE
     """
     words = input_str.split()
     signatures = list(words)
-    extra_rules = []
+    oovs = set()
     for i, word in enumerate(words):
         if word not in lexicon and unkmodel is not None:
             # special treatment for unknown words
+                oovs.add(word)
                 if unkmodel == PASSTHROUGH:
-                    extra_rules.append(CFGProduction(Nonterminal(default_symbol), [Terminal(word)], semiring.one))
-                    logging.debug('Passthrough rule for %s: %s', word, extra_rules[-1])
+                    continue
+                    #extra_rules.append(CFGProduction(Nonterminal(default_symbol), [Terminal(word)], semiring.one))
+                    #logging.debug('Passthrough rule for %s: %s', word, extra_rules[-1])
                 else:
                     if unkmodel == STFDBASE:
                         get_signature = unknownmodel.unknownwordbase
@@ -95,4 +104,4 @@ def make_sentence(input_str, semiring, lexicon, unkmodel=None, default_symbol=DE
         fsa.add_arc(i, i + 1, Terminal(word), semiring.one)
     fsa.make_initial(0)
     fsa.make_final(len(signatures))
-    return Sentence(words, signatures, fsa), extra_rules
+    return Sentence(words, signatures, oovs, fsa)

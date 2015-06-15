@@ -1,14 +1,11 @@
 """
-@author wilkeraziz
+:Authors: - Wilker Aziz
 """
 
-import ply.lex as lex
 import ply.yacc as yacc
-from ply_cfg import CFGLex
-from itertools import ifilter
-from symbol import Terminal, Nonterminal
-from rule import SCFGProduction
-from scfg import SCFG
+from .ply_cfg import CFGLex
+from .rule import SCFGProduction
+from .scfg import SCFG
 
 
 _EXAMPLE_GRAMMAR_ = """
@@ -98,10 +95,10 @@ if __name__ == '__main__':
     import logging
     FORMAT = '%(asctime)-15s %(message)s'
     G = read_grammar(sys.stdin)
-    print 'SCFG'
-    print G
-    print 'F-CFG'
-    print G.f_projection()
-    print 'E-CFG'
-    print G.e_projection()
+    print('SCFG')
+    print(G)
+    print('F-CFG')
+    print(G.f_projection())
+    print('E-CFG')
+    print(G.e_projection())
 

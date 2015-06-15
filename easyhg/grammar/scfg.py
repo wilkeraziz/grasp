@@ -22,13 +22,8 @@ class SCFG(object):
         self._sigma = set()  # source terminals
         self._delta = set()  # target terminals
         for srule in syncrules:
-            self._syncrules_by_lhs[srule.lhs].add(srule)
-            self._srules[srule.lhs][srule.f_rhs].add(srule)
-            self._nonterminals.add(srule.lhs)
-            self._nonterminals.update(filter(lambda s: isinstance(s, Nonterminal), srule.f_rhs))
-            self._sigma.update(filter(lambda s: isinstance(s, Terminal), srule.f_rhs))
-            self._delta.update(filter(lambda s: isinstance(s, Terminal), srule.e_rhs))
-    
+            self.add(srule)
+
     @property
     def sigma(self):
         return self._sigma
@@ -41,6 +36,15 @@ class SCFG(object):
     def nonterminals(self):
         return self._nonterminals
 
+    def n_nonterminals(self):
+        return len(self._nonterminals)
+
+    def n_terminals(self):
+        return len(self._sigma) + len(self._delta)
+
+    def __len__(self):
+        return sum(len(rules) for rules in self._syncrules_by_lhs.values())
+
     def add(self, srule):
         self._syncrules_by_lhs[srule.lhs].add(srule)
         self._srules[srule.lhs][srule.f_rhs].add(srule)
@@ -48,7 +52,6 @@ class SCFG(object):
         self._nonterminals.update(filter(lambda s: isinstance(s, Nonterminal), srule.f_rhs))
         self._sigma.update(filter(lambda s: isinstance(s, Terminal), srule.f_rhs))
         self._delta.update(filter(lambda s: isinstance(s, Terminal), srule.e_rhs))
-
 
     def __contains__(self, lhs):
         return lhs in self._syncrules_by_lhs
@@ -67,7 +70,7 @@ class SCFG(object):
     
     def __str__(self):
         lines = []
-        for lhs, rules in self.items():
+        for lhs, rules in self.iteritems():
             for rule in rules:
                 lines.append(str(rule))
         return '\n'.join(lines)

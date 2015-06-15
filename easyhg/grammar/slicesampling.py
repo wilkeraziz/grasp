@@ -63,7 +63,7 @@ def slice_sampling(grammars, glue_grammars, sentence, args, semiring=SumTimes):
                           semiring=semiring,
                           slice_variables=u,
                           make_symbol=make_recursive_symbol)
-        logging.debug('Parsing...')
+        logging.debug('Parsing beta-a=%s beta-b=%s ...', u.a, u.b)
         forest = parser.do(root=Nonterminal(args.start), goal=goal)
         if not forest:
             logging.debug('NO PARSE FOUND')
