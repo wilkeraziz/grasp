@@ -134,11 +134,38 @@ class CFGYacc(object):
             yield production
 
 
-def read_grammar(path, transform=None):
-    """Read a grammar parsed with CFGYacc from an input stream"""
-    parser = CFGYacc(transform=transform)
-    parser.build(debug=False, write_tables=False)
-    return CFG(parser.parse(smart_open(path)))
+def read_basic(istream, transform):
+    for line in istream:
+        if line.startswith('#'):
+            continue
+        line = line.strip()
+        if not line:
+            continue
+        fields = line.split(' ||| ')
+        if len(fields) != 3:
+            raise ValueError('I expected 3 fields, got %d: %s' % (len(fields), fields))
+        if not (fields[0].startswith('[') and fields[0].endswith(']')):
+            raise ValueError('Expected a nonterminal LHS, got something else: %s' % fields[0])
+        lhs = Nonterminal(fields[0][1:-1])  # ignore brackets
+        rhs = tuple(Nonterminal(x[1:-1]) if x.startswith('[') and x.endswith(']') else Terminal(x[1:-1]) for x in fields[1].split())
+        fvalue = transform(float(fields[2]))
+        yield CFGProduction(lhs, rhs, fvalue)
+
+
+def read_grammar(path, transform=None, ply_based=False):
+    """
+    Read a grammar from an input stream.
+    :param path: path to grammar file.
+    :param transform: a transformation (e.g. log).
+    :param ply_based: whether or not to use a lex-yacc parser (seems slow).
+    :return: a CFG
+    """
+    if ply_based:
+        parser = CFGYacc(transform=transform)
+        parser.build(debug=False, write_tables=False)
+        return CFG(parser.parse(smart_open(path)))
+    else:
+        return CFG(read_basic(smart_open(path), transform))
 
 if __name__ == '__main__':
     import sys
