@@ -26,8 +26,8 @@ from itertools import chain
 
 class Parser(object):
 
-    def __init__(self, grammar, input, options, glue_grammars=[]):
-        self._grammar = grammar
+    def __init__(self, grammars, input, options, glue_grammars=[]):
+        self._grammars = grammars
         self._glue_grammars = glue_grammars
         self._input = input
         self._options = options
@@ -41,8 +41,12 @@ class Parser(object):
         self._inside = {}
 
     @property
-    def grammar(self):
-        return self._grammar
+    def grammars(self):
+        return self._grammars
+
+    @property
+    def glue_grammars(self):
+        return self._glue_grammars
 
     @property
     def input(self):
@@ -57,15 +61,15 @@ class Parser(object):
         return self._goal_symbol
 
     def get_parser(self, algorithm):
-        cfg = self._grammar
-        fsa = self._input.fsa
-        glue = self._glue_grammars
+        grammars = self.grammars
+        fsa = self.input.fsa
+        glue = self.glue_grammars
         semiring = SumTimes
         make_symbol = make_flat_symbol
         if algorithm == 'earley':
-            parser = Earley(cfg, fsa, glue_grammars=glue, semiring=semiring, make_symbol=make_symbol)
+            parser = Earley(grammars, fsa, glue_grammars=glue, semiring=semiring, make_symbol=make_symbol)
         elif algorithm == 'nederhof':
-            parser = Nederhof(cfg, fsa, glue_grammars=glue, semiring=semiring, make_symbol=make_symbol)
+            parser = Nederhof(grammars, fsa, glue_grammars=glue, semiring=semiring, make_symbol=make_symbol)
         else:
             raise NotImplementedError("I don't know this intersection algorithm: %s" % algorithm)
         return parser
@@ -179,7 +183,7 @@ class Parser(object):
         logging.info('Finished!')
 
     def slice_sampling(self):
-        slice_sampling(self._grammar, self._input, self.options)
+        slice_sampling(self.grammars, self.glue_grammars, self.input, self.options)
 
     def do(self):
         if self.options.framework == 'exact':

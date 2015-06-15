@@ -8,6 +8,13 @@ Dependencies are encoded through a dictionary and a partial ordering generator i
 from collections import deque, defaultdict, Counter
 
 
+def deps_assert(deps):
+    for syms in deps.values():
+        for sym in syms:
+            if sym not in deps:
+                return False
+    return True
+
 def topological_sort(deps):
     """
     A topological sorting algorithm for acyclic graphs.
@@ -24,6 +31,7 @@ def topological_sort(deps):
     >>> topological_sort(deps1) == [{'Y'}, {'Z', 'X'}, {'S'}]
     True
     """
+    #assert deps_assert(deps), 'Expected all items to have dependencies, but found some that didnt.'
 
     # count the number of nodes depending on each node
     count = Counter()

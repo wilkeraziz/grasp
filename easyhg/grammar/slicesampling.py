@@ -49,16 +49,20 @@ def make_heuristic(args, cfg, semiring):
         raise ValueError('Unknown heuristic')
 
 
-def slice_sampling(cfg, sentence, args, semiring=SumTimes):
-    # get a heuristic
-    heuristic = make_heuristic(args, cfg, semiring)
+def slice_sampling(grammars, glue_grammars, sentence, args, semiring=SumTimes):
+    # get a heuristic (for now it only uses the main grammar)
+    heuristic = make_heuristic(args, grammars[0], semiring)
     # configure slice variables
     u = SliceVariables({}, a=args.beta_a[0], b=args.beta_b[0], heuristic=heuristic)
     samples = []
     goal = Nonterminal(args.goal)
     checkpoint = 100
     while len(samples) < args.samples + args.burn:
-        parser = Nederhof(cfg, sentence.fsa, semiring=semiring, slice_variables=u, make_symbol=make_recursive_symbol)
+        parser = Nederhof(grammars, sentence.fsa,
+                          glue_grammars=glue_grammars,
+                          semiring=semiring,
+                          slice_variables=u,
+                          make_symbol=make_recursive_symbol)
         logging.debug('Parsing...')
         forest = parser.do(root=Nonterminal(args.start), goal=goal)
         if not forest:
