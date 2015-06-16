@@ -25,174 +25,71 @@ import sys
 from itertools import chain
 
 
-class Parser(object):
+class ParserState(object):
 
-    def __init__(self, grammars, input, options, glue_grammars=[]):
-        self._grammars = grammars
-        self._glue_grammars = glue_grammars
-        self._input = input
-        self._options = options
-
-        self._start_symbol = Nonterminal(options.start)
-        self._goal_symbol = Nonterminal(options.goal)
-
-        # lazy properties
+    def __init__(self, options):
+        self._parser = None
         self._forest = None
         self._tsort = None
-        self._inside = {}
-
-    @property
-    def grammars(self):
-        return self._grammars
-
-    @property
-    def glue_grammars(self):
-        return self._glue_grammars
-
-    @property
-    def input(self):
-        return self._input
+        self._itables = {}
+        self._options = options
 
     @property
     def options(self):
         return self._options
 
-    @property
-    def root(self):
-        return self._goal_symbol
+    def parser(self, input_fsa, main_grammars, glue_grammars):
+        """
 
-    def get_parser(self, algorithm):
-        grammars = self.grammars
-        fsa = self.input.fsa
-        glue = self.glue_grammars
-        semiring = SumTimes
-        make_symbol = make_flat_symbol
-        if algorithm == 'earley':
-            parser = Earley(grammars, fsa, glue_grammars=glue, semiring=semiring, make_symbol=make_symbol)
-        elif algorithm == 'nederhof':
-            parser = Nederhof(grammars, fsa, glue_grammars=glue, semiring=semiring, make_symbol=make_symbol)
-        else:
-            raise NotImplementedError("I don't know this intersection algorithm: %s" % algorithm)
-        return parser
+        :param input_fsa: FSA
+        :param main_grammars: list of CFG objects
+        :param glue_grammars: list of CFG objects
+        :return: Earley or Nederhof
+        """
+        if self._parser is None:
+            semiring = SumTimes
+            make_symbol = make_flat_symbol
+            if self._options.intersection == 'earley':
+                self._parser = Earley(main_grammars, input_fsa,
+                                glue_grammars=glue_grammars,
+                                semiring=semiring,
+                                make_symbol=make_symbol)
+            elif self._options.intersection == 'nederhof':
+                self._parser = Nederhof(main_grammars, input_fsa,
+                                  glue_grammars=glue_grammars,
+                                  semiring=semiring,
+                                  make_symbol=make_symbol)
+            else:
+                raise NotImplementedError("I don't know this intersection algorithm: %s" % self._options.intersection)
+        return self._parser
 
-    def forest(self):
+    def forest(self, parser):
         if self._forest is None:
-            # get a parser for a given parsing algorithm
-            parser = self.get_parser(self.options.intersection)
             # make a forest
             logging.info('Parsing...')
-            forest = parser.do(root=self._start_symbol, goal=self._goal_symbol)
-            if not forest:
-                raise ValueError('No parse found')
-
+            forest = parser.do(root=Nonterminal(self._options.start), goal=Nonterminal(self._options.goal))
             self._forest = forest
-
         return self._forest
 
-    def tsort(self):
+    def tsort(self, forest):
         if self._tsort is None:
-            forest = self.forest()
             logging.info('Top-sorting...')
             tsort = TopSortTable(forest)
             logging.info('Top symbol: %s', tsort.root())
             self._tsort = tsort
         return self._tsort
 
-    def inside(self, semiring):
-        itable = self._inside.get(semiring, None)
+    def inside(self, forest, tsort, semiring, omega=None):
+        itable = self._itables.get(semiring, None)
         if itable is None:
-            forest = self.forest()
-            tsort = self.tsort()
             logging.info('Inside semiring=%s ...', str(semiring.__name__))
-            itable = robust_inside(forest, tsort, semiring, infinity=self.options.generations)
-            logging.info('Inside goal-value=%f', itable[self.root])
-            self._inside[semiring] = itable
+            if omega is None:
+                itable = robust_inside(forest, tsort, semiring, infinity=self._options.generations)
+            else:
+                itable = robust_inside(forest, tsort, semiring, omega=omega, infinity=self._options.generations)
+            logging.info('Inside goal-value=%f', itable[tsort.root()])
+            self._itables[semiring] = itable
         return itable
-
-    def viterbi(self):
-        forest = self.forest()
-        tsort = self.tsort()
-        inside_nodes = self.inside(MaxTimes)
-        logging.info('Viterbi...')
-        d = optimise(forest, self.root, MaxTimes, Iv=inside_nodes)
-        t = make_nltk_tree(d)
-        print('# VITERBI')
-        print('# k={0} score={1}\n{2}'.format(1, inside_nodes[self.root], inlinetree(t)))
-        print()
-
-    def kbest(self):
-        forest = self.forest()
-        logging.info('K-best...')
-        kbestparser = KBest(forest,
-                            self.root,
-                            self.options.kbest,
-                            MaxTimes,
-                            traversal=projection.string,
-                            uniqueness=False).do()
-        logging.info('Done!')
-        print('# K-BEST: size=%d' % self.options.kbest)
-        for k, d in enumerate(kbestparser.iterderivations()):
-            t = make_nltk_tree(d)
-            print('# k={0} score={1}\n{2}'.format(k + 1, total_weight(d, MaxTimes), inlinetree(t)))
-        print()
-
-    def ancestral_sampling(self):
-        forest = self.forest()
-        inside_nodes = self.inside(SumTimes)
-        count = Counter(sample(forest, self.root, SumTimes, Iv=inside_nodes, N=self.options.samples))
-        n_samples = self.options.samples
-        print('# SAMPLE: size=%d Z=%s' % (n_samples, inside_nodes[self.root]))
-        for d, n in count.most_common():
-            t = make_nltk_tree(d)
-            score = total_weight(d, SumTimes)
-            p = SumTimes.divide(score, inside_nodes[self.root])
-            print('# n={0} estimate={1} exact={2} score={3}\n{4}'.format(n, float(n)/n_samples, SumTimes.as_real(p), score, inlinetree(t)))
-        print()
-
-    def count(self, forest, tsort):
-        logging.info('Inside semiring=%s ...', str(Count.__name__))
-        Ic = robust_inside(forest, tsort, Count, omega=lambda e: Count.one, infinity=self.options.generations)
-        logging.info('Forest: edges=%d nodes=%d paths=%d', len(forest), forest.n_nonterminals(), Ic[self.root])
-        print('# FOREST edges=%d nodes=%d paths=%d' % (len(forest), forest.n_nonterminals(), Ic[self.root]))
-
-    def exact(self):
-        try:
-            forest = self.forest()
-        except ValueError:
-            logging.error('NO PARSE FOUND')
-            return False
-
-        if self.options.forest:  # dump forest
-            print(forest)
-            print()
-
-        if self.options.count:  # compute derivation counts
-            self.count(self.forest(), self.tsort())
-        else:
-            logging.info('Forest: edges=%d nodes=%d goal=%s', len(forest), forest.n_nonterminals(), self.root)
-            print('# FOREST: edges=%d nodes=%d goal=%s' % (len(forest), forest.n_nonterminals(), self.root))
-
-        if self.options.viterbi:
-            self.viterbi()
-
-        if self.options.kbest > 0:
-            self.kbest()
-
-        if self.options.samples > 0:
-            self.ancestral_sampling()
-
-        logging.info('Finished!')
-
-    def slice_sampling(self):
-        slice_sampling(self.grammars, self.glue_grammars, self.input, self.options)
-
-    def do(self):
-        if self.options.framework == 'exact':
-            self.exact()
-        elif self.options.framework == 'slice':
-            self.slice_sampling()
-        else:
-            raise NotImplementedError('I do not yet know how to perform inference in this framework: %s' % self.options.framework)
 
 
 def report_info(cfg, args):
@@ -223,6 +120,98 @@ def report_info(cfg, args):
                     print('\n'.join('  {0}'.format(s) for s in bucket))
                 print()
             sys.exit(0)
+
+
+def report_forest(forest, state):
+    if state.options.count:
+        tsort = state.tsort(forest)
+        itable = state.inside(forest, tsort, Count, omega=lambda e: Count.one)
+        logging.info('Forest: edges=%d nodes=%d paths=%d', len(forest), forest.n_nonterminals(), itable[tsort.root()])
+        print('# FOREST edges=%d nodes=%d paths=%d' % (len(forest), forest.n_nonterminals(), itable[tsort.root()]))
+    else:
+        logging.info('Forest: edges=%d nodes=%d', len(forest), forest.n_nonterminals())
+
+    if state.options.forest:
+        print('# FOREST terminals=%d nonterminals=%d rules=%d' % (forest.n_terminals(), forest.n_nonterminals(), len(forest)))
+        print(forest)  # TODO: write to a file
+        print()
+
+
+def viterbi(forest, state):
+    tsort = state.tsort(forest)
+    root = tsort.root()
+    inside_nodes = state.inside(forest, tsort, MaxTimes)
+    logging.info('Viterbi...')
+    d = optimise(forest, root, MaxTimes, Iv=inside_nodes)
+    t = make_nltk_tree(d)
+    print('# VITERBI')
+    print('# k={0} score={1}\n{2}'.format(1, inside_nodes[root], inlinetree(t)))
+    print()
+
+
+def kbest(forest, state):
+    root = Nonterminal(state.options.goal)
+    logging.info('K-best...')
+    kbestparser = KBest(forest,
+                        root,
+                        state.options.kbest,
+                        MaxTimes,
+                        traversal=projection.string,
+                        uniqueness=False).do()
+    logging.info('Done!')
+    print('# K-BEST: size=%d' % state.options.kbest)
+    for k, d in enumerate(kbestparser.iterderivations()):
+        t = make_nltk_tree(d)
+        print('# k={0} score={1}\n{2}'.format(k + 1, total_weight(d, MaxTimes), inlinetree(t)))
+    print()
+
+
+def ancestral_sampling(forest, state):
+    tsort = state.tsort(forest)
+    root = tsort.root()
+    inside_nodes = state.inside(forest, tsort, SumTimes)
+    count = Counter(sample(forest, root, SumTimes, Iv=inside_nodes, N=state.options.samples))
+    n_samples = state.options.samples
+    print('# SAMPLE: size=%d Z=%s' % (n_samples, inside_nodes[root]))
+    for d, n in count.most_common():
+        t = make_nltk_tree(d)
+        score = total_weight(d, SumTimes)
+        p = SumTimes.divide(score, inside_nodes[root])
+        print('# n={0} estimate={1} exact={2} score={3}\n{4}'.format(n, float(n)/n_samples, SumTimes.as_real(p), score, inlinetree(t)))
+    print()
+
+
+def exact(input, grammars, glue_grammars, options):
+
+    state = ParserState(options)
+    parser = state.parser(input.fsa, grammars, glue_grammars)
+    forest = state.forest(parser)
+
+    if not forest:
+        logging.info('NO PARSE FOUND')
+        return
+
+    report_forest(forest, state)
+
+    if options.viterbi:
+        viterbi(forest, state)
+
+    if options.kbest > 0:
+        kbest(forest, state)
+
+    if options.samples > 0:
+        ancestral_sampling(forest, state)
+
+    logging.info('Finished!')
+
+
+def do(input, grammars, glue_grammars, options):
+    if options.framework == 'exact':
+        exact(input, grammars, glue_grammars, options)
+    elif options.framework == 'slice':
+        slice_sampling(input, grammars, glue_grammars, options)
+    else:
+        raise NotImplementedError('I do not yet know how to perform inference in this framework: %s' % self.options.framework)
 
 
 def core(args):
@@ -269,8 +258,7 @@ def core(args):
             grammars.append(CFG(get_oov_cfg_productions(sentence.oovs, args.unklhs, semiring.one)))
 
         logging.info('Parsing %d words: %s', len(sentence), sentence)
-        parser = Parser(grammars, sentence, args, glue_grammars=glue_grammars)
-        parser.do()
+        do(sentence, grammars, glue_grammars, args)
 
 
 def configure():

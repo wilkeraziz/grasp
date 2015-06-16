@@ -19,8 +19,13 @@ def iterpairs(features_str):
             yield k, float(v)
 
 
-def iterrules(path, linear_model):
-    istream = smart_open(path)
+def iterrules(istream, linear_model):
+    """
+    Iterates through an input stream yielding synchronous rules.
+    :param istream:
+    :param linear_model:
+    :return:
+    """
     for line in istream:
         if line.startswith('#'):
             continue
@@ -40,7 +45,13 @@ def iterrules(path, linear_model):
 
 
 def load_grammar(path, linear_model):
-    return SCFG(iterrules(path, linear_model))
+    """
+    Load a grammar from a text file.
+    :param path:
+    :param linear_model:
+    :return:
+    """
+    return SCFG(iterrules(smart_open(path), linear_model))
 
 
 if __name__ == '__main__':
@@ -52,6 +63,4 @@ if __name__ == '__main__':
     print('# G')
     print(G)
     print('# F')
-    print(G.f_projection(SumTimes))
-    print('# E')
-    print(G.e_projection(SumTimes, marginalise=True))
+    print(G.input_projection(SumTimes))

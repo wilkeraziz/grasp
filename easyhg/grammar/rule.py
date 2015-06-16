@@ -62,7 +62,7 @@ class CFGProduction(object):
         return '%s ||| %s ||| %s' % (self.lhs, ' '.join(str(s) for s in self.rhs), self.weight)
 
 
-class SCFGProduction(object):  #TODO: check this
+class SCFGProduction(object):
     """
     Implements a synchronous context-free production. 
     
@@ -72,23 +72,27 @@ class SCFGProduction(object):  #TODO: check this
     F_NT_INDEX_RE = re.compile('^([^,]+)(,(\d+))?$')
     E_NT_INDEX_RE = re.compile('^(([^,]+),)?(\d+)$')
 
-    def __init__(self, lhs, f_rhs, e_rhs, nt_alignment, weight):
+    def __init__(self, lhs,
+                 irhs,
+                 orhs,
+                 nt_alignment,
+                 weight):  # TODO: consider keeping terminal alignment, consider keeping a feature vector
         self._lhs = lhs
-        self._f_rhs = tuple(f_rhs)
-        self._e_rhs = tuple(e_rhs)
+        self._irhs = tuple(irhs)
+        self._orhs = tuple(orhs)
         self._nt_aligment = tuple(nt_alignment)
         self._weight = weight
 
     @staticmethod
-    def create(lhs, f_rhs, e_rhs, weight):
-        f_rhs = list(f_rhs)
-        e_rhs = list(e_rhs)
-        f_nts = [i for i, sym in filter(lambda i_s: isinstance(i_s[1], Nonterminal), enumerate(f_rhs))]
-        e_nts = [j for j, sym in filter(lambda i_s: isinstance(i_s[1], Nonterminal), enumerate(e_rhs))]
+    def create(lhs, irhs, orhs, weight):
+        irhs = list(irhs)
+        orhs = list(orhs)
+        f_nts = [i for i, sym in filter(lambda i_s: isinstance(i_s[1], Nonterminal), enumerate(irhs))]
+        e_nts = [j for j, sym in filter(lambda i_s: isinstance(i_s[1], Nonterminal), enumerate(orhs))]
    
         # adjust source RHS nonterminal symbols
         for k, i in enumerate(f_nts):
-            f_sym = f_rhs[i].label
+            f_sym = irhs[i].label
             result = SCFGProduction.F_NT_INDEX_RE.search(f_sym)
             if result is None or len(result.groups()) != 3:
                 raise ValueError('Invalid source right-hand side nonterminal symbol: %s' % f_sym)
@@ -97,41 +101,41 @@ class SCFGProduction(object):  #TODO: check this
                 index = int(index)
                 if index != k + 1:
                     logging.warning('I am discarding the index of a source right-hand side nonterminal symbol for it is inconsistent. Expected %d, got %d.' % (k + 1, index))
-            f_rhs[i] = Nonterminal(label)
+            irhs[i] = Nonterminal(label)
     
         nt_alignment = []
         # adjust target RHS nonterminal symbols
         for j in e_nts:
-            e_sym = e_rhs[j].label
+            e_sym = orhs[j].label
             result = SCFGProduction.E_NT_INDEX_RE.search(e_sym)
             if result is None or len(result.groups()) != 3:
                 raise ValueError('Invalid target right-hand side nonterminal symbol: %s' % e_sym)
             label, index = result.group(2), int(result.group(3))
             if not (0 < index <= len(f_nts)):
                 raise ValueError('Reference to a nonexistent source right-hand side nonterminal: %d/%d' % (index, len(f_nts)))
-            f_sym = f_rhs[f_nts[index - 1]]
+            f_sym = irhs[f_nts[index - 1]]
             if label is None:
                 label = f_sym
             elif label != f_sym.label:
-                logging.warning('I am discaring a target right-hand side label for it differs from its aligned source label. Expected %s, got %s.' % (f_sym.label, label))
-            e_rhs[j] = Nonterminal(label)
+                logging.warning('I am discarding a target right-hand side label for it differs from its aligned source label. Expected %s, got %s.' % (f_sym.label, label))
+            orhs[j] = Nonterminal(label)
             nt_alignment.append(index)
 
         # stores the source production
         # and the target projection
-        return SCFGProduction(lhs, f_rhs, e_rhs, nt_alignment, weight)
+        return SCFGProduction(lhs, irhs, orhs, nt_alignment, weight)
 
     @property
     def lhs(self):
         return self._lhs
 
     @property
-    def f_rhs(self):
-        return self._f_rhs
+    def irhs(self):
+        return self._irhs
 
     @property
-    def e_rhs(self):
-        return self._e_rhs
+    def orhs(self):
+        return self._orhs
     
     @property
     def weight(self):
@@ -145,15 +149,15 @@ class SCFGProduction(object):  #TODO: check this
         A = iter(self.alignment)
         return '%s ||| %s ||| %s ||| %s' % (
             self.lhs,
-            ' '.join(str(s) for s in self.f_rhs),
-            ' '.join(str(s) if isinstance(s, Terminal) else '[%d]' % (next(A)) for s in self.e_rhs),
+            ' '.join(str(s) for s in self.irhs),
+            ' '.join(str(s) if isinstance(s, Terminal) else '[%d]' % (next(A)) for s in self.orhs),
             self.weight)
 
     def project_rhs(self):
         """Computes the target context-free production by projecting source labels through nonterminal alignment."""
         alignment = iter(self.alignment)
-        f_nts = tuple(filter(lambda s: isinstance(s, Nonterminal), self.f_rhs))
-        return tuple(s if isinstance(s, Terminal) else f_nts[next(alignment) - 1] for s in self.e_rhs)
+        f_nts = tuple(filter(lambda s: isinstance(s, Nonterminal), self.irhs))
+        return tuple(s if isinstance(s, Terminal) else f_nts[next(alignment) - 1] for s in self.orhs)
 
 
 def get_oov_cfg_productions(oovs, unk_lhs, weight):

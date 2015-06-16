@@ -117,6 +117,7 @@ class Agenda(object):
 
     def add(self, item):
         """Add an active item if possible"""
+        print('+', item)
         return self._active.add(item)
 
     def extend(self, items):
