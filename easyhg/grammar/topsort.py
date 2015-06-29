@@ -15,6 +15,7 @@ def deps_assert(deps):
                 return False
     return True
 
+
 def topological_sort(deps):
     """
     A topological sorting algorithm for acyclic graphs.

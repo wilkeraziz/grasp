@@ -9,7 +9,7 @@ import sys
 from .symbol import Terminal, Nonterminal
 from .rule import CFGProduction
 from .cfg import CFG
-from .utils import smart_open
+from .utils import smart_ropen
 
 
 _EXAMPLE_GRAMMAR_ = """
@@ -163,9 +163,9 @@ def read_grammar(path, transform=None, ply_based=False):
     if ply_based:
         parser = CFGYacc(transform=transform)
         parser.build(debug=False, write_tables=False)
-        return CFG(parser.parse(smart_open(path)))
+        return CFG(parser.parse(smart_ropen(path)))
     else:
-        return CFG(read_basic(smart_open(path), transform))
+        return CFG(read_basic(smart_ropen(path), transform))
 
 if __name__ == '__main__':
     import sys

@@ -83,21 +83,20 @@ def make_sentence(input_str, semiring, lexicon, unkmodel=None):
         if word not in lexicon and unkmodel is not None:
             # special treatment for unknown words
                 oovs.add(word)
+                if unkmodel is None:
+                    continue
                 if unkmodel == PASSTHROUGH:
                     continue
-                    #extra_rules.append(CFGProduction(Nonterminal(default_symbol), [Terminal(word)], semiring.one))
-                    #logging.debug('Passthrough rule for %s: %s', word, extra_rules[-1])
+                if unkmodel == STFDBASE:
+                    get_signature = unknownmodel.unknownwordbase
+                elif unkmodel == STFD4:
+                    get_signature = unknownmodel.unknownword4
+                elif unkmodel == STFD6:
+                    get_signature = unknownmodel.unknownword6
                 else:
-                    if unkmodel == STFDBASE:
-                        get_signature = unknownmodel.unknownwordbase
-                    elif unkmodel == STFD4:
-                        get_signature = unknownmodel.unknownword4
-                    elif unkmodel == STFD6:
-                        get_signature = unknownmodel.unknownword6
-                    else:
-                        raise NotImplementedError('I do not know this model: %s' % unkmodel)
-                    signatures[i] = get_signature(word, i, lexicon)
-                    logging.debug('Unknown word model (%s): i=%d word=%s signature=%s', unkmodel, i, word, signatures[i])
+                    raise NotImplementedError('I do not know this model: %s' % unkmodel)
+                signatures[i] = get_signature(word, i, lexicon)
+                logging.debug('Unknown word model (%s): i=%d word=%s signature=%s', unkmodel, i, word, signatures[i])
 
     fsa = WDFSA()
     for i, word in enumerate(signatures):

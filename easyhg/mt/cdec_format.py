@@ -3,10 +3,10 @@
 """
 
 from collections import defaultdict
-from .symbol import Terminal, Nonterminal
-from .rule import SCFGProduction
-from .scfg import SCFG
-from .utils import smart_open
+from easyhg.grammar.symbol import Terminal, Nonterminal
+from easyhg.grammar.rule import SCFGProduction
+from easyhg.grammar.scfg import SCFG
+from easyhg.grammar.utils import smart_ropen
 
 
 def is_nonterminal(sym):
@@ -19,7 +19,7 @@ def iterpairs(features_str):
             yield k, float(v)
 
 
-def iterrules(istream, linear_model):
+def iterrules(istream):
     """
     Iterates through an input stream yielding synchronous rules.
     :param istream:
@@ -41,26 +41,23 @@ def iterrules(istream, linear_model):
         f_rhs = tuple(Nonterminal(x[1:-1]) if is_nonterminal(x) else Terminal(x) for x in fields[1].split())
         e_rhs = tuple(Nonterminal(x[1:-1]) if is_nonterminal(x) else Terminal(x) for x in fields[2].split())
         features = defaultdict(None, iterpairs(fields[3]))
-        yield SCFGProduction.create(lhs, f_rhs, e_rhs, linear_model.dot(features))
+        yield SCFGProduction.create(lhs, f_rhs, e_rhs, features)
 
 
-def load_grammar(path, linear_model):
+def load_grammar(path):
     """
     Load a grammar from a text file.
     :param path:
-    :param linear_model:
     :return:
     """
-    return SCFG(iterrules(smart_open(path), linear_model))
+    return SCFG(iterrules(smart_ropen(path)))
 
 
 if __name__ == '__main__':
     import sys
-    from .semiring import SumTimes
-    from .model import cdec_basic
-    model = cdec_basic()
-    G = SCFG(iterrules(sys.stdin, model))
+    from easyhg.grammar.semiring import SumTimes
+    G = SCFG(iterrules(sys.stdin))
     print('# G')
     print(G)
-    print('# F')
-    print(G.input_projection(SumTimes))
+    #print('# F')
+    #print(G.input_projection(SumTimes))

@@ -10,11 +10,11 @@ from itertools import chain
 from .symbol import Terminal, Nonterminal
 from .rule import CFGProduction
 from .cfg import CFG
-from .utils import smart_open
+from .utils import smart_ropen
 
 
 def iterrules(path, transform):
-    fi = smart_open(path, 'rt')
+    fi = smart_ropen(path, 'rt')
     for line in fi:
         line = line.strip()
         if not line:
@@ -31,7 +31,7 @@ def iterrules(path, transform):
 
 
 def iterlexicon(path, transform):
-    fi = smart_open(path, 'rt')
+    fi = smart_ropen(path, 'rt')
     for line in fi:
         line = line.strip()
         if not line:

@@ -71,7 +71,7 @@ class Nederhof(object):
 
         # you may interpret this as a delayed axiom
         # every compatible rule in the grammar
-        for r in self._firstsym.get(sym, set()):  
+        for r in self._firstsym.get(sym, set()):
             self._agenda.add(Item(r, sto, inner=(sfrom,)))  # can be interpreted as a lazy axiom
 
         # again for glue rules, however, only if the origin state is initial in the FSA

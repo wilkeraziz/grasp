@@ -3,14 +3,15 @@ from collections import defaultdict
 from .symbol import Terminal
 import re
 import gzip
+from io import TextIOWrapper
 
 
-def smart_open(path, *args, **kwargs):
+def smart_ropen(path):
     """Opens files directly or through gzip depending on extension."""
     if path.endswith('.gz'):
-        return gzip.open(path, *args, **kwargs)
+        return TextIOWrapper(gzip.open(path, 'rb'))
     else:
-        return open(path, *args, **kwargs)
+        return open(path, 'r')
 
 
 def _make_nltk_tree(derivation, top=0):
@@ -53,3 +54,4 @@ def make_nltk_tree(derivation, top=0, flatten_symbols=False):
 def inlinetree(t):
     s = str(t).replace('\n','')
     return re.sub(' +', ' ', s)
+

@@ -129,6 +129,8 @@ class SCFG(object):
         :return:
         """
         self._srules = defaultdict(lambda: defaultdict(list))
+        self._sigma = set()
+        self._delta = set()
         for srule in syncrules:
             self.add(srule)
 
@@ -136,9 +138,17 @@ class SCFG(object):
         """The total number of synchronous rules in the container."""
         return sum(sum(len(rules) for rules in by_irhs.values()) for by_irhs in self._srules.values())
 
+    def in_ivocab(self, word):
+        return word in self._sigma
+
+    def in_ovocab(self, word):
+        return word in self._delta
+
     def add(self, srule):
         """Add a synchronous rule to the container."""
         self._srules[srule.lhs][srule.irhs].append(srule)
+        self._sigma.update(filter(lambda s: isinstance(s, Terminal), srule.irhs))
+        self._delta.update(filter(lambda s: isinstance(s, Terminal), srule.orhs))
 
     def __str__(self):
         lines = []

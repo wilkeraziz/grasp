@@ -76,15 +76,15 @@ class SCFGProduction(object):
                  irhs,
                  orhs,
                  nt_alignment,
-                 weight):  # TODO: consider keeping terminal alignment, consider keeping a feature vector
+                 fmap):
         self._lhs = lhs
         self._irhs = tuple(irhs)
         self._orhs = tuple(orhs)
         self._nt_aligment = tuple(nt_alignment)
-        self._weight = weight
+        self._fmap = defaultdict(None, fmap)
 
     @staticmethod
-    def create(lhs, irhs, orhs, weight):
+    def create(lhs, irhs, orhs, fmap):
         irhs = list(irhs)
         orhs = list(orhs)
         f_nts = [i for i, sym in filter(lambda i_s: isinstance(i_s[1], Nonterminal), enumerate(irhs))]
@@ -123,7 +123,7 @@ class SCFGProduction(object):
 
         # stores the source production
         # and the target projection
-        return SCFGProduction(lhs, irhs, orhs, nt_alignment, weight)
+        return SCFGProduction(lhs, irhs, orhs, nt_alignment, fmap)
 
     @property
     def lhs(self):
@@ -145,6 +145,10 @@ class SCFGProduction(object):
     def alignment(self):
         return self._nt_aligment
 
+    @property
+    def fpairs(self):
+        return self._fmap.items()
+
     def __str__(self):
         A = iter(self.alignment)
         return '%s ||| %s ||| %s ||| %s' % (
@@ -163,12 +167,5 @@ class SCFGProduction(object):
 def get_oov_cfg_productions(oovs, unk_lhs, weight):
     for word in oovs:
         r = CFGProduction(Nonterminal(unk_lhs), [Terminal(word)], weight)
-        logging.debug('Passthrough rule for %s: %s', word, r)
-        yield r
-
-
-def get_oov_scfg_productions(oovs, unk_lhs, weight):
-    for word in oovs:
-        r = SCFGProduction.create(Nonterminal(unk_lhs), [Terminal(word)], [Terminal(word)], weight)
         logging.debug('Passthrough rule for %s: %s', word, r)
         yield r
