@@ -146,3 +146,94 @@ class SliceVariables(object):
     
     def is_outside(self, s, theta):
         return theta <= self[s] 
+
+
+class SliceVariables2(object):
+    """
+    Slice variables are indexed by nodes (typically chart cells).
+    They are resampled on the basis of a conditioning derivation (which is given) or on the basis of a Beta distribution (whose parameters are given).
+
+    This follows the idea in (Blunsom and Cohn, 2010):
+
+        u_s ~ p(u_s|d) = uniform(0, theta_{r_s}) if r_s in d else beta(u_s; a, b)
+        where theta_{r_s} is the parameter associated with a rule in d whose LHS corresponds to the index s.
+
+    """
+
+    def __init__(self, conditions={}, p=0.5):
+        """
+        :param conditions:
+            dict of conditioning parameters, i.e., maps an index s to a parameter theta_{r_s}.
+        :param p:
+            parameter of the Bernoulli distribution
+        """
+        self._conditions = defaultdict(None, conditions)
+        self._p = p
+        self._u = defaultdict(None)
+
+    @property
+    def conditions(self):
+        return self._conditions
+
+    @property
+    def p(self):
+        return self._p
+
+    def pd(self, s, theta, slice_only=True):
+        """returns p(r_s|u) where lhs(r) == s and theta = p(rhs(r)|s)"""
+        u_s = self[s]
+        if u_s < theta:
+            return 1.0 / beta.pdf(u_s, self._a, self._b)  # (np.power(u_s, self._a - 1) * np.power(1 - u_s, self._b - 1))
+        elif slice_only:
+            raise ValueError('I received a variable outside the slice: s=%s theta=%s u_s=%s' % (s, theta, u_s))
+        else:
+            return 0.0
+
+    def logpd(self, s, theta, slice_only=True):
+        """returns p(r_s|u) where lhs(r) == s and theta = p(rhs(r)|s)"""
+        u_s = self[s]
+        if theta > u_s:
+            return - beta.logpdf(u_s, self._a, self._b)
+        elif slice_only:
+            raise ValueError('I received a variable outside the slice: s=%s theta=%s u_s=%s' % (s, theta, u_s))
+        else:
+            return 0.0
+
+    def reset(self, conditions=None, p=None):
+        self._u = defaultdict(None)
+        if conditions is not None:
+            self._conditions = defaultdict(None, conditions)
+        if p is not None:
+            self._p = p
+
+    def __getitem__(self, s):
+        """
+        Returns u_s sampling it if necessary.
+
+        """
+
+        u_s = self._u.get(s, None)
+        if u_s is None:  # the slice variable has not been sampled yet
+            (label, start, end) = s
+            spans = self._conditions.get(label, None)
+            if spans is None:  # no condition
+                # Bernoulli
+                u_s = np.random.binomial(1, self._p)
+            else:
+                # constituent
+                x = (start, end)
+                u_s = 1.0
+                if x not in spans:
+                    for y in spans:
+                        # crossing span
+                        if (y[0] < x[0] < y[1] and x[1] > y[1]) or (x[0] < y[0] < x[1] and y[1] > x[1]):
+                            u_s = np.random.binomial(1, self._p)
+                            break
+            self._u[s] = u_s
+        return u_s
+
+    def is_inside(self, s, theta):
+        return self[s] == 1.0
+
+    def is_outside(self, s, theta):
+        return self[s] == 0.0
