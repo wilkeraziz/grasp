@@ -6,22 +6,15 @@ One can choose from all available implementations.
 """
 
 import logging
+import numpy as np
 from collections import defaultdict, Counter
-from itertools import chain
-
 from .symbol import Nonterminal, make_recursive_symbol
 from .semiring import SumTimes, Count
-from .slicevars import SliceVariables
+from .slicevars import GeneralisedSliceVariables
 from .slicednederhof import Nederhof
 from .inference import robust_inside, sample, total_weight
-from .utils import make_nltk_tree, inlinetree
-from . import heuristic
-from .reader import load_grammar
-from .sentence import make_sentence
-from .cfg import TopSortTable, CFG
-from .coarse import itercoarse, refine_conditions, iteritg
-from .nederhof import Nederhof as ExactNederhof
-
+from .cfg import TopSortTable
+from .result import Result
 
 
 def make_conditions(d, semiring):
@@ -41,99 +34,29 @@ def make_batch_conditions(D, semiring):
     return conditions
 
 
-def make_heuristic(args, cfg, semiring):
-    if not args.heuristic:
-        return None
-    if args.heuristic == 'empdist':
-        return heuristic.empdist(cfg, semiring, args.heuristic_empdist_alpha)
-    elif args.heuristic == 'uniform':
-        return heuristic.uniform(cfg, semiring, args.heuristic_uniform_params[0], args.heuristic_uniform_params[1])
-    else:
-        raise ValueError('Unknown heuristic')
-
-
-def initialise_coarse(input_fsa, grammars, glue_grammars, options):
-
-    semiring = SumTimes
-    coarse_grammar = CFG()
-    for g in grammars:
-        for r in itercoarse(g, semiring):
-            coarse_grammar.add(r)
-    coarse_glue = CFG()
-    for g in glue_grammars:
-        for r in itercoarse(g, semiring):
-            coarse_glue.add(r)
-
-    logging.info('Coarse grammar: terminals=%d nonterminals=%d rules=%d', coarse_grammar.n_terminals(), coarse_grammar.n_nonterminals(), len(coarse_grammar))
-    parser = ExactNederhof([coarse_grammar], input_fsa,
-              glue_grammars=[coarse_glue],
-              semiring=semiring,
-              make_symbol=make_recursive_symbol)
-    forest = parser.do(root=Nonterminal(options.start), goal=Nonterminal(options.goal))
-    if not forest:
-        raise ValueError('The coarse grammar cannot parse this input')
-
-    tsort = TopSortTable(forest)
-    root = tsort.root()
-    inside_nodes = robust_inside(forest, tsort, semiring, infinity=options.generations)
-    d = list(sample(forest, root, semiring, Iv=inside_nodes, N=1))[0]
-    t = make_nltk_tree(d)
-    score = total_weight(d, semiring)
-    #print('# exact=%f \n%s' % (semiring.as_real(semiring.divide(score, inside_nodes[root])), inlinetree(t)))
-
-    spans = defaultdict(set)
-    for r in d:
-        spans[r.lhs.label[0]].add(r.lhs.label[1:])
-    return refine_conditions(spans, grammars[0], semiring)
-
-
-def initialise_itg(input_fsa, grammars, glue_grammars, options):
-
-    semiring = SumTimes
-    itg_grammar = CFG()
-    for g in grammars:
-        for r in iteritg(g):
-            itg_grammar.add(r)
-    itg_glue = CFG()
-    for g in glue_grammars:
-        for r in iteritg(g):
-            itg_glue.add(r)
-
-    logging.info('Coarse grammar: terminals=%d nonterminals=%d rules=%d', itg_grammar.n_terminals(), itg_grammar.n_nonterminals(), len(itg_grammar))
-    parser = ExactNederhof([itg_grammar], input_fsa,
-              glue_grammars=[itg_glue],
-              semiring=semiring,
-              make_symbol=make_recursive_symbol)
-    forest = parser.do(root=Nonterminal(options.start), goal=Nonterminal(options.goal))
-    if not forest:
-        raise ValueError('The coarse grammar cannot parse this input')
-
-    tsort = TopSortTable(forest)
-    root = tsort.root()
-    inside_nodes = robust_inside(forest, tsort, semiring, infinity=options.generations)
-    d = list(sample(forest, root, semiring, Iv=inside_nodes, N=1))[0]
-    t = make_nltk_tree(d)
-    score = total_weight(d, semiring)
-    #print('# exact=%f \n%s' % (semiring.as_real(semiring.divide(score, inside_nodes[root])), inlinetree(t)))
-
-    return make_conditions(d, semiring)
-
+def make_freedist_parameters(options, i=0):
+    return {'a': options.a[i],
+            'b': options.b[i],
+            'rate': options.rate[i],
+            'shape': options.shape[i],
+            'scale': options.scale[i]}
 
 
 def slice_sampling(input, grammars, glue_grammars, options):
     semiring=SumTimes
-    # get a heuristic (for now it only uses the main grammar)
-    heuristic = make_heuristic(options, grammars[0], semiring)
     # configure slice variables
-    u = SliceVariables({}, a=options.beta_a[0], b=options.beta_b[0], heuristic=heuristic)
+    u = GeneralisedSliceVariables({}, distribution=options.free_dist, parameters=make_freedist_parameters(options, 0))
     samples = []
     goal = Nonterminal(options.goal)
     checkpoint = 10
 
-    # TRYING SOMETHING HERE
-    conditions = initialise_itg(input.fsa, grammars, glue_grammars, options)
-    u.reset(conditions, a=options.beta_a[1], b=options.beta_b[1])
+    ## TRYING SOMETHING HERE
+    #conditions = initialise_itg(input.fsa, grammars, glue_grammars, options)
+    #u.reset(conditions, a=options.a[1], b=options.b[1])
     #########################
+    lag = options.lag
+
+    first = True
 
     while len(samples) < options.samples + options.burn:
         parser = Nederhof(grammars, input.fsa,
@@ -141,13 +64,12 @@ def slice_sampling(input, grammars, glue_grammars, options):
                           semiring=semiring,
                           slice_variables=u,
                           make_symbol=make_recursive_symbol)
-        logging.debug('Parsing beta-a=%s beta-b=%s ...', u.a, u.b)
+        logging.debug('Free variables: %s', str(u))
         forest = parser.do(root=Nonterminal(options.start), goal=goal)
         if not forest:
             logging.debug('NO PARSE FOUND')
             u.reset()  # reset the slice variables (keeping conditions unchanged if any)
             continue
-
 
         logging.debug('Topsort...')
         tsort = TopSortTable(forest)
@@ -163,17 +85,36 @@ def slice_sampling(input, grammars, glue_grammars, options):
         uniformdist = parser.reweight(forest)
         Iv = robust_inside(forest, tsort, semiring, omega=lambda e: uniformdist[e], infinity=options.generations)
         logging.debug('Sampling...')
+
         D = list(sample(forest, tsort.root(), semiring, Iv=Iv, N=options.batch, omega=lambda e: uniformdist[e]))
         assert D, 'The slice should never be empty'
-        u.reset(make_batch_conditions(D, semiring), a=options.beta_a[1], b=options.beta_b[1])
-        samples.extend(D)
+
+        if first:  # the first time we find a derivation we change the parameters of the distribution associated with free variables
+            u.reset(make_batch_conditions(D, semiring), parameters=make_freedist_parameters(options, 1))
+            first = False
+        else:
+            u.reset(make_batch_conditions(D, semiring))
+
+        # collect samples respecting a given lag
+        lag -= 1
+        if lag == 0:
+            samples.extend(D)
+            lag = options.lag
+
         if len(samples) > checkpoint:
             logging.info('sampling... %d/%d', len(samples), options.samples + options.burn)
             checkpoint = len(samples) + 10
 
-    count = Counter(samples[options.burn:])
+    # compile results
+    if options.resample > 0:
+        # uniformly resample (with replacement) a number of derivations (possibly burning the initial ones)
+        count = Counter(samples[i] for i in np.random.randint(options.burn, len(samples), options.resample))
+    else:
+        count = Counter(samples[options.burn:])
+
+    result = Result()
     for d, n in count.most_common():
-        t = make_nltk_tree(d)
         score = total_weight(d, SumTimes)
-        print('# n=%d estimate=%f score=%f\n%s' % (n, float(n)/options.samples, score, inlinetree(t)))
-    print()
+        result.append(d, n, score)
+
+    return result
