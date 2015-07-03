@@ -15,6 +15,7 @@ def smart_ropen(path):
     else:
         return open(path, 'r')
 
+
 def smart_wopen(path):
     """Opens files directly or through gzip depending on extension."""
     if path.endswith('.gz'):

@@ -146,8 +146,6 @@ def do(uid, input, grammars, glue_grammars, options, outdir):
         raise NotImplementedError('I do not yet know how to perform inference in this framework: %s' % options.framework)
 
 
-
-
 def make_dirs(args):
     """
     Make output directories and saves the command line arguments for documentation purpose.
