@@ -123,12 +123,12 @@ def cmd_sampling(group):
 
 
 def cmd_slice(group):
-    group.add_argument('--burn',
-                       type=int, default=0, metavar='N',
-                       help='number of initial samples to be discarded (burn-in time) - but also consider --restart')
     group.add_argument('--lag',
                        type=int, default=1, metavar='I',
                        help='lag between samples')
+    group.add_argument('--burn',
+                       type=int, default=0, metavar='N',
+                       help='number of initial samples to be discarded (applies after lag)')
     group.add_argument('--resample',
                        type=int, default=0, metavar='N',
                        help='uniformly sample with replacement N derivations from the sampled derivations (use 0 or less to disable)')
@@ -141,6 +141,9 @@ def cmd_slice(group):
     group.add_argument('--free-dist',
                        type=str, default='beta', metavar='DIST', choices=['beta', 'exponential', 'gamma'],
                        help='the distribution of the free variables (those with no condition), one of {beta, exponential, gamma}.')
+    group.add_argument('--history',
+                       action='store_true',
+                       help='dumps history files with all samples in the order they were collected (no burn-in, no lag, no resampling)')
     group.add_argument('--a',
                        type=float, nargs=2, default=[0.1, 0.3], metavar='BEFORE AFTER',
                        help="Beta's first shape parameter before and after we have something to condition on")

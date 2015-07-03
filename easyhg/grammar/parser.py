@@ -16,9 +16,10 @@ from .semiring import SumTimes
 from .reader import load_grammar
 from .cfg import CFG, TopSortTable
 from .rule import get_oov_cfg_productions
-from .slicesampling import slice_sampling
+from .slicesampling import slice_sampling, make_result
 from .utils import smart_wopen, make_unique_directory
 from .exact import exact
+from .inference import total_weight
 
 
 def report_info(cfg, args):
@@ -111,6 +112,16 @@ def save_viterbi(path, result):
         print('# score={0}\n{1}'.format(score, inlinetree(t)), file=out)
 
 
+def save_sample_history(path, samples_by_iteration):
+    with smart_wopen(path) as out:
+        for i, samples in enumerate(samples_by_iteration, 1):
+            print('# i={0} n={1}'.format(i, len(samples)), file=out)
+            for d in samples:
+                score = total_weight(d, SumTimes)
+                t = make_nltk_tree(d)
+                print('{0}\t{1}'.format(score, inlinetree(t)), file=out)
+
+
 def do(uid, input, grammars, glue_grammars, options, outdir):
 
     if options.framework == 'exact':
@@ -126,9 +137,11 @@ def do(uid, input, grammars, glue_grammars, options, outdir):
             save_mc('{0}/ancestral/{1}.gz'.format(outdir, uid), results_by_method['ancestral'])
 
     elif options.framework == 'slice':
-        results = slice_sampling(input, grammars, glue_grammars, options)
-
+        history = slice_sampling(input, grammars, glue_grammars, options)
+        results = make_result(history, lag=options.lag, burn=options.burn, resample=options.resample)
         save_mcmc('{0}/slice/{1}.gz'.format(outdir, uid), results)
+        if options.history:
+            save_sample_history('{0}/history/{1}.gz'.format(outdir, uid), history)
     else:
         raise NotImplementedError('I do not yet know how to perform inference in this framework: %s' % options.framework)
 
@@ -168,6 +181,8 @@ def make_dirs(args):
         os.makedirs('{0}/forest'.format(outdir))
     if args.count:
         os.makedirs('{0}/count'.format(outdir))
+    if args.history:
+        os.makedirs('{0}/history'.format(outdir))
 
     # write the command line arguments to an ini file
     args_ini = '{0}/args.ini'.format(outdir)

@@ -7,6 +7,7 @@ One can choose from all available implementations.
 
 import logging
 import numpy as np
+import itertools
 from collections import defaultdict, Counter
 from .symbol import Nonterminal, make_recursive_symbol
 from .semiring import SumTimes, Count
@@ -46,7 +47,7 @@ def slice_sampling(input, grammars, glue_grammars, options):
     semiring=SumTimes
     # configure slice variables
     u = GeneralisedSliceVariables({}, distribution=options.free_dist, parameters=make_freedist_parameters(options, 0))
-    samples = []
+
     goal = Nonterminal(options.goal)
     checkpoint = 10
 
@@ -58,7 +59,12 @@ def slice_sampling(input, grammars, glue_grammars, options):
 
     first = True
 
-    while len(samples) < options.samples + options.burn:
+    history = []
+    #samples = []
+
+    n_samples = 0
+
+    while n_samples < options.samples + options.burn:
         parser = Nederhof(grammars, input.fsa,
                           glue_grammars=glue_grammars,
                           semiring=semiring,
@@ -95,22 +101,34 @@ def slice_sampling(input, grammars, glue_grammars, options):
         else:
             u.reset(make_batch_conditions(D, semiring))
 
+        history.append(D)
         # collect samples respecting a given lag
         lag -= 1
         if lag == 0:
-            samples.extend(D)
+            n_samples += len(D)
+            #samples.extend(D)
             lag = options.lag
 
-        if len(samples) > checkpoint:
-            logging.info('sampling... %d/%d', len(samples), options.samples + options.burn)
-            checkpoint = len(samples) + 10
+        if n_samples > checkpoint:
+            logging.info('sampling... %d/%d', n_samples, options.samples + options.burn)
+            checkpoint = n_samples + 10
+
+    return history
+
+
+def make_result(samples_by_iteration, lag=1, burn=0, resample=0):
+
+    if lag > 1:
+        samples = list(itertools.chain(*samples_by_iteration[lag-1::lag]))
+    else:
+        samples = list(itertools.chain(*samples_by_iteration))
 
     # compile results
-    if options.resample > 0:
+    if resample > 0:
         # uniformly resample (with replacement) a number of derivations (possibly burning the initial ones)
-        count = Counter(samples[i] for i in np.random.randint(options.burn, len(samples), options.resample))
+        count = Counter(samples[i] for i in np.random.randint(burn, len(samples), resample))
     else:
-        count = Counter(samples[options.burn:])
+        count = Counter(samples[burn:])
 
     result = Result()
     for d, n in count.most_common():
@@ -118,3 +136,5 @@ def slice_sampling(input, grammars, glue_grammars, options):
         result.append(d, n, score)
 
     return result
+
+
