@@ -16,6 +16,7 @@ from .slicednederhof import Nederhof
 from .inference import robust_inside, sample, total_weight
 from .cfg import TopSortTable
 from .result import Result
+from .init import attempt_initialisation
 
 
 def make_conditions(d, semiring):
@@ -45,23 +46,19 @@ def make_freedist_parameters(options, i=0):
 
 def slice_sampling(input, grammars, glue_grammars, options):
     semiring=SumTimes
+    # goal symbol
+    goal = Nonterminal(options.goal)
     # configure slice variables
     u = GeneralisedSliceVariables({}, distribution=options.free_dist, parameters=make_freedist_parameters(options, 0))
+    # attempt a heuristic initialisation
+    conditions = attempt_initialisation(input.fsa, grammars, glue_grammars, options)
+    if conditions is not None:  # reconfigure slice variables if possible
+        u.reset(conditions, distribution=options.free_dist, parameters=make_freedist_parameters(options, 1))
 
-    goal = Nonterminal(options.goal)
-    checkpoint = 10
-
-    ## TRYING SOMETHING HERE
-    #conditions = initialise_itg(input.fsa, grammars, glue_grammars, options)
-    #u.reset(conditions, a=options.a[1], b=options.b[1])
-    #########################
     lag = options.lag
-
+    checkpoint = 10
     first = True
-
     history = []
-    #samples = []
-
     n_samples = 0
 
     while n_samples < options.samples + options.burn:

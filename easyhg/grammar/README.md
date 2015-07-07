@@ -102,13 +102,12 @@ For now slice sampling only supports `--intersection nederhof`.
 
 ## Ongoing work
 
-* better heuristics for the initial derivation in slice sampling
 * decision rules such as `--map` and `--mbr METRIC`
 * loss-augmented and loss-diminished decoding
 * a simple pruning strategy for Viterbi
 * Gibbs sampler (Bouchard-Cote et al, 2009).
 * Importance sampler (Aziz, 2015)
-
+* Slice sampling within heuristics for slice sampling
 
 # Profiling
 

@@ -135,7 +135,7 @@ def cmd_slice(group):
     group.add_argument('--batch',
                        type=int, default=1, metavar='K',
                        help='number of samples per slice (typically leads to larger slices)')
-    group.add_argument('--init',
+    group.add_argument('--heuristic',
                        type=str, choices=['coarse', 'itg'],
                        help='initialisation strategy')
     group.add_argument('--free-dist',

@@ -61,6 +61,9 @@ class CFGProduction(object):
     def __str__(self):
         return '%s ||| %s ||| %s' % (self.lhs, ' '.join(str(s) for s in self.rhs), self.weight)
 
+    def pprint(self, make_symbol):
+        return '%s ||| %s ||| %s' % (make_symbol(self.lhs), ' '.join(str(make_symbol(s)) for s in self.rhs), self.weight)
+
 
 class SCFGProduction(object):
     """
@@ -136,17 +139,16 @@ class SCFGProduction(object):
     @property
     def orhs(self):
         return self._orhs
-    
-    @property
+
     def weight(self):
-        return self._weight
+        return 0.0  # TODO: compute dot product
 
     @property
     def alignment(self):
         return self._nt_aligment
 
     @property
-    def fpairs(self):
+    def fvpairs(self):
         return self._fmap.items()
 
     def __str__(self):
@@ -155,7 +157,7 @@ class SCFGProduction(object):
             self.lhs,
             ' '.join(str(s) for s in self.irhs),
             ' '.join(str(s) if isinstance(s, Terminal) else '[%d]' % (next(A)) for s in self.orhs),
-            self.weight)
+            self.weight())
 
     def project_rhs(self):
         """Computes the target context-free production by projecting source labels through nonterminal alignment."""

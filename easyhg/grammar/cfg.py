@@ -166,6 +166,14 @@ class CFG(Grammar):
                 lines.append(str(rule))
         return '\n'.join(lines)
 
+    def pprint(self, make_symbol):
+        """String representation of the (top-sorted) CFG."""
+        lines = []
+        for lhs, rules in sorted(iter(self._rules_by_lhs.items()), key=lambda pair: str(pair[0])):
+            for rule in sorted(rules, key=lambda r: str(r)):
+                lines.append(rule.pprint(make_symbol))
+        return '\n'.join(lines)
+
 
 def stars(cfg):
     """Compute the backward-star and the forward-star of the forest.

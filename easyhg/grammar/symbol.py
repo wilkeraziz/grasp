@@ -50,6 +50,10 @@ class Terminal(object):
         """The underlying object that uniquely represent the symbol."""
         return self._surface
 
+    @property
+    def underlying(self):
+        return self._surface
+
     def __repr__(self):
         return '%s(%s)' % (Terminal.__name__, repr(self._surface))
 
@@ -96,6 +100,10 @@ class Nonterminal(object):
     @property
     def label(self):
         """The underlying object that uniquely represents the symbol."""
+        return self._label
+
+    @property
+    def underlying(self):
         return self._label
 
     def __repr__(self):
@@ -146,3 +154,13 @@ def make_recursive_symbol(base_symbol, sfrom, sto):
     #    return base_symbol
     return base_symbol if isinstance(base_symbol, Terminal) else Nonterminal((base_symbol, sfrom, sto))
 
+def flatten_symbol(symbol):
+    if isinstance(symbol, Terminal):
+        return symbol
+    elif isinstance(symbol.label, tuple):
+        if len(symbol.label) == 3:
+            if symbol.label[1] is not None and symbol.label[2] is not None:
+                return Nonterminal('%s:%s-%s' % (symbol.label[0].label, symbol.label[1], symbol.label[2]))
+        return Nonterminal(symbol.label[0].label)
+    else:
+        return symbol.label

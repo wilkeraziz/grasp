@@ -17,9 +17,9 @@ def argparser():
     parser.add_argument('input', nargs='?',
             type=argparse.FileType('r'), default=sys.stdin,
             help='input corpus (one sentence per line)')
-    parser.add_argument('output', nargs='?',
-            type=argparse.FileType('w'), default=sys.stdout,
-            help='directs output to a file')
+    parser.add_argument('workspace',
+                        type=str,
+                        help='where everything happens')
     parser.add_argument("--grammars",
                         type=str,
                         help="where to find grammars (grammar files are expected to be named grammar.$i.sgm, "
@@ -30,11 +30,12 @@ def argparser():
 
 
     cmd_grammar(parser.add_argument_group('Grammar'))
+    cmd_model(parser.add_argument_group('Log-linear model'))
     cmd_parser(parser.add_argument_group('Parser'))
     cmd_info(parser.add_argument_group('Info'))
     cmd_viterbi(parser.add_argument_group('Viterbi'))
     cmd_sampling(parser.add_argument_group('Sampling'))
-    #cmd_slice(parser.add_argument_group('Slice sampling'))
+    cmd_slice(parser.add_argument_group('Slice sampling'))
 
     return parser
 
@@ -61,14 +62,21 @@ def cmd_grammar(group):
             help="add hiero's glue rules")
 
 
+def cmd_model(group):
+    group.add_argument('--weights',
+                       type=str,
+                       metavar='FILE',
+                       help='weight vector')
+
+
 def cmd_parser(group):
     group.add_argument('--goal',
             type=str, default='GOAL', metavar='LABEL',
             help='default goal symbol (root after parsing/intersection)')
     group.add_argument('--framework',
-            type=str, default='exact', choices=['exact', 'slice', 'gibbs'],
+            type=str, default='exact', choices=['exact', 'slice'],
             metavar='FRAMEWORK',
-            help="inference framework: 'exact', 'slice' sampling, 'gibbs' sampling")
+            help="inference framework: 'exact', 'slice' sampling")
     group.add_argument('--generations',
             type=int, default=20, metavar='N',
             help='number of generations in loopy inside computations')
@@ -79,8 +87,8 @@ def cmd_info(group):
             action='store_true',
             help='report the number of derivations in the forest')
     group.add_argument('--forest',
-            type=str,
-            help='dump unpruned forest to a file')
+                       action='store_true',
+                       help='dump unpruned forest as a grammar')
     group.add_argument('--verbose', '-v',
             action='store_true',
             help='increase the verbosity level')
@@ -129,6 +137,9 @@ def cmd_slice(group):
     group.add_argument('--heuristic-uniform-params',
             type=float, nargs=2, default=[0, 100], metavar='LOWER UPPER',
             help='the lower and upper percentiles for heuristic "uniform"')
+    group.add_argument('--history',
+                       action='store_true',
+                       help='dumps history files with all samples in the order they were collected (no burn-in, no lag, no resampling)')
 
 
 if __name__ == '__main__':
