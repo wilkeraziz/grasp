@@ -20,6 +20,9 @@ class LinearModel(object):
                 pass
         return dot
 
+    def get(self, fname):
+        return self._w.get(fname, 0.0)
+
     def __str__(self):
         return ' '.join('{0}={1}'.format(k, v) for k, v in sorted(self._w.items()))
 

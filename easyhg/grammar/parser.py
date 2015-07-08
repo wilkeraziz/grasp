@@ -124,13 +124,6 @@ def save_sample_history(path, samples_by_iteration):
 
 def do(uid, input, grammars, glue_grammars, options, outdir):
 
-    from easyhg.hg.util import make_hg_from_cfg
-
-    for g in grammars:
-        hg = make_hg_from_cfg(g)
-        hg.write(sys.stdout)
-
-
     if options.framework == 'exact':
         results_by_method = exact(uid, input, grammars, glue_grammars, options, outdir)
 

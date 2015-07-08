@@ -6,10 +6,11 @@ import logging
 import os
 from itertools import chain
 
-from easyhg.grammar.semiring import SumTimes
+from easyhg.grammar.semiring import SumTimes, MaxTimes, Count
 from easyhg.grammar.symbol import make_flat_symbol, make_recursive_symbol, Nonterminal, Terminal, flatten_symbol
 from easyhg.grammar.scfg import SCFG
 from easyhg.grammar.nederhof import Nederhof
+from easyhg.grammar.earley import Earley
 from easyhg.grammar.cfg import CFG, TopSortTable
 from easyhg.grammar.inference import robust_inside
 from easyhg.grammar.model import cdec_basic, load_cdef_file
@@ -21,6 +22,13 @@ from easyhg.grammar.symbol import Terminal
 from easyhg.grammar.fsa import WDFSA
 from easyhg.grammar.rule import CFGProduction, SCFGProduction
 from easyhg.grammar.utils import make_unique_directory, smart_wopen
+from easyhg.ff.lm import LMScorer
+from easyhg.ff.stateless import WordPenalty
+from easyhg.grammar.rescore import EarleyRescoring
+from easyhg.grammar.inference import optimise, total_weight
+from easyhg.grammar.kbest import KBest
+from easyhg.grammar.projection import string as projected_string
+from easyhg.grammar.utils import make_nltk_tree, inlinetree
 
 
 def make_input(seg, grammars, semiring, unk_lhs):
@@ -54,7 +62,59 @@ def make_input(seg, grammars, semiring, unk_lhs):
     return fsa, pass_grammar
 
 
-def decode(seg, extra_grammars, glue_grammars, model, args, outdir):
+def count(forest, args):
+    semiring = Count
+
+    logging.info('Top-sorting...')
+    tsort = TopSortTable(forest)
+    logging.info('Top symbol: %s', tsort.root())
+    root = tsort.root()
+
+    logging.info('Inside semiring=%s ...', str(semiring.__name__))
+    itable = robust_inside(forest, tsort, semiring, infinity=args.generations, omega=lambda e: semiring.one)
+    logging.info('Inside goal-value=%f', itable[root])
+
+
+
+def viterbi(forest, args):
+    semiring = MaxTimes
+
+    logging.info('Top-sorting...')
+    tsort = TopSortTable(forest)
+    logging.info('Top symbol: %s', tsort.root())
+    root = tsort.root()
+
+    logging.info('Inside semiring=%s ...', str(semiring.__name__))
+    itable = robust_inside(forest, tsort, semiring, infinity=args.generations)
+    logging.info('Inside goal-value=%f', itable[root])
+
+    logging.info('Viterbi...')
+    d = optimise(forest, root, MaxTimes, Iv=itable)
+    logging.info('Done!')
+    for e in d:
+        print(e)
+    print(itable[root])
+    print(inlinetree(make_nltk_tree(d)))
+
+    #return Result([(d, 1, itable[root])])
+
+def kbest(forest, args):
+    root = Nonterminal(args.goal)
+    logging.info('K-best...')
+    kbestparser = KBest(forest,
+                        root,
+                        args.kbest,
+                        MaxTimes,
+                        traversal=projected_string,
+                        uniqueness=False).do()
+    logging.info('Done!')
+    for k, d in enumerate(kbestparser.iterderivations()):
+        score = total_weight(d, MaxTimes)
+        print(inlinetree(make_nltk_tree(d)))
+        print(score)
+
+
+def decode(seg, extra_grammars, glue_grammars, model, scorers, args, outdir):
     semiring = SumTimes
     logging.info('Loading grammar: %s', seg.grammar)
     # load main SCFG from file
@@ -111,15 +171,22 @@ def decode(seg, extra_grammars, glue_grammars, model, args, outdir):
             print('# FOREST terminals=%d nonterminals=%d rules=%d' % (e_forest.n_terminals(), e_forest.n_nonterminals(), len(e_forest)), file=fo)
             print(e_forest, file=fo)
 
+    #count(e_forest, args)
+    viterbi(e_forest, args)
+    #kbest(e_forest, args)
 
-    logging.info('Top-sorting...')
-    tsort = TopSortTable(f_forest)
-    logging.info('Top symbol: %s', tsort.root())
-    root = tsort.root()
+    if args.lm:
+        rescorer = EarleyRescoring(e_forest, scorers[0], semiring, make_flat_symbol)
+        rescored, new_goal = rescorer.do(root=Nonterminal(args.goal), goal=Nonterminal('{0}{1}'.format(args.goal, scorers[0].id)))
 
-    logging.info('Inside semiring=%s ...', str(semiring.__name__))
-    itable = robust_inside(f_forest, tsort, semiring, infinity=args.generations)
-    logging.info('Inside goal-value=%f', itable[root])
+        if args.forest:
+            with smart_wopen('{0}/forest/rescored.{1}.gz'.format(outdir, seg.id)) as fo:
+                print('# FOREST terminals=%d nonterminals=%d rules=%d' % (rescored.n_terminals(), rescored.n_nonterminals(), len(rescored)), file=fo)
+                print(rescored, file=fo)
+
+        viterbi(rescored, args)
+
+
 
 
 
@@ -170,6 +237,31 @@ def make_dirs(args):
     return outdir
 
 
+def load_scorers(linear_model, args):
+    scorers = []
+    if args.lm:
+        logging.info('Loading language model: order=%s path=%s', args.lm[0], args.lm[1])
+
+        scorer = LMScorer(uid=len(scorers),
+                 name=LMScorer.DEFAULT_FNAME,
+                 weights=[linear_model.get(LMScorer.DEFAULT_FNAME),
+                          linear_model.get('{0}_OOV'.format(LMScorer.DEFAULT_FNAME))],
+                 order=int(args.lm[0]),
+                 path=args.lm[1],
+                 bos=Terminal(LMScorer.DEFAULT_BOS_SYMBOL),
+                 eos=Terminal(LMScorer.DEFAULT_EOS_SYMBOL))
+        scorers.append(scorer)
+    if args.wp:
+
+        logging.info('Decoding with WordPenalty')
+        scorer = WordPenalty(uid=len(scorers),
+                             name='WordPenalty',
+                             weights=[linear_model.get('WordPenalty')])
+        scorers.append(scorer)
+
+    return scorers
+
+
 def core(args):
 
     # load the linear model
@@ -197,13 +289,16 @@ def core(args):
             logging.info('Glue grammar: productions=%d', len(glue))
             glue_grammars.append(glue)
 
+    # Load scores
+    scorers = load_scorers(linear_model, args)
+
     outdir = make_dirs(args)
 
     # Parse sentence by sentence
     for input_str in args.input:
         # get an input automaton
         seg = SegmentMetaData.parse(input_str, grammar_dir=args.grammars)
-        decode(seg, extra_grammars, glue_grammars, linear_model, args, outdir)
+        decode(seg, extra_grammars, glue_grammars, linear_model, scorers, args, outdir)
 
     logging.info('Check output files in: %s', outdir)
 

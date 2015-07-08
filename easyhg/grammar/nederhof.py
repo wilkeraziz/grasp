@@ -79,6 +79,8 @@ class Nederhof(object):
             for r in self._glue_firstsym.get(sym, set()):
                 self._agenda.add(Item(r, sto, inner=(sfrom,)))  # can be interpreted as a lazy axiom
 
+        self._agenda.add_generating(sym, sfrom, sto)
+
         return True
 
     def axioms(self):

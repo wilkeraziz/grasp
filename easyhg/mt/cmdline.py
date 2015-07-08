@@ -67,6 +67,11 @@ def cmd_model(group):
                        type=str,
                        metavar='FILE',
                        help='weight vector')
+    group.add_argument('--wp',
+                       action='store_true',
+                       help='include a word penalty feature')
+    group.add_argument('--lm', nargs=2,
+                       help='rescore forest with a language model (order, path).')
 
 
 def cmd_parser(group):
