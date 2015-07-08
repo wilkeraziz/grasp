@@ -148,6 +148,9 @@ class Agenda(object):
         Tries to make passive an active item.
         Returns False if the item is already passive, True otherwise.
         """
+        return self.make_complete(item) if item.is_complete() else self.make_wait(item)
+
+    def make_wait(self, item):
         waiting = self._waiting[(item.next, item.dot)]
         n = len(waiting)
         waiting.add(item)
