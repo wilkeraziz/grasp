@@ -22,7 +22,8 @@ from easyhg.grammar.symbol import Terminal
 from easyhg.grammar.fsa import WDFSA
 from easyhg.grammar.rule import CFGProduction, SCFGProduction
 from easyhg.grammar.utils import make_unique_directory, smart_wopen
-from easyhg.ff.lm import LMScorer
+from easyhg.ff.lm import KenLMScorer
+from easyhg.ff.scorer import StatefulScorerWrapper
 from easyhg.ff.stateless import WordPenalty
 from easyhg.grammar.rescore import EarleyRescoring
 from easyhg.grammar.inference import optimise, total_weight
@@ -131,7 +132,7 @@ def decode(seg, extra_grammars, glue_grammars, model, scorers, args, outdir):
     logging.info('Input: states=%d arcs=%d', input_fsa.n_states(), input_fsa.n_arcs())
 
     # 1) get a parser
-    parser = Nederhof(igrammars,
+    parser = Earley(igrammars,
                       input_fsa,
                       glue_grammars=iglue,
                       semiring=semiring,
@@ -176,7 +177,7 @@ def decode(seg, extra_grammars, glue_grammars, model, scorers, args, outdir):
     #kbest(e_forest, args)
 
     if args.lm:
-        rescorer = EarleyRescoring(e_forest, scorers[0], semiring, make_flat_symbol)
+        rescorer = EarleyRescoring(e_forest, StatefulScorerWrapper([scorers[0]]), semiring, make_flat_symbol)
         rescored, new_goal = rescorer.do(root=Nonterminal(args.goal), goal=Nonterminal('{0}{1}'.format(args.goal, scorers[0].id)))
 
         if args.forest:
@@ -242,14 +243,14 @@ def load_scorers(linear_model, args):
     if args.lm:
         logging.info('Loading language model: order=%s path=%s', args.lm[0], args.lm[1])
 
-        scorer = LMScorer(uid=len(scorers),
-                 name=LMScorer.DEFAULT_FNAME,
-                 weights=[linear_model.get(LMScorer.DEFAULT_FNAME),
-                          linear_model.get('{0}_OOV'.format(LMScorer.DEFAULT_FNAME))],
+        scorer = KenLMScorer(uid=len(scorers),
+                 name=KenLMScorer.DEFAULT_FNAME,
+                 weights=[linear_model.get(KenLMScorer.DEFAULT_FNAME),
+                          linear_model.get('{0}_OOV'.format(KenLMScorer.DEFAULT_FNAME))],
                  order=int(args.lm[0]),
                  path=args.lm[1],
-                 bos=Terminal(LMScorer.DEFAULT_BOS_SYMBOL),
-                 eos=Terminal(LMScorer.DEFAULT_EOS_SYMBOL))
+                 bos=Terminal(KenLMScorer.DEFAULT_BOS_STRING),
+                 eos=Terminal(KenLMScorer.DEFAULT_EOS_STRING))
         scorers.append(scorer)
     if args.wp:
 

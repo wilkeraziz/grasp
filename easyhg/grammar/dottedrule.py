@@ -20,6 +20,7 @@ class DottedRule(object):
         1) a CFG rule
         2) a right-most dot representing a state
         3) a vector of inner dots representing the states a long a path
+        4) a weight
     Moreover, dotted rules are immutable objects.
     
     This class implements instance management.
@@ -46,9 +47,17 @@ class DottedRule(object):
     _instances = WeakValueDictionary()
     #_instances = defaultdict(None)
 
-    def __new__(cls, rule, dot, inner=[]):
-        """The symbols in lhs and rhs must be hashable"""
-        skeleton = (rule, dot, tuple(inner))
+    def __new__(cls, rule, dot, inner=[], weight=1):
+        """
+        An item with a dot at the beginning of the rule. A rule must be a hashable object.
+
+        :param rule: a CFGProduction
+        :param dot: an integer representing the last state intersected
+        :param inner: a sequence of states previously intersected
+        :param weight: weighted incorporated thus far
+        """
+
+        skeleton = (rule, dot, tuple(inner), weight)
         obj = DottedRule._instances.get(skeleton, None)
         if not obj:
             obj = object.__new__(cls)
@@ -75,6 +84,11 @@ class DottedRule(object):
         return self._skeleton[2]
 
     @property
+    def weight(self):
+        """weight incorporated thus far"""
+        return self._skeleton[3]
+
+    @property
     def start(self):
         """the left-most state intersected"""
         return self._start
@@ -92,11 +106,11 @@ class DottedRule(object):
         """whether the dot has reached the end of the rule"""
         return self._complete  # len(self.inner) == len(self.rule.rhs)
 
-    def advance(self, dot):
+    def advance(self, dot, weight=1.0):
         """returns a new item whose dot has been advanced"""
-        return DottedRule(self.rule, dot, self.inner + (self.dot,))
+        return DottedRule(self.rule, dot, self.inner + (self.dot,), weight)
 
-    def weight(self, wfsa, semiring):
+    def _weight(self, wfsa, semiring):
         """
         Computes the total weight (in a given semiring) taking into account the underlying rule's weight
         and the path intersected with the automaton.
@@ -124,4 +138,4 @@ class DottedRule(object):
                 weight)
     
     def __str__(self):
-        return '%s ||| %s ||| %d' % (str(self.rule), self.inner, self.dot)
+        return '%s ||| %s ||| %d ||| %f' % (str(self.rule), self.inner, self.dot, self.weight)
