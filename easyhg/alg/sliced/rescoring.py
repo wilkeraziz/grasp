@@ -134,7 +134,7 @@ class SlicedRescoring(object):
                 if projections[j] == proj_i:
                     total_prob += np.exp(log_prob[j])
 
-            logging.info('Sample: prob=%s score=%d count=%d totalprob=%s proj=%s', np.exp(log_prob[i]),
+            logging.info('Sample: prob=%s score=%s count=%d totalprob=%s proj=%s', np.exp(log_prob[i]),
                          numerators[i],
                          proj2counts[proj_i],
                          total_prob,
