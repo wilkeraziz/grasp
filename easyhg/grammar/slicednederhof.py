@@ -51,30 +51,6 @@ class Nederhof(object):
         self._firstsym = defaultdict(set)  # index rules by their first RHS symbol
         self._glue_firstsym = defaultdict(set)  # index glue rules by their first RHS symbol
         self._u = slice_variables
-        
-    def add_symbol(self, sym, sfrom, sto):
-        """
-        This operation:
-            1) completes items waiting for `sym` from `sfrom`
-            2) instantiate delayed axioms
-        Returns False if the annotated symbol had already been added, True otherwise
-        """
-
-        # every item waiting for `sym` from `sfrom`
-        for item in self._agenda.iterwaiting(sym, sfrom):
-            self._agenda.add(item.advance(sto))
-
-        # you may interpret this as a delayed axiom
-        # every compatible rule in the grammar
-        for r in self._firstsym.get(sym, set()):  
-            self._agenda.add(Item(r, sto, inner=(sfrom,)))  # can be interpreted as a lazy axiom
-
-        # again for glue rules, however, only if the origin state is initial in the FSA
-        if self._wfsa.is_initial(sfrom):
-            for r in self._glue_firstsym.get(sym, set()):
-                self._agenda.add(Item(r, sto, inner=(sfrom,)))  # can be interpreted as a lazy axiom
-
-        return True
 
     def axioms(self):
         """
@@ -91,11 +67,40 @@ class Nederhof(object):
 
         # these are axioms based on the transitions of the automaton
         for sfrom, sto, sym, w in self._wfsa.iterarcs():
-            self.add_symbol(sym, sfrom, sto)  
-        # here we could deal with empty productions
-        # for q in Q do  # every state in the wfsa
-        #   for all (X -> epsilon) in R do
-        #       A = A v {(q, A-> *, q)}  # would need to check the slice variables
+            self.complete_others(sym, sfrom, sto)
+            self._agenda.add_generating(sym, sfrom, sto)
+
+    def complete_others(self, sym, sfrom, sto):
+        """
+        This operation:
+            1) completes items waiting for `sym` from `sfrom`
+            2) instantiate delayed axioms
+        Returns False if the annotated symbol had already been added, True otherwise
+        """
+
+        if self._agenda.is_generating(sym, sfrom, sto):
+            return False
+
+        # every item waiting for `sym` from `sfrom`
+        for item in self._agenda.iterwaiting(sym, sfrom):
+            self._agenda.add(item.advance(sto))
+
+        # you may interpret this as a delayed axiom
+        # every compatible rule in the grammar
+        for r in self._firstsym.get(sym, set()):
+            self._agenda.add(Item(r, sto, inner=(sfrom,)))  # can be interpreted as a lazy axiom
+
+        # again for glue rules, however, only if the origin state is initial in the FSA
+        if self._wfsa.is_initial(sfrom):
+            for r in self._glue_firstsym.get(sym, set()):
+                self._agenda.add(Item(r, sto, inner=(sfrom,)))  # can be interpreted as a lazy axiom
+
+        return True
+
+    def complete_itself(self, item):
+        for sto in self._agenda.itercompletions(item.next, item.dot):
+            self._agenda.add(item.advance(sto))  # move the dot forward
+        return True
 
     def inference(self):
         """Exhausts the queue of active items"""
@@ -107,13 +112,13 @@ class Nederhof(object):
                 # slice check  (TODO: incorporate weights from intersected transitions before performing the check)
                 if self._u.is_outside((item.rule.lhs, item.start, item.dot), self._semiring.as_real(item.rule.weight)):
                     self._agenda.discard(item)  # should I keep it (perhaps 'block' it somehow)?
-                elif self._agenda.make_complete(item):  # if we have discovered a new generating symbol
-                    self.add_symbol(item.rule.lhs, item.start, item.dot)
+                else:
+                    self.complete_others(item.rule.lhs, item.start, item.dot)
+                    self._agenda.make_passive(item)
             else:
                 # merges the input item with previously completed items effectively moving the input item's dot forward
+                self.complete_itself(item)
                 agenda.make_passive(item)
-                for sto in agenda.itercompletions(item.next, item.dot):
-                    agenda.add(item.advance(sto))  # move the dot forward
 
     def do(self, root=Nonterminal('S'), goal=Nonterminal('GOAL')):
         """Runs the program and returns the intersected CFG"""

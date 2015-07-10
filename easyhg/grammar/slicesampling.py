@@ -12,7 +12,7 @@ from collections import defaultdict, Counter
 from .symbol import Nonterminal, make_recursive_symbol
 from .semiring import SumTimes, Count
 from .slicevars import GeneralisedSliceVariables
-from .slicednederhof import Nederhof
+from .xnederhof import Nederhof
 from .inference import robust_inside, sample, total_weight
 from .cfg import TopSortTable
 from .result import Result
@@ -65,8 +65,8 @@ def slice_sampling(input, grammars, glue_grammars, options):
         parser = Nederhof(grammars, input.fsa,
                           glue_grammars=glue_grammars,
                           semiring=semiring,
-                          slice_variables=u,
-                          make_symbol=make_recursive_symbol)
+                          make_symbol=make_recursive_symbol,
+                          slice_variables=u)
         logging.debug('Free variables: %s', str(u))
         forest = parser.do(root=Nonterminal(options.start), goal=goal)
         if not forest:

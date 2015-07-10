@@ -6,7 +6,7 @@ import logging
 from collections import Counter
 from .symbol import Nonterminal, make_flat_symbol
 from .earley import Earley
-from .nederhof import Nederhof
+from .xnederhof import Nederhof
 from .semiring import SumTimes, MaxTimes, Count
 from .inference import robust_inside, sample, optimise, total_weight
 from .kbest import KBest
