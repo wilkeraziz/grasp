@@ -9,11 +9,12 @@ import logging
 import numpy as np
 import itertools
 from collections import defaultdict, Counter
+from easyhg.alg.exact import Nederhof
+from easyhg.alg.sliced import SliceVariables
 from .symbol import Nonterminal, make_recursive_symbol
 from .semiring import SumTimes, Count
-from .slicevars import GeneralisedSliceVariables
-from .nederhof import Nederhof
-from .inference import robust_inside, sample, total_weight
+
+from easyhg.alg.exact.inference import robust_inside, sample, total_weight
 from .cfg import TopSortTable
 from .result import Result
 from .init import attempt_initialisation
@@ -49,7 +50,7 @@ def slice_sampling(input, grammars, glue_grammars, options):
     # goal symbol
     goal = Nonterminal(options.goal)
     # configure slice variables
-    u = GeneralisedSliceVariables({}, distribution=options.free_dist, parameters=make_freedist_parameters(options, 0))
+    u = SliceVariables({}, distribution=options.free_dist, parameters=make_freedist_parameters(options, 0))
     # attempt a heuristic initialisation
     conditions = attempt_initialisation(input.fsa, grammars, glue_grammars, options)
     if conditions is not None:  # reconfigure slice variables if possible

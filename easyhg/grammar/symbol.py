@@ -58,18 +58,19 @@ class Terminal(object):
         return '%s(%s)' % (Terminal.__name__, repr(self._surface))
 
     def __str__(self):
+        """Return the string associated with the underlying object wrapped with single quotes."""
         return "'{0}'".format(self._surface)
+
+    def underlying_str(self):
+        """Return the string associated with the underlying object."""
+        return str(self._surface)
     
     def flatten(self):
-        try:
-            if isinstance(self._surface[0], Terminal):
-                return self._surface[0]
-        except:
-            pass
+        """Return itself"""
         return self
 
 
-class Nonterminal(object):
+class _Nonterminal(object):
     """
     Implements a nonterminal symbol. References to nonterminal symbols are managed by the Nonterminal class.
     We use WeakValueDictionary for builtin reference counting.
@@ -121,7 +122,88 @@ class Nonterminal(object):
         return self
 
 
-def make_flat_symbol(base_symbol, sfrom, sto):
+class Nonterminal(object):
+    """
+
+    """
+
+    _categories = WeakValueDictionary()
+
+    def __new__(cls, label):
+        """The label has to be hashable."""
+        obj = Nonterminal._categories.get(label, None)
+        if not obj:
+            obj = object.__new__(cls)
+            Nonterminal._categories[label] = obj
+            obj._label = label
+        return obj
+
+    @property
+    def label(self):
+        """The underlying object that uniquely represents the symbol."""
+        return self._label
+
+    @property
+    def underlying(self):
+        """Return the underlying object."""
+        return self._label
+
+    def __repr__(self):
+        return '%s(%s)' % (Nonterminal.__name__, repr(self._label))
+
+    def __str__(self):
+        """Return the string associated with the underlying object wrapped with squared brackets."""
+        return '[{0}]'.format(self._str())
+
+    def underlying_str(self):
+        """Return the string associated with the underlying object."""
+        return str(self._label)
+
+    def flatten(self):
+        """Return itself."""
+        return self
+
+
+class Span(Nonterminal):
+    """
+    A Span is a Nonterminal rewriting from `start` to `end`.
+    """
+
+    def __new__(cls, nonterminal, start, end):
+        assert(isinstance(nonterminal, Nonterminal)), 'In a span, the base symbol must be a Nonterminal.'
+        return super(Span, cls).__new__(cls, (nonterminal, start, end))
+
+    def __str__(self):
+        """Underlying string representation wrapped with squared brackets."""
+        return '[{0}]'.format(self.underlying_str())
+
+    def __repr__(self):
+        return '%s(%s)' % (Span.__name__, repr(self._label))
+
+    def underlying_str(self):
+        """Construct a string representing the span (except for the squared brackets)."""
+        return '{0}:{1}-{2}'.format(self.underlying[0].underlying_str(),
+                                    self.underlying[1] if self.underlying[1] is not None else '',
+                                    self.underlying[2] if self.underlying[2] is not None else '')
+
+    @property
+    def base(self):
+        return self._label[0]
+
+    @property
+    def start(self):
+        return self._label[1]
+
+    @property
+    def end(self):
+        return self._label[2]
+
+    def flatten(self):
+        """Return a basic nonterminal using the underlying string representation of the span(without squared brackets)."""
+        return Nonterminal(self.underlying_str())
+
+
+def _make_flat_symbol(base_symbol, sfrom, sto):
     """Return a symbol of same type (Terminal or Nonterminal) as `base_symbol`.
     If Nonterminal, the symbol is annotated with the span [sfrom, sto].
 
@@ -137,7 +219,7 @@ def make_flat_symbol(base_symbol, sfrom, sto):
         return base_symbol
     return base_symbol if isinstance(base_symbol, Terminal) else Nonterminal('%s:%s-%s' % (base_symbol.label, sfrom, sto))
 
-def make_recursive_symbol(base_symbol, sfrom, sto):
+def _make_recursive_symbol(base_symbol, sfrom, sto):
     """
     Return a symbol of same type (Terminal or Nonterminal) as `base_symbol`.
     If nonterminal, the label will be the tuple (base_symbol, sfrom, sto).
@@ -153,6 +235,9 @@ def make_recursive_symbol(base_symbol, sfrom, sto):
     #if sfrom is None and sto is None:
     #    return base_symbol
     return base_symbol if isinstance(base_symbol, Terminal) else Nonterminal((base_symbol, sfrom, sto))
+
+def make_span(symbol, sfrom, sto):
+    return symbol if isinstance(symbol, Terminal) else Span(symbol, sfrom, sto)
 
 def flatten_symbol(symbol):
     if isinstance(symbol, Terminal):

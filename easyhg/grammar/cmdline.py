@@ -138,12 +138,12 @@ def cmd_slice(group):
     group.add_argument('--heuristic',
                        type=str, choices=['coarse', 'itg'],
                        help='initialisation strategy')
-    group.add_argument('--free-dist',
-                       type=str, default='beta', metavar='DIST', choices=['beta', 'exponential', 'gamma'],
-                       help='the distribution of the free variables (those with no condition), one of {beta, exponential, gamma}.')
     group.add_argument('--history',
                        action='store_true',
                        help='dumps history files with all samples in the order they were collected (no burn-in, no lag, no resampling)')
+    group.add_argument('--free-dist',
+                       type=str, default='beta', metavar='DIST', choices=['beta', 'exponential', 'gamma'],
+                       help='the distribution of the free variables (those with no condition), one of {beta, exponential, gamma}.')
     group.add_argument('--a',
                        type=float, nargs=2, default=[0.1, 0.3], metavar='BEFORE AFTER',
                        help="Beta's first shape parameter before and after we have something to condition on")

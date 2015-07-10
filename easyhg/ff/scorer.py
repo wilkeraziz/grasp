@@ -88,6 +88,9 @@ class Stateful(Scorer):
         """
         raise NotImplementedError('I have not been implemented!')
 
+    def total_score(self, words):
+        raise NotImplementedError('I have not been implemented!')
+
 
 class StatefulScorerWrapper(object):
     """
@@ -151,3 +154,9 @@ class StatefulScorerWrapper(object):
             weights[i] = weight
             out_states[i] = out_state
         return weights.sum(), self._mapper.to_int(tuple(out_states))
+
+    def total_score(self, words):
+        weights = np.zeros(len(self._scorers))
+        for i, scorer in enumerate(self._scorers):
+            weights[i] = scorer.total_score(words)
+        return weights.sum()

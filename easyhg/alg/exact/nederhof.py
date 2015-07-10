@@ -16,10 +16,10 @@ This is an implementation of the bottom-up intersection by Nederhof and Satta (2
 """
 
 from collections import defaultdict
-from .symbol import Nonterminal, make_flat_symbol
+from easyhg.grammar.symbol import Nonterminal
+from easyhg.grammar.grammar import Grammar
 from .dottedrule import DottedRule as Item
 from .agenda import ActiveQueue, Agenda, make_cfg
-from .grammar import Grammar
 
 
 class Nederhof(object):
@@ -36,14 +36,12 @@ class Nederhof(object):
                  wfsa,
                  semiring,
                  glue_grammars,
-                 make_symbol=make_flat_symbol,
                  slice_variables=None):
         """
         :param grammars: a list of wCFGs
         :param wfsa: a wFSA
         :param semiring: a Semiring
         :param glue_grammars: list of glue CFGs (whose LHS symbols rewrite only from initial FSA states)
-        :param make_symbol: how to compose intersected symbols
         :param slice_variables: control pruning if specified
         """
 
@@ -58,7 +56,6 @@ class Nederhof(object):
 
         self._wfsa = wfsa
         self._semiring = semiring
-        self._make_symbol = make_symbol
         self._agenda = Agenda(active_container_type=ActiveQueue)
         self._firstsym = defaultdict(set)  # index rules by their first RHS symbol
         self._glue_firstsym = defaultdict(set)  # index glue rules by their first RHS symbol
@@ -201,7 +198,7 @@ class Nederhof(object):
         self._inference()
         return make_cfg(goal, root, 
                 self._agenda.itergenerating, self._agenda.itercomplete, 
-                self._wfsa, self._semiring, self._make_symbol)
+                self._wfsa, self._semiring)
 
     def reweight(self, forest):
         if self._semiring.LOG:

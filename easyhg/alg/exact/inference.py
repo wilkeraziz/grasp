@@ -12,6 +12,7 @@ import numpy as np
 import logging
 from functools import reduce
 from collections import defaultdict, deque
+from easyhg.grammar.semiring import SumTimes
 
 
 def inside(forest, topsorted, semiring, omega=lambda e: e.weight):
@@ -30,7 +31,7 @@ def inside(forest, topsorted, semiring, omega=lambda e: e.weight):
     for parent in topsorted:  # the inside of a node
         incoming = forest.get(parent, set())
         if not incoming:  # a terminal node
-            I[parent] = semiring.one
+            I[parent] = semiring.one if forest.is_terminal(parent) else semiring.zero
             continue
         # the inside of a nonterminal node is a sum over all of its incoming edges (rewrites)
         # for each rewriting rule, we get the product of the RHS nodes' insides times the rule weight
@@ -58,7 +59,7 @@ def robust_inside(forest, tsort, semiring, omega=lambda e: e.weight, infinity=20
             parent = next(iter(bucket))
             incoming = forest.get(parent, set())
             if not incoming:  # a terminal node
-                I[parent] = semiring.one
+                I[parent] = semiring.one if forest.is_terminal(parent) else semiring.zero
                 continue
             # the inside of a nonterminal node is a sum over all of its incoming edges (rewrites)
             # for each rewriting rule, we get the product of the RHS nodes' insides times the rule weight
@@ -72,7 +73,7 @@ def robust_inside(forest, tsort, semiring, omega=lambda e: e.weight, infinity=20
                 for parent in bucket:
                     incoming = forest.get(parent, set())
                     if not incoming:
-                        value = semiring.one
+                        value = semiring.one if forest.is_terminal(parent) else semiring.zero
                     else:
                         partials = (reduce(semiring.times,
                                            (V[child] if child in bucket else I[child] for child in rule.rhs),
@@ -224,7 +225,7 @@ def optimise(forest, root, semiring, Iv, Ie=None, omega=lambda e: e.weight, maxi
     return tuple(derivation) #, Iv[root]
 
 
-def total_weight(derivation, semiring, Z=None):
+def total_weight(derivation, semiring=SumTimes, Z=None):
     """
     Compute the total weight of a derivation (as a sequence of edges) under a semiring
     @params derivation: sequence of edges

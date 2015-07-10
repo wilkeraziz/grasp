@@ -4,16 +4,16 @@
 
 import logging
 from collections import Counter
+from easyhg.alg.exact import Earley, Nederhof, KBest
+from easyhg.alg.exact.inference import robust_inside, sample, optimise, total_weight
+
 from .symbol import Nonterminal, make_flat_symbol
-from .earley import Earley
-from .nederhof import Nederhof
 from .semiring import SumTimes, MaxTimes, Count
-from .inference import robust_inside, sample, optimise, total_weight
-from .kbest import KBest
 from . import projection
 from .cfg import TopSortTable
 from .result import Result
 from .utils import smart_wopen
+
 
 
 class ParserState(object):
@@ -221,3 +221,6 @@ def exact(uid, input, grammars, glue_grammars, options, outdir):
 
     logging.info('Finished!')
     return results
+
+
+

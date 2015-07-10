@@ -96,6 +96,9 @@ class CFG(Grammar):
     def is_nonterminal(self, nonterminal):
         """Whether or not a symbol is a nonterminal of the grammar."""
         return nonterminal in self._nonterminals
+
+    def deadends(self):
+        return self._nonterminals - self._rules_by_lhs.keys()
     
     def can_rewrite(self, lhs):
         """Whether a given nonterminal can be rewritten.
@@ -244,7 +247,7 @@ class TopSortTable(object):
         """
         toplevel = self.topsort()[-1]  # top-most set of buckets
         if len(toplevel) > 1:  # more than one bucket
-            raise ValueError('I expected a single bucket instead of %d' % len(toplevel))
+            raise ValueError('I expected a single bucket instead of %d\n%s' % (len(toplevel), '\n'.join(str(s) for s in toplevel)))
         top = next(iter(toplevel))  # at this point we know there is only one top-level bucket
         if len(top) > 1:  # sometimes this is a loopy bucket (more than one node)
             raise ValueError('I expected a single start symbol instead of %d' % len(top))

@@ -1,4 +1,5 @@
 from .symbol import Terminal
+from collections import defaultdict
 
 _LB_ = '('
 _RB_ = ')'
@@ -34,3 +35,18 @@ def tree(head, tail, ants, Y):
             Y.extend(ants[i])
     Y.append(_RB_)
 
+
+def get_leaves(derivation):
+    d = defaultdict(None, ((r.lhs, r) for r in derivation))
+    projection = []
+
+    def visit(sym):
+        for child in d[sym].rhs:
+            if child not in d:
+                projection.append(child)
+            else:
+                visit(child)
+
+    visit(derivation[0].lhs)
+
+    return tuple(projection)

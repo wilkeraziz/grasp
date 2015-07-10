@@ -127,24 +127,27 @@ def cmd_slice(group):
     group.add_argument('--batch',
             type=int, default=1, metavar='K',
             help='number of samples per slice')
-    group.add_argument('--beta-a',
-            type=float, nargs=2, default=[0.1, 0.3], metavar='BEFORE AFTER',
-            help="Beta's shape parameter before and after we have something to condition on")
-    group.add_argument('--beta-b',
-            type=float, nargs=2, default=[1.0, 1.0], metavar='BEFORE AFTER',
-            help="Beta's shape parameter before and after we have something to condition on")
-    group.add_argument('--heuristic',
-            type=str, choices=['empdist', 'uniform'], metavar='STRATEGY',
-            help='pick a heuristic for the first slice: empdist, uniform')
-    group.add_argument('--heuristic-empdist-alpha',
-            type=float, default=1.0, metavar='FLOAT',
-            help='the heuristic "empdist" can peak/flatten the distribution using this parameter')
-    group.add_argument('--heuristic-uniform-params',
-            type=float, nargs=2, default=[0, 100], metavar='LOWER UPPER',
-            help='the lower and upper percentiles for heuristic "uniform"')
     group.add_argument('--history',
                        action='store_true',
                        help='dumps history files with all samples in the order they were collected (no burn-in, no lag, no resampling)')
+    group.add_argument('--free-dist',
+                       type=str, default='exponential', metavar='DIST', choices=['beta', 'exponential', 'gamma'],
+                       help='the distribution of the free variables (those with no condition), one of {beta, exponential, gamma}.')
+    group.add_argument('--a',
+                       type=float, nargs=2, default=[0.1, 0.3], metavar='BEFORE AFTER',
+                       help="Beta's first shape parameter before and after we have something to condition on")
+    group.add_argument('--b',
+                       type=float, nargs=2, default=[1.0, 1.0], metavar='BEFORE AFTER',
+                       help="Beta's second shape parameter before and after we have something to condition on")
+    group.add_argument('--rate',
+                       type=float, nargs=2, default=[0.00001, 0.00001], metavar='BEFORE AFTER',
+                       help="rate parameter of the exponential distribution: smaller for thinner slices (scale=1.0/rate)")
+    group.add_argument('--shape',
+                       type=float, nargs=2, default=[1.0, 1.0], metavar='BEFORE AFTER',
+                       help="shape parameter of the gamma distribution")
+    group.add_argument('--scale',
+                       type=float, nargs=2, default=[1.0, 1.0], metavar='BEFORE AFTER',
+                       help="scale parameter of the gamma distribution")
 
 
 if __name__ == '__main__':

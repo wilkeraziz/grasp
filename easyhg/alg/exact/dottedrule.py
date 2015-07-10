@@ -6,8 +6,8 @@ A dotted rule is an immutable object and its instances are managed by the class 
 """
 
 from weakref import WeakValueDictionary
-from .symbol import Terminal, Nonterminal
-from .rule import CFGProduction
+from easyhg.grammar.symbol import Terminal, Nonterminal, make_span
+from easyhg.grammar.rule import CFGProduction
 from functools import reduce
 
 from collections import defaultdict
@@ -121,7 +121,7 @@ class DottedRule(object):
                 for i, sym in filter(lambda i_s: isinstance(i_s[1], Terminal), enumerate(self.rule.rhs))]
         return reduce(semiring.times, fsa_weights, self.rule.weight)
 
-    def cfg_production(self, wfsa, semiring, make_symbol):
+    def cfg_production(self, wfsa, semiring):
         """
         Create a CFGProduction object from the item's state. Note that only complete items can perform such operation.
         Intersected symbols are renamed according to the given policy `make_symbol` which should expect as input a tuple
@@ -133,8 +133,8 @@ class DottedRule(object):
         fsa_weights = [wfsa.arc_weight(fsa_states[i], fsa_states[i + 1], sym) 
                 for i, sym in filter(lambda i_s: isinstance(i_s[1], Terminal), enumerate(self.rule.rhs))]
         weight = reduce(semiring.times, fsa_weights, self.rule.weight)
-        return CFGProduction(make_symbol(self.rule.lhs, self.start, self.dot), 
-                (make_symbol(sym, fsa_states[i], fsa_states[i + 1]) for i, sym in enumerate(self.rule.rhs)),
+        return CFGProduction(make_span(self.rule.lhs, self.start, self.dot),
+                (make_span(sym, fsa_states[i], fsa_states[i + 1]) for i, sym in enumerate(self.rule.rhs)),
                 weight)
     
     def __str__(self):

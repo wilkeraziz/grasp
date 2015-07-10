@@ -9,7 +9,7 @@ import scipy.stats as st
 from collections import defaultdict
 
 
-class GeneralisedSliceVariables(object):
+class SliceVariables(object):
     """
     Slice variables are indexed by nodes (typically chart cells).
     They are resampled on the basis of a conditioning derivation (which is given) or on the basis of a Beta distribution (whose parameters are given).
@@ -59,7 +59,8 @@ class GeneralisedSliceVariables(object):
             raise ValueError("I don't know this distribution: %s" % distribution)
         return get_random, pdf, logpdf
 
-    def __init__(self, conditions={}, distribution='beta', parameters={'a': 0.1, 'b': 1.0, 'rate': 1, 'shape': 1, 'scale': 1.0}):
+    def __init__(self, conditions={}, distribution='beta',
+                 parameters={'a': 0.1, 'b': 1.0, 'rate': 1, 'shape': 1, 'scale': 1.0}):
         """
         :param conditions:
             dict of conditioning parameters, i.e., maps an index s to a parameter theta_{r_s}.
@@ -80,7 +81,7 @@ class GeneralisedSliceVariables(object):
         self._logpdf = None
         self._distribution = distribution
         self._parameters = parameters
-        self._random, self._pdf, self._logpdf = GeneralisedSliceVariables.get_distribution(distribution, parameters)
+        self._random, self._pdf, self._logpdf = SliceVariables.get_distribution(distribution, parameters)
 
     def __str__(self):
         if self._distribution == 'beta':
@@ -142,8 +143,8 @@ class GeneralisedSliceVariables(object):
 
         # consolidate changes if necessary
         if update:
-            self._random, self._pdf, self._logpdf = GeneralisedSliceVariables.get_distribution(self._distribution,
-                                                                                               self._parameters)
+            self._random, self._pdf, self._logpdf = SliceVariables.get_distribution(self._distribution,
+                                                                                    self._parameters)
 
     def __getitem__(self, s):
         """
@@ -169,3 +170,6 @@ class GeneralisedSliceVariables(object):
     def is_outside(self, s, theta):
         """Whether the node s is off the slice."""
         return theta <= self[s]
+
+    def has_conditions(self, s):
+        return s in self._conditions

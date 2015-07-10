@@ -20,6 +20,9 @@ The algorithm is due to Huang and Chiang (2005).
 
 import heapq
 from collections import deque, defaultdict
+from easyhg.grammar.projection import string as projected_string
+from easyhg.grammar.semiring import MaxTimes
+
 
 
 class Derivation(object):
@@ -128,7 +131,7 @@ class KBest(object):
     This implements the complete algorithm.
     """
 
-    def __init__(self, forest, root, k, semiring, traversal, uniqueness=False):
+    def __init__(self, forest, root, k, semiring=MaxTimes, traversal=projected_string, uniqueness=False):
         """
         @param forest: a hypergraph-like object
         @param root: goal node

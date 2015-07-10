@@ -16,11 +16,12 @@ it can handle an arbitrary FSA (including non-determinism).
 """
 
 import logging
-from .symbol import Terminal, Nonterminal, make_flat_symbol
+from easyhg.grammar.symbol import Terminal, Nonterminal, make_span
+from easyhg.grammar.cfg import CFG
+from easyhg.grammar.rule import CFGProduction
 from .dottedrule import DottedRule as Item
 from .agenda import ActiveQueue, Agenda
-from .cfg import CFG
-from .rule import CFGProduction
+
 
 EMPTY_SET = frozenset()
 
@@ -31,13 +32,11 @@ class EarleyRescoring(object):
 
     def __init__(self, forest,
                  scorer,
-                 semiring,
-                 make_symbol=make_flat_symbol):
+                 semiring):
         """
         :param forest:
         :param scorer: a stateful Scorer which produces integer states (consider using StatefulScorerWrapper).
         :param semiring:
-        :param make_symbol:
         :return:
         """
 
@@ -46,7 +45,6 @@ class EarleyRescoring(object):
         self._agenda = Agenda(active_container_type=ActiveQueue)
         self._predictions = set()  # (LHS, start)
         self._semiring = semiring
-        self._make_symbol = make_symbol
 
     def axioms(self, root, start):
         """
@@ -114,7 +112,15 @@ class EarleyRescoring(object):
         self._agenda.extend(item.advance(sto, item.weight) for sto in self._agenda.itercompletions(item.next, item.dot))
         return True
 
-    def do(self, root=Nonterminal('S'), goal=Nonterminal('GOAL')):
+    def do(self, root=Nonterminal('S'), original_weights=None):
+        """
+
+        :param root: the root of the input forest
+            The goal symbol, i.e. root of the output forest, is a Span(root, None, None).
+        :param original_weights: a table to memorise a correspondence between the output edges and their input weights.
+            This is necessary when exact rescoring is used within a slice sampling procedure.
+        :return: the rescored forest
+        """
 
         agenda = self._agenda
 
@@ -139,11 +145,11 @@ class EarleyRescoring(object):
                     agenda.make_passive(item)
 
         logging.info('Making forest')
-        rescored, goal = self.make_cfg(goal, root, initial, final)
+        rescored = self.make_cfg(root, initial, final, original_weights)
         logging.info('Done!')
-        return rescored, goal
+        return rescored
 
-    def make_cfg(self, goal, root, initial, final):
+    def make_cfg(self, root, initial, final, original_weights):
         """
         Constructs the CFG by visiting complete items in a top-down fashion.
         This is effectively a reachability test and it serves the purpose of filtering nonterminal symbols
@@ -156,11 +162,16 @@ class EarleyRescoring(object):
         :return: a CFG
         """
 
-        make_symbol = self._make_symbol
         semiring = self._semiring
         scorer = self._scorer
         G = CFG()
         processed = set()
+
+        if original_weights is not None:
+            def store_original(new_rule, old_weight):
+                original_weights[new_rule] = old_weight
+        else:
+            store_original = lambda r, w: None
 
         def intersect_rule(rule, states, weight):
             """
@@ -169,10 +180,10 @@ class EarleyRescoring(object):
             :param states: sequence of intersected states (rule's arity plus one)
             :return: a CFGProduction
             """
-            lhs = make_symbol(rule.lhs, states[0], states[-1])
+            lhs = make_span(rule.lhs, states[0], states[-1])
             rhs = [None] * len(rule.rhs)
             for i, sym in enumerate(rule.rhs):
-                rhs[i] = make_symbol(sym, states[i], states[i + 1])
+                rhs[i] = make_span(sym, states[i], states[i + 1])
             return CFGProduction(lhs, rhs, semiring.times(rule.weight, weight))
 
         def make_rules(lhs, start, end):
@@ -187,7 +198,9 @@ class EarleyRescoring(object):
             processed.add((lhs, start, end))
             for item in self._agenda.itercomplete(lhs, start, end):
                 states = item.inner + (item.dot,)
-                G.add(intersect_rule(item.rule, states, item.weight))
+                new_rule = intersect_rule(item.rule, states, item.weight)
+                G.add(new_rule)
+                store_original(new_rule, item.rule.weight)
                 # make rules for the intersected nonterminals
                 for i, sym in filter(lambda i_s: isinstance(i_s[1], Nonterminal), enumerate(item.rule.rhs)):
                     if (sym, states[i], states[i + 1]) not in processed:
@@ -201,13 +214,15 @@ class EarleyRescoring(object):
             for end in ends:
                 make_rules(root, start, end)
                 # the goal item incorporates p(bos) and p(eos|end)
-                G.add(CFGProduction(self._make_symbol(goal, initial, final),
-                                    [self._make_symbol(root, start, end)],
-                                    semiring.times(scorer.initial_score(), scorer.final_score(context=end))))
+                new_rule = CFGProduction(make_span(root, None, None),
+                                    [make_span(root, start, end)],
+                                    semiring.times(scorer.initial_score(), scorer.final_score(context=end)))
+                G.add(new_rule)
+                store_original(new_rule, semiring.one)
 
         # without make_rules above, one could run the following
         #for item in self._agenda.itercomplete():
         #    states = item.inner + (item.dot,)
         #    G.add(intersect_rule(item.rule, states, item.weight))
 
-        return G, Nonterminal(make_symbol(goal, initial, final))
+        return G

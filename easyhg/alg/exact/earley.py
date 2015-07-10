@@ -4,12 +4,11 @@ This is an implementation of Earley intersection as presented in (Dyer and Resni
 :Authors: - Wilker Aziz
 """
 
-from .symbol import Terminal, Nonterminal, make_flat_symbol
+from itertools import chain
+from easyhg.grammar.symbol import Terminal, Nonterminal
+from easyhg.grammar.grammar import Grammar
 from .dottedrule import DottedRule as Item
 from .agenda import ActiveQueue, Agenda, make_cfg
-from .grammar import Grammar
-from itertools import chain
-import logging
 
 
 EMPTY_SET = frozenset()
@@ -22,15 +21,13 @@ class Earley(object):
     def __init__(self, grammars,
                  wfsa,
                  semiring,
-                 glue_grammars=[],
-                 make_symbol=make_flat_symbol):
+                 glue_grammars=[]):
         """
 
         :param grammars: one or more CFGs
         :param wfsa:
         :param semiring:
         :param glue grammars: one or more glue CFGs (glue rules are only applied to initial states)
-        :param make_symbol:
         :return:
         """
 
@@ -48,7 +45,6 @@ class Earley(object):
         self._agenda = Agenda(active_container_type=ActiveQueue)
         self._predictions = set()  # (LHS, start)
         self._semiring = semiring
-        self._make_symbol = make_symbol
 
     def itergrammar(self, origin):
         """Returns an iterator over grammars which depends on the origin state.
@@ -193,6 +189,4 @@ class Earley(object):
             else:
                 agenda.make_passive(item)
 
-        return make_cfg(goal, root, 
-                self._agenda.itergenerating, self._agenda.itercomplete, 
-                self._wfsa, self._semiring, self._make_symbol)
+        return make_cfg(goal, root, self._agenda.itergenerating, self._agenda.itercomplete, self._wfsa, self._semiring)

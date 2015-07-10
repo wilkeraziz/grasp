@@ -38,7 +38,7 @@ def _make_nltk_tree(derivation, top=0):
     return make_tree(derivation[top].lhs)
 
 
-def make_nltk_tree(derivation, top=0, flatten_symbols=False):
+def __make_nltk_tree(derivation, top=0, flatten_symbols=False):
     """
     Recursively constructs an nlt Tree from a list of rules.
     @param top: index to the top rule (0 and -1 are the most common values)
@@ -60,7 +60,7 @@ def make_nltk_tree(derivation, top=0, flatten_symbols=False):
                     return replrb(str(symbol.label[0].label))
                 else:
                     return replrb('{0}:{1}-{2}'.format(symbol.label[0].label, symbol.label[1], symbol.label[2]))
-        
+
     d = defaultdict(None, ((r.lhs, r) for r in derivation))
 
     def make_tree(sym):
@@ -68,6 +68,24 @@ def make_nltk_tree(derivation, top=0, flatten_symbols=False):
         return Tree(pprint(r.lhs, flatten_symbols), (pprint(child, flatten_symbols) if child not in d else make_tree(child) for child in r.rhs))
 
     return make_tree(derivation[top].lhs)
+
+
+def make_nltk_tree(derivation, skip=0):
+    """
+    Recursively constructs an nlt Tree from a list of rules.
+    @param top: index to the top rule (0 and -1 are the most common values)
+    """
+
+    def replrb(sym):
+        return sym.replace('(', '-LRB-').replace(')', '-RRB-')
+
+    d = defaultdict(None, ((r.lhs, r) for r in derivation[skip:]))
+
+    def make_tree(sym):
+        r = d[sym]
+        return Tree(replrb(r.lhs.underlying_str()), (replrb(child.underlying_str()) if child not in d else make_tree(child) for child in r.rhs))
+
+    return make_tree(derivation[skip].lhs)
 
 
 def inlinetree(t):

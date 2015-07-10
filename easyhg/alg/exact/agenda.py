@@ -13,9 +13,9 @@ This module also provides a top-down algorithm that constructs products that are
 
 from collections import deque, defaultdict
 from itertools import chain
-from .symbol import Nonterminal
-from .rule import CFGProduction
-from .cfg import CFG
+from easyhg.grammar.symbol import Nonterminal, make_span
+from easyhg.grammar.rule import CFGProduction
+from easyhg.grammar.cfg import CFG
 
 
 class ActiveSet(object):
@@ -196,7 +196,7 @@ class Agenda(object):
         return iter(self._generating.get(sym, {}).get(start, frozenset()))
 
 
-def make_cfg(goal, root, itergenerating, itercomplete, fsa, semiring, make_symbol, recursive=False):
+def make_cfg(goal, root, itergenerating, itercomplete, fsa, semiring, recursive=False):
     """
     Constructs the CFG by visiting complete items in a top-down fashion.
     This is effectively a reachability test and it serves the purpose of filtering nonterminal symbols 
@@ -213,7 +213,7 @@ def make_cfg(goal, root, itergenerating, itercomplete, fsa, semiring, make_symbo
                 return
             processed.add((lhs, start, end))
             for item in itercomplete(lhs, start, end):
-                G.add(item.cfg_production(fsa, semiring, make_symbol))
+                G.add(item.cfg_production(fsa, semiring))
                 fsa_states = item.inner + (item.dot,)
                 for i, sym in filter(lambda i_s: isinstance(i_s[1], Nonterminal), enumerate(item.rule.rhs)):
                     if (sym, fsa_states[i], fsa_states[i + 1]) not in processed:  # Nederhof does not perform this test, but in python it turned out crucial
@@ -225,8 +225,8 @@ def make_cfg(goal, root, itergenerating, itercomplete, fsa, semiring, make_symbo
                 continue
             for end in filter(lambda q: fsa.is_final(q), ends):
                 make_rules(root, start, end)
-                G.add(CFGProduction(make_symbol(goal, None, None),
-                    [make_symbol(root, start, end)],
+                G.add(CFGProduction(make_span(goal, None, None),
+                    [make_span(root, start, end)],
                     semiring.one))
         return G
 
@@ -242,14 +242,14 @@ def make_cfg(goal, root, itergenerating, itercomplete, fsa, semiring, make_symbo
             for end in filter(lambda q: fsa.is_final(q), ends):  # to a final state
                 Q.append((root, start, end)) 
                 queuing.add((root, start, end)) 
-                G.add(CFGProduction(make_symbol(goal, None, None),
-                        [make_symbol(root, start, end)],
+                G.add(CFGProduction(make_span(goal, None, None),
+                        [make_span(root, start, end)],
                         semiring.one))
         # create rules for symbols which are reachable from other generating symbols (starting from the root ones)
         while Q:
             (lhs, start, end) = Q.pop()
             for item in itercomplete(lhs, start, end):
-                G.add(item.cfg_production(fsa, semiring, make_symbol))
+                G.add(item.cfg_production(fsa, semiring))
                 fsa_states = item.inner + (item.dot,)
                 for i, sym in filter(lambda i_s: isinstance(i_s[1], Nonterminal), enumerate(item.rule.rhs)):
                     if (sym, fsa_states[i], fsa_states[i + 1]) not in queuing:  # make sure the same symbol never queues more than once

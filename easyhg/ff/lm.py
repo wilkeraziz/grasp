@@ -72,3 +72,23 @@ class KenLMScorer(Stateful):
         out_state = klm.State()
         score = self._model.BaseFullScore(context, word.surface, out_state)
         return score.log_prob * self.weights[0] + score.oov * self.weights[1], out_state
+
+    def total_score(self, words):
+        """
+        :param words: sequence of Terminal objects
+        :return: weight
+        """
+        qa = klm.State()
+        qb = klm.State()
+        self._model.BeginSentenceWrite(qa)
+        log_prob = 0
+        oov = 0
+        for word in words:
+            r = self._model.BaseFullScore(qa, word.surface, qb)
+            log_prob += r.log_prob
+            oov += int(r.oov)
+            qa, qb = qb, qa
+        log_prob += self._model.BaseScore(qa, self._eos.surface, qb)
+        return log_prob * self.weights[0] + oov * self.weights[1]
+
+

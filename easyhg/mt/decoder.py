@@ -5,31 +5,33 @@
 import logging
 import os
 from itertools import chain
+from collections import Counter
 
 from easyhg.grammar.semiring import SumTimes, MaxTimes, Count
-from easyhg.grammar.symbol import make_flat_symbol, make_recursive_symbol, Nonterminal, Terminal, flatten_symbol
+#from easyhg.grammar.symbol import make_flat_symbol, make_recursive_symbol,
+from easyhg.grammar.symbol import Nonterminal, make_span
 from easyhg.grammar.scfg import SCFG
-from easyhg.grammar.nederhof import Nederhof
-from easyhg.grammar.earley import Earley
-from easyhg.grammar.cfg import CFG, TopSortTable
-from easyhg.grammar.inference import robust_inside
+from easyhg.grammar.cfg import CFG, TopSortTable, Terminal
 from easyhg.grammar.model import cdec_basic, load_cdef_file
+from easyhg.grammar.fsa import WDFSA
+from easyhg.grammar.rule import CFGProduction, SCFGProduction
+from easyhg.grammar.utils import make_unique_directory, smart_wopen, make_nltk_tree, inlinetree
+from easyhg.grammar.projection import get_leaves
+
+from easyhg.alg import Nederhof, Earley
+from easyhg.alg.exact import EarleyRescoring, KBest, viterbi, AncestralSampler
+from easyhg.alg.exact.inference import robust_inside, optimise, total_weight
+from easyhg.alg.sliced import SlicedRescoring
+
 from easyhg.mt.cmdline import argparser
 from easyhg.mt.config import configure
 from easyhg.mt.cdec_format import load_grammar
 from easyhg.mt.segment import SegmentMetaData
-from easyhg.grammar.symbol import Terminal
-from easyhg.grammar.fsa import WDFSA
-from easyhg.grammar.rule import CFGProduction, SCFGProduction
-from easyhg.grammar.utils import make_unique_directory, smart_wopen
+
 from easyhg.ff.lm import KenLMScorer
 from easyhg.ff.scorer import StatefulScorerWrapper
 from easyhg.ff.stateless import WordPenalty
-from easyhg.grammar.rescore import EarleyRescoring
-from easyhg.grammar.inference import optimise, total_weight
-from easyhg.grammar.kbest import KBest
-from easyhg.grammar.projection import string as projected_string
-from easyhg.grammar.utils import make_nltk_tree, inlinetree
+
 
 
 def make_input(seg, grammars, semiring, unk_lhs):
@@ -76,43 +78,42 @@ def count(forest, args):
     logging.info('Inside goal-value=%f', itable[root])
 
 
+def exact_rescoring(seg, forest, root, scorer, semiring, outdir, args):
+    rescorer = EarleyRescoring(forest, scorer, semiring)
+    rescored = rescorer.do(root=root)
+    new_root = make_span(root, None, None)
 
-def viterbi(forest, args):
-    semiring = MaxTimes
+    if args.forest:
+        with smart_wopen('{0}/forest/rescored.{1}.gz'.format(outdir, seg.id)) as fo:
+            print('# FOREST terminals=%d nonterminals=%d rules=%d' % (rescored.n_terminals(), rescored.n_nonterminals(), len(rescored)), file=fo)
+            print(rescored, file=fo)
 
-    logging.info('Top-sorting...')
-    tsort = TopSortTable(forest)
-    logging.info('Top symbol: %s', tsort.root())
-    root = tsort.root()
+    if args.viterbi:
+        d, score = viterbi(rescored, TopSortTable(rescored), generations=args.generations)
+        t = make_nltk_tree(d)
+        logging.info('Viterbi derivation: %s %s', score, inlinetree(t))
+        logging.info('Viterbi translation: %s', ' '.join(t.leaves()))
 
-    logging.info('Inside semiring=%s ...', str(semiring.__name__))
-    itable = robust_inside(forest, tsort, semiring, infinity=args.generations)
-    logging.info('Inside goal-value=%f', itable[root])
+    if args.kbest > 0:
+        logging.info('K-best...')
+        kbestparser = KBest(rescored,
+                            new_root,
+                            args.kbest).do()
+        logging.info('Done!')
+        for k, d in enumerate(kbestparser.iterderivations()):
+            score = total_weight(d)
+            t = make_nltk_tree(d)
+            print(k, score, inlinetree(t))
 
-    logging.info('Viterbi...')
-    d = optimise(forest, root, MaxTimes, Iv=itable)
-    logging.info('Done!')
-    for e in d:
-        print(e)
-    print(itable[root])
-    print(inlinetree(make_nltk_tree(d)))
+    if args.samples > 0:
+        logging.info('Sampling...')
+        sampler = AncestralSampler(rescored, TopSortTable(rescored), generations=args.generations)
+        counts = Counter(get_leaves(d) for d in sampler.sample(args.samples))
+        for y, n in counts.most_common():
+            print(float(n)/args.samples, ' '.join(x.surface for x in y))
 
-    #return Result([(d, 1, itable[root])])
 
-def kbest(forest, args):
-    root = Nonterminal(args.goal)
-    logging.info('K-best...')
-    kbestparser = KBest(forest,
-                        root,
-                        args.kbest,
-                        MaxTimes,
-                        traversal=projected_string,
-                        uniqueness=False).do()
-    logging.info('Done!')
-    for k, d in enumerate(kbestparser.iterderivations()):
-        score = total_weight(d, MaxTimes)
-        print(inlinetree(make_nltk_tree(d)))
-        print(score)
+
 
 
 def decode(seg, extra_grammars, glue_grammars, model, scorers, args, outdir):
@@ -135,58 +136,61 @@ def decode(seg, extra_grammars, glue_grammars, model, scorers, args, outdir):
     parser = Nederhof(igrammars,
                       input_fsa,
                       glue_grammars=iglue,
-                      semiring=semiring,
-                      make_symbol=make_recursive_symbol)
+                      semiring=semiring)
 
     # 2) make a forest
-    logging.info('Parsing...')
+    logging.info('Parsing input...')
     f_forest = parser.do(root=Nonterminal(args.start), goal=Nonterminal(args.goal))
+    f_root = make_span(Nonterminal(args.goal), None, None)
 
     if not f_forest:
         logging.error('NO PARSE FOUND')
-        print()
         return
     elif args.forest:
         with smart_wopen('{0}/forest/source.{1}.gz'.format(outdir, seg.id)) as fo:
             print('# FOREST terminals=%d nonterminals=%d rules=%d' % (f_forest.n_terminals(), f_forest.n_nonterminals(), len(f_forest)), file=fo)
-            print(f_forest.pprint(flatten_symbol), file=fo)
+            print(f_forest, file=fo)
 
+    logging.info('Target projection...')
     #TODO: clean up this (target projection)
     e_forest = CFG()
     for f_rule in f_forest:
-        base_lhs = f_rule.lhs.label[0]
-        base_rhs = tuple(s if isinstance(s, Terminal) else s.label[0] for s in f_rule.rhs)
-        e_lhs = flatten_symbol(f_rule.lhs)
+        base_lhs = f_rule.lhs.base
+        base_rhs = tuple(s if isinstance(s, Terminal) else s.base for s in f_rule.rhs)
+        e_lhs = f_rule.lhs
         for grammar in chain(grammars, glue_grammars):
             for r in grammar.iteroutputrules(base_lhs, base_rhs):
                 alignment = iter(r.alignment)
                 f_nts = tuple(filter(lambda s: isinstance(s, Nonterminal), f_rule.rhs))
-                e_rhs = [s if isinstance(s, Terminal) else flatten_symbol(f_nts[next(alignment) - 1]) for s in r.orhs]
+                e_rhs = [s if isinstance(s, Terminal) else f_nts[next(alignment) - 1] for s in r.orhs]
                 e_forest.add(CFGProduction(e_lhs, e_rhs, model.dot(r.fvpairs)))
 
-    for goal_rule in f_forest.iterrules(Nonterminal((Nonterminal(args.goal), None, None))):
-        e_forest.add(CFGProduction(flatten_symbol(goal_rule.lhs), [flatten_symbol(s) for s in goal_rule.rhs], goal_rule.weight))
+    # I need to treat the goal rules independently because they are not part of the original grammar.
+    for goal_rule in f_forest.iterrules(f_root):
+        e_forest.add(CFGProduction(goal_rule.lhs, [s for s in goal_rule.rhs], goal_rule.weight))
+
+    # the target forest has exactly the same root symbol as the source forest
+    e_root = f_root
 
     if args.forest:
         with smart_wopen('{0}/forest/target.{1}.gz'.format(outdir, seg.id)) as fo:
             print('# FOREST terminals=%d nonterminals=%d rules=%d' % (e_forest.n_terminals(), e_forest.n_nonterminals(), len(e_forest)), file=fo)
             print(e_forest, file=fo)
 
+
     #count(e_forest, args)
-    viterbi(e_forest, args)
+    #viterbi(e_forest, args)
     #kbest(e_forest, args)
 
     if args.lm:
-        rescorer = EarleyRescoring(e_forest, StatefulScorerWrapper([scorers[0]]), semiring, make_flat_symbol)
-        rescored, new_goal = rescorer.do(root=Nonterminal(args.goal), goal=Nonterminal('{0}{1}'.format(args.goal, scorers[0].id)))
+        logging.info('Rescoring...')
 
-        if args.forest:
-            with smart_wopen('{0}/forest/rescored.{1}.gz'.format(outdir, seg.id)) as fo:
-                print('# FOREST terminals=%d nonterminals=%d rules=%d' % (rescored.n_terminals(), rescored.n_nonterminals(), len(rescored)), file=fo)
-                print(rescored, file=fo)
-
-        viterbi(rescored, args)
-
+        scorer = StatefulScorerWrapper([scorers[0]])
+        if args.framework == 'exact':
+            exact_rescoring(seg, e_forest, e_root, scorer, semiring, outdir, args)
+        else:
+            rescorer = SlicedRescoring(e_forest, TopSortTable(e_forest), scorer, generations=args.generations)
+            rescorer.sample(args)
 
 
 
