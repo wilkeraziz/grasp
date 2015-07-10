@@ -12,7 +12,7 @@ from collections import defaultdict, Counter
 from .symbol import Nonterminal, make_recursive_symbol
 from .semiring import SumTimes, Count
 from .slicevars import GeneralisedSliceVariables
-from .xnederhof import Nederhof
+from .nederhof import Nederhof
 from .inference import robust_inside, sample, total_weight
 from .cfg import TopSortTable
 from .result import Result

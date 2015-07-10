@@ -9,7 +9,7 @@ from itertools import chain
 from easyhg.grammar.semiring import SumTimes, MaxTimes, Count
 from easyhg.grammar.symbol import make_flat_symbol, make_recursive_symbol, Nonterminal, Terminal, flatten_symbol
 from easyhg.grammar.scfg import SCFG
-from easyhg.grammar.xnederhof import Nederhof
+from easyhg.grammar.nederhof import Nederhof
 from easyhg.grammar.earley import Earley
 from easyhg.grammar.cfg import CFG, TopSortTable
 from easyhg.grammar.inference import robust_inside
