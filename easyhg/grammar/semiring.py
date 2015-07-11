@@ -176,6 +176,9 @@ class Count(object):
     gt = np.greater
     heapify = operator.neg
 
+    convert = lambda x, semiring: Count.one if semiring.gt(x, semiring.zero) else Count.zero
+
+
 
 class Boolean(object):
     """

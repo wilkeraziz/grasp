@@ -1,12 +1,21 @@
 """
 This implements slice variables to be used in MCMC for CFGs as described in (Blunsom and Cohn, 2010).
 
+
+TODO:
+    - Beta: sample parameters from a Gamma prior ?
+        - a ~ G_a
+        - b ~ G_b
+    - Exponential: sample rate from a Gamma prior ?
+        - rate ~ np.random.gamma(1, 1e-4)
+
 :Authors: - Wilker Aziz
 """
 
 import numpy as np
 import scipy.stats as st
 from collections import defaultdict
+from .utils import DEFAULT_FREE_DISTRIBUTION, DEFAULT_FREE_DIST_PARAMETERS
 
 
 class SliceVariables(object):
@@ -39,19 +48,19 @@ class SliceVariables(object):
         pdf = None
         logpdf = None
         if distribution == 'beta':
-            a = parameters['a']
-            b = parameters['b']
+            a = parameters.a
+            b = parameters.b
             get_random = lambda: np.random.beta(a, b)
             pdf = lambda x: st.beta.pdf(x, a, b)
             logpdf = lambda x: st.beta.logpdf(x, a, b)
         elif distribution == 'exp' or distribution == 'exponential':
-            scale = 1.0 / parameters['rate']
+            scale = 1.0 / parameters.rate
             get_random = lambda: np.random.exponential(scale)
             pdf = lambda x: st.expon.pdf(x, scale=scale)
             logpdf = lambda x: st.expon.logpdf(x, scale=scale)
         elif distribution == 'gamma':
-            shape = parameters['shape']
-            scale = parameters['scale']
+            shape = parameters.shape
+            scale = parameters.scale
             get_random = lambda: np.random.gamma(shape, scale)
             pdf = lambda x: st.gamma.pdf(x, shape, scale=scale)
             logpdf = lambda x: st.gamma.logpdf(x, shape, scale=scale)
@@ -59,8 +68,9 @@ class SliceVariables(object):
             raise ValueError("I don't know this distribution: %s" % distribution)
         return get_random, pdf, logpdf
 
-    def __init__(self, conditions={}, distribution='beta',
-                 parameters={'a': 0.1, 'b': 1.0, 'rate': 1, 'shape': 1, 'scale': 1.0}):
+    def __init__(self, conditions={},
+                 distribution=DEFAULT_FREE_DISTRIBUTION,
+                 parameters=DEFAULT_FREE_DIST_PARAMETERS):
         """
         :param conditions:
             dict of conditioning parameters, i.e., maps an index s to a parameter theta_{r_s}.
@@ -68,7 +78,7 @@ class SliceVariables(object):
             a distribution for the free slice variables
                 - it defaults to the Beta distribution as in (Blunsom and Cohn, 2010) which is convenient for PCFGs
                 - use 'exponential' or 'gamma' for wCFGs parameterised with log-linear models (e.g. MT)
-        :param parameters:
+        :param parameters: a SimpleNamespace
             parameters of the given distribution
                 - 'a' and 'b' are the shape parameters of the Beta distribution
                 - 'rate' is the parameter of the Exponential distribution
@@ -85,11 +95,11 @@ class SliceVariables(object):
 
     def __str__(self):
         if self._distribution == 'beta':
-            return 'Beta(a={0}, b={1})'.format(self._parameters['a'], self._parameters['b'])
+            return 'Beta(a={0}, b={1})'.format(self._parameters.a, self._parameters.b)
         elif self._distribution in {'exp', 'exponential'}:
-            return 'Exponential(rate={0})'.format(self._parameters['rate'])
+            return 'Exponential(rate={0})'.format(self._parameters.rate)
         elif self._distribution == 'gamma':
-            return 'Gamma(shape={0}, scale={1})'.format(self._parameters['shape'], self._parameters['scale'])
+            return 'Gamma(shape={0}, scale={1})'.format(self._parameters.shape, self._parameters.scale)
 
     def pr(self, s, theta, slice_only=True):
         """returns p(r_s|u) where lhs(r) == s and theta = p(rhs(r)|s)"""
@@ -135,11 +145,13 @@ class SliceVariables(object):
 
         # change parameters if necessary
         if parameters is not None:
-            changes = parameters.items() - self._parameters.items()
-            if changes:
-                for k, v in changes:
-                    self._parameters[k] = v
-                update = True
+            self._parameters = parameters
+            update = True
+            #changes = vars(parameters).items() - vars(self._parameters).items()
+            #if changes:
+            #    for k, v in changes:
+            #        self._parameters[k] = v
+            #    update = True
 
         # consolidate changes if necessary
         if update:

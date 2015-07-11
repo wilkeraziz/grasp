@@ -13,12 +13,11 @@ TODO:
 
 import logging
 from collections import defaultdict
-from .symbol import Nonterminal, make_recursive_symbol
-from .semiring import SumTimes
-from .inference import robust_inside, sample
-from .cfg import TopSortTable, CFG
-from .coarse import itercoarse, refine_conditions, iteritg
-from .nederhof import Nederhof as ExactNederhof
+from easyhg.grammar.cfg import Nonterminal, TopSortTable, CFG
+from easyhg.grammar.semiring import SumTimes
+from easyhg.alg.exact.inference import robust_inside, sample
+from easyhg.grammar.coarse import itercoarse, refine_conditions, iteritg
+from easyhg.alg.exact import Nederhof as ExactNederhof
 
 
 def initialise_coarse(input_fsa, grammars, glue_grammars, options):
@@ -36,8 +35,7 @@ def initialise_coarse(input_fsa, grammars, glue_grammars, options):
                  coarse_grammar.n_nonterminals(), len(coarse_grammar))
     parser = ExactNederhof([coarse_grammar], input_fsa,
                            glue_grammars=[coarse_glue],
-                           semiring=semiring,
-                           make_symbol=make_recursive_symbol)
+                           semiring=semiring)
     forest = parser.do(root=Nonterminal(options.start), goal=Nonterminal(options.goal))
     if not forest:
         logging.info('The coarse grammar cannot parse this input.')
@@ -70,8 +68,7 @@ def initialise_itg(input_fsa, grammars, glue_grammars, options):
                  itg_grammar.n_nonterminals(), len(itg_grammar))
     parser = ExactNederhof([itg_grammar], input_fsa,
                            glue_grammars=[itg_glue],
-                           semiring=semiring,
-                           make_symbol=make_recursive_symbol)
+                           semiring=semiring)
     forest = parser.do(root=Nonterminal(options.start), goal=Nonterminal(options.goal))
     if not forest:
         logging.info('The ITG grammar cannot parse this input.')

@@ -7,13 +7,12 @@ from collections import Counter
 from easyhg.alg.exact import Earley, Nederhof, KBest
 from easyhg.alg.exact.inference import robust_inside, sample, optimise, total_weight
 
-from .symbol import Nonterminal, make_flat_symbol
+from .symbol import Nonterminal, make_span
 from .semiring import SumTimes, MaxTimes, Count
 from . import projection
 from .cfg import TopSortTable
 from .result import Result
 from .utils import smart_wopen
-
 
 
 class ParserState(object):
@@ -28,19 +27,16 @@ class ParserState(object):
         :param glue_grammars: list of CFG objects
         :return: Earley or Nederhof
         """
-        make_symbol = make_flat_symbol
         if intersection == 'earley':
             return Earley(main_grammars, input_fsa,
                             glue_grammars=glue_grammars,
-                            semiring=semiring,
-                            make_symbol=make_symbol)
+                            semiring=semiring)
         elif intersection == 'nederhof':
             return Nederhof(main_grammars, input_fsa,
                               glue_grammars=glue_grammars,
-                              semiring=semiring,
-                              make_symbol=make_symbol)
+                              semiring=semiring)
         else:
-            raise NotImplementedError("I don't know this intersection algorithm: %s" % self._options.intersection)
+            raise NotImplementedError("I don't know this intersection algorithm: %s" % intersection)
 
     def __init__(self, options, input_fsa, main_grammars, glue_grammars):
         self._parser = ParserState.get_parser(input_fsa, main_grammars, glue_grammars, options.intersection)
@@ -162,7 +158,7 @@ def kbest(state):
     :param state: ParserState
     :return: a Result object containing the k-best derivations
     """
-    root = Nonterminal(state.options.goal)
+    root = make_span(Nonterminal(state.options.goal), None, None)
     logging.info('K-best...')
     kbestparser = KBest(state.forest(),
                         root,

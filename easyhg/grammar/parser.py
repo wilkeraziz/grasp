@@ -14,12 +14,14 @@ from .sentence import make_sentence
 from .utils import make_nltk_tree, inlinetree
 from .semiring import SumTimes
 from .reader import load_grammar
-from .cfg import CFG, TopSortTable
+from .cfg import CFG, TopSortTable, Nonterminal
 from .rule import get_oov_cfg_productions
-from .slicesampling import slice_sampling, make_result
+from easyhg.alg.sliced.sampling import slice_sampling, make_result
+from easyhg.alg.sliced.utils import make_namespace
 from .utils import smart_wopen, make_unique_directory
 from .exact import exact
-from .inference import total_weight
+from easyhg.alg.exact.inference import total_weight
+
 
 
 def report_info(cfg, args):
@@ -125,6 +127,9 @@ def save_sample_history(path, samples_by_iteration):
 def do(uid, input, grammars, glue_grammars, options, outdir):
 
     if options.framework == 'exact':
+
+
+
         results_by_method = exact(uid, input, grammars, glue_grammars, options, outdir)
 
         if 'viterbi' in results_by_method:
@@ -137,7 +142,21 @@ def do(uid, input, grammars, glue_grammars, options, outdir):
             save_mc('{0}/ancestral/{1}.gz'.format(outdir, uid), results_by_method['ancestral'])
 
     elif options.framework == 'slice':
-        history = slice_sampling(input, grammars, glue_grammars, options)
+
+        history = slice_sampling(input.fsa,
+                                 grammars,
+                                 glue_grammars,
+                                 root=Nonterminal(options.start),
+                                 N=options.samples,
+                                 lag=options.lag,
+                                 burn=options.burn,
+                                 batch=options.batch,
+                                 report_counts=options.count,
+                                 goal=Nonterminal(options.goal),
+                                 generations=options.generations,
+                                 free_dist=options.free_dist,
+                                 free_dist_parameters=make_namespace(options))
+
         results = make_result(history, lag=options.lag, burn=options.burn, resample=options.resample)
         save_mcmc('{0}/slice/{1}.gz'.format(outdir, uid), results)
         if options.history:

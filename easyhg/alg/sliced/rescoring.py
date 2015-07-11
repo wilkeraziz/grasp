@@ -15,7 +15,7 @@ from easyhg.grammar.symbol import make_span, Span
 
 from easyhg.alg.exact import AncestralSampler, EarleyRescoring
 
-from .utils import make_conditions, make_freedist_parameters
+from .utils import make_conditions, choose_parameters
 from .slicevars import SliceVariables
 
 
@@ -96,7 +96,7 @@ class SlicedRescoring(object):
         samples = []
         d = self.sample_d0()
         slicevars = SliceVariables(distribution=args.free_dist,
-                                   parameters=make_freedist_parameters(args, 0))
+                                   parameters=choose_parameters(args, 0))
 
         while len(samples) < args.samples:
             conditions = make_conditions(d, semiring)
@@ -161,7 +161,7 @@ class SlicedRescoring(object):
         conditions = make_conditions(self.sample_d0(), semiring)
         slicevars = SliceVariables(conditions,
                                    distribution=args.free_dist,
-                                   parameters=make_freedist_parameters(args, 0))
+                                   parameters=choose_parameters(args, 0))
         root = make_span(Nonterminal(args.goal), None, None)
 
         logging.info('Forest: derivations=%d', self._sampler0.n_derivations())
