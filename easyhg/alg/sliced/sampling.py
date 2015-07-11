@@ -24,8 +24,6 @@ from .heuristic import attempt_initialisation
 from .utils import choose_parameters, make_batch_conditions, DEFAULT_FREE_DIST_PARAMETERS, DEFAULT_FREE_DISTRIBUTION
 
 
-
-
 def slice_sampling(fsa, grammars, glue_grammars,
                    root,
                    N,
