@@ -37,7 +37,12 @@ class AncestralSampler(object):
 
     @property
     def inside(self):
-        return self._inside
+        return self._inside_nodes
+
+    @property
+    def Z(self):
+        """Return the partition function."""
+        return self._inside_nodes[self._root]
 
     def n_derivations(self):
         if self._counts is None:

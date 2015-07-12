@@ -20,6 +20,10 @@ def argparser():
     parser.add_argument('workspace',
                         type=str,
                         help='where everything happens')
+    parser.add_argument('--experiment',
+                        type=str,
+                        help='folder within the workspace where results are stored'
+                             'by default we use a timestamp and a random suffix')
     parser.add_argument("--grammars",
                         type=str,
                         help="where to find grammars (grammar files are expected to be named grammar.$i.sgm, "
@@ -67,11 +71,15 @@ def cmd_model(group):
                        type=str,
                        metavar='FILE',
                        help='weight vector')
-    group.add_argument('--wp',
+    group.add_argument('--rt',
                        action='store_true',
-                       help='include a word penalty feature')
-    group.add_argument('--lm', nargs=2,
-                       help='rescore forest with a language model (order, path).')
+                       help='include rule table features')
+    group.add_argument('--wp', nargs=2,
+                       help='include a word penalty feature (name, penalty)')
+    group.add_argument('--ap', nargs=2,
+                       help='include an arity penalty feature (name, penalty)')
+    group.add_argument('--lm', nargs=3,
+                       help='rescore forest with a language model (name, order, path).')
 
 
 def cmd_parser(group):

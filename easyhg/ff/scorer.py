@@ -1,95 +1,46 @@
 """
-This module contains definitions for scorers.
-
-Highlights:
-    - when implementing a stateful scorer you should inherit from Stateful
-    - when using your scorer with programs such as Earley and Nederhof, remember to wrap it using StatefulScorerWrapper
-        this will basically abstract away implementation details such as the nature of states.
-
 :Authors: - Wilker Aziz
 """
-
-import numpy as np
 from .state import StateMapper
 
 
-class Scorer(object):
+class TableLookupScorer(object):
 
-    def __init__(self, uid, name, weights):
-        self._uid = uid
-        self._name = name
-        self._weights = np.array(weights, float)
-
-    @property
-    def id(self):
-        return self._uid
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def weights(self):
-        return self._weights
-
-
-class Stateless(Scorer):
-
-    def __init__(self, uid, name, weights):
-        super(Stateless, self).__init__(uid, name, weights)
+    def __init__(self, model):
+        self._model = model
 
     def score(self, rule):
-        raise NotImplementedError('I have not been implemented!')
-
-
-class Stateful(Scorer):
-    """
-    Basic interface for stateful scorers.
-    """
-
-    def __init__(self, uid, name, weights):
-        super(Stateful, self).__init__(uid, name, weights)
-
-    def initial(self):
         """
-        Return the initial state.
-        :return:
-        """
-        raise NotImplementedError('I have not been implemented!')
-
-    def final(self):
-        """
-        Return the final state.
-        :return:
-        """
-        raise NotImplementedError('I have not been implemented!')
-
-    def initial_score(self):
-        """
-        Score associated with the initial state.
-        :return:
-        """
-        raise NotImplementedError('I have not been implemented!')
-
-    def final_score(self, context):
-        """
-        Score associated with a transition to the final state.
-        :param context: a state
+        Score associated with a transition.
+        :param rule:
         :return: weight
         """
-        raise NotImplementedError('I have not been implemented!')
+        fvecs = [scorer.featurize(rule) for scorer in self._model.lookup]
+        return self._model.lookup_score(fvecs)
 
-    def score(self, word, context):
-        """
-        Return the score and the next state.
-        :param word: a Terminal
-        :param context: a state
-        :returns: weight, state
-        """
-        raise NotImplementedError('I have not been implemented!')
 
-    def total_score(self, words):
-        raise NotImplementedError('I have not been implemented!')
+class StatelessScorer(object):
+    """
+    Stateful scorers manage states of different nature.
+    This class abstracts away these differences. It also abstracts away the number of scorers.
+    Basically it maps a number of states (one from each scorer) onto a single integer (much like a state in an FSA).
+    """
+
+    def __init__(self, model):
+        """
+        :param scorers: sequence of Stateful objects
+        :return:
+        """
+        self._model = model
+
+    def score(self, edge):
+        """
+        Score associated with a transition.
+        :param edge:
+        :return: weight
+        """
+        fvecs = [scorer.featurize(edge) for scorer in self._model.stateless]
+        return self._model.stateless_score(fvecs)
 
 
 class StatefulScorerWrapper(object):
@@ -99,15 +50,16 @@ class StatefulScorerWrapper(object):
     Basically it maps a number of states (one from each scorer) onto a single integer (much like a state in an FSA).
     """
 
-    def __init__(self, scorers):
+    def __init__(self, model):
         """
         :param scorers: sequence of Stateful objects
         :return:
         """
-        self._scorers = tuple(scorers)
+        self._scorers = model.stateful
         self._mapper = StateMapper()
         self._initial = self._mapper.to_int(tuple(score.initial() for score in self._scorers))
         self._final = self._mapper.final
+        self._model = model
 
     def initial(self):
         """The initial (integer) state."""
@@ -122,10 +74,10 @@ class StatefulScorerWrapper(object):
         Score associated with the initial state.
         :returns: weight
         """
-        weights = np.zeros(len(self._scorers))
+        fvecs = [None] * len(self._scorers)
         for i, scorer in enumerate(self._scorers):
-            weights[i] = scorer.initial_score()
-        return weights.sum()
+            fvecs[i] = scorer.featurize_initial()
+        return self._model.stateful_score(fvecs)
 
     def final_score(self, context):
         """
@@ -133,11 +85,11 @@ class StatefulScorerWrapper(object):
         :param context: the origin state.
         :returns: weight
         """
-        weights = np.zeros(len(self._scorers))
+        fvecs = [None] * len(self._scorers)
         in_states = self._mapper[context]
         for i, scorer in enumerate(self._scorers):
-            weights[i] = scorer.final_score(context=in_states[i])
-        return weights.sum()
+            fvecs[i] = scorer.featurize_final(context=in_states[i])
+        return self._model.stateful_score(fvecs)
 
     def score(self, word, context):
         """
@@ -146,17 +98,18 @@ class StatefulScorerWrapper(object):
         :param context: the origin state.
         :return: weight, destination state.
         """
-        weights = np.zeros(len(self._scorers))
+        fvecs = [None] * len(self._scorers)
         out_states = [None] * len(self._scorers)
         in_states = self._mapper[context]
         for i, scorer in enumerate(self._scorers):
-            weight, out_state = scorer.score(word, context=in_states[i])
-            weights[i] = weight
+            fvec, out_state = scorer.featurize(word, context=in_states[i])
+            fvecs[i] = fvec
             out_states[i] = out_state
-        return weights.sum(), self._mapper.to_int(tuple(out_states))
+
+        return self._model.stateful_score(fvecs), self._mapper.to_int(tuple(out_states))
 
     def total_score(self, words):
-        weights = np.zeros(len(self._scorers))
+        fvecs = [None] * len(self._scorers)
         for i, scorer in enumerate(self._scorers):
-            weights[i] = scorer.total_score(words)
-        return weights.sum()
+            fvecs[i] = scorer.total_score(words)
+        return self._model.stateful_score(fvecs)

@@ -23,6 +23,10 @@ def argparser():
     parser.add_argument('workspace',
                         type=str,
                         help='where everything happens')
+    parser.add_argument('--experiment',
+                        type=str,
+                        help='folder within the workspace where results are stored'
+                             'by default we use a timestamp and a random suffix')
 
     cmd_grammar(parser.add_argument_group('Grammar'))
     cmd_parser(parser.add_argument_group('Parser'))

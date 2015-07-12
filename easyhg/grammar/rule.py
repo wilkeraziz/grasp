@@ -151,6 +151,10 @@ class SCFGProduction(object):
     def fvpairs(self):
         return self._fmap.items()
 
+    @property
+    def fmap(self):
+        return self._fmap
+
     def __str__(self):
         A = iter(self.alignment)
         return '%s ||| %s ||| %s ||| %s' % (

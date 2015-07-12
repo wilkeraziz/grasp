@@ -4,6 +4,8 @@
 
 from collections import defaultdict
 from easyhg.grammar.utils import smart_ropen
+import re
+from ast import literal_eval
 
 
 class LinearModel(object):
@@ -40,3 +42,8 @@ def load_cdef_file(path):
                 continue
             wmap[fields[0]] = float(fields[1])
     return LinearModel(wmap)
+
+
+def get_weights(wmap, prefix):
+    """Return weights prefixed by a given string."""
+    return defaultdict(None, filter(lambda pair: pair[0].startswith(prefix), wmap.items()))

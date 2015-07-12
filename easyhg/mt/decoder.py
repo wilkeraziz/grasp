@@ -12,11 +12,12 @@ from easyhg.grammar.semiring import SumTimes, MaxTimes, Count
 from easyhg.grammar.symbol import Nonterminal, make_span
 from easyhg.grammar.scfg import SCFG
 from easyhg.grammar.cfg import CFG, TopSortTable, Terminal
-from easyhg.grammar.model import cdec_basic, load_cdef_file
 from easyhg.grammar.fsa import WDFSA
 from easyhg.grammar.rule import CFGProduction, SCFGProduction
 from easyhg.grammar.utils import make_unique_directory, smart_wopen, make_nltk_tree, inlinetree
 from easyhg.grammar.projection import get_leaves
+from easyhg.grammar.result import Result
+from easyhg.grammar.report import save_kbest, save_viterbi, save_mc
 
 from easyhg.alg import Nederhof, Earley
 from easyhg.alg.exact import EarleyRescoring, KBest, viterbi, AncestralSampler
@@ -29,8 +30,12 @@ from easyhg.mt.cdec_format import load_grammar
 from easyhg.mt.segment import SegmentMetaData
 
 from easyhg.ff.lm import KenLMScorer
-from easyhg.ff.scorer import StatefulScorerWrapper
-from easyhg.ff.stateless import WordPenalty
+#from easyhg.ff.scorer import StatefulScorerWrapper
+from easyhg.ff.lookup import RuleTable
+from easyhg.ff.stateless import WordPenalty, ArityPenalty
+
+from easyhg.ff.scorer import StatefulScorerWrapper, StatelessScorer, TableLookupScorer
+from easyhg.ff.loglinear import LogLinearModel, read_weights, cdec_basic
 
 
 
@@ -93,6 +98,7 @@ def exact_rescoring(seg, forest, root, scorer, semiring, outdir, args):
         t = make_nltk_tree(d)
         logging.info('Viterbi derivation: %s %s', score, inlinetree(t))
         logging.info('Viterbi translation: %s', ' '.join(t.leaves()))
+        save_viterbi('{0}/viterbi/{1}.gz'.format(outdir, seg.id), Result([(d, 1, score)]))
 
     if args.kbest > 0:
         logging.info('K-best...')
@@ -100,23 +106,31 @@ def exact_rescoring(seg, forest, root, scorer, semiring, outdir, args):
                             new_root,
                             args.kbest).do()
         logging.info('Done!')
+        R = Result()
         for k, d in enumerate(kbestparser.iterderivations()):
-            score = total_weight(d)
-            t = make_nltk_tree(d)
-            print(k, score, inlinetree(t))
+            score = total_weight(d, MaxTimes)
+            R.append(d, 1, score)
+        save_kbest('{0}/kbest/{1}.gz'.format(outdir, seg.id), R)
 
     if args.samples > 0:
         logging.info('Sampling...')
         sampler = AncestralSampler(rescored, TopSortTable(rescored), generations=args.generations)
-        counts = Counter(get_leaves(d) for d in sampler.sample(args.samples))
-        for y, n in counts.most_common():
-            print(float(n)/args.samples, ' '.join(x.surface for x in y))
+        #counts = Counter(get_leaves(d) for d in sampler.sample(args.samples))
+        #for y, n in counts.most_common():
+        #    print(float(n)/args.samples, ' '.join(x.surface for x in y))
+
+        count = Counter(sampler.sample(args.samples))
+        R = Result(Z=sampler.Z)
+        for d, n in count.most_common():
+            score = total_weight(d, SumTimes)
+            R.append(d, n, score)
+        save_mc('{0}/ancestral/{1}.gz'.format(outdir, seg.id), R)
 
 
 
 
 
-def decode(seg, extra_grammars, glue_grammars, model, scorers, args, outdir):
+def decode(seg, extra_grammars, glue_grammars, model, args, outdir):
     semiring = SumTimes
     logging.info('Loading grammar: %s', seg.grammar)
     # load main SCFG from file
@@ -152,7 +166,12 @@ def decode(seg, extra_grammars, glue_grammars, model, scorers, args, outdir):
             print(f_forest, file=fo)
 
     logging.info('Target projection...')
+
+
     #TODO: clean up this (target projection)
+    lookupscorer = TableLookupScorer(model)
+    slessscorer = StatelessScorer(model)
+
     e_forest = CFG()
     for f_rule in f_forest:
         base_lhs = f_rule.lhs.base
@@ -163,7 +182,14 @@ def decode(seg, extra_grammars, glue_grammars, model, scorers, args, outdir):
                 alignment = iter(r.alignment)
                 f_nts = tuple(filter(lambda s: isinstance(s, Nonterminal), f_rule.rhs))
                 e_rhs = [s if isinstance(s, Terminal) else f_nts[next(alignment) - 1] for s in r.orhs]
-                e_forest.add(CFGProduction(e_lhs, e_rhs, model.dot(r.fvpairs)))
+                # score synchronous rule (TODO: do this when loading rules from disk)
+                s1 = lookupscorer.score(r)
+                # score projected edge
+                edge = CFGProduction(e_lhs, e_rhs, s1)
+                s2 = slessscorer.score(edge)
+                # compute final weight
+                w = semiring.times(s1, s2)
+                e_forest.add(CFGProduction(e_lhs, e_rhs, w))
 
     # I need to treat the goal rules independently because they are not part of the original grammar.
     for goal_rule in f_forest.iterrules(f_root):
@@ -179,13 +205,18 @@ def decode(seg, extra_grammars, glue_grammars, model, scorers, args, outdir):
 
 
     #count(e_forest, args)
-    #viterbi(e_forest, args)
+
     #kbest(e_forest, args)
+    d, score = viterbi(e_forest, TopSortTable(e_forest), generations=args.generations)
+    t = make_nltk_tree(d)
+    logging.info('Viterbi derivation: %s %s', score, inlinetree(t))
+    logging.info('Viterbi translation: %s', ' '.join(t.leaves()))
+    logging.info('Viterbi score: %s', score)
 
-    if args.lm:
-        logging.info('Rescoring...')
+    if model.stateful:
+        logging.info('Rescoring with: %s', ','.join(scorer.name for scorer in model.stateful))
 
-        scorer = StatefulScorerWrapper([scorers[0]])
+        scorer = StatefulScorerWrapper(model)
         if args.framework == 'exact':
             exact_rescoring(seg, e_forest, e_root, scorer, semiring, outdir, args)
         else:
@@ -209,8 +240,11 @@ def make_dirs(args):
     if not os.path.exists(args.workspace):
         os.makedirs(args.workspace)
 
-    # create a unique experiment area
-    outdir = make_unique_directory(args.workspace)
+    # create a unique experiment area or reuse a given one
+    if not args.experiment:
+        outdir = make_unique_directory(args.workspace)
+    else:
+        outdir = '{0}/{1}'.format(args.workspace, args.experiment)
     logging.info('Writing files to: %s', outdir)
 
     # create output directories for the several inference algorithms
@@ -242,39 +276,44 @@ def make_dirs(args):
     return outdir
 
 
-def load_scorers(linear_model, args):
+def load_scorers(args):
     scorers = []
-    if args.lm:
-        logging.info('Loading language model: order=%s path=%s', args.lm[0], args.lm[1])
 
-        scorer = KenLMScorer(uid=len(scorers),
-                 name=KenLMScorer.DEFAULT_FNAME,
-                 weights=[linear_model.get(KenLMScorer.DEFAULT_FNAME),
-                          linear_model.get('{0}_OOV'.format(KenLMScorer.DEFAULT_FNAME))],
-                 order=int(args.lm[0]),
-                 path=args.lm[1],
-                 bos=Terminal(KenLMScorer.DEFAULT_BOS_STRING),
-                 eos=Terminal(KenLMScorer.DEFAULT_EOS_STRING))
+    if args.rt:
+        scorer = RuleTable(uid=len(scorers),
+                           name='RuleTable')
         scorers.append(scorer)
+        logging.debug('Scorer: %r', scorer)
+
     if args.wp:
-
-        logging.info('Decoding with WordPenalty')
         scorer = WordPenalty(uid=len(scorers),
-                             name='WordPenalty',
-                             weights=[linear_model.get('WordPenalty')])
+                             name=args.wp[0],
+                             penalty=float(args.wp[1]))
         scorers.append(scorer)
+        logging.debug('Scorer: %r', scorer)
+
+    if args.ap:
+        scorer = ArityPenalty(uid=len(scorers),
+                              name=args.ap[0],
+                              penalty=float(args.ap[1]))
+        scorers.append(scorer)
+        logging.debug('Scorer: %r', scorer)
+
+    if args.lm:
+        #logging.info('Loading language model: order=%s path=%s', args.lm[0], args.lm[1])
+        scorer = KenLMScorer(uid=len(scorers),
+                             name=args.lm[0],
+                             order=int(args.lm[1]),
+                             path=args.lm[2],
+                             bos=Terminal(KenLMScorer.DEFAULT_BOS_STRING),
+                             eos=Terminal(KenLMScorer.DEFAULT_EOS_STRING))
+        scorers.append(scorer)
+        logging.debug('Scorer: %r', scorer)
 
     return scorers
 
 
 def core(args):
-
-    # load the linear model
-    if args.weights:
-        linear_model = load_cdef_file(args.weights)
-    else:
-        linear_model = cdec_basic()
-    logging.debug('Linear model: %s', linear_model)
 
     # Load additional grammars
     extra_grammars = []
@@ -295,15 +334,17 @@ def core(args):
             glue_grammars.append(glue)
 
     # Load scores
-    scorers = load_scorers(linear_model, args)
+    scorers = load_scorers(args)
 
+    # Load the model
+    model = LogLinearModel(read_weights(args.weights), scorers)  # TODO: uniform initialisation
     outdir = make_dirs(args)
 
     # Parse sentence by sentence
     for input_str in args.input:
         # get an input automaton
         seg = SegmentMetaData.parse(input_str, grammar_dir=args.grammars)
-        decode(seg, extra_grammars, glue_grammars, linear_model, scorers, args, outdir)
+        decode(seg, extra_grammars, glue_grammars, model, args, outdir)
 
     logging.info('Check output files in: %s', outdir)
 

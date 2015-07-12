@@ -178,8 +178,11 @@ def make_dirs(args):
     if not os.path.exists(args.workspace):
         os.makedirs(args.workspace)
 
-    # create a unique experiment area
-    outdir = make_unique_directory(args.workspace)
+    # create a unique experiment area or reuse a given one
+    if not args.experiment:
+        outdir = make_unique_directory(args.workspace)
+    else:
+        outdir = '{0}/{1}'.format(args.workspace, args.experiment)
     logging.info('Writing files to: %s', outdir)
 
     # create output directories for the several inference algorithms
