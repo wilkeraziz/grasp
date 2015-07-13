@@ -98,6 +98,10 @@ class DottedRule(object):
         """the symbol to the right of the dot (or None if the dot has reached the end of the rule)"""
         return self._next
 
+    @property
+    def next_i(self):
+        return len(self._skeleton[2])
+
     def nextsymbols(self):
         """iterates through the symbols ahead of the dot"""
         return self.rule.rhs[len(self.inner):]

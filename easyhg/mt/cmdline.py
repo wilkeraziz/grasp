@@ -67,6 +67,9 @@ def cmd_grammar(group):
 
 
 def cmd_model(group):
+    group.add_argument('--temperature',
+                       type=float, default=1.0,
+                       help='peak (0 < t < 1.0) or flatten (t > 1.0) the distribution')
     group.add_argument('--weights',
                        type=str,
                        metavar='FILE',
@@ -129,15 +132,24 @@ def cmd_sampling(group):
 
 
 def cmd_slice(group):
+    group.add_argument('--lag',
+                       type=int, default=1, metavar='I',
+                       help='lag between samples')
     group.add_argument('--burn',
-            type=int, default=0, metavar='N',
-            help='number of initial samples to be discarded (burn-in time) - but also consider --restart')
+                       type=int, default=0, metavar='N',
+                       help='number of initial samples to be discarded (applies after lag)')
     group.add_argument('--batch',
             type=int, default=1, metavar='K',
             help='number of samples per slice')
+    group.add_argument('--within',
+                       type=str, default='ancestral', choices=['ancestral', 'importance'],
+                       help='how to sample within the slice')
     group.add_argument('--history',
                        action='store_true',
                        help='dumps history files with all samples in the order they were collected (no burn-in, no lag, no resampling)')
+    group.add_argument('--temperature0',
+                       type=float, default=1.0,
+                       help='flattens the distribution form where we obtain the initial derivation')
     group.add_argument('--free-dist',
                        type=str, default='exponential', metavar='DIST', choices=['beta', 'exponential', 'gamma'],
                        help='the distribution of the free variables (those with no condition), one of {beta, exponential, gamma}.')

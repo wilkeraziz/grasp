@@ -90,6 +90,6 @@ def parse_cdec_sgml(sgml_str):
         raise SyntaxError('Bad sgml: %s' % parts[0])
     groups = match.groups()
     return {'grammar': groups[0],
-            'sid': groups[1],
+            'sid': int(groups[1]),
             'src': groups[2],
             'refs': [ref.strip() for ref in parts[1:]]}

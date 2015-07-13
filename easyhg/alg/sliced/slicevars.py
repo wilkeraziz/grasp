@@ -104,7 +104,7 @@ class SliceVariables(object):
     def pr(self, s, theta, slice_only=True):
         """returns p(r_s|u) where lhs(r) == s and theta = p(rhs(r)|s)"""
         u_s = self[s]
-        if u_s < theta:
+        if self.is_inside(s, theta):  #if u_s < theta:
             return 1.0 / self._pdf(u_s)
         elif slice_only:
             raise ValueError('I received a variable outside the slice: s=%s theta=%s u_s=%s' % (s, theta, u_s))
@@ -114,7 +114,7 @@ class SliceVariables(object):
     def logpr(self, s, theta, slice_only=True):
         """returns p(r_s|u) where lhs(r) == s and theta = p(rhs(r)|s)"""
         u_s = self[s]
-        if theta > u_s:
+        if self.is_inside(s, theta):  #if theta > u_s:
             return - self._logpdf(u_s)
         elif slice_only:
             raise ValueError('I received a variable outside the slice: s=%s theta=%s u_s=%s' % (s, theta, u_s))
@@ -177,11 +177,16 @@ class SliceVariables(object):
 
     def is_inside(self, s, theta):
         """Whether the node s is in the slice."""
-        return theta > self[s]
+        #return theta > self[s]
+        u = self[s]
+        if theta == u == 0:  # corner case to deal with floating point precision
+            return True
+        else:
+            return theta > u
 
     def is_outside(self, s, theta):
         """Whether the node s is off the slice."""
-        return theta <= self[s]
+        return not self.is_inside(s, theta)  #theta < self[s]
 
     def has_conditions(self, s):
         return s in self._conditions

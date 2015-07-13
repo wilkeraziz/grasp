@@ -70,3 +70,10 @@ def save_sample_history(path, samples_by_iteration):
                 score = total_weight(d, SumTimes)
                 t = make_nltk_tree(d)
                 print('{0}\t{1}'.format(score, inlinetree(t)), file=out)
+
+def save_flat_history(path, history):
+    with smart_wopen(path) as out:
+        for i, d in enumerate(history, 1):
+            score = total_weight(d, SumTimes)
+            t = make_nltk_tree(d)
+            print('{0}\t{1}'.format(score, inlinetree(t)), file=out)

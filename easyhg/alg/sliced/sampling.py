@@ -143,3 +143,22 @@ def make_result(batches, lag=1, burn=0, resample=0):
     return result
 
 
+def make_result_simple(samples, burn=0, lag=1, resample=0):
+
+    if burn > 0:
+        samples = samples[:burn]
+    if lag > 1:
+        samples = samples[lag-1::lag]
+
+    # compile results
+    if resample > 0:
+        count = Counter(samples[i] for i in np.random.randint(0, len(samples), resample))
+    else:
+        count = Counter(samples)
+
+    result = Result()
+    for d, n in count.most_common():
+        score = total_weight(d, SumTimes)
+        result.append(d, n, score)
+
+    return result

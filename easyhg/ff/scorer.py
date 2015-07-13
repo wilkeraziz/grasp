@@ -39,11 +39,11 @@ class StatelessScorer(object):
         :param edge:
         :return: weight
         """
-        fvecs = [scorer.featurize(edge) for scorer in self._model.stateless]
-        return self._model.stateless_score(fvecs)
+        freprs = [scorer.featurize(edge) for scorer in self._model.stateless]
+        return self._model.stateless_score(freprs)
 
 
-class StatefulScorerWrapper(object):
+class StatefulScorer(object):
     """
     Stateful scorers manage states of different nature.
     This class abstracts away these differences. It also abstracts away the number of scorers.
@@ -108,8 +108,8 @@ class StatefulScorerWrapper(object):
 
         return self._model.stateful_score(fvecs), self._mapper.to_int(tuple(out_states))
 
-    def total_score(self, words):
+    def score_derivation(self, derivation):
         fvecs = [None] * len(self._scorers)
         for i, scorer in enumerate(self._scorers):
-            fvecs[i] = scorer.total_score(words)
+            fvecs[i] = scorer.featurize_derivation(derivation)
         return self._model.stateful_score(fvecs)

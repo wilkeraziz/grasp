@@ -50,7 +50,7 @@ class AncestralSampler(object):
                                          self._tsort,
                                          semiring=Count,
                                          infinity=self._generations,
-                                         omega=lambda e: Count.zero if e.weight == self._semiring.zero else Count.one)
+                                         omega=lambda e: Count.convert(e.weight, self._semiring))
         return self._counts[self._root]
 
     def sample(self, n):

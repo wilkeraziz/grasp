@@ -6,6 +6,7 @@ A language model scorer using kenlm.
 
 import numpy as np
 import kenlm as klm
+from easyhg.grammar.projection import get_leaves
 from .extractor import Stateful
 
 
@@ -85,7 +86,14 @@ class KenLMScorer(Stateful):
         #return score.log_prob * self.weights[0] + score.oov * self.weights[1], out_state
         return np.array([score.log_prob, float(score.oov)]), out_state
 
-    def total_score(self, words):
+    def featurize_derivation(self, derivation):
+        """
+        :param words: sequence of Terminal objects
+        :return: weight
+        """
+        return self.featurize_yield(get_leaves(derivation))
+
+    def featurize_yield(self, projection):
         """
         :param words: sequence of Terminal objects
         :return: weight
@@ -95,7 +103,7 @@ class KenLMScorer(Stateful):
         self._model.BeginSentenceWrite(qa)
         log_prob = 0.0
         oov = 0.0
-        for word in words:
+        for word in projection:
             r = self._model.BaseFullScore(qa, word.surface, qb)
             log_prob += r.log_prob
             oov += int(r.oov)

@@ -9,18 +9,21 @@ import logging
 import os
 import sys
 from itertools import chain
+
+
+
+from easyhg.alg.sliced.sampling import slice_sampling, make_result
+from easyhg.alg.sliced.utils import make_namespace
+
 from .cmdline import argparser
 from .sentence import make_sentence
-from .utils import make_nltk_tree, inlinetree
 from .semiring import SumTimes
 from .reader import load_grammar
 from .cfg import CFG, TopSortTable, Nonterminal
 from .rule import get_oov_cfg_productions
-from easyhg.alg.sliced.sampling import slice_sampling, make_result
-from easyhg.alg.sliced.utils import make_namespace
-from .utils import smart_wopen, make_unique_directory
+from .utils import make_unique_directory
+from .report import save_kbest, save_viterbi, save_mc, save_mcmc, save_sample_history
 from .exact import exact
-from easyhg.alg.exact.inference import total_weight
 
 
 
@@ -57,71 +60,6 @@ def report_info(cfg, args):
                     print('\n'.join('  {0}'.format(s) for s in bucket))
                 print()
             sys.exit(0)
-
-
-def save_mc(path, result):
-    with smart_wopen(path) as out:
-        Z = result.Z
-        N = result.count()
-        print('# MC samples={0} inside={1}'.format(N, Z), file=out)
-        for i, (d, n, score) in enumerate(result, 1):
-            t = make_nltk_tree(d)
-            p = SumTimes.divide(score, Z)
-            print('# k={0} n={1} estimate={2} exact={3} score={4}\n{5}'.format(i,
-                                                                               n,
-                                                                               float(n)/N,
-                                                                               SumTimes.as_real(p),
-                                                                               score,
-                                                                               inlinetree(t)),
-                  file=out)
-
-
-def save_mcmc(path, result):
-    with smart_wopen(path) as out:
-        Z = result.estimate(SumTimes.plus)
-        N = result.count()
-        print('# MCMC samples={0} inside-estimate={1}'.format(N, Z), file=out)
-        for i, (d, n, score) in enumerate(result, 1):
-            t = make_nltk_tree(d)
-            p = SumTimes.divide(score, Z)
-            print('# k={0} n={1} estimate={2} normalized-score={3} score={4}\n{5}'.format(i,
-                                                                               n,
-                                                                               float(n)/N,
-                                                                               SumTimes.as_real(p),
-                                                                               score,
-                                                                               inlinetree(t)),
-                  file=out)
-
-
-def save_kbest(path, result):
-    with smart_wopen(path) as out:
-        Z = result.estimate(SumTimes.plus)
-        print('# KBEST size={0} inside-estimate={1}'.format(len(result), Z), file=out)
-        for i, (d, n, score) in enumerate(result, 1):
-            t = make_nltk_tree(d)
-            p = SumTimes.divide(score, Z)
-            print('# k={0} score={1} normalized-score={2}\n{3}'.format(i,
-                                                                       score,
-                                                                       SumTimes.as_real(p),
-                                                                       inlinetree(t)),
-                  file=out)
-
-
-def save_viterbi(path, result):
-    with smart_wopen(path) as out:
-        d, n, score = result[0]
-        t = make_nltk_tree(d)
-        print('# score={0}\n{1}'.format(score, inlinetree(t)), file=out)
-
-
-def save_sample_history(path, samples_by_iteration):
-    with smart_wopen(path) as out:
-        for i, samples in enumerate(samples_by_iteration, 1):
-            print('# i={0} n={1}'.format(i, len(samples)), file=out)
-            for d in samples:
-                score = total_weight(d, SumTimes)
-                t = make_nltk_tree(d)
-                print('{0}\t{1}'.format(score, inlinetree(t)), file=out)
 
 
 def do(uid, input, grammars, glue_grammars, options, outdir):

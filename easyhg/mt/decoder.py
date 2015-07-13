@@ -17,12 +17,13 @@ from easyhg.grammar.rule import CFGProduction, SCFGProduction
 from easyhg.grammar.utils import make_unique_directory, smart_wopen, make_nltk_tree, inlinetree
 from easyhg.grammar.projection import get_leaves
 from easyhg.grammar.result import Result
-from easyhg.grammar.report import save_kbest, save_viterbi, save_mc
+from easyhg.grammar.report import save_kbest, save_viterbi, save_mc, save_mcmc, save_sample_history, save_flat_history
 
 from easyhg.alg import Nederhof, Earley
 from easyhg.alg.exact import EarleyRescoring, KBest, viterbi, AncestralSampler
+from easyhg.alg.exact.rescoring import stateless_rescoring
 from easyhg.alg.exact.inference import robust_inside, optimise, total_weight
-from easyhg.alg.sliced import SlicedRescoring
+from easyhg.alg.sliced import SlicedRescoring, make_result, make_result_simple
 
 from easyhg.mt.cmdline import argparser
 from easyhg.mt.config import configure
@@ -34,7 +35,7 @@ from easyhg.ff.lm import KenLMScorer
 from easyhg.ff.lookup import RuleTable
 from easyhg.ff.stateless import WordPenalty, ArityPenalty
 
-from easyhg.ff.scorer import StatefulScorerWrapper, StatelessScorer, TableLookupScorer
+from easyhg.ff.scorer import StatefulScorer, StatelessScorer, TableLookupScorer
 from easyhg.ff.loglinear import LogLinearModel, read_weights, cdec_basic
 
 
@@ -83,18 +84,26 @@ def count(forest, args):
     logging.info('Inside goal-value=%f', itable[root])
 
 
-def exact_rescoring(seg, forest, root, scorer, semiring, outdir, args):
-    rescorer = EarleyRescoring(forest, scorer, semiring)
-    rescored = rescorer.do(root=root)
-    new_root = make_span(root, None, None)
+def exact_rescoring(seg, forest, root, model, semiring, args, outdir):
+    if not model.stateful:
+        if model.stateless:  # stateless scorers only
+            forest = stateless_rescoring(forest, StatelessScorer(model), semiring, do_nothing={root})
+    else:  # at least stateful scorers
+        rescorer = EarleyRescoring(forest,
+                                   semiring=semiring,
+                                   stateful=StatefulScorer(model),
+                                   stateless=StatelessScorer(model),
+                                   do_nothing={root})
+        forest = rescorer.do(root=root)
+        root = make_span(root, None, None)
 
     if args.forest:
         with smart_wopen('{0}/forest/rescored.{1}.gz'.format(outdir, seg.id)) as fo:
-            print('# FOREST terminals=%d nonterminals=%d rules=%d' % (rescored.n_terminals(), rescored.n_nonterminals(), len(rescored)), file=fo)
-            print(rescored, file=fo)
+            print('# FOREST terminals=%d nonterminals=%d rules=%d' % (forest.n_terminals(), forest.n_nonterminals(), len(forest)), file=fo)
+            print(forest, file=fo)
 
     if args.viterbi:
-        d, score = viterbi(rescored, TopSortTable(rescored), generations=args.generations)
+        d, score = viterbi(forest, TopSortTable(forest), generations=args.generations)
         t = make_nltk_tree(d)
         logging.info('Viterbi derivation: %s %s', score, inlinetree(t))
         logging.info('Viterbi translation: %s', ' '.join(t.leaves()))
@@ -102,8 +111,8 @@ def exact_rescoring(seg, forest, root, scorer, semiring, outdir, args):
 
     if args.kbest > 0:
         logging.info('K-best...')
-        kbestparser = KBest(rescored,
-                            new_root,
+        kbestparser = KBest(forest,
+                            root,
                             args.kbest).do()
         logging.info('Done!')
         R = Result()
@@ -114,7 +123,7 @@ def exact_rescoring(seg, forest, root, scorer, semiring, outdir, args):
 
     if args.samples > 0:
         logging.info('Sampling...')
-        sampler = AncestralSampler(rescored, TopSortTable(rescored), generations=args.generations)
+        sampler = AncestralSampler(forest, TopSortTable(forest), generations=args.generations)
         #counts = Counter(get_leaves(d) for d in sampler.sample(args.samples))
         #for y, n in counts.most_common():
         #    print(float(n)/args.samples, ' '.join(x.surface for x in y))
@@ -127,15 +136,12 @@ def exact_rescoring(seg, forest, root, scorer, semiring, outdir, args):
         save_mc('{0}/ancestral/{1}.gz'.format(outdir, seg.id), R)
 
 
-
-
-
 def decode(seg, extra_grammars, glue_grammars, model, args, outdir):
     semiring = SumTimes
     logging.info('Loading grammar: %s', seg.grammar)
     # load main SCFG from file
     main_grammar = load_grammar(seg.grammar)
-    logging.info('Preparing input: %s', seg.src)
+    logging.info('Preparing input (%d): %s', seg.id, seg.src)
     # make input FSA and a pass-through grammar for the given segment
     input_fsa, pass_grammar = make_input(seg, list(chain([main_grammar], extra_grammars, glue_grammars)), semiring, args.default_symbol)
     # put all (normal) grammars together
@@ -170,7 +176,6 @@ def decode(seg, extra_grammars, glue_grammars, model, args, outdir):
 
     #TODO: clean up this (target projection)
     lookupscorer = TableLookupScorer(model)
-    slessscorer = StatelessScorer(model)
 
     e_forest = CFG()
     for f_rule in f_forest:
@@ -182,26 +187,25 @@ def decode(seg, extra_grammars, glue_grammars, model, args, outdir):
                 alignment = iter(r.alignment)
                 f_nts = tuple(filter(lambda s: isinstance(s, Nonterminal), f_rule.rhs))
                 e_rhs = [s if isinstance(s, Terminal) else f_nts[next(alignment) - 1] for s in r.orhs]
-                # score synchronous rule (TODO: do this when loading rules from disk)
-                s1 = lookupscorer.score(r)
-                # score projected edge
-                edge = CFGProduction(e_lhs, e_rhs, s1)
-                s2 = slessscorer.score(edge)
-                # compute final weight
-                w = semiring.times(s1, s2)
-                e_forest.add(CFGProduction(e_lhs, e_rhs, w))
+                e_forest.add(CFGProduction(e_lhs, e_rhs, semiring.times(f_rule.weight, lookupscorer.score(r))))
+
 
     # I need to treat the goal rules independently because they are not part of the original grammar.
     for goal_rule in f_forest.iterrules(f_root):
-        e_forest.add(CFGProduction(goal_rule.lhs, [s for s in goal_rule.rhs], goal_rule.weight))
+        gr = CFGProduction(goal_rule.lhs, [s for s in goal_rule.rhs], goal_rule.weight)
+        e_forest.add(gr)
+        logging.info('Goal rule: %s', gr)
 
     # the target forest has exactly the same root symbol as the source forest
     e_root = f_root
+
+
 
     if args.forest:
         with smart_wopen('{0}/forest/target.{1}.gz'.format(outdir, seg.id)) as fo:
             print('# FOREST terminals=%d nonterminals=%d rules=%d' % (e_forest.n_terminals(), e_forest.n_nonterminals(), len(e_forest)), file=fo)
             print(e_forest, file=fo)
+
 
 
     #count(e_forest, args)
@@ -213,21 +217,28 @@ def decode(seg, extra_grammars, glue_grammars, model, args, outdir):
     logging.info('Viterbi translation: %s', ' '.join(t.leaves()))
     logging.info('Viterbi score: %s', score)
 
-    if model.stateful:
-        logging.info('Rescoring with: %s', ','.join(scorer.name for scorer in model.stateful))
-
-        scorer = StatefulScorerWrapper(model)
-        if args.framework == 'exact':
-            exact_rescoring(seg, e_forest, e_root, scorer, semiring, outdir, args)
+    if args.framework == 'exact':
+        exact_rescoring(seg, e_forest, e_root, model, semiring, args, outdir)
+    else:
+        #e_forest = stateless_rescoring(e_forest, StatelessScorer(model), semiring, {e_root})
+        rescorer = SlicedRescoring(e_forest,
+                                   TopSortTable(e_forest),
+                                   stateful=StatefulScorer(model),
+                                   stateless=StatelessScorer(model),
+                                   do_nothing={e_root},
+                                   generations=args.generations,
+                                   temperature0=args.temperature0)
+        if args.within == 'ancestral':
+            history = rescorer.ancestral(args)
         else:
-            rescorer = SlicedRescoring(e_forest, TopSortTable(e_forest), scorer, generations=args.generations)
-            rescorer.sample(args)
+            history = rescorer.importance(args)
+        results = make_result_simple(history, burn=args.burn, lag=args.lag, resample=args.resample)
+        save_mcmc('{0}/slice-{1}/{2}.gz'.format(outdir, args.within, seg.id), results)
+        if args.history:
+            save_flat_history('{0}/slice-{1}/history/{2}.gz'.format(outdir, args.within, seg.id), history)
 
 
-
-
-
-def make_dirs(args):
+def make_dirs(args, exist_ok=True):
     """
     Make output directories and saves the command line arguments for documentation purpose.
 
@@ -238,33 +249,32 @@ def make_dirs(args):
     # create the workspace if missing
     logging.info('Workspace: %s', args.workspace)
     if not os.path.exists(args.workspace):
-        os.makedirs(args.workspace)
+        os.makedirs(args.workspace, exist_ok=exist_ok)
 
     # create a unique experiment area or reuse a given one
     if not args.experiment:
         outdir = make_unique_directory(args.workspace)
     else:
         outdir = '{0}/{1}'.format(args.workspace, args.experiment)
+        os.makedirs(outdir, exist_ok=exist_ok)
     logging.info('Writing files to: %s', outdir)
 
     # create output directories for the several inference algorithms
     if args.viterbi:
-        os.makedirs('{0}/viterbi'.format(outdir))
+        os.makedirs('{0}/viterbi'.format(outdir), exist_ok=exist_ok)
     if args.kbest > 0:
-        os.makedirs('{0}/kbest'.format(outdir))
+        os.makedirs('{0}/kbest'.format(outdir), exist_ok=exist_ok)
     if args.samples > 0:
         if args.framework == 'exact':
-            os.makedirs('{0}/ancestral'.format(outdir))
+            os.makedirs('{0}/ancestral'.format(outdir), exist_ok=exist_ok)
         elif args.framework == 'slice':
-            os.makedirs('{0}/slice'.format(outdir))
-        elif args.framework == 'gibbs':
-            os.makedirs('{0}/gibbs'.format(outdir))
+            os.makedirs('{0}/slice-{1}'.format(outdir, args.within), exist_ok=exist_ok)
+            if args.history:
+                os.makedirs('{0}/slice-{1}/history'.format(outdir, args.within), exist_ok=exist_ok)
     if args.forest:
-        os.makedirs('{0}/forest'.format(outdir))
+        os.makedirs('{0}/forest'.format(outdir), exist_ok=exist_ok)
     if args.count:
-        os.makedirs('{0}/count'.format(outdir))
-    if args.history:
-        os.makedirs('{0}/history'.format(outdir))
+        os.makedirs('{0}/count'.format(outdir), exist_ok=exist_ok)
 
     # write the command line arguments to an ini file
     args_ini = '{0}/args.ini'.format(outdir)
@@ -300,7 +310,6 @@ def load_scorers(args):
         logging.debug('Scorer: %r', scorer)
 
     if args.lm:
-        #logging.info('Loading language model: order=%s path=%s', args.lm[0], args.lm[1])
         scorer = KenLMScorer(uid=len(scorers),
                              name=args.lm[0],
                              order=int(args.lm[1]),
@@ -337,7 +346,7 @@ def core(args):
     scorers = load_scorers(args)
 
     # Load the model
-    model = LogLinearModel(read_weights(args.weights), scorers)  # TODO: uniform initialisation
+    model = LogLinearModel(read_weights(args.weights, args.temperature), scorers)  # TODO: uniform initialisation
     outdir = make_dirs(args)
 
     # Parse sentence by sentence

@@ -8,7 +8,7 @@ from .extractor import TableLookup
 
 class RuleTable(TableLookup):
 
-    CDEC_DEFAULT = 'Glue EgivenFCoherent SampleCountF CountEF MaxLexFgivenE MaxLexEgivenF IsSingletonF IsSingletonFE'.split()
+    CDEC_DEFAULT = 'Glue PassThrough EgivenFCoherent SampleCountF CountEF MaxLexFgivenE MaxLexEgivenF IsSingletonF IsSingletonFE'.split()
 
     def __init__(self, uid, name, fnames=CDEC_DEFAULT):
         super(RuleTable, self).__init__(uid, name)

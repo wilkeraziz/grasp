@@ -27,7 +27,7 @@ class Extractor(object):
     def weights(self, wmap):
         return NotImplementedError('I have not been implemented!')
 
-    def dot(self, fs, ws):
+    def dot(self, frepr, wrepr):
         return NotImplementedError('I have not been implemented!')
 
 
@@ -86,7 +86,7 @@ class Stateful(Extractor):
         """
         raise NotImplementedError('I have not been implemented!')
 
-    def featurize(self, word, context):
+    def featurize(self, word, context):  # TODO: pass edge and position of the dot instead of word
         """
         Return the score and the next state.
         :param word: a Terminal
@@ -95,5 +95,10 @@ class Stateful(Extractor):
         """
         raise NotImplementedError('I have not been implemented!')
 
-    def total_score(self, words):
+    def featurize_derivation(self, derivation):
+        """
+        Featurize a derivation (as a sequence of edges).
+        :param derivation:
+        :return:
+        """
         raise NotImplementedError('I have not been implemented!')

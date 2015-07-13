@@ -4,4 +4,4 @@
 
 from .slicevars import SliceVariables
 from .rescoring import SlicedRescoring
-from .sampling import slice_sampling, make_result
+from .sampling import slice_sampling, make_result, make_result_simple

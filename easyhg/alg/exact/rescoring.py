@@ -26,25 +26,51 @@ from .agenda import ActiveQueue, Agenda
 EMPTY_SET = frozenset()
 
 
+def stateless_rescoring(forest, stateless, semiring, do_nothing=set()):
+    """
+    Plain obvious stateless rescoring.
+
+    :param forest: a CFG
+    :param stateless: StatelessScorer
+    :param semiring: provides times
+    :param do_nothing: a set of nonterminal LHS symbols for which we do nothing.
+        This is here mostly to avoid rescoring the top edges the parser introduces to
+        make sure the forest has a single start symbol.
+    :return: the rescored CFG
+    """
+    return CFG(CFGProduction(rule.lhs,
+                             rule.rhs,
+                             rule.weight if rule.lhs in do_nothing
+                             else semiring.times(rule.weight, stateless.score(rule))) for rule in forest)
+
+
 class EarleyRescoring(object):
     """
     """
 
     def __init__(self, forest,
-                 scorer,
-                 semiring):
+                 stateful,
+                 semiring,
+                 omega=lambda e: e.weight,
+                 stateless=None,
+                 do_nothing=set()):
         """
         :param forest:
-        :param scorer: a stateful Scorer which produces integer states (consider using StatefulScorerWrapper).
+        :param stateful: a stateful Scorer which produces integer states (consider using StatefulScorerWrapper).
         :param semiring:
+        :param stateless: a stateless Scorer which weights complete edges.
         :return:
         """
 
         self._forest = forest
-        self._scorer = scorer
+        self._semiring = semiring
+        self._omega = omega
+        self._stateless = stateless
+        self._do_nothing = do_nothing
+        self._stateful = stateful
         self._agenda = Agenda(active_container_type=ActiveQueue)
         self._predictions = set()  # (LHS, start)
-        self._semiring = semiring
+
 
     def axioms(self, root, start):
         """
@@ -89,7 +115,7 @@ class EarleyRescoring(object):
         """
 
         # retrieve the weight and the destination
-        weight, to = self._scorer.score(item.next, context=item.dot)
+        weight, to = self._stateful.score(item.next, context=item.dot)
         # scan the item
         self._agenda.add(item.advance(to, self._semiring.times(item.weight, weight)))
         return True
@@ -112,20 +138,20 @@ class EarleyRescoring(object):
         self._agenda.extend(item.advance(sto, item.weight) for sto in self._agenda.itercompletions(item.next, item.dot))
         return True
 
-    def do(self, root=Nonterminal('S'), original_weights=None):
+    def do(self, root=Nonterminal('S'), edge_mapping=None):
         """
 
         :param root: the root of the input forest
             The goal symbol, i.e. root of the output forest, is a Span(root, None, None).
-        :param original_weights: a table to memorise a correspondence between the output edges and their input weights.
+        :param edge_mapping: a table to memorise a correspondence between the output edges and the input edges.
             This is necessary when exact rescoring is used within a slice sampling procedure.
         :return: the rescored forest
         """
 
         agenda = self._agenda
 
-        initial = self._scorer.initial()
-        final = self._scorer.final()
+        initial = self._stateful.initial()
+        final = self._stateful.final()
         self.axioms(root, initial)
         if not agenda:
             raise ValueError('I cannot rewrite the root: %s' % root)
@@ -144,12 +170,11 @@ class EarleyRescoring(object):
                         self.complete_itself(item)
                     agenda.make_passive(item)
 
-        logging.info('Making forest')
-        rescored = self.make_cfg(root, initial, final, original_weights)
-        logging.info('Done!')
+        rescored = self.make_cfg(root, initial, final, edge_mapping)
+
         return rescored
 
-    def make_cfg(self, root, initial, final, original_weights):
+    def make_cfg(self, root, initial, final, edge_mapping):
         """
         Constructs the CFG by visiting complete items in a top-down fashion.
         This is effectively a reachability test and it serves the purpose of filtering nonterminal symbols
@@ -163,15 +188,16 @@ class EarleyRescoring(object):
         """
 
         semiring = self._semiring
-        scorer = self._scorer
+        omega = self._omega
+        scorer = self._stateful
         G = CFG()
         processed = set()
 
-        if original_weights is not None:
-            def store_original(new_rule, old_weight):
-                original_weights[new_rule] = old_weight
+        if edge_mapping is not None:
+            def map_edges(new_edge, old_edge):
+                edge_mapping[new_edge] = old_edge
         else:
-            store_original = lambda r, w: None
+            map_edges = lambda n, o: None
 
         def intersect_rule(rule, states, weight):
             """
@@ -184,7 +210,9 @@ class EarleyRescoring(object):
             rhs = [None] * len(rule.rhs)
             for i, sym in enumerate(rule.rhs):
                 rhs[i] = make_span(sym, states[i], states[i + 1])
-            return CFGProduction(lhs, rhs, semiring.times(rule.weight, weight))
+            if self._stateless and rule.lhs not in self._do_nothing:
+                weight = semiring.times(weight, self._stateless.score(rule))  # incorporate stateless scorer
+            return CFGProduction(lhs, rhs, semiring.times(omega(rule), weight))  # also the rule's own weight
 
         def make_rules(lhs, start, end):
             """
@@ -198,9 +226,9 @@ class EarleyRescoring(object):
             processed.add((lhs, start, end))
             for item in self._agenda.itercomplete(lhs, start, end):
                 states = item.inner + (item.dot,)
-                new_rule = intersect_rule(item.rule, states, item.weight)
-                G.add(new_rule)
-                store_original(new_rule, item.rule.weight)
+                intersected = intersect_rule(item.rule, states, item.weight)
+                G.add(intersected)
+                map_edges(intersected, item.rule)
                 # make rules for the intersected nonterminals
                 for i, sym in filter(lambda i_s: isinstance(i_s[1], Nonterminal), enumerate(item.rule.rhs)):
                     if (sym, states[i], states[i + 1]) not in processed:
@@ -214,11 +242,11 @@ class EarleyRescoring(object):
             for end in ends:
                 make_rules(root, start, end)
                 # the goal item incorporates p(bos) and p(eos|end)
-                new_rule = CFGProduction(make_span(root, None, None),
+                goal_rule = CFGProduction(make_span(root, None, None),
                                     [make_span(root, start, end)],
                                     semiring.times(scorer.initial_score(), scorer.final_score(context=end)))
-                G.add(new_rule)
-                store_original(new_rule, semiring.one)
+                G.add(goal_rule)
+                map_edges(goal_rule, None)
 
         # without make_rules above, one could run the following
         #for item in self._agenda.itercomplete():

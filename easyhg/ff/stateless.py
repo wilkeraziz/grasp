@@ -2,7 +2,7 @@
 :Authors: - Wilker Aziz
 """
 
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 from .extractor import Stateless
 from easyhg.grammar.symbol import Terminal, Nonterminal
@@ -33,8 +33,13 @@ class WordPenalty(Stateless):
         """
         return sum(self._penalty for sym in filter(lambda s: isinstance(s, Terminal), edge.rhs))
 
-    def dot(self, fs, ws):
-        return fs * ws
+    def dot(self, frepr, wrepr):
+        """
+        :param frepr: word penalty (a float)
+        :param wrepr: weight (a float)
+        :return: product
+        """
+        return frepr * wrepr
 
 
 class ArityPenalty(Stateless):
@@ -51,13 +56,20 @@ class ArityPenalty(Stateless):
     def weights(self, wmap):  # using a sparse representation
         return defaultdict(None, ((k, v) for k, v in wmap.items() if k.startswith(self.name)))
 
-    def featurize(self, edge):  # using a sparse representation
+    def featurize(self, edge):
         """
         :param rule:
-        :returns:
+        :returns: edge's arity
         """
-        n = sum(1 for _ in filter(lambda s: isinstance(s, Nonterminal), edge.rhs))
-        return n, self._penalty
+        arity = sum(1 for _ in filter(lambda s: isinstance(s, Nonterminal), edge.rhs))
+        return arity
 
-    def dot(self, fs, ws):  # sparse dot
-        return sum(v * ws.get(f, 0) for f, v in fs)
+    def dot(self, frepr, wrepr):
+        """
+
+        :param frepr: edge's arity (an integer)
+        :param wrepr: weight map
+        :return: penalty * wmap[arity]
+        """
+        arity = frepr
+        return self._penalty * wrepr.get('{0}_{1}'.format(self.name, arity), 0)
