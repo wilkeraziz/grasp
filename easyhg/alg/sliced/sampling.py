@@ -18,7 +18,7 @@ from easyhg.grammar.result import Result
 
 from easyhg.alg.exact.inference import robust_inside, sample, total_weight
 from easyhg.alg.exact import Nederhof
-from easyhg.alg.sliced import SliceVariables
+from easyhg.alg.sliced.slicevars import Beta, VectorOfPriors, ConstantPrior, XSliceVariables
 
 from .heuristic import attempt_initialisation
 from .utils import choose_parameters, make_batch_conditions, DEFAULT_FREE_DIST_PARAMETERS, DEFAULT_FREE_DISTRIBUTION
@@ -33,20 +33,20 @@ def slice_sampling(fsa, grammars, glue_grammars,
                    report_counts=False,
                    goal=Nonterminal('GOAL'),
                    generations=10,
-                   free_dist=DEFAULT_FREE_DISTRIBUTION,
-                   free_dist_parameters=DEFAULT_FREE_DIST_PARAMETERS,
+                   free_dist=Beta,
+                   free_dist_prior=VectorOfPriors(ConstantPrior(0.1), ConstantPrior(1.0)),
                    semiring=SumTimes):
     # configure slice variables
-    u = SliceVariables(distribution=free_dist, parameters=choose_parameters(free_dist_parameters, 0))
+    u = XSliceVariables({}, free_dist, free_dist_prior)
+    logging.debug('%s prior=%r', free_dist.__name__, free_dist_prior)
 
     # attempt a heuristic initialisation
     conditions = None  #attempt_initialisation(fsa, grammars, glue_grammars, options)
     if conditions is not None:  # reconfigure slice variables if possible
-        u.reset(conditions, distribution=free_dist, parameters=choose_parameters(free_dist_parameters, 1))
+        u.reset(conditions)
 
     report_interval = 10
     checkpoint = report_interval
-    first = True
     history = []
     n_samples = 0
     lag_i = lag
@@ -98,13 +98,7 @@ def slice_sampling(fsa, grammars, glue_grammars,
                         omega=lambda e: uniformdist[e]))
         assert D, 'The slice should never be empty'
 
-        if first:
-            # the first time we find a derivation
-            # we change the parameters of the distribution associated with free variables
-            u.reset(make_batch_conditions(D, semiring), parameters=choose_parameters(free_dist_parameters, 1))
-            first = False
-        else:
-            u.reset(make_batch_conditions(D, semiring))
+        u.reset(make_batch_conditions(D, semiring))
 
         history.append(D)
 
@@ -144,9 +138,8 @@ def make_result(batches, lag=1, burn=0, resample=0):
 
 
 def make_result_simple(samples, burn=0, lag=1, resample=0):
-
     if burn > 0:
-        samples = samples[:burn]
+        samples = samples[burn:]
     if lag > 1:
         samples = samples[lag-1::lag]
 

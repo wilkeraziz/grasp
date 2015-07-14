@@ -37,7 +37,7 @@ from easyhg.ff.stateless import WordPenalty, ArityPenalty
 
 from easyhg.ff.scorer import StatefulScorer, StatelessScorer, TableLookupScorer
 from easyhg.ff.loglinear import LogLinearModel, read_weights, cdec_basic
-
+from easyhg.recipes import timeit
 
 
 def make_input(seg, grammars, semiring, unk_lhs):
@@ -136,6 +136,7 @@ def exact_rescoring(seg, forest, root, model, semiring, args, outdir):
         save_mc('{0}/ancestral/{1}.gz'.format(outdir, seg.id), R)
 
 
+@timeit
 def decode(seg, extra_grammars, glue_grammars, model, args, outdir):
     semiring = SumTimes
     logging.info('Loading grammar: %s', seg.grammar)
@@ -228,10 +229,9 @@ def decode(seg, extra_grammars, glue_grammars, model, args, outdir):
                                    do_nothing={e_root},
                                    generations=args.generations,
                                    temperature0=args.temperature0)
-        if args.within == 'ancestral':
-            history = rescorer.ancestral(args)
-        else:
-            history = rescorer.importance(args)
+
+        history = rescorer.sample(args)
+
         results = make_result_simple(history, burn=args.burn, lag=args.lag, resample=args.resample)
         save_mcmc('{0}/slice-{1}/{2}.gz'.format(outdir, args.within, seg.id), results)
         if args.history:
@@ -353,7 +353,8 @@ def core(args):
     for input_str in args.input:
         # get an input automaton
         seg = SegmentMetaData.parse(input_str, grammar_dir=args.grammars)
-        decode(seg, extra_grammars, glue_grammars, model, args, outdir)
+        dt, _ = decode(seg, extra_grammars, glue_grammars, model, args, outdir)
+        logging.info('Decoding time %d: %s', seg.id, dt)
 
     logging.info('Check output files in: %s', outdir)
 

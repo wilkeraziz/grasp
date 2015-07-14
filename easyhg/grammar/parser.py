@@ -13,7 +13,7 @@ from itertools import chain
 
 
 from easyhg.alg.sliced.sampling import slice_sampling, make_result
-from easyhg.alg.sliced.utils import make_namespace
+from easyhg.alg.sliced.slicevars import Beta, Exponential, get_prior, VectorOfPriors
 
 from .cmdline import argparser
 from .sentence import make_sentence
@@ -24,6 +24,7 @@ from .rule import get_oov_cfg_productions
 from .utils import make_unique_directory
 from .report import save_kbest, save_viterbi, save_mc, save_mcmc, save_sample_history
 from .exact import exact
+
 
 
 
@@ -81,6 +82,14 @@ def do(uid, input, grammars, glue_grammars, options, outdir):
 
     elif options.framework == 'slice':
 
+        if options.free_dist == 'beta':
+            dist = Beta
+            prior = VectorOfPriors(get_prior(options.prior_a[0], options.prior_a[1]),
+                                   get_prior(options.prior_b[0], options.prior_b[1]))
+        elif options.free_dist == 'exponential':
+            dist = Exponential
+            prior = get_prior(options.prior_scale[0], options.prior_scale[1])
+
         history = slice_sampling(input.fsa,
                                  grammars,
                                  glue_grammars,
@@ -92,8 +101,8 @@ def do(uid, input, grammars, glue_grammars, options, outdir):
                                  report_counts=options.count,
                                  goal=Nonterminal(options.goal),
                                  generations=options.generations,
-                                 free_dist=options.free_dist,
-                                 free_dist_parameters=make_namespace(options))
+                                 free_dist=dist,
+                                 free_dist_prior=prior)
 
         results = make_result(history, lag=options.lag, burn=options.burn, resample=options.resample)
         save_mcmc('{0}/slice/{1}.gz'.format(outdir, uid), results)

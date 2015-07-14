@@ -118,7 +118,7 @@ def outside(forest, topsorted, semiring, I=None, omega=lambda e: e.weight):
     return O
 
 
-def normalised_edge_inside(forest, I, semiring, omega=lambda e: e.weight):
+def edge_inside(forest, I, semiring, omega=lambda e: e.weight, normalise=False):
     """
     Return the normalised inside weights of the edges in a forest.
     Normalisation happens with respect to an edge's head inside weight.
@@ -126,7 +126,17 @@ def normalised_edge_inside(forest, I, semiring, omega=lambda e: e.weight):
     @param semiring: requires times and divide
     @param omega: a function that weighs edges/rules (serves as a bypass)
     """
-    return defaultdict(None, ((edge, semiring.divide(reduce(semiring.times, (I[s] for s in edge.rhs), omega(edge)), I[edge.lhs])) for edge in forest))
+    if normalise:
+        return defaultdict(None, ((edge, semiring.divide(reduce(semiring.times,
+                                                                (I[s] for s in edge.rhs),
+                                                                omega(edge)),
+                                                         I[edge.lhs]))
+                                  for edge in forest))
+    else:
+        return defaultdict(None, ((edge, reduce(semiring.times,
+                                                (I[s] for s in edge.rhs),
+                                                omega(edge)))
+                                  for edge in forest))
 
 
 class LazyEdgeInside(object):
@@ -134,7 +144,7 @@ class LazyEdgeInside(object):
     In some cases, such as in slice sampling, we are unlikely to visit every edge, thus lazily computing the inside of edges might be appropriate.
     """
 
-    def __init__(self, semiring, Iv, Ie={}, omega=lambda e: e.weight):
+    def __init__(self, semiring, Iv, Ie={}, omega=lambda e: e.weight, normalise=False):
         """
         @param semiring: defining times and divide (if normalisation is required)
         @param Iv: inside for nodes
@@ -145,13 +155,38 @@ class LazyEdgeInside(object):
         self._Iv = Iv
         self._Ie = defaultdict(None, Ie)
         self._omega = omega
+        if normalise:
+            self._compute = self._normalised
+        else:
+            self._compute = self._unnormalised
+
+    def _normalised(self, edge):
+        return self._semiring.divide(reduce(self._semiring.times,
+                                            (self._Iv[s] for s in edge.rhs),
+                                            self._omega(edge)),
+                                     self._Iv[edge.lhs])
+
+    def _unnormalised(self, edge):
+        return reduce(self._semiring.times, (self._Iv[s] for s in edge.rhs), self._omega(edge))
 
     def __getitem__(self, edge):
         w = self._Ie.get(edge, None)
         if w is None:
-            w = self._semiring.divide(reduce(self._semiring.times, (self._Iv[s] for s in edge.rhs), self._omega(edge)), self._Iv[edge.lhs])
+            w = self._compute(edge)
             self._Ie[edge] = w
         return w
+
+
+def choice(n, p, semiring):
+    total = semiring.plus.reduce(p)
+    u = semiring.from_real(np.random.uniform())
+    th = semiring.times(total, u)
+    cdf = p[0]
+    for i in range(n):
+        if semiring.gt(cdf, th):
+            return i
+        cdf = semiring.plus(cdf, p[i])
+    return n - 1
 
 
 def sample(forest, root, semiring, Iv, Ie=None, N=1, omega=lambda e: e.weight):
@@ -167,11 +202,12 @@ def sample(forest, root, semiring, Iv, Ie=None, N=1, omega=lambda e: e.weight):
     @param omega: a function that weighs edges/rules (serves as a bypass)
     """
     if Ie is None:
-        Ie = LazyEdgeInside(semiring, Iv, omega=omega)  # we require normalisation
+        Ie = LazyEdgeInside(semiring, Iv, omega=omega, normalise=True)  # we require normalisation
 
     def sample_edge(edges):
         edges = list(edges)
         i = np.random.choice(len(edges), p=[semiring.as_real(Ie[e]) for e in edges])
+        #i = choice(len(edges), [Ie[e] for e in edges], semiring)
         return edges[i]
     
     def sample_derivation():

@@ -4,7 +4,6 @@
 
 import logging
 import numpy as np
-import sys
 from collections import defaultdict, Counter
 from itertools import chain
 
@@ -15,11 +14,9 @@ from easyhg.grammar.symbol import make_span, Span
 
 from easyhg.alg.exact.inference import total_weight
 from easyhg.alg.exact import AncestralSampler, EarleyRescoring
+from .slicevars import ExpSliceVariables, ConstantPrior, SymmetricGamma, AsymmetricGamma
 
-from .utils import choose_parameters
-from .slicevars import SliceVariables
-
-from easyhg.alg import progressbar
+from easyhg.recipes import progressbar
 
 
 def make_span_cell(lhs):
@@ -40,6 +37,22 @@ def make_coarser(derivation):
     return tuple(generate_output())
 
 
+def gamma_priors(forest, semiring, percentile=None):
+    priors = defaultdict(None)
+    if percentile is None:
+        for lhs, rules in forest.iteritems():
+            thetas = np.array([semiring.as_real(r.weight) for r in rules])
+            priors[lhs] = thetas.mean()
+            print('{0} min={1} max={2} mean={3} prior={4}'.format(lhs, np.min(thetas), np.max(thetas), np.mean(thetas), priors[lhs]))
+    else:
+        for lhs, rules in forest.iteritems():
+            thetas = np.array([semiring.as_real(r.weight) for r in rules])
+            priors[lhs] = np.percentile(thetas, percentile)
+            print('{0} min={1} max={2} mean={3} prior={4}'.format(lhs, np.min(thetas), np.max(thetas), np.mean(thetas), priors[lhs]))
+    #logging.info('cell=%s incoming=%d sum=%s mean=%s median=%s prior=%s', lhs, len(rules), thetas.sum(), thetas.mean(), np.percentile(thetas, 50), priors[lhs])
+    return priors
+
+
 def prune_and_reweight(forest, tsort, slicevars, semiring, make_cell, dead_terminal=Terminal('<null>')):
     """
     Prune a forest and compute a new weight function for edges.
@@ -54,8 +67,13 @@ def prune_and_reweight(forest, tsort, slicevars, semiring, make_cell, dead_termi
     oforest = CFG()
     discovered = set([tsort.root()])
     weight_table = defaultdict(None)
+    pruned = 0
+    total_cells = 0
+    n_uniform = []
+    n_exponential = []
     for level in tsort.iterlevels(reverse=True):  # we go top-down level by level
         for lhs in chain(*level):  # flatten the buckets
+            total_cells += 1
             if lhs not in discovered:  # symbols not yet discovered have been pruned
                 continue
             cell = make_cell(lhs)
@@ -63,21 +81,27 @@ def prune_and_reweight(forest, tsort, slicevars, semiring, make_cell, dead_termi
             incoming = forest.get(lhs)
             # we sort the incoming edges in order to find out which ones are not in the slice
             for rule in sorted(incoming, key=lambda r: r.weight, reverse=True):  # TODO: use semiring to sort
-                p = semiring.as_real(rule.weight)
-
-                if slicevars.is_inside(cell, p):
+                u = semiring.from_real(slicevars[cell])
+                if semiring.gt(rule.weight, u):  # inside slice
                     oforest.add(rule)
-                    weight_table[rule] = slicevars.logpr(cell, p)
+                    weight_table[rule] = slicevars.pdf_semiring(cell, rule.weight, semiring)
                     discovered.update(filter(lambda s: isinstance(s, Nonterminal), rule.rhs))
                     n += 1
                 else:  # this edge and the remaining are pruned
+                    pruned += 1
+                    #logging.info('pruning: %s vs %s', p, slicevars[cell])
                     break
+            if slicevars.has_conditions(cell):
+                n_uniform.append(float(n)/len(incoming))
+            else:
+                n_exponential.append(float(n)/len(incoming))
             #logging.info('cell=%s slice=%d/%d conditioning=%s', cell, n, len(incoming), slicevars.has_conditions(cell))
             if n == 0:  # this is a dead-end, instead of pruning bottom-up, we add an edge with 0 weight for simplicity
                 dead = CFGProduction(lhs, [dead_terminal], semiring.zero)
                 oforest.add(dead)
                 weight_table[dead] = semiring.zero
-    return oforest, weight_table
+    #logging.info('Pruning: cells=%s/%s in=%s out=%s', pruned, total_cells, np.array(_in).mean(), np.array(_out).mean())
+    return oforest, weight_table, np.mean(n_uniform), np.mean(n_exponential)
 
 
 class SlicedRescoring(object):
@@ -107,6 +131,8 @@ class SlicedRescoring(object):
         self._make_conditions = make_span_conditions
         self._make_cell = make_span_cell
 
+        #self._priors = gamma_priors(self._forest, self._semiring)
+
     def sample_d0(self):
         """Draw an initial derivation from the locally weighted forest."""
         return next(self._sampler0.sample(1))
@@ -121,142 +147,116 @@ class SlicedRescoring(object):
         w = semiring.times(w, self._stateful.score_derivation(d))
         return w
 
-    def importance(self, args):
-        """
-        Slices are sampled via importance sampling.
+    def _make_slice_varialbes(self, conditions, prior_type, prior_parameter):
+        if prior_type == 'const':
+            prior = ConstantPrior(const=float(prior_parameter))
+            logging.debug('Constant scale: %s', prior_parameter)
+        elif prior_type == 'sym':
+            prior = SymmetricGamma(scale=float(prior_parameter))
+            logging.debug('Symmetric Gamma: %s', prior_parameter)
+        elif prior_type == 'asym':
+            if prior_parameter == 'mean':
+                prior = AsymmetricGamma(scales=gamma_priors(self._forest, self._semiring))
+            else:
+                try:
+                    percentile = float(prior_parameter)
+                except ValueError:
+                    raise ValueError("The parameter of the asymmetric "
+                                     "Gamma must be the keyword 'mean' or a number between 0-100: %s" % percentile)
+                if not (0 <= percentile <= 100):
+                    raise ValueError("A percentile is a real number between 0 and 100: %s" % percentile)
+                prior = AsymmetricGamma(scales=gamma_priors(self._forest, self._semiring, percentile=percentile))
+            logging.debug('Asymmetric Gamma: %s', prior_parameter)
 
-            u_k ~ f(u_k|d) = I(u_k < l_k(d)) if u_k \in d or alpha(u_k)
-            f(d|u) \propto \pi(d) g(d|u)
-            g(d|u) = \prod_{u_k \in d} I(u_k < l_k(d))/alpha(u_k)
-            (d_i ~ g(d|u)) for i = 1..B
-            f(d|u) \approx r(d|u) \propto f(d|u)/g(d|u) \propto \pi(d)
-            d ~ r(d|u)
+        return ExpSliceVariables(conditions=conditions, prior=prior)
 
+    def _importance(self, l_slice, g, batch_size):
+        semiring = self._semiring
+        # sample from g(d) over the truncated support of l(d)
+        sampler = AncestralSampler(l_slice,
+                                   TopSortTable(l_slice),
+                                   omega=lambda e: g[e],
+                                   generations=self._generations)
 
+        # sample a number of derivations and group them by identity
+        counts = Counter(sampler.sample(batch_size))
+        # compute the empirical (importance) distribution r(d) \propto f(d|u)/g(d|u)
+        support = [None] * len(counts)
+        numerators = np.zeros(len(counts))
+        for i, (d, n) in enumerate(counts.items()):
+            support[i] = d
+            numerators[i] = semiring.times(self._rescore_derivation(d), semiring.from_real(n))
+        log_prob = numerators - np.logaddexp.reduce(numerators)
+        prob = np.exp(log_prob)
 
-        :param args:
-        :return:
-        """
+        # sample a derivation
+        i = np.random.choice(len(log_prob), p=prob)
+        d_i = support[i]
+        # make conditions based on the slice variables and l(d)
+        c_i = self._make_conditions(d_i, semiring)
+
+        return d_i, c_i, sampler.n_derivations()
+
+    def _ancestral(self, l_slice, g, batch_size):
+        semiring = self._semiring
+        # compute f(d|u) \propto \pi(d) g(d) exactly
+        rescorer = EarleyRescoring(l_slice,
+                                   semiring=semiring,
+                                   omega=lambda e: g[e],
+                                   stateful=self._stateful,
+                                   stateless=self._stateless,
+                                   do_nothing=self._do_nothing)
+        f2l_edges = defaultdict(None)
+        f_slice = rescorer.do(root=self._tsort.root(), edge_mapping=f2l_edges)
+
+        # sample a derivation
+        sampler = AncestralSampler(f_slice,
+                                   TopSortTable(f_slice),
+                                   generations=self._generations)
+
+        d_i = next(sampler.sample(1))  # a derivation from f(d|u)
+
+        # make new conditions and reset slice variables
+        # 1) the cells must be unwrapped (remember that EarleyRescoring wrap them into spans
+        # 2) the weights must come from l, thus we use the edge map
+        c_i = {self._make_cell(e.lhs.base): semiring.as_real(f2l_edges[e].weight) for e in d_i[1:]}
+
+        return tuple(f2l_edges[e] for e in d_i[1:]), c_i, sampler.n_derivations()
+
+    def sample(self, args):
 
         semiring = self._semiring
+        sampler = self._ancestral if args.within == 'ancestral' else self._importance
         d0 = self.sample_d0()
-
         logging.info('Initial sample: prob=%s tree=%s', semiring.as_real(total_weight(d0, semiring) - self._sampler0.Z),
                      inlinetree(make_nltk_tree(d0)))
-
-        slicevars = SliceVariables(conditions=self._make_conditions(d0, semiring),
-                                   distribution=args.free_dist,
-                                   parameters=choose_parameters(args, 0))
+        # get slice variables
+        slicevars = self._make_slice_varialbes(self._make_conditions(d0, semiring), args.prior[0], args.prior[1])
 
         history = []
-
         slices_sizes = [self._sampler0.n_derivations()]
-        report_size = lambda: ' |D|={0}'.format(slices_sizes[-1])
+        # mean ratio of sliced edges constrained by u either uniformly or exponentially distributed
+        muni, mexp = 1.0, 1.0
+        report_size = lambda: ' |D|={:5d} uni={:5f} exp={:5f}'.format(slices_sizes[-1], muni, mexp)
+
         for _ in progressbar(range(args.burn + (args.samples * args.lag)), prefix='Sampling', dynsuffix=report_size):
 
             # get a truncated forest weighted by l(d)
             # and a weight table corresponding to g(d)
-            l_slice, g = prune_and_reweight(self._forest, self._tsort, slicevars, semiring, self._make_cell)
+            l_slice, g, muni, mexp = prune_and_reweight(self._forest, self._tsort, slicevars, semiring, self._make_cell)
 
-            # sample from g(d) over the truncated support of l(d)
-            sampler = AncestralSampler(l_slice,
-                                       TopSortTable(l_slice),
-                                       omega=lambda e: g[e],
-                                       generations=self._generations)
-
-            slices_sizes.append(sampler.n_derivations())
-            #logging.debug('Slice: derivations=%d', sampler.n_derivations())
-
-            # sample a number of derivations and group them by identity
-            counts = Counter(sampler.sample(args.batch))
-            # compute the empirical (importance) distribution r(d) \propto f(d|u)/g(d|u)
-            support = [None] * len(counts)
-            numerators = np.zeros(len(counts))
-            for i, (d, n) in enumerate(counts.items()):
-                support[i] = d
-                numerators[i] = semiring.times(self._rescore_derivation(d), semiring.from_real(n))
-            log_prob = numerators - np.logaddexp.reduce(numerators)
-            prob = np.exp(log_prob)
-            # sample a derivation
-            i = np.random.choice(len(log_prob), p=prob)
-            d_i = support[i]
-            # make conditions based on the slice variables and l(d)
-            slicevars.reset(self._make_conditions(d_i, semiring))
+            d_i, c_i, n_i = sampler(l_slice, g, args.batch)
 
             # update the history
             history.append(d_i)
+            # reset slice variables
+            slicevars.reset(c_i)
 
-            # report stuff
-            #logging.info('Sample: prob=%s tree=%s', prob[i], inlinetree(make_nltk_tree(d_i)))
+            # reports
+            slices_sizes.append(n_i)
+            #logging.info('Sample: tree=%s', inlinetree(make_nltk_tree(d_i)))
+            if n_i == 0:
+                raise ValueError('I found an empty slice!')
 
-
-        return history
-
-    def ancestral(self, args):
-        """
-        Slices are sampled exactly, i.e., slices are rescored exactly.
-
-            f(d) \propto \pi(d) g(d)
-
-            u_k ~ f(u_k|d) = I(u_k < l_k(d)) if u_k \in d or alpha(u_k)
-            g(d|u) = \prod_{u_k \in d} I(u_k < l_k(d))/alpha(u_k)
-            <d_i ~ f(d|u) \propto \pi(d) g(d|u)> for i = 1..B
-            d ~ f(d|u)
-
-        :param args:
-        :return:
-        """
-
-        semiring = self._semiring
-        history = []
-
-        d0 = self.sample_d0()
-        logging.info('Initial sample: prob=%s tree=%s', semiring.as_real(total_weight(d0, semiring) - self._sampler0.Z),
-                     inlinetree(make_nltk_tree(d0)))
-
-        slicevars = SliceVariables(conditions=self._make_conditions(d0, semiring),
-                                   distribution=args.free_dist,
-                                   parameters=choose_parameters(args, 0))
-        root = make_span(Nonterminal(args.goal), None, None)
-
-        slices_sizes = [self._sampler0.n_derivations()]
-        report_size = lambda: ' |D|={0}'.format(slices_sizes[-1])
-
-        for _ in progressbar(range(args.burn + (args.samples * args.lag)), prefix='Sampling', dynsuffix=report_size):
-
-            # get a truncate forest weighted by l(d)
-            # and a weight table corresponding to g(d)
-            l_slice, g = prune_and_reweight(self._forest, self._tsort, slicevars, semiring, self._make_cell)
-
-            # compute f(d|u) \propto \pi(d) g(d) exactly
-            rescorer = EarleyRescoring(l_slice,
-                                       semiring=semiring,
-                                       omega=lambda e: g[e],
-                                       stateful=self._stateful,
-                                       stateless=self._stateless,
-                                       do_nothing=self._do_nothing)
-            f2l_edges = defaultdict(None)
-            f_slice = rescorer.do(root=root, edge_mapping=f2l_edges)
-
-            # sample a derivation
-            sampler = AncestralSampler(f_slice,
-                                       TopSortTable(f_slice),
-                                       generations=self._generations)
-
-            #logging.debug('Slice: derivations=%d', sampler.n_derivations())
-            slices_sizes.append(sampler.n_derivations())
-            d_i = next(sampler.sample(1))  # a derivation from f(d|u)
-
-            # make new conditions and reset slice variables
-            # 1) the cells must be unwrapped (remember that EarleyRescoring wrap them into spans
-            # 2) the weights must come from l, thus we use the edge map
-            slicevars.reset({self._make_cell(e.lhs.base): semiring.as_real(f2l_edges[e].weight) for e in d_i[1:]})
-
-            # update the sample
-            history.append(tuple(f2l_edges[e] for e in d_i[1:]))
-
-            # report stuff
-            #logging.info('Sample: prob=%s tree=%s', semiring.as_real(total_weight(d_i) - sampler.Z),
-            #             inlinetree(make_nltk_tree(make_coarser(d_i[1:]))))
-
+        logging.info('Slice size: mean=%s std=%s', np.mean(slices_sizes[1:]), np.std(slices_sizes[1:]))
         return history

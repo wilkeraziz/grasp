@@ -2,7 +2,7 @@
 :Authors: - Wilker Aziz
 """
 
-from .inference import robust_inside, normalised_edge_inside, sample
+from .inference import robust_inside, edge_inside, sample
 from easyhg.grammar.semiring import SumTimes, Count
 
 
@@ -20,10 +20,7 @@ class AncestralSampler(object):
                                            semiring,
                                            omega=omega,
                                            infinity=generations)
-        self._inside_edges = normalised_edge_inside(self._forest,
-                                                    self._inside_nodes,
-                                                    semiring,
-                                                    omega=omega)
+        self._inside_edges = edge_inside(self._forest, self._inside_nodes, semiring, omega=omega, normalise=True)
         self._root = self._tsort.root()
         self._counts = None
 

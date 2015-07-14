@@ -146,23 +146,37 @@ def cmd_slice(group):
                        action='store_true',
                        help='dumps history files with all samples in the order they were collected (no burn-in, no lag, no resampling)')
     group.add_argument('--free-dist',
-                       type=str, default='beta', metavar='DIST', choices=['beta', 'exponential', 'gamma'],
-                       help='the distribution of the free variables (those with no condition), one of {beta, exponential, gamma}.')
-    group.add_argument('--a',
-                       type=float, nargs=2, default=[0.1, 0.3], metavar='BEFORE AFTER',
-                       help="Beta's first shape parameter before and after we have something to condition on")
-    group.add_argument('--b',
-                       type=float, nargs=2, default=[1.0, 1.0], metavar='BEFORE AFTER',
-                       help="Beta's second shape parameter before and after we have something to condition on")
-    group.add_argument('--rate',
-                       type=float, nargs=2, default=[1.0, 1.0], metavar='BEFORE AFTER',
-                       help="rate parameter of the exponential distribution (scale=1.0/rate)")
-    group.add_argument('--shape',
-                       type=float, nargs=2, default=[1.0, 1.0], metavar='BEFORE AFTER',
-                       help="shape parameter of the gamma distribution")
-    group.add_argument('--scale',
-                       type=float, nargs=2, default=[1.0, 1.0], metavar='BEFORE AFTER',
-                       help="scale parameter of the gamma distribution")
+                       type=str, default='beta', metavar='DIST', choices=['beta', 'exponential'],
+                       help="We have a slice variable for each node in the forest. "
+                            "Some of them are constrained (those are sampled uniformly), "
+                            "some of them are not (those are sampled from a Beta or an Exponential distribution). "
+                            "Options: 'beta', 'exponential'.")
+
+    group.add_argument('--prior-a', nargs=2,
+                       default=['const', 0.1],
+                       help="A Beta distribution has two shape parameters (a, b) and mean a/(a+b). "
+                            "The mean is inversely proportional to the size of the slice. "
+                            "Think of it as an expected threshold. "
+                            "You can choose a constant or a prior for the parameter a: "
+                            "'const', 'sym' (symmetric Gamma), 'beta' (Beta). Each option takes one argument. "
+                            "The constant takes a real number (>0). "
+                            "The symmetric Gamma takes a single scale parameter (>0). "
+                            "The Beta takes two shape parameters separated by a comma (x,y>0).")
+    group.add_argument('--prior-b', nargs=2,
+                       default=['const', 1.0],
+                       help="You can choose a constant or a prior distribution for the parameter b: "
+                            "'const', 'sym' (symmetric Gamma), 'beta' (Beta). Each option takes one argument. "
+                            "The constant takes a real number (>0). "
+                            "The symmetric Gamma takes a single scale parameter (>0). "
+                            "The Beta takes two shape parameters separated by a comma (x,y>0).")
+    group.add_argument('--prior-scale', nargs=2,
+                       default=['const', 0.1],
+                       help="The Exponential distribution has one scale parameter which is also its mean. "
+                            "This scale/mean is inversely proportional to the size of the slice. "
+                            "Think of it as an expected threshold. "
+                            "You can choose a constant or a prior for the scale: 'const', 'sym' (symmetric Gamma). "
+                            "The constant is a real number (>0). "
+                            "The symmetric Gamma takes a single scale parameter (>0). ")
 
 
 if __name__ == '__main__':

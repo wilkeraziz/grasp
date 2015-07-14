@@ -203,7 +203,7 @@ class Nederhof(object):
     def reweight(self, forest):
         if self._semiring.LOG:
             return defaultdict(None,
-                ((rule, self._u.logpr(rule.lhs.label, self._semiring.as_real(rule.weight))) for rule in forest))
+                ((rule, self._u.logpdf(rule.lhs.label, self._semiring.as_real(rule.weight))) for rule in forest))
         else:
             return defaultdict(None,
-                ((rule, self._semiring.from_real(self._u.pr(rule.lhs.label, self._semiring.as_real(rule.weight)))) for rule in forest))
+                ((rule, self._semiring.from_real(self._u.pdf(rule.lhs.label, self._semiring.as_real(rule.weight)))) for rule in forest))

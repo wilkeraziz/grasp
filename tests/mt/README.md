@@ -28,3 +28,13 @@
 
         Output kbest to -
         0 ||| to jump to jump from temples , please . ||| LanguageModel=-20.9995 Glue=5 WordPenalty=-3.90865 IsSingletonFE=7 IsSingletonF=2 MaxLexEgivenF=11.9983 MaxLexFgivenE=5.78686 CountEF=2.10721 SampleCountF=13.8385 EgivenFCoherent=13.767 ||| 36.5898
+
+
+# Interesting settings
+
+
+Also with `--burn 500`
+
+    time head -n1 input | python -m easyhg.mt.decoder --glue-grammar glue --pass-through --count --forest --rt -v --viterbi --kbest 100 --wp WordPenalty -0.43429466666666666666 --ap Arity 1 output --lm LanguageModel 2 btec.klm2 --framework slice --within ancestral --batch 100 --samples 1000 --weights mira/lm2-p --prior const 1 --temperature0 0.1 --temperature 0.1
+
+    time head -n1 input | python -m easyhg.mt.decoder --glue-grammar glue --pass-through --count --forest --rt -v --viterbi --kbest 100 --wp WordPenalty -0.43429466666666666666 --ap Arity 1 output --lm LanguageModel 2 btec.klm2 --framework slice --within importance --batch 100 --samples 1000 --weights mira/lm2-p --prior const 1 --temperature0 0.1 --temperature 0.1

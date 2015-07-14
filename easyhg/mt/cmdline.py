@@ -149,25 +149,22 @@ def cmd_slice(group):
                        help='dumps history files with all samples in the order they were collected (no burn-in, no lag, no resampling)')
     group.add_argument('--temperature0',
                        type=float, default=1.0,
-                       help='flattens the distribution form where we obtain the initial derivation')
-    group.add_argument('--free-dist',
-                       type=str, default='exponential', metavar='DIST', choices=['beta', 'exponential', 'gamma'],
-                       help='the distribution of the free variables (those with no condition), one of {beta, exponential, gamma}.')
-    group.add_argument('--a',
-                       type=float, nargs=2, default=[0.1, 0.3], metavar='BEFORE AFTER',
-                       help="Beta's first shape parameter before and after we have something to condition on")
-    group.add_argument('--b',
-                       type=float, nargs=2, default=[1.0, 1.0], metavar='BEFORE AFTER',
-                       help="Beta's second shape parameter before and after we have something to condition on")
-    group.add_argument('--rate',
-                       type=float, nargs=2, default=[0.00001, 0.00001], metavar='BEFORE AFTER',
-                       help="rate parameter of the exponential distribution: smaller for thinner slices (scale=1.0/rate)")
-    group.add_argument('--shape',
-                       type=float, nargs=2, default=[1.0, 1.0], metavar='BEFORE AFTER',
-                       help="shape parameter of the gamma distribution")
-    group.add_argument('--scale',
-                       type=float, nargs=2, default=[1.0, 1.0], metavar='BEFORE AFTER',
-                       help="scale parameter of the gamma distribution")
+                       help='flattens the distribution from where we obtain the initial derivation')
+    group.add_argument('--prior', nargs=2,
+                       default=['asym', 'mean'],
+                       help="We have a slice variable for each node in the forest. "
+                            "Some of them are constrained (those are sampled uniformly), "
+                            "some of them are not (those are sampled from an exponential distribution). "
+                            "An exponential distribution has a scale parameter which is inversely proportional "
+                            "to the size of the slice. Think of the scale as a mean threshold. "
+                            "You can choose a constant or a prior distribution for the scale: "
+                            "'const', 'sym' (symmetric Gamma) and 'asym' (asymmetric Gamma). "
+                            "Each option takes one argument. "
+                            "The constant distribution takes a real number (>0). "
+                            "The symmetric Gamma takes a single scale parameter (>0). "
+                            "The asymmetric Gamma takes either the keyword 'mean' or "
+                            "a percentile expressed as a real value between 0-100. "
+                            "These are computed based on the distribution over incoming edges.")
 
 
 if __name__ == '__main__':
