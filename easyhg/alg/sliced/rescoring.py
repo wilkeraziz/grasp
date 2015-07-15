@@ -289,14 +289,15 @@ class SlicedRescoring(object):
             if n_i == 0:
                 raise ValueError('I found an empty slice!')
 
-            self._report.add_iteration(slice_terminals=l_slice.n_terminals(),
-                                       slice_nonterminals=l_slice.n_nonterminals(),
-                                       slice_edges=len(l_slice),
-                                       slice_derivations=n_i,
-                                       slicing_time=dt_s,
-                                       rescoring_time=dt_r,
-                                       constrained_included=muni,
-                                       unconstrained_included=mexp)
+            self._report.report(len(markov_chain),
+                                slice_terminals=l_slice.n_terminals(),
+                                slice_nonterminals=l_slice.n_nonterminals(),
+                                slice_edges=len(l_slice),
+                                slice_derivations=n_i,
+                                slicing_time=dt_s,
+                                rescoring_time=dt_r,
+                                constrained_included=muni,
+                                unconstrained_included=mexp)
 
         logging.info('Slice size: mean=%s std=%s', np.mean(slices_sizes[1:]), np.std(slices_sizes[1:]))
         return markov_chain

@@ -13,24 +13,26 @@ class EmptyReport(object):
     def init(self, **kwargs):
         pass
 
-    def add_iteration(self, **kwargs):
+    def report(self, i, **kwargs):
         pass
 
     def save(self):
         pass
 
 
-class DefaultReport(object):
+class IterationReport(object):
 
     def __init__(self, prefix):
         self._prefix = prefix
+        self._ids = []
         self._iterations = []
         self._init = {}
 
-    def init(self, **kwargs):
+    def init(self, **kwargs):  # TODO: save it
         self._init = kwargs
 
-    def add_iteration(self, **kwargs):
+    def report(self, i, **kwargs):
+        self._ids.append(i)
         self._iterations.append(kwargs)
 
     def save(self):
@@ -47,20 +49,12 @@ class DefaultReport(object):
             data.append(row)
         data = np.array(data)
         with smart_wopen('{0}.complete.gz'.format(self._prefix)) as fo:
-            print(tabulate(data, header), file=fo)
+            print(tabulate(np.column_stack([self._ids, data]), ['i'] + header), file=fo)
 
         with smart_wopen('{0}.summary.txt'.format(self._prefix)) as fo:
-
-            n = len(self._iterations)
-
-            total = data.sum(0)
-            mean = data.mean(0)
-            std = data.mean(0)
-            norm = total / n
-
             table = [list(itertools.chain(['what'], header))]
-            names = ['sum', 'mean', 'std', 'norm']
-            for n, d in zip(names, [total, mean, std, norm]):
+            names = ['sum', 'mean', 'std', 'min', 'max']
+            for n, d in zip(names, [data.sum(0), data.mean(0), data.std(0), data.min(0), data.max(0)]):
                 table.append(list(itertools.chain([n], d)))
             print(tabulate(table, headers="firstrow"), file=fo)
 

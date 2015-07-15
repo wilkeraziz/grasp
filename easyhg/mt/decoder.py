@@ -7,7 +7,7 @@ import numpy as np
 from itertools import chain
 from tabulate import tabulate
 
-from easyhg.report import EmptyReport, DefaultReport
+from easyhg.report import EmptyReport, IterationReport
 
 from easyhg.grammar.semiring import SumTimes, MaxTimes
 from easyhg.grammar.symbol import Nonterminal, make_span
@@ -94,8 +94,8 @@ def load_feature_extractors(args):  # TODO: generalise it and use a configuratio
     return extractors
 
 
-def exact_rescoring(seg, forest, root, model, semiring, args, outdir):
-
+@timeit
+def t_earley_rescoring(forest, root, model, semiring):
     if not model.stateful:
         if model.stateless:  # stateless scorers only
             forest = stateless_rescoring(forest, StatelessScorer(model), semiring, do_nothing={root})
@@ -107,6 +107,14 @@ def exact_rescoring(seg, forest, root, model, semiring, args, outdir):
                                    do_nothing={root})
         forest = rescorer.do(root=root)
         root = make_span(root, None, None)
+    return forest, root
+
+
+def exact_rescoring(seg, forest, root, model, semiring, args, outdir):
+
+    # rescore and compute rescoring time
+    dt, (forest, root) = t_earley_rescoring(forest, root, model, semiring)
+    time_report = {'rescoring': dt}
 
     if args.forest:
         with smart_wopen('{0}/forest/rescored.{1}.gz'.format(outdir, seg.id)) as fo:
@@ -159,17 +167,16 @@ def exact_rescoring(seg, forest, root, model, semiring, args, outdir):
         save_mc_yields('{0}/ancestral/yields/{1}.gz'.format(outdir, seg.id),
                        yields)
 
-    time_report = {}
     if args.viterbi:
         dt, _ = t_viterbi()
         time_report['viterbi'] = dt
 
     if args.kbest > 0:
-        t_kbest()
+        dt, _ = t_kbest()
         time_report['kbest'] = dt
 
     if args.samples > 0:
-        t_ancestral()
+        dt, _ = t_ancestral()
         time_report['ancestral'] = dt
 
     return time_report
@@ -179,7 +186,7 @@ def sliced_rescoring(seg, forest, root, model, semiring, args, outdir):
 
     # sometimes we want a very detailed report
     if args.report:
-        report = DefaultReport('{0}/slice/report/{1}'.format(outdir, seg.id))
+        report = IterationReport('{0}/slice/report/{1}'.format(outdir, seg.id))
     else:
         report = EmptyReport()
 
@@ -305,9 +312,20 @@ def decode(seg, extra_grammars, glue_grammars, model, args, outdir):
     logging.info('Local Viterbi translation: %s', ' '.join(local_t.leaves()))
 
     if args.framework == 'exact':
-        exact_rescoring(seg, e_forest, e_root, model, semiring, args, outdir)
+        return exact_rescoring(seg, e_forest, e_root, model, semiring, args, outdir)
     else:
-        sliced_rescoring(seg, e_forest, e_root, model, semiring, args, outdir)
+        return sliced_rescoring(seg, e_forest, e_root, model, semiring, args, outdir)
+
+
+def report_time(reports, outdir):
+    headers = None
+    table = []
+    for sid, total, report in reports:
+        row = [sid, total]
+        if headers is None:
+            headers = ['segment', 'total'] + sorted(report.keys())
+        for method, dt in sorted(report.items()):
+            row.append(dt)
 
 
 def core(args):
@@ -337,23 +355,19 @@ def core(args):
     model = LogLinearModel(read_weights(args.weights, args.temperature), scorers)  # TODO: uniform initialisation
     outdir = make_dirs(args)
 
-    time_report = []
+    time_report = IterationReport('{0}/time'.format(outdir))
 
     # Parse sentence by sentence
     for input_str in args.input:
         # get an input automaton
         seg = SegmentMetaData.parse(input_str, grammar_dir=args.grammars)
-        dt, _ = decode(seg, extra_grammars, glue_grammars, model, args, outdir)
-        logging.info('Decoding time %d: %s', seg.id, dt)
-        time_report.append((seg.id, dt))
+        dt, dt_detail = decode(seg, extra_grammars, glue_grammars, model, args, outdir)
 
-    with open('{0}/time.txt'.format(outdir), 'a') as ft:
-        print(tabulate(time_report, headers=('seg', 'time'), tablefmt='pipe'), file=ft)
-    with open('{0}/time-summary.txt'.format(outdir), 'a') as ft:
-        times = np.array([t for s, t in time_report])
-        print(tabulate([[len(times), times.min(), times.max(), times.mean(), times.std()]], headers=('segments', 'min', 'max', 'mean', 'std'), tablefmt='pipe'), file=ft)
+        time_report.report(seg.id, total=dt, **dt_detail)
+        logging.info('Decoding time %d: %s', seg.id, dt)
 
     logging.info('Check output files in: %s', outdir)
+    time_report.save()
 
 
 def main():

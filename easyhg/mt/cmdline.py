@@ -67,9 +67,6 @@ def cmd_grammar(group):
 
 
 def cmd_model(group):
-    group.add_argument('--temperature',
-                       type=float, default=1.0,
-                       help='peak (0 < t < 1.0) or flatten (t > 1.0) the distribution')
     group.add_argument('--weights',
                        type=str,
                        metavar='FILE',
@@ -126,6 +123,9 @@ def cmd_viterbi(group):
 
 
 def cmd_sampling(group):
+    group.add_argument('--temperature',
+                       type=float, default=1.0,
+                       help='peak (0 < t < 1.0) or flatten (t > 1.0) the distribution')
     group.add_argument('--samples',
             type=int, default=0, metavar='N',
             help='number of samples')
