@@ -3,9 +3,13 @@
 """
 
 import logging
+import sys
 import numpy as np
 from itertools import chain
 from tabulate import tabulate
+from multiprocessing import Pool
+from functools import partial
+import traceback
 
 from easyhg.report import EmptyReport, IterationReport
 
@@ -238,7 +242,7 @@ def sliced_rescoring(seg, forest, root, model, semiring, args, outdir):
 
 
 @timeit
-def decode(seg, extra_grammars, glue_grammars, model, args, outdir):
+def t_decode(seg, extra_grammars, glue_grammars, model, args, outdir):
     semiring = SumTimes
 
     logging.info('Loading grammar: %s', seg.grammar)
@@ -275,7 +279,6 @@ def decode(seg, extra_grammars, glue_grammars, model, args, outdir):
             print(f_forest, file=fo)
 
     logging.info('Target projection...')
-
 
     #TODO: clean up this (target projection)
     lookupscorer = TableLookupScorer(model)
@@ -317,61 +320,73 @@ def decode(seg, extra_grammars, glue_grammars, model, args, outdir):
         return sliced_rescoring(seg, e_forest, e_root, model, semiring, args, outdir)
 
 
-def report_time(reports, outdir):
-    headers = None
-    table = []
-    for sid, total, report in reports:
-        row = [sid, total]
-        if headers is None:
-            headers = ['segment', 'total'] + sorted(report.keys())
-        for method, dt in sorted(report.items()):
-            row.append(dt)
+def traced_load_and_decode(seg, args, outdir):
+    try:
+
+        # Load feature extractors
+        extractors = load_feature_extractors(args)
+
+        # Load the model
+        model = LogLinearModel(read_weights(args.weights, args.temperature), extractors)
+
+        # Load additional grammars
+        extra_grammars = []
+        if args.extra_grammar:
+            for grammar_path in args.extra_grammar:
+                logging.info('Loading additional grammar: %s', grammar_path)
+                grammar = load_grammar(grammar_path)
+                logging.info('Additional grammar: productions=%d', len(grammar))
+                extra_grammars.append(grammar)
+
+        # Load glue grammars
+        glue_grammars = []
+        if args.glue_grammar:
+            for glue_path in args.glue_grammar:
+                logging.info('Loading glue grammar: %s', glue_path)
+                glue = load_grammar(glue_path)
+                logging.info('Glue grammar: productions=%d', len(glue))
+                glue_grammars.append(glue)
+
+        print('[%d] decoding...' % seg.id, file=sys.stdout)
+        dt, others = t_decode(seg, extra_grammars, glue_grammars, model, args, outdir)
+        print('[%d] decoding time: %s' % (seg.id, dt), file=sys.stdout)
+        return dt, others
+    except:
+        raise Exception(''.join(traceback.format_exception(*sys.exc_info())))
 
 
 def core(args):
 
-    # Load additional grammars
-    extra_grammars = []
-    if args.extra_grammar:
-        for grammar_path in args.extra_grammar:
-            logging.info('Loading additional grammar: %s', grammar_path)
-            grammar = load_grammar(grammar_path)
-            logging.info('Additional grammar: productions=%d', len(grammar))
-            extra_grammars.append(grammar)
-
-    # Load glue grammars
-    glue_grammars = []
-    if args.glue_grammar:
-        for glue_path in args.glue_grammar:
-            logging.info('Loading glue grammar: %s', glue_path)
-            glue = load_grammar(glue_path)
-            logging.info('Glue grammar: productions=%d', len(glue))
-            glue_grammars.append(glue)
-
-    # Load scores
-    scorers = load_feature_extractors(args)
-
-    # Load the model
-    model = LogLinearModel(read_weights(args.weights, args.temperature), scorers)  # TODO: uniform initialisation
     outdir = make_dirs(args)
 
+    # Load the segments
+    segments = [SegmentMetaData.parse(input_str, grammar_dir=args.grammars) for input_str in args.input]
+
+    args.input = None  # necessary because we cannot pickle the input stream (TODO: get rid of this ugly thing!)
+
+    pool = Pool(args.cpus)
+    results = pool.map(partial(traced_load_and_decode,
+                               args=args,
+                               outdir=outdir), segments)
+
+    # time report
     time_report = IterationReport('{0}/time'.format(outdir))
-
-    # Parse sentence by sentence
-    for input_str in args.input:
-        # get an input automaton
-        seg = SegmentMetaData.parse(input_str, grammar_dir=args.grammars)
-        dt, dt_detail = decode(seg, extra_grammars, glue_grammars, model, args, outdir)
-
+    for seg, (dt, dt_detail) in zip(segments, results):
         time_report.report(seg.id, total=dt, **dt_detail)
-        logging.info('Decoding time %d: %s', seg.id, dt)
-
-    logging.info('Check output files in: %s', outdir)
     time_report.save()
+
+    print('Check output files in:', outdir, file=sys.stdout)
 
 
 def main():
-    args, config = configure(argparser(), set_defaults=['Grammar', 'Parser'])  # TODO: use config file
+    #args, config = configure(argparser(), set_defaults=['Grammar', 'Parser'])  # TODO: use config file
+    args = argparser().parse_args()
+
+    if args.verbose == 1:
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s', datefmt='%H:%M:%S')
+    elif args.verbose > 1:
+        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s', datefmt='%H:%M:%S')
+
 
     if args.profile:
         import cProfile

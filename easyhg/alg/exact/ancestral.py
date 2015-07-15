@@ -2,7 +2,7 @@
 :Authors: - Wilker Aziz
 """
 
-from .inference import robust_inside, edge_inside, sample
+from .inference import robust_inside, edge_inside, sample, total_weight
 from easyhg.grammar.semiring import SumTimes, Count
 
 
@@ -57,3 +57,6 @@ class AncestralSampler(object):
                            Ie=self._inside_edges,
                            omega=self._omega,
                            N=n)
+
+    def prob(self, d):
+        return self._semiring.as_real(total_weight(d, self._semiring, self.Z, self._omega))

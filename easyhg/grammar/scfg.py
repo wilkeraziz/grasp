@@ -10,13 +10,16 @@ from .symbol import Terminal, Nonterminal
 from functools import reduce
 
 
+def _new_defdict_set():
+    return defaultdict(set)
+
 class _SCFG(object):
 
     def __init__(self, syncrules=[]):
         """
         """
         self._syncrules_by_lhs = defaultdict(set)
-        self._srules = defaultdict(lambda : defaultdict(set))
+        self._srules = defaultdict(_new_defdict_set)
         self._nonterminals = set()
         self._sigma = set()  # source terminals
         self._delta = set()  # target terminals

@@ -255,7 +255,7 @@ class SlicedRescoring(object):
                 return self._importance(forest, wtable, batch_size)
 
         d0 = self.sample_d0()
-        logging.info('Initial sample: prob=%s tree=%s', semiring.as_real(total_weight(d0, semiring) - self._sampler0.Z),
+        logging.info('Initial sample: prob=%s tree=%s', self._sampler0.prob(d0),
                      inlinetree(make_nltk_tree(d0)))
         # get slice variables
         slicevars = self._make_slice_varialbes(self._make_conditions(d0, semiring), args.prior[0], args.prior[1])
@@ -266,7 +266,12 @@ class SlicedRescoring(object):
         muni, mexp = 1.0, 1.0
         report_size = lambda: ' |D|={:5d} uni={:5f} exp={:5f}'.format(slices_sizes[-1], muni, mexp)
 
-        for _ in progressbar(range(args.burn + (args.samples * args.lag)), prefix='Sampling', dynsuffix=report_size):
+        if args.progress:
+            bar = progressbar(range(args.burn + (args.samples * args.lag)), prefix='Sampling', dynsuffix=report_size)
+        else:
+            bar = range(args.burn + (args.samples * args.lag))
+
+        for _ in bar:
 
             # get a truncated forest weighted by l(d)
             # and a weight table corresponding to g(d)

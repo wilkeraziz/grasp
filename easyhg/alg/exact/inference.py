@@ -261,7 +261,7 @@ def optimise(forest, root, semiring, Iv, Ie=None, omega=lambda e: e.weight, maxi
     return tuple(derivation) #, Iv[root]
 
 
-def total_weight(derivation, semiring=SumTimes, Z=None):
+def total_weight(derivation, semiring=SumTimes, Z=None, omega=lambda e: e.weight):
     """
     Compute the total weight of a derivation (as a sequence of edges) under a semiring
     @params derivation: sequence of edges
@@ -269,6 +269,6 @@ def total_weight(derivation, semiring=SumTimes, Z=None):
     @params Z: inside of the root node, if provided, the total weight will be normalised 
     """
     if Z is None:
-        return reduce(semiring.times, (e.weight for e in derivation), semiring.one)
+        return reduce(semiring.times, (omega(e) for e in derivation), semiring.one)
     else:
-        return semiring.divide(reduce(semiring.times, (e.weight for e in derivation), semiring.one), Z)
+        return semiring.divide(reduce(semiring.times, (omega(e) for e in derivation), semiring.one), Z)

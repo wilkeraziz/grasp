@@ -28,9 +28,12 @@ def argparser():
                         type=str,
                         help="where to find grammars (grammar files are expected to be named grammar.$i.sgm, "
                              "with $i 0-based)")
-    parser.add_argument("--config", '-c',
-                        type=str,
-                        help="path to config file")
+    #parser.add_argument("--config", '-c',
+    #                    type=str,
+    #                    help="path to config file")
+    parser.add_argument('--cpus',
+                        type=int, default=1,
+                        help='number of cpus avaiable')
 
 
     cmd_grammar(parser.add_argument_group('Grammar'))
@@ -102,15 +105,18 @@ def cmd_info(group):
     group.add_argument('--forest',
                        action='store_true',
                        help='dump unpruned forest as a grammar')
-    group.add_argument('--verbose', '-v',
-            action='store_true',
-            help='increase the verbosity level')
     group.add_argument('--profile',
             type=str, metavar='PSTATS',
             help='use cProfile and save a pstats report')
     group.add_argument('--report',
                       action='store_true',
                       help='Human readable report of performance (much simpler than proper profiling).')
+    group.add_argument('--verbose', '-v',
+            action='count', default=0,
+            help='increase the verbosity level')
+    group.add_argument('--progress',
+            action='store_true',
+            help='display a progress bar (within slice sampling only)')
 
 
 def cmd_viterbi(group):
