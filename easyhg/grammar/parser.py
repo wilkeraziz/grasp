@@ -21,11 +21,9 @@ from .semiring import SumTimes
 from .reader import load_grammar
 from .cfg import CFG, TopSortTable, Nonterminal
 from .rule import get_oov_cfg_productions
-from .utils import make_unique_directory
-from .report import save_kbest, save_viterbi, save_mc, save_mcmc, save_sample_history
+from easyhg.recipes import make_unique_directory
+from .report import save_kbest, save_viterbi, save_mc, save_mcmc, save_markov_chain
 from .exact import exact
-
-
 
 
 def report_info(cfg, args):
@@ -90,7 +88,7 @@ def do(uid, input, grammars, glue_grammars, options, outdir):
             dist = Exponential
             prior = get_prior(options.prior_scale[0], options.prior_scale[1])
 
-        history = slice_sampling(input.fsa,
+        markov_chain = slice_sampling(input.fsa,
                                  grammars,
                                  glue_grammars,
                                  root=Nonterminal(options.start),
@@ -104,10 +102,10 @@ def do(uid, input, grammars, glue_grammars, options, outdir):
                                  free_dist=dist,
                                  free_dist_prior=prior)
 
-        results = make_result(history, lag=options.lag, burn=options.burn, resample=options.resample)
-        save_mcmc('{0}/slice/{1}.gz'.format(outdir, uid), results)
-        if options.history:
-            save_sample_history('{0}/history/{1}.gz'.format(outdir, uid), history)
+        results = make_result(markov_chain, lag=options.lag, burn=options.burn, resample=options.resample)
+        save_mcmc('{0}/slice/derivations/{1}.gz'.format(outdir, uid), results)
+        if options.save_chain:
+            save_markov_chain('{0}/slice/chain/{1}.gz'.format(outdir, uid), markov_chain)
     else:
         raise NotImplementedError('I do not yet know how to perform inference in this framework: %s' % options.framework)
 
@@ -142,14 +140,16 @@ def make_dirs(args):
             os.makedirs('{0}/ancestral'.format(outdir))
         elif args.framework == 'slice':
             os.makedirs('{0}/slice'.format(outdir))
+            os.makedirs('{0}/slice/derivations'.format(outdir))
+            if args.save_chain:
+                os.makedirs('{0}/slice/chain'.format(outdir))
         elif args.framework == 'gibbs':
             os.makedirs('{0}/gibbs'.format(outdir))
     if args.forest:
         os.makedirs('{0}/forest'.format(outdir))
     if args.count:
         os.makedirs('{0}/count'.format(outdir))
-    if args.history:
-        os.makedirs('{0}/history'.format(outdir))
+
 
     # write the command line arguments to an ini file
     args_ini = '{0}/args.ini'.format(outdir)

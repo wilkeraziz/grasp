@@ -4,7 +4,7 @@
 
 import numpy as np
 from collections import defaultdict
-from easyhg.grammar.utils import smart_ropen
+from easyhg.recipes import smart_ropen
 from .extractor import Stateful, Stateless, TableLookup
 
 

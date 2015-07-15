@@ -302,9 +302,13 @@ class TopSortTable(object):
         return '\n'.join(lines)
 
 
+class LazyTopSortTable(object):
 
+    def __init__(self, forest):
+        self._forest = forest
+        self._tsort = None
 
-
-
-
-
+    def do(self):
+        if self._tsort is None:
+            self._tsort = TopSortTable(self._forest)
+        return self._tsort

@@ -113,3 +113,13 @@ class StatefulScorer(object):
         for i, scorer in enumerate(self._scorers):
             fvecs[i] = scorer.featurize_derivation(derivation)
         return self._model.stateful_score(fvecs)
+
+
+def apply_scorers(d, stateless, stateful, semiring, do_nothing):
+    w = semiring.one
+    # stateless scorer goes edge by edge
+    # TODO: stateless.total_score(derivation)
+    for edge in filter(lambda e: e.lhs not in do_nothing, d):
+        w = semiring.times(w, stateless.score(edge))
+    w = semiring.times(w, stateful.score_derivation(d))
+    return w

@@ -6,13 +6,13 @@ import logging
 from collections import Counter
 from easyhg.alg.exact import Earley, Nederhof, KBest
 from easyhg.alg.exact.inference import robust_inside, sample, optimise, total_weight
+from easyhg.recipes import smart_wopen
 
 from .symbol import Nonterminal, make_span
 from .semiring import SumTimes, MaxTimes, Count
 from . import projection
 from .cfg import TopSortTable
 from .result import Result
-from .utils import smart_wopen
 
 
 class ParserState(object):

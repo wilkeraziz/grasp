@@ -142,9 +142,9 @@ def cmd_slice(group):
     group.add_argument('--heuristic',
                        type=str, choices=['coarse', 'itg'],
                        help='initialisation strategy')
-    group.add_argument('--history',
+    group.add_argument('--save-chain',
                        action='store_true',
-                       help='dumps history files with all samples in the order they were collected (no burn-in, no lag, no resampling)')
+                       help='Save the complete Markov chain')
     group.add_argument('--free-dist',
                        type=str, default='beta', metavar='DIST', choices=['beta', 'exponential'],
                        help="We have a slice variable for each node in the forest. "

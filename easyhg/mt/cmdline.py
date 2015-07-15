@@ -111,6 +111,9 @@ def cmd_info(group):
     group.add_argument('--profile',
             type=str, metavar='PSTATS',
             help='use cProfile and save a pstats report')
+    group.add_argument('--report',
+                      action='store_true',
+                      help='Human readable report of performance (much simpler than proper profiling).')
 
 
 def cmd_viterbi(group):
@@ -144,9 +147,9 @@ def cmd_slice(group):
     group.add_argument('--within',
                        type=str, default='ancestral', choices=['ancestral', 'importance'],
                        help='how to sample within the slice')
-    group.add_argument('--history',
+    group.add_argument('--save-chain',
                        action='store_true',
-                       help='dumps history files with all samples in the order they were collected (no burn-in, no lag, no resampling)')
+                       help='Save the actual Markov chain on disk.')
     group.add_argument('--temperature0',
                        type=float, default=1.0,
                        help='flattens the distribution from where we obtain the initial derivation')

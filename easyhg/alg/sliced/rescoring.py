@@ -1,4 +1,7 @@
 """
+A new rescoring technique based on sampling.
+A complete publication describing the method and a comparative study is to be submitted in early September 2015 to TACL.
+
 :Authors: - Wilker Aziz
 """
 
@@ -7,10 +10,12 @@ import numpy as np
 from collections import defaultdict, Counter
 from itertools import chain
 
+from easyhg.recipes import timeit
+from easyhg.report import EmptyReport
+
 from easyhg.grammar.semiring import SumTimes
 from easyhg.grammar.cfg import CFG, CFGProduction, Terminal, Nonterminal, TopSortTable
 from easyhg.grammar.utils import make_nltk_tree, inlinetree
-from easyhg.grammar.symbol import make_span, Span
 
 from easyhg.alg.exact.inference import total_weight
 from easyhg.alg.exact import AncestralSampler, EarleyRescoring
@@ -19,41 +24,30 @@ from .slicevars import ExpSliceVariables, ConstantPrior, SymmetricGamma, Asymmet
 from easyhg.recipes import progressbar
 
 
-def make_span_cell(lhs):
-    return lhs
-
-
 def make_span_conditions(d, semiring):
     return {r.lhs: semiring.as_real(r.weight) for r in d}
 
 
-def make_coarser(derivation):
-
-    def generate_output():
-        for r in derivation:
-            yield CFGProduction(r.lhs.base if isinstance(r.lhs, Span) else r.lhs,
-                                (s.base if isinstance(s, Span) else s for s in r.rhs),
-                                r.weight)
-    return tuple(generate_output())
-
-
 def gamma_priors(forest, semiring, percentile=None):
+    """
+    Return a table mapping a cell to a Gamma scale parameter.
+    """
     priors = defaultdict(None)
     if percentile is None:
         for lhs, rules in forest.iteritems():
             thetas = np.array([semiring.as_real(r.weight) for r in rules])
             priors[lhs] = thetas.mean()
-            print('{0} min={1} max={2} mean={3} prior={4}'.format(lhs, np.min(thetas), np.max(thetas), np.mean(thetas), priors[lhs]))
+            # logging.debug('{0} min={1} max={2} mean={3} prior={4}'.format(lhs, np.min(thetas), np.max(thetas), np.mean(thetas), priors[lhs]))
     else:
         for lhs, rules in forest.iteritems():
             thetas = np.array([semiring.as_real(r.weight) for r in rules])
             priors[lhs] = np.percentile(thetas, percentile)
-            print('{0} min={1} max={2} mean={3} prior={4}'.format(lhs, np.min(thetas), np.max(thetas), np.mean(thetas), priors[lhs]))
+            # logging.debug('{0} min={1} max={2} mean={3} prior={4}'.format(lhs, np.min(thetas), np.max(thetas), np.mean(thetas), priors[lhs]))
     #logging.info('cell=%s incoming=%d sum=%s mean=%s median=%s prior=%s', lhs, len(rules), thetas.sum(), thetas.mean(), np.percentile(thetas, 50), priors[lhs])
     return priors
 
 
-def prune_and_reweight(forest, tsort, slicevars, semiring, make_cell, dead_terminal=Terminal('<null>')):
+def prune_and_reweight(forest, tsort, slicevars, semiring, dead_terminal=Terminal('<null>')):
     """
     Prune a forest and compute a new weight function for edges.
 
@@ -76,7 +70,7 @@ def prune_and_reweight(forest, tsort, slicevars, semiring, make_cell, dead_termi
             total_cells += 1
             if lhs not in discovered:  # symbols not yet discovered have been pruned
                 continue
-            cell = make_cell(lhs)
+            cell = lhs
             n = 0
             incoming = forest.get(lhs)
             # we sort the incoming edges in order to find out which ones are not in the slice
@@ -104,6 +98,23 @@ def prune_and_reweight(forest, tsort, slicevars, semiring, make_cell, dead_termi
     return oforest, weight_table, np.mean(n_uniform), np.mean(n_exponential)
 
 
+@timeit
+def t_prune_and_reweight(forest, tsort, slicevars, semiring, dead_terminal=Terminal('<null>')):
+    return prune_and_reweight(forest, tsort, slicevars, semiring, dead_terminal)
+
+
+def get_ancestral_sampler(forest, tsort, generations, temperature):
+    if temperature == 1.0:
+        return AncestralSampler(forest, tsort, generations=generations)
+    else:
+        return AncestralSampler(forest, tsort, generations=generations, omega=lambda e: e.weight/temperature)
+
+
+@timeit
+def t_get_ancestral_sampler(forest, tsort, generations, temperature):
+    return get_ancestral_sampler(forest, tsort, generations, temperature)
+
+
 class SlicedRescoring(object):
 
     def __init__(self, forest,
@@ -113,7 +124,8 @@ class SlicedRescoring(object):
                  semiring=SumTimes,
                  generations=10,
                  do_nothing=set(),
-                 temperature0=1.0):
+                 temperature0=1.0,
+                 report=EmptyReport()):
         self._forest = forest
         self._tsort = tsort
         self._stateless = stateless
@@ -121,17 +133,19 @@ class SlicedRescoring(object):
         self._do_nothing = do_nothing
         self._semiring = semiring
         self._generations = generations
-        if temperature0 == 1.0:
-            self._sampler0 = AncestralSampler(self._forest, self._tsort, generations=self._generations)
-        else:
-            self._sampler0 = AncestralSampler(self._forest, self._tsort, generations=self._generations,
-                                              omega=lambda e: e.weight/temperature0)
+        self._report = report
+
+        dt, self._sampler0 = t_get_ancestral_sampler(self._forest, self._tsort, self._generations, temperature0)
+
         logging.info('l-forest: derivations=%d', self._sampler0.n_derivations())
 
         self._make_conditions = make_span_conditions
-        self._make_cell = make_span_cell
 
-        #self._priors = gamma_priors(self._forest, self._semiring)
+        self._report.init(terminals=self._forest.n_terminals(),
+                          nonterminals=self._forest.n_nonterminals(),
+                          edges=len(self._forest),
+                          derivations=self._sampler0.n_derivations(),
+                          ancestral_time=dt)
 
     def sample_d0(self):
         """Draw an initial derivation from the locally weighted forest."""
@@ -214,26 +228,39 @@ class SlicedRescoring(object):
                                    TopSortTable(f_slice),
                                    generations=self._generations)
 
-        d_i = next(sampler.sample(1))  # a derivation from f(d|u)
+        # sample a derivation from f(d|u)
+        d_f = next(sampler.sample(1))
+
+        # get rid of state annotation yielding a derivation as from l_slice
+        # this is necessary because the state annotation is not consistent across iterations
+        # remember that states get mapped onto integers on demand
+        d_i = tuple(f2l_edges[e] for e in d_f[1:])
 
         # make new conditions and reset slice variables
-        # 1) the cells must be unwrapped (remember that EarleyRescoring wrap them into spans
-        # 2) the weights must come from l, thus we use the edge map
-        c_i = {self._make_cell(e.lhs.base): semiring.as_real(f2l_edges[e].weight) for e in d_i[1:]}
+        # edges and weights must come from l
+        c_i = {e.lhs: semiring.as_real(e.weight) for e in d_i}
 
-        return tuple(f2l_edges[e] for e in d_i[1:]), c_i, sampler.n_derivations()
+        return d_i, c_i, sampler.n_derivations()
 
     def sample(self, args):
 
         semiring = self._semiring
-        sampler = self._ancestral if args.within == 'ancestral' else self._importance
+        # sampler = self._ancestral if args.within == 'ancestral' else self._importance
+
+        @timeit
+        def t_sampler(forest, wtable, batch_size):
+            if args.within == 'ancestral':
+                return self._ancestral(forest, wtable, batch_size)
+            else:
+                return self._importance(forest, wtable, batch_size)
+
         d0 = self.sample_d0()
         logging.info('Initial sample: prob=%s tree=%s', semiring.as_real(total_weight(d0, semiring) - self._sampler0.Z),
                      inlinetree(make_nltk_tree(d0)))
         # get slice variables
         slicevars = self._make_slice_varialbes(self._make_conditions(d0, semiring), args.prior[0], args.prior[1])
 
-        history = []
+        markov_chain = []
         slices_sizes = [self._sampler0.n_derivations()]
         # mean ratio of sliced edges constrained by u either uniformly or exponentially distributed
         muni, mexp = 1.0, 1.0
@@ -243,20 +270,33 @@ class SlicedRescoring(object):
 
             # get a truncated forest weighted by l(d)
             # and a weight table corresponding to g(d)
-            l_slice, g, muni, mexp = prune_and_reweight(self._forest, self._tsort, slicevars, semiring, self._make_cell)
+            dt_s, (l_slice, g, muni, mexp) = t_prune_and_reweight(self._forest,
+                                                                self._tsort,
+                                                                slicevars,
+                                                                semiring)
 
-            d_i, c_i, n_i = sampler(l_slice, g, args.batch)
+            dt_r, (d_i, c_i, n_i) = t_sampler(l_slice, g, args.batch)
 
             # update the history
-            history.append(d_i)
+            markov_chain.append(d_i)
             # reset slice variables
             slicevars.reset(c_i)
 
             # reports
             slices_sizes.append(n_i)
             #logging.info('Sample: tree=%s', inlinetree(make_nltk_tree(d_i)))
+
             if n_i == 0:
                 raise ValueError('I found an empty slice!')
 
+            self._report.add_iteration(slice_terminals=l_slice.n_terminals(),
+                                       slice_nonterminals=l_slice.n_nonterminals(),
+                                       slice_edges=len(l_slice),
+                                       slice_derivations=n_i,
+                                       slicing_time=dt_s,
+                                       rescoring_time=dt_r,
+                                       constrained_included=muni,
+                                       unconstrained_included=mexp)
+
         logging.info('Slice size: mean=%s std=%s', np.mean(slices_sizes[1:]), np.std(slices_sizes[1:]))
-        return history
+        return markov_chain

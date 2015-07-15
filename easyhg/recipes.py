@@ -2,9 +2,51 @@
 :Authors: - Wilker Aziz
 """
 
-from functools import wraps
 import time
 import sys
+import tempfile
+import datetime
+import gzip
+import warnings
+from io import TextIOWrapper
+from functools import wraps
+
+
+def smart_ropen(path):
+    """Opens files directly or through gzip depending on extension."""
+    if path.endswith('.gz'):
+        return TextIOWrapper(gzip.open(path, 'rb'))
+    else:
+        return open(path, 'r')
+
+
+def smart_wopen(path):
+    """Opens files directly or through gzip depending on extension."""
+    if path.endswith('.gz'):
+        return TextIOWrapper(gzip.open(path, 'wb'))
+    else:
+        return open(path, 'w')
+
+
+def deprecated(func):
+    """This is a decorator which can be used to mark functions
+    as deprecated. It will result in a warning being emitted
+    when the function is used.
+
+    Recipe from:
+        https://wiki.python.org/moin/PythonDecoratorLibrary#Generating_Deprecation_Warnings
+    """
+
+    @wraps(func)
+    def new_func(*args, **kwargs):
+        warnings.warn_explicit(
+            "Call to deprecated function {}.".format(func.__name__),
+            category=DeprecationWarning,
+            filename=func.__code__.co_filename,
+            lineno=func.__code__.co_firstlineno + 1
+        )
+        return func(*args, **kwargs)
+    return new_func
 
 
 def timeit(func):
@@ -44,3 +86,8 @@ def progressbar(it, count=None, prefix='', dynsuffix=lambda: '', size=60, file=s
         _show(i+1)
     file.write('\n')
     file.flush()
+
+
+def make_unique_directory(dir=None):
+    return tempfile.mkdtemp(prefix=datetime.datetime.now().strftime("%y%m%d_%H%M%S_"), dir=dir)
+

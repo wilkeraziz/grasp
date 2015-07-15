@@ -6,7 +6,7 @@ from collections import defaultdict
 from easyhg.grammar.symbol import Terminal, Nonterminal
 from easyhg.grammar.rule import SCFGProduction
 from easyhg.grammar.scfg import SCFG
-from easyhg.grammar.utils import smart_ropen
+from easyhg.recipes import smart_ropen
 
 
 def is_nonterminal(sym):

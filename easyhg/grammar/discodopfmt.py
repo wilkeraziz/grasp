@@ -10,7 +10,7 @@ from itertools import chain
 from .symbol import Terminal, Nonterminal
 from .rule import CFGProduction
 from .cfg import CFG
-from .utils import smart_ropen
+from easyhg.recipes import smart_ropen
 
 
 def iterrules(path, transform):

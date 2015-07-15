@@ -1,10 +1,11 @@
 """
 :Authors: - Wilker Aziz
 """
-from .utils import smart_wopen, make_nltk_tree, inlinetree
+
+from .utils import make_nltk_tree, inlinetree
 from .semiring import SumTimes
-from .projection import get_leaves
 from easyhg.alg.exact.inference import total_weight
+from easyhg.recipes import smart_wopen
 
 
 def save_mc(path, result):
@@ -24,6 +25,7 @@ def save_mc(path, result):
                   file=out)
 
 
+
 def save_mcmc(path, result):
     with smart_wopen(path) as out:
         Z = result.estimate(SumTimes.plus)
@@ -41,6 +43,7 @@ def save_mcmc(path, result):
                   file=out)
 
 
+
 def save_kbest(path, result):
     with smart_wopen(path) as out:
         Z = result.estimate(SumTimes.plus)
@@ -55,6 +58,7 @@ def save_kbest(path, result):
                   file=out)
 
 
+
 def save_viterbi(path, result):
     with smart_wopen(path) as out:
         d, n, score = result[0]
@@ -62,18 +66,11 @@ def save_viterbi(path, result):
         print('# score={0}\n{1}'.format(score, inlinetree(t)), file=out)
 
 
-def save_sample_history(path, samples_by_iteration):
+def save_markov_chain(path, markov_chain):
     with smart_wopen(path) as out:
-        for i, samples in enumerate(samples_by_iteration, 1):
+        for i, samples in enumerate(markov_chain, 1):
             print('# i={0} n={1}'.format(i, len(samples)), file=out)
             for d in samples:
                 score = total_weight(d, SumTimes)
                 t = make_nltk_tree(d)
                 print('{0}\t{1}'.format(score, inlinetree(t)), file=out)
-
-def save_flat_history(path, history):
-    with smart_wopen(path) as out:
-        for i, d in enumerate(history, 1):
-            score = total_weight(d, SumTimes)
-            t = make_nltk_tree(d)
-            print('{0}\t{1}'.format(score, inlinetree(t)), file=out)

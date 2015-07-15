@@ -4,12 +4,11 @@
 
 import ply.lex as lex
 import ply.yacc as yacc
-import sys
 
 from .symbol import Terminal, Nonterminal
 from .rule import CFGProduction
 from .cfg import CFG
-from .utils import smart_ropen
+from easyhg.recipes import smart_ropen
 
 
 _EXAMPLE_GRAMMAR_ = """

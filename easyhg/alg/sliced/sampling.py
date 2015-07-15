@@ -13,15 +13,15 @@ from types import SimpleNamespace
 
 from easyhg.grammar.symbol import Nonterminal
 from easyhg.grammar.semiring import SumTimes, Count
-from easyhg.grammar.cfg import TopSortTable, CFG, CFGProduction
+from easyhg.grammar.cfg import TopSortTable
 from easyhg.grammar.result import Result
 
 from easyhg.alg.exact.inference import robust_inside, sample, total_weight
 from easyhg.alg.exact import Nederhof
-from easyhg.alg.sliced.slicevars import Beta, VectorOfPriors, ConstantPrior, XSliceVariables
+from easyhg.alg.sliced.slicevars import Beta, VectorOfPriors, ConstantPrior, SliceVariables
 
 from .heuristic import attempt_initialisation
-from .utils import choose_parameters, make_batch_conditions, DEFAULT_FREE_DIST_PARAMETERS, DEFAULT_FREE_DISTRIBUTION
+from .utils import make_batch_conditions
 
 
 def slice_sampling(fsa, grammars, glue_grammars,
@@ -37,7 +37,7 @@ def slice_sampling(fsa, grammars, glue_grammars,
                    free_dist_prior=VectorOfPriors(ConstantPrior(0.1), ConstantPrior(1.0)),
                    semiring=SumTimes):
     # configure slice variables
-    u = XSliceVariables({}, free_dist, free_dist_prior)
+    u = SliceVariables({}, free_dist, free_dist_prior)
     logging.debug('%s prior=%r', free_dist.__name__, free_dist_prior)
 
     # attempt a heuristic initialisation
@@ -155,3 +155,33 @@ def make_result_simple(samples, burn=0, lag=1, resample=0):
         result.append(d, n, score)
 
     return result
+
+
+def apply_filters(markov_chain, burn=0, lag=1, resample=0):
+    if burn > 0:
+        markov_chain = markov_chain[burn:]
+    if lag > 1:
+        markov_chain = markov_chain[lag-1::lag]
+    if resample:
+        markov_chain = [markov_chain[i] for i in np.random.randint(0, len(markov_chain), resample)]
+    return markov_chain
+
+
+def group_by_projection(samples, get_projection=None):
+    if get_projection is None:
+        counts = Counter(samples)
+        output = []
+        for d, n in counts.most_common():
+            output.append(SimpleNamespace(projection=d, count=n, derivations=1))
+        return output
+    else:
+        p2d = defaultdict(set)
+        counts = Counter()
+        for d in samples:
+            y = get_projection(d)
+            counts[y] += 1
+            p2d[y].add(d)
+        output = []
+        for y, n in counts.most_common():
+            output.append(SimpleNamespace(projection=y, count=n, derivations=len(p2d[y])))
+        return output
