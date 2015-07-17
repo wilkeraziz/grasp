@@ -211,20 +211,29 @@ def sliced_rescoring(seg, forest, root, model, semiring, args, outdir):
         # construct a Markov chain
         return rescorer.sample(args)
 
-    dt, markov_chain = t_sample()
-    # save a customised report
-    report.save()
+    # model score
+    omega_d = lambda der: semiring.times(total_weight(der, semiring),  # the local part
+                                         apply_scorers(der, stateless, stateful, semiring, {root}))  # the global part
+    samples = []
+    total_dt = 0
+    for run in range(1, args.chains + 1):  # TODO: run chains in parallel?
+        logging.info('Chain %d/%d', run, args.chains)
+        dt, markov_chain = t_sample()
+        total_dt += dt
 
-    # get the final samples from the chain (after burn-in, lag, resampling, etc.)
-    samples = apply_filters(markov_chain, burn=args.burn, lag=args.lag, resample=args.resample)
+        # get the final samples from the chain (after burn-in, lag, resampling, etc.)
+        samples.extend(apply_filters(markov_chain, burn=args.burn, lag=args.lag, resample=args.resample))
+
+        if args.save_chain:
+            logging.info('Saving Markov chain (might take some time)...')
+            save_markov_chain('{0}/slice/chain/{1}-{2}.gz'.format(outdir, seg.id, run),
+                              markov_chain,
+                              omega_d)
 
     # group by derivation
     derivations = group_by_projection(samples)
     # group by string
     yields = group_by_projection(samples, get_leaves)
-    # model score
-    omega_d = lambda der: semiring.times(total_weight(der, semiring),  # the local part
-                                         apply_scorers(der, stateless, stateful, semiring, {root}))  # the global part
 
     # save everything
     save_mcmc_derivation('{0}/slice/derivations/{1}.gz'.format(outdir, seg.id),
@@ -232,13 +241,12 @@ def sliced_rescoring(seg, forest, root, model, semiring, args, outdir):
                          omega_d)
     save_mcmc_yields('{0}/slice/yields/{1}.gz'.format(outdir, seg.id),
                      yields)
-    if args.save_chain:
-        logging.info('Saving Markov chain (might take some time)...')
-        save_markov_chain('{0}/slice/chain/{1}.gz'.format(outdir, seg.id),
-                          markov_chain,
-                          omega_d)
 
-    return {'slice': dt}
+
+    # save a customised report
+    report.save()
+
+    return {'slice': total_dt}
 
 
 @timeit

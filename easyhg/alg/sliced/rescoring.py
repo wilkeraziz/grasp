@@ -199,7 +199,8 @@ class SlicedRescoring(object):
         numerators = np.zeros(len(counts))
         for i, (d, n) in enumerate(counts.items()):
             support[i] = d
-            numerators[i] = semiring.times(self._rescore_derivation(d), semiring.from_real(n))
+            w = self._rescore_derivation(d)
+            numerators[i] = semiring.times(w, semiring.from_real(n))
         log_prob = numerators - np.logaddexp.reduce(numerators)
         prob = np.exp(log_prob)
 

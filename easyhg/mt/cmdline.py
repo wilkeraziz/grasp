@@ -150,6 +150,9 @@ def cmd_slice(group):
     group.add_argument('--batch',
             type=int, default=1, metavar='K',
             help='number of samples per slice')
+    group.add_argument('--chains',
+            type=int, default=1, metavar='K',
+            help='number of random restarts')
     group.add_argument('--within',
                        type=str, default='ancestral', choices=['ancestral', 'importance'],
                        help='how to sample within the slice')
