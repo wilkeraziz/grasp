@@ -172,12 +172,11 @@ class Count(object):
     times = operator.mul  # np.multiply
     divide = None
     as_real = float
-    from_real = int
+    from_real = float
     gt = np.greater
     heapify = operator.neg
 
     convert = lambda x, semiring: Count.one if semiring.gt(x, semiring.zero) else Count.zero
-
 
 
 class Boolean(object):

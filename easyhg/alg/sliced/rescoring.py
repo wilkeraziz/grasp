@@ -184,6 +184,37 @@ class SlicedRescoring(object):
 
         return ExpSliceVariables(conditions=conditions, prior=prior)
 
+    def _uniform(self, l_slice, g, batch_size):
+        semiring = self._semiring
+        # sample uniformly from the truncated support of l(d)
+        # note the omega(e) function
+        sampler = AncestralSampler(l_slice,
+                                   TopSortTable(l_slice),
+                                   omega=lambda e: semiring.one if g[e] != semiring.zero else semiring.zero,
+                                   generations=self._generations)
+
+        # sample a number of derivations and group them by identity
+        counts = Counter(sampler.sample(batch_size))
+        # compute the empirical distribution f(d|u) \propto \pi(d) * g(d|u)
+        support = [None] * len(counts)
+        numerators = np.zeros(len(counts))
+        for i, (d, n) in enumerate(counts.items()):
+            support[i] = d
+            # score using the complete f(d|u)
+            pi_d = self._rescore_derivation(d)  # this is \pi(d)
+            g_d = semiring.times.reduce(list(g[e] for e in d))  # this is g(d)
+            w = semiring.times(pi_d, g_d)
+            numerators[i] = semiring.times(w, semiring.from_real(n))
+        log_prob = numerators - np.logaddexp.reduce(numerators)
+        prob = np.exp(log_prob)
+
+        # sample a derivation
+        i = np.random.choice(len(log_prob), p=prob)
+        d_i = support[i]
+        # make conditions based on the slice variables and l(d)
+        c_i = self._make_conditions(d_i, semiring)
+        return d_i, c_i, sampler.n_derivations()
+
     def _importance(self, l_slice, g, batch_size):
         semiring = self._semiring
         # sample from g(d) over the truncated support of l(d)
@@ -246,14 +277,20 @@ class SlicedRescoring(object):
     def sample(self, args):
 
         semiring = self._semiring
-        # sampler = self._ancestral if args.within == 'ancestral' else self._importance
 
-        @timeit
-        def t_sampler(forest, wtable, batch_size):
-            if args.within == 'ancestral':
+        # configure the appropriate sampler
+        if args.within == 'ancestral':
+            @timeit
+            def t_sampler(forest, wtable, batch_size):
                 return self._ancestral(forest, wtable, batch_size)
-            else:
+        elif args.within == 'importance':
+            @timeit
+            def t_sampler(forest, wtable, batch_size):
                 return self._importance(forest, wtable, batch_size)
+        else:
+            @timeit
+            def t_sampler(forest, wtable, batch_size):
+                return self._uniform(forest, wtable, batch_size)
 
         d0 = self.sample_d0()
         logging.info('Initial sample: prob=%s tree=%s', self._sampler0.prob(d0),

@@ -154,7 +154,7 @@ def cmd_slice(group):
             type=int, default=1, metavar='K',
             help='number of random restarts')
     group.add_argument('--within',
-                       type=str, default='ancestral', choices=['ancestral', 'importance'],
+                       type=str, default='ancestral', choices=['ancestral', 'importance', 'uniform'],
                        help='how to sample within the slice')
     group.add_argument('--save-chain',
                        action='store_true',
