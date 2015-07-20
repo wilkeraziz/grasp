@@ -7,7 +7,7 @@ A complete publication describing the method and a comparative study is to be su
 
 import logging
 import numpy as np
-from collections import defaultdict, Counter
+from collections import defaultdict, Counter, deque
 from itertools import chain
 
 from easyhg.recipes import timeit
@@ -184,7 +184,7 @@ class SlicedRescoring(object):
 
         return ExpSliceVariables(conditions=conditions, prior=prior)
 
-    def _uniform(self, l_slice, g, batch_size):
+    def _uniform(self, l_slice, g, batch_size, prev_d):
         semiring = self._semiring
         # sample uniformly from the truncated support of l(d)
         # note the omega(e) function
@@ -194,10 +194,13 @@ class SlicedRescoring(object):
                                    generations=self._generations)
 
         # sample a number of derivations and group them by identity
-        counts = Counter(sampler.sample(batch_size))
+        counts = Counter(sampler.sample(batch_size))  # TODO: use a set
+        counts.update([prev_d])  # the conditioning derivation should always be part of the slice (Neal, 2003)
+
         # compute the empirical distribution f(d|u) \propto \pi(d) * g(d|u)
         support = [None] * len(counts)
         numerators = np.zeros(len(counts))
+        # the sample represents a uniform subset of the slice
         for i, (d, n) in enumerate(counts.items()):
             support[i] = d
             # score using the complete f(d|u)
@@ -216,7 +219,7 @@ class SlicedRescoring(object):
         c_i = self._make_conditions(d_i, semiring)
         return d_i, c_i, sampler.n_derivations()
 
-    def _importance(self, l_slice, g, batch_size):
+    def _importance(self, l_slice, g, batch_size, prev_d=None):
         semiring = self._semiring
         # sample from g(d) over the truncated support of l(d)
         sampler = AncestralSampler(l_slice,
@@ -244,7 +247,7 @@ class SlicedRescoring(object):
 
         return d_i, c_i, sampler.n_derivations()
 
-    def _ancestral(self, l_slice, g, batch_size):
+    def _ancestral(self, l_slice, g, batch_size, prev_d=None):
         semiring = self._semiring
         # compute f(d|u) \propto \pi(d) g(d) exactly
         rescorer = EarleyRescoring(l_slice,
@@ -282,16 +285,16 @@ class SlicedRescoring(object):
         # configure the appropriate sampler
         if args.within == 'ancestral':
             @timeit
-            def t_sampler(forest, wtable, batch_size):
-                return self._ancestral(forest, wtable, batch_size)
+            def t_sampler(forest, wtable, batch_size, prev_d):
+                return self._ancestral(forest, wtable, batch_size, prev_d)
         elif args.within == 'importance':
             @timeit
-            def t_sampler(forest, wtable, batch_size):
-                return self._importance(forest, wtable, batch_size)
+            def t_sampler(forest, wtable, batch_size, prev_d):
+                return self._importance(forest, wtable, batch_size, prev_d)
         else:
             @timeit
-            def t_sampler(forest, wtable, batch_size):
-                return self._uniform(forest, wtable, batch_size)
+            def t_sampler(forest, wtable, batch_size, prev_d):
+                return self._uniform(forest, wtable, batch_size, prev_d)
 
         d0 = self.sample_d0()
         logging.info('Initial sample: prob=%s tree=%s', self._sampler0.prob(d0),
@@ -299,7 +302,7 @@ class SlicedRescoring(object):
         # get slice variables
         slicevars = self._make_slice_varialbes(self._make_conditions(d0, semiring), args.prior[0], args.prior[1])
 
-        markov_chain = []
+        markov_chain = deque([d0])
         slices_sizes = [self._sampler0.n_derivations()]
         # mean ratio of sliced edges constrained by u either uniformly or exponentially distributed
         muni, mexp = 1.0, 1.0
@@ -319,7 +322,7 @@ class SlicedRescoring(object):
                                                                 slicevars,
                                                                 semiring)
 
-            dt_r, (d_i, c_i, n_i) = t_sampler(l_slice, g, args.batch)
+            dt_r, (d_i, c_i, n_i) = t_sampler(l_slice, g, args.batch, markov_chain[-1])
 
             # update the history
             markov_chain.append(d_i)
@@ -344,4 +347,6 @@ class SlicedRescoring(object):
                                 unconstrained_included=mexp)
 
         logging.info('Slice size: mean=%s std=%s', np.mean(slices_sizes[1:]), np.std(slices_sizes[1:]))
+        # I always burn the initial derivation (because it is always byproduct of some heuristic)
+        markov_chain.popleft()
         return markov_chain
