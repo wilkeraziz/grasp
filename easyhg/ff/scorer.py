@@ -39,7 +39,7 @@ class StatelessScorer(object):
         :param edge:
         :return: weight
         """
-        freprs = [scorer.featurize(edge) for scorer in self._model.stateless]
+        freprs = [extractor.featurize(edge) for extractor in self._model.stateless]
         return self._model.stateless_score(freprs)
 
 

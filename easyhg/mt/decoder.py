@@ -241,7 +241,6 @@ def sliced_rescoring(seg, forest, root, model, semiring, args, outdir):
     save_mcmc_yields('{0}/slice/yields/{1}.gz'.format(outdir, seg.id),
                      yields)
 
-
     # save a customised report
     report.save()
 
