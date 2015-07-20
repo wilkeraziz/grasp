@@ -4,9 +4,8 @@
 
 import logging
 import sys
-import numpy as np
+import random
 from itertools import chain
-from tabulate import tabulate
 from multiprocessing import Pool
 from functools import partial
 import traceback
@@ -369,6 +368,8 @@ def core(args):
 
     # Load the segments
     segments = [SegmentMetaData.parse(input_str, grammar_dir=args.grammars) for input_str in args.input]
+    if args.shuffle:
+        random.shuffle(segments)
 
     args.input = None  # necessary because we cannot pickle the input stream (TODO: get rid of this ugly thing!)
 
@@ -379,7 +380,7 @@ def core(args):
 
     # time report
     time_report = IterationReport('{0}/time'.format(outdir))
-    for seg, (dt, dt_detail) in zip(segments, results):
+    for seg, (dt, dt_detail) in sorted(zip(segments, results), key=lambda seg_info: seg_info[0].id):
         time_report.report(seg.id, total=dt, **dt_detail)
     time_report.save()
 

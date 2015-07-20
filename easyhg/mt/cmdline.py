@@ -34,6 +34,9 @@ def argparser():
     parser.add_argument('--cpus',
                         type=int, default=1,
                         help='number of cpus avaiable')
+    parser.add_argument('--shuffle',
+                        action='store_true',
+                        help='shuffle the input sentences before decoding')
 
 
     cmd_grammar(parser.add_argument_group('Grammar'))
