@@ -10,6 +10,8 @@ import gzip
 import warnings
 from io import TextIOWrapper
 from functools import wraps
+from glob import glob
+from os.path import basename, splitext
 
 
 def smart_ropen(path):
@@ -91,3 +93,11 @@ def progressbar(it, count=None, prefix='', dynsuffix=lambda: '', size=60, file=s
 def make_unique_directory(dir=None):
     return tempfile.mkdtemp(prefix=datetime.datetime.now().strftime("%y%m%d_%H%M%S_"), dir=dir)
 
+
+def list_numbered_files(basedir, suffix='', sort=True, reverse=False):
+    paths = glob('{0}/[0-9]*{1}'.format(basedir, suffix))
+    ids = [int(splitext(basename(path))[0]) for path in paths]
+    if not sort:
+        return zip(ids, paths)
+    else:
+        return sorted(zip(ids, paths), reverse=reverse)
