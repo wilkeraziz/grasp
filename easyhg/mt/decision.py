@@ -11,7 +11,7 @@ import random
 from functools import partial
 from multiprocessing import Pool
 from easyhg.mteval.bleu import BLEU
-from easyhg.recipes import list_numbered_files, smart_ropen
+from easyhg.recipes import list_numbered_files, smart_ropen, smart_wopen
 import traceback
 
 
@@ -89,6 +89,7 @@ def consensus(P, Y, metric):
 def traced_decide(job, rule, metric):
     try:
         segid, path = job
+        logging.info('[%d] deciding', segid)
         P, Y = read_empirical_distribution(path)
         metric.prepare_decoding(Y, P)
         if rule == 'map':
@@ -98,6 +99,7 @@ def traced_decide(job, rule, metric):
         elif rule == 'consensus':
             losses = consensus(P, Y, metric)
         ranking = sorted(zip(losses, P, Y))
+        logging.info('[%d] done: %d hypotheses', segid, len(Y))
         metric.cleanup()
         return segid, ranking
     except:
@@ -119,8 +121,8 @@ def main(args):
                                rule=args.rule,
                                metric=metric), jobs)
 
-    with open('{0}.output'.format(args.decisions), 'w') as fo:
-        with open('{0}.log'.format(args.decisions), 'w') as fe:
+    with smart_wopen('{0}.best'.format(args.decisions)) as fo:
+        with smart_wopen('{0}.complete.gz'.format(args.decisions)) as fe:
             for segid, solutions in sorted(results):
                 loss, prob, projection = solutions[0]
                 proj_str = ' '.join(projection)
