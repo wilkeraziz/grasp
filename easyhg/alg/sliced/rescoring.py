@@ -204,7 +204,8 @@ class SlicedRescoring(object):
             pi_d = self._rescore_derivation(d)  # this is \pi(d)
             g_d = semiring.times.reduce(list(g[e] for e in d))  # this is g(d)
             w = semiring.times(pi_d, g_d)
-            numerators[i] = semiring.times(w, semiring.from_real(n))
+            #numerators[i] = semiring.times(w, semiring.from_real(n))
+            numerators[i] = w
         log_prob = numerators - np.logaddexp.reduce(numerators)
         prob = np.exp(log_prob)
 
