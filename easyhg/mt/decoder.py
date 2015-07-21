@@ -33,7 +33,7 @@ from easyhg.mt.segment import SegmentMetaData
 
 from easyhg.ff.lm import KenLMScorer
 from easyhg.ff.lookup import RuleTable
-from easyhg.ff.stateless import WordPenalty, ArityPenalty
+from easyhg.ff.stateless import WordPenalty, ArityPenalty, StatelessLM
 
 from easyhg.ff.scorer import StatefulScorer, StatelessScorer, TableLookupScorer, apply_scorers
 from easyhg.ff.loglinear import LogLinearModel, read_weights
@@ -84,6 +84,16 @@ def load_feature_extractors(args):  # TODO: generalise it and use a configuratio
         extractors.append(extractor)
         logging.debug('Scorer: %r', extractor)
 
+    if args.slm:
+        extractor = StatelessLM(uid=len(extractors),
+                                name=args.slm[0],
+                                order=int(args.slm[1]),
+                                path=args.slm[2],
+                                bos=Terminal(StatelessLM.DEFAULT_BOS_STRING),
+                                eos=Terminal(StatelessLM.DEFAULT_EOS_STRING))
+        extractors.append(extractor)
+        logging.debug('Scorer: %r', extractor)
+
     if args.lm:
         extractor = KenLMScorer(uid=len(extractors),
                              name=args.lm[0],
@@ -101,8 +111,11 @@ def load_feature_extractors(args):  # TODO: generalise it and use a configuratio
 def t_earley_rescoring(forest, root, model, semiring):
     if not model.stateful:
         if model.stateless:  # stateless scorers only
+            logging.info('Stateless rescoring...')
             forest = stateless_rescoring(forest, StatelessScorer(model), semiring, do_nothing={root})
+            logging.info('Done!')
     else:  # at least stateful scorers
+        logging.info('Stateful rescoring: %s', model.stateful)
         rescorer = EarleyRescoring(forest,
                                    semiring=semiring,
                                    stateful=StatefulScorer(model),

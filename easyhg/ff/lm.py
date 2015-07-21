@@ -83,7 +83,6 @@ class KenLMScorer(Stateful):
         """
         out_state = klm.State()
         score = self._model.BaseFullScore(context, word.surface, out_state)
-        #return score.log_prob * self.weights[0] + score.oov * self.weights[1], out_state
         return np.array([score.log_prob, float(score.oov)]), out_state
 
     def featurize_derivation(self, derivation):

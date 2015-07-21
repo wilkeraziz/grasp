@@ -84,6 +84,8 @@ def cmd_model(group):
                        help='include a word penalty feature (name, penalty)')
     group.add_argument('--ap', nargs=2,
                        help='include an arity penalty feature (name, penalty)')
+    group.add_argument('--slm', nargs=3,
+                       help='score n-grams within rules with a stateless LM (name, order, path).')
     group.add_argument('--lm', nargs=3,
                        help='rescore forest with a language model (name, order, path).')
 
