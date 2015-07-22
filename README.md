@@ -68,7 +68,7 @@ if you have a good suggestion which justifies the G in `Grasp` please let me kno
 
 # Citation
 
-`Grasp` has not yet been published yet, but there are two papers on the way. 
+`Grasp` has not yet been published, but there are two papers on the way. 
 One describes the toolkit and has been submitted to MTM-PBML 2015.
 Another describes the underlying methodology and is to be submitted to TACL by September 2015.
 
