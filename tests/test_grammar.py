@@ -1,22 +1,22 @@
 import unittest
 import doctest
-from easyhg.grammar import symbol
-from easyhg.grammar import rule
-from easyhg.grammar import topsort
-from easyhg.grammar import cfg
-from easyhg.grammar import fsa
-from easyhg.grammar import semiring
-from easyhg.grammar import dottedrule
-from easyhg.grammar import agenda
-from easyhg.grammar import inference
-from easyhg.grammar import kbest
-from easyhg.grammar import ply_cfg
-from easyhg.grammar import sentence
-from easyhg.grammar import earley
-from easyhg.grammar import nederhof
+from grasp.cfg import symbol
+from grasp.cfg import rule
+from grasp.cfg import topsort
+from grasp.cfg import cfg
+from grasp.cfg import fsa
+from grasp.cfg import semiring
+from grasp.cfg import dottedrule
+from grasp.cfg import agenda
+from grasp.cfg import inference
+from grasp.cfg import kbest
+from grasp.cfg import ply_cfg
+from grasp.cfg import sentence
+from grasp.cfg import earley
+from grasp.cfg import nederhof
 #from easyhg.grammar import cky
-from easyhg.grammar import slicednederhof
-from easyhg.grammar import slicevars
+from grasp.cfg import slicednederhof
+from grasp.cfg import slicevars
 
 
 def load_tests(loader, tests, ignore):
