@@ -64,3 +64,14 @@ Otherwise, just run setup install.
 
 I mean to call it `Rasp`, but it turns out the name was taken :p
 if you have a good suggestion which justifies the G in `Grasp` please let me know.
+
+
+# Citation
+
+`Grasp` has not yet been published yet, but there are two papers on the way. 
+One describes the toolkit and has been submitted to MTM-PBML 2015.
+Another describes the underlying methodology and is to be submitted to TACL by September 2015.
+
+Please do not report experiments using Graps before one of these publications goes through.
+
+`Grasp` is developed by [Wilker Aziz](http://wilkeraziz.github.io) at the University of Amsterdam.
