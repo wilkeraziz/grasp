@@ -58,6 +58,12 @@ Otherwise, just run setup install.
 
 
         python setup.py install
+        
+# Use
+
+
+* [monolingual parsing](grasp/cfg/README.md)
+* [hierarchical MT decoding](grasp/mt/README.md)
 
 
 # Name
