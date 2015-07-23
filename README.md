@@ -65,13 +65,17 @@ Additional dependencies which you will have to install by yourself:
 If you are contributing to grasp, you can install it in develop mode.
 
 
-        python setup.py develop
+```bash
+python setup.py develop
+```
 
 
 Otherwise, just run setup install.
 
+```bash
+python setup.py install
+```
 
-        python setup.py install
 
 # Uses
 

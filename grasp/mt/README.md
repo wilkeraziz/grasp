@@ -18,15 +18,18 @@
 
 This is an example run:
 
-
-        time head -n2 tests/mt/input | python -m grasp.mt.decoder --grammars tests/mt/grammars --glue-grammar tests/mt/glue --pass-through --rt --slm StatelessLanguageModel 2 tests/mt/btec.klm2 --weights tests/mt/mira/lm2-q --temperature 0.1 --count --forest --viterbi --kbest 100 --samples 1000 tests/mt/output
+```bash
+time head -n2 tests/mt/input | python -m grasp.mt.decoder --grammars tests/mt/grammars --glue-grammar tests/mt/glue --pass-through --rt --slm StatelessLanguageModel 2 tests/mt/btec.klm2 --weights tests/mt/mira/lm2-q --temperature 0.1 --count --forest --viterbi --kbest 100 --samples 1000 tests/mt/output
+```
 
 
 ## Input
 
 We use `cdec` style segments, that is, they are annotated with information such as path to grammar.
 
-        <seg grammar="grammars/grammar.0.gz" id="0">一 跳 一 跳 的 痛 。</seg>
+```xml
+<seg grammar="grammars/grammar.0.gz" id="0">一 跳 一 跳 的 痛 。</seg>
+```        
 
 
 ## Grammar
@@ -72,17 +75,17 @@ The last two things to specify a model are model weights and a temperature (rele
 More examples
 
 * no language model
-
-            time head -n2 tests/mt/input | python -m grasp.mt.decoder --grammars tests/mt/grammars --glue-grammar tests/mt/glue --pass-through --rt --wp WordPenalty -0.43429466666666666666 --ap Arity -0.43429466666666666666 --slm StatelessLanguageModel 2 tests/mt/btec.klm2 --weights tests/mt/mira/lm2-q --temperature 0.1 --count --forest --viterbi --kbest 100 --samples 1000 tests/mt/output
+```bash
+time head -n2 tests/mt/input | python -m grasp.mt.decoder --grammars tests/mt/grammars --glue-grammar tests/mt/glue --pass-through --rt --wp WordPenalty -0.43429466666666666666 --ap Arity -0.43429466666666666666 --slm StatelessLanguageModel 2 tests/mt/btec.klm2 --weights tests/mt/mira/lm2-q --temperature 0.1 --count --forest --viterbi --kbest 100 --samples 1000 tests/mt/output
+```
 
 * language model (with exhaustive intersection)
-
-            time head -n2 tests/mt/input | python -m grasp.mt.decoder --grammars tests/mt/grammars --glue-grammar tests/mt/glue --pass-through --rt --wp WordPenalty -0.43429466666666666666 --ap Arity -0.43429466666666666666 --lm LanguageModel 2 tests/mt/btec.klm2 --weights tests/mt/mira/lm2-p --temperature 0.1 --count --forest --viterbi --kbest 100 --samples 1000 tests/mt/output
+```bash
+time head -n2 tests/mt/input | python -m grasp.mt.decoder --grammars tests/mt/grammars --glue-grammar tests/mt/glue --pass-through --rt --wp WordPenalty -0.43429466666666666666 --ap Arity -0.43429466666666666666 --lm LanguageModel 2 tests/mt/btec.klm2 --weights tests/mt/mira/lm2-p --temperature 0.1 --count --forest --viterbi --kbest 100 --samples 1000 tests/mt/output
+```
 
 Do note that these examples use different weight files (because they have different components).
 
-
- --count --forest --viterbi --kbest 100 --samples 1000 tests/mt/output
 
 
 ## Exact decoding
@@ -121,16 +124,17 @@ First, check the paper in order to understand the method.
 
 Example:
 
-
-        time head -n2 tests/mt/input | python -m grasp.mt.decoder --grammars tests/mt/grammars --glue-grammar tests/mt/glue --pass-through --rt --wp WordPenalty -0.43429466666666666666 --ap Arity -0.43429466666666666666 --lm LanguageModel 2 tests/mt/btec.klm2 --weights tests/mt/mira/lm2-p --temperature 0.1 --samples 1000 --framework slice --batch 100 --within uniform --temperature0 10 --prior const 1 tests/mt/output --experiment uniform --progress
-
+```bash
+time head -n2 tests/mt/input | python -m grasp.mt.decoder --grammars tests/mt/grammars --glue-grammar tests/mt/glue --pass-through --rt --wp WordPenalty -0.43429466666666666666 --ap Arity -0.43429466666666666666 --lm LanguageModel 2 tests/mt/btec.klm2 --weights tests/mt/mira/lm2-p --temperature 0.1 --samples 1000 --framework slice --batch 100 --within uniform --temperature0 10 --prior const 1 tests/mt/output --experiment uniform --progress
+```
 
 # Decision rules
 
 A few decision rules can be applied after sampling regardless of the strategy you choose.
 
-
-        python -m grasp.mt.decision tests/mt/output/uniform/slice/yields --rule consensus tests/mt/output/uniform/slice/yields/consensus
+```bash
+python -m grasp.mt.decision tests/mt/output/uniform/slice/yields --rule consensus tests/mt/output/uniform/slice/yields/consensus
+```
 
 
 You need to specify where sampled translations (*yield* not *derivation*) are read from (e.g. ` tests/mt/output/uniform/slice/yields`)

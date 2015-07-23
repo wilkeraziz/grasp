@@ -27,8 +27,9 @@
 `grasp.cfg.parser` is the main program, you can use `--help` to get a complete (and long) list of options.
 This is an example run:
 
-    
-        echo 'I was given a million dollars !!!' | python -m grasp.cfg.parser --log --grammarfmt discodop tests/ptb/wsj00 --unkmodel stfd6 --start TOP --count --samples 1000 tests/ptb/output -v
+```bash    
+echo 'I was given a million dollars !!!' | python -m grasp.cfg.parser --log --grammarfmt discodop tests/ptb/wsj00 --unkmodel stfd6 --start TOP --count --samples 1000 tests/ptb/output -v
+```
 
 
 For more details about the options, check the instructions below.
@@ -61,8 +62,10 @@ the parser will complete it with '.rules.gz' and '.lex.gz'.
 
 `Grasp` supports multiple grammars as well as glue grammars.
  Glue rules are special in that they only apply to initial states.
-            
-            time echo 'I was given a million dollars .' | python -m grasp.cfg.parser tests/cfg/grammar --extra-grammar tests/cfg/hook --glue-grammar tests/cfg/glue --unkmodel passthrough --log --viterbi -v tests/cfg/output
+
+```bash
+time echo 'I was given a million dollars .' | python -m grasp.cfg.parser tests/cfg/grammar --extra-grammar tests/cfg/hook --glue-grammar tests/cfg/glue --unkmodel passthrough --log --viterbi -v tests/cfg/output
+```
             
 
 * The example above is a simple binary bracketing grammar. 
@@ -155,8 +158,9 @@ For large grammars, slice sampling might be a better idea `--sampler slice`.
 
 Example:
 
-
-        time head -n1 tests/ptb/input | python -m grasp.cfg.parser tests/ptb/wsj00 --grammarfmt discodop --start TOP --unkmodel stfd6 --log --samples 200 --framework slice --prior-a const 0.2  --count --save-chain -v --progress tests/ptb/dollars 
+```bash
+time head -n1 tests/ptb/input | python -m grasp.cfg.parser tests/ptb/wsj00 --grammarfmt discodop --start TOP --unkmodel stfd6 --log --samples 200 --framework slice --prior-a const 0.2  --count --save-chain -v --progress tests/ptb/dollars
+```
 
 ## Output files
 
@@ -202,8 +206,9 @@ with `-v` and `--progress`.
 First get a `pstats` report using `--profile report.pstats`. This is a `pstats` object obtained with `cProfile`.
 Then analyse the result either on `ipython` or by converting the report to a graph using `gprof2dot`.
 
-    
+```bash
         gprof2dot -f pstats report.pstats | dot -Tpng -o report.png
+```
 
         
         
