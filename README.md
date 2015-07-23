@@ -20,7 +20,7 @@ Inference is achieved by Monte Carlo (and Markov chain Monte Carlo) methods such
 In principle, sampling methods can deal with models whose independence assumptions are weaker than what 
 is feasible by standard dynamic programming. 
 
-`Grasp` is meant to help lower the implementation burned in applications such as monolingual constituency parsing, 
+`Grasp` is meant to help lower the implementation burden in applications such as monolingual constituency parsing, 
 synchronous parsing, context-free models of reordering for machine translation, and machine translation decoding.
 
 # Build
