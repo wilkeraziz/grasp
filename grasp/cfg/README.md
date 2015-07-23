@@ -1,3 +1,26 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Monolingual parsing](#monolingual-parsing)
+  - [Grammar](#grammar)
+    - [Start symbol](#start-symbol)
+    - [Parameters](#parameters)
+    - [File format](#file-format)
+    - [Additional grammars](#additional-grammars)
+  - [Parser](#parser)
+  - [POS tagger](#pos-tagger)
+  - [Info](#info)
+  - [Viterbi](#viterbi)
+  - [Sampling](#sampling)
+    - [Slice sampling](#slice-sampling)
+  - [Output files](#output-files)
+  - [Multiprocessing](#multiprocessing)
+- [Profiling](#profiling)
+- [Missing](#missing)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Monolingual parsing
 
 
