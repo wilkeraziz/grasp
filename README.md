@@ -1,3 +1,6 @@
+* auto-gen TOC:
+{:toc}
+
 # `Grasp` - Randomised Semiring Parsing
 
 A suite of algorithms for inference tasks over (finite and infinite) context-free sets. 
