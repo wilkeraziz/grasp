@@ -59,7 +59,7 @@ def cmd_grammar(group):
 
 def cmd_parser(group):
     group.add_argument('--generations',
-                       type=int, default=10,
+                       type=int, default=-1,
                        metavar='MAX',
                        help="maximum number of generations in approximating supremum values (for cyclic forests)")
 

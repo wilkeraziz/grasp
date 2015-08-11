@@ -10,6 +10,7 @@ It implements
 
 from collections import deque
 from .value import LazyEdgeValues
+import logging
 
 
 def sample_one(forest, root, semiring, node_values, edge_values=None, omega=lambda e: e.weight):
@@ -34,7 +35,11 @@ def sample_one(forest, root, semiring, node_values, edge_values=None, omega=lamb
         incoming = list(forest.get(parent, set()))
         if not incoming:  # terminal node
             continue
-        edge = semiring.choice(incoming, [edge_values[e] for e in incoming])
+        try:
+            edge = semiring.choice(incoming, [edge_values[e] for e in incoming])
+        except ValueError as ex:
+            logging.error('It seems that the normalised inside weights of incoming edges to %s do not sum to 1' % parent)
+            raise ex
         derivation.append(edge)
         Q.extend(edge.rhs)
     return tuple(derivation)
