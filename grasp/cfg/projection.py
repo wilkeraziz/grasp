@@ -31,20 +31,32 @@ def robust_get_leaves(derivation):
     :param skip: how many levels should be ignored
     """
 
-    Q = deque(derivation)
-
-    linear = []
-
-    def linearise():
-        rule = Q.popleft()
-        for child in rule.rhs:
-            if isinstance(child, Terminal):
-                linear.append(child)
+    hg = [[] for _ in derivation]
+    j = 1
+    for i, r in enumerate(derivation):
+        for s in r.rhs:
+            if isinstance(s, Terminal):
+                hg[i].append(-1)
             else:
-                linearise()
-    linearise()
+                hg[i].append(j)
+                j += 1
+        hg.append(hg)
 
-    return linear
+    leaves = []
+
+    def traverse(head):
+
+        tail = hg[head]
+        rhs = []
+        for n, sym in zip(tail, derivation[head].rhs):
+            if n == -1:
+                leaves.append(sym)
+            else:
+                traverse(n)
+
+    traverse(0)
+
+    return leaves
 
 
 def robust_make_nltk_tree(derivation, skip=0,
@@ -56,21 +68,38 @@ def robust_make_nltk_tree(derivation, skip=0,
     :param skip: how many levels should be ignored
     """
 
+    for r in derivation:
+        print(r)
+    print()
+
     def replrb(sym):
         return sym.replace('(', '-LRB-').replace(')', '-RRB-')
 
-    Q = deque(derivation[skip:])
+    derivation = derivation[skip:]
+    hg = [[] for _ in derivation]
+    j = 1
+    for i, r in enumerate(derivation):
+        for s in r.rhs:
+            if isinstance(s, Terminal):
+                hg[i].append(-1)
+            else:
+                hg[i].append(j)
+                j += 1
+        hg.append(hg)
 
-    def make_tree(sym):
-        if isinstance(sym, Terminal):
-            return t2str(sym)
-        rule = Q.popleft()
+    def make_tree(head):
+
+        tail = hg[head]
         rhs = []
-        for child in rule.rhs:
-            rhs.append(make_tree(child))
-        return Tree(replrb(nt2str(rule.lhs)), rhs)
+        for n, sym in zip(tail, derivation[head].rhs):
+            if n == -1:
+                rhs.append(t2str(sym))
+            else:
+                rhs.append(make_tree(n))
+        return Tree(replrb(nt2str(derivation[head].lhs)), rhs)
 
-    return make_tree(derivation[skip].lhs)
+    return make_tree(0)
+
 
 
 class ItemDerivationYield:
