@@ -68,10 +68,6 @@ def robust_make_nltk_tree(derivation, skip=0,
     :param skip: how many levels should be ignored
     """
 
-    for r in derivation:
-        print(r)
-    print()
-
     def replrb(sym):
         return sym.replace('(', '-LRB-').replace(')', '-RRB-')
 
