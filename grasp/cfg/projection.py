@@ -1,6 +1,7 @@
-from . import Terminal
-from collections import defaultdict
-from .utils import inlinetree, make_nltk_tree
+from . import Terminal, Nonterminal
+from collections import defaultdict, deque
+from .utils import inlinetree
+from nltk.tree import Tree
 
 _LB_ = '('
 _RB_ = ')'
@@ -22,6 +23,78 @@ def get_leaves(derivation):
 
     return tuple(projection)
 
+
+def robust_get_leaves(derivation):
+    """
+    Recursively constructs an nlt Tree from a list of rules.
+    :param derivation: a sequence of edges
+    :param skip: how many levels should be ignored
+    """
+
+    hg = [[] for _ in derivation]
+    j = 1
+    for i, r in enumerate(derivation):
+        for s in r.rhs:
+            if isinstance(s, Terminal):
+                hg[i].append(-1)
+            else:
+                hg[i].append(j)
+                j += 1
+        hg.append(hg)
+
+    leaves = []
+
+    def traverse(head):
+
+        tail = hg[head]
+        rhs = []
+        for n, sym in zip(tail, derivation[head].rhs):
+            if n == -1:
+                leaves.append(sym)
+            else:
+                traverse(n)
+
+    traverse(0)
+
+    return leaves
+
+
+def robust_make_nltk_tree(derivation, skip=0,
+                   t2str=lambda s: str(s),
+                   nt2str=lambda s: str(s)):
+    """
+    Recursively constructs an nlt Tree from a list of rules.
+    :param derivation: a sequence of edges
+    :param skip: how many levels should be ignored
+    """
+
+    def replrb(sym):
+        return sym.replace('(', '-LRB-').replace(')', '-RRB-')
+
+    derivation = derivation[skip:]
+    hg = [[] for _ in derivation]
+    j = 1
+    for i, r in enumerate(derivation):
+        for s in r.rhs:
+            if isinstance(s, Terminal):
+                hg[i].append(-1)
+            else:
+                hg[i].append(j)
+                j += 1
+        hg.append(hg)
+
+    def make_tree(head):
+
+        tail = hg[head]
+        rhs = []
+        for n, sym in zip(tail, derivation[head].rhs):
+            if n == -1:
+                rhs.append(t2str(sym))
+            else:
+                rhs.append(make_tree(n))
+        return Tree(replrb(nt2str(derivation[head].lhs)), rhs)
+
+    return make_tree(0)
 
 class ItemDerivationYield:
 
@@ -61,12 +134,12 @@ class DerivationYield:
 
     @staticmethod
     def derivation(derivation):
-        return inlinetree(make_nltk_tree(derivation))
+        return inlinetree(robust_make_nltk_tree(derivation))
 
     @staticmethod
     def tree(derivation):
-        return inlinetree(make_nltk_tree(derivation, nt2str=lambda s: s.base.underlying_str()))
+        return inlinetree(robust_make_nltk_tree(derivation, nt2str=lambda s: str(s.base)))
 
     @staticmethod
     def string(derivation):
-        return ' '.join(t.surface for t in get_leaves(derivation))
+        return ' '.join(t.surface for t in robust_get_leaves(derivation))
