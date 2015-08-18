@@ -109,22 +109,25 @@ This is what my own virtualenv looks like if I list the installed packages with 
 ```bash
 (grasp)waziz@u036503:~/workspace/github/grasp$ yolk -l
 Cython          - 0.22.1       - active
+Jinja2          - 2.8          - active
+MarkupSafe      - 0.23         - active
 gnureadline     - 6.3.3        - active
 grasp           - 0.0.dev1     - active development (/Users/waziz/workspace/github/grasp)
 ipython         - 3.2.1        - active
+jsonschema      - 2.5.1        - active
 kenlm           - 0.0.0        - active
 nltk            - 3.0.4        - active
 numpy           - 1.9.2        - active
-pip             - 7.1.0        - active
+pip             - 1.5.6        - active
 ply             - 3.6          - active
+pyzmq           - 14.7.0       - active
 scipy           - 0.15.1       - active
-setuptools      - 11.0         - active
+setuptools      - 3.6          - active
 snakeviz        - 0.4.0        - active
 tabulate        - 0.7.5        - active
+tornado         - 4.2.1        - active
 yolk3k          - 0.8.7        - active
 ```
-
-Note: `Cython` is not a dependency.
 
 # Uses
 
