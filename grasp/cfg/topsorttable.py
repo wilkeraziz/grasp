@@ -16,10 +16,14 @@ class TopSortTable(object):
             syms = deps[lhs]
             for rule in rules:
                 syms.update(filter(lambda s: isinstance(s, Nonterminal), rule.rhs))
+        self._selfdep = {sym: sym in children for sym, children in deps.items()}
         order = robust_topological_sort(deps)
         # adds terminals to the bottom-level
         order.appendleft(frozenset(frozenset([t]) for t in forest.iterterminals()))
         self._topsort = order
+
+    def selfdep(self, sym):
+        return self._selfdep.get(sym, False)
 
     def n_levels(self):
         return len(self._topsort)

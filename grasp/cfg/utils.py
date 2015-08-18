@@ -1,5 +1,5 @@
 from nltk.tree import Tree
-from collections import defaultdict
+from collections import defaultdict, deque
 import re
 
 

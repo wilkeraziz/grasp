@@ -85,3 +85,53 @@ class AncestralSampler(object):
 
     def prob(self, d):
         return self._semiring.as_real(derivation_value(d, self._semiring, self.Z, self._omega))
+
+
+class LocalSampler(object):
+
+    def __init__(self, forest, tsort, omega=lambda e: e.weight, semiring=SumTimes):
+        self._forest = forest
+        self._tsort = tsort
+        self._omega = omega
+        self._semiring = semiring
+
+        self._node_values = {sym: semiring.plus.reduce([omega(r) for r in rules]) for sym, rules in forest.iteritems()}
+        self._edge_values = {rule: semiring.divide(omega(rule), self._node_values[rule.lhs]) for rule in forest}
+
+        self._root = self._tsort.root()
+
+    @property
+    def forest(self):
+        return self._forest
+
+    @property
+    def tsort(self):
+        return self._tsort
+
+    def _sample_one(self):
+        from collections import deque
+        import numpy as np
+        Q = deque([self._root])
+        d = []
+        while Q:
+            u = Q.popleft()
+            incoming = list(self._forest.get(u, set()))
+            if not incoming:
+                continue
+            e = np.random.choice(len(incoming), p=[self._semiring.as_real(self._edge_values[e]) for e in incoming])
+            rule = incoming[e]
+            d.append(rule)
+            Q.extend(rule.rhs)
+        return tuple(d)
+
+    def sample(self, n):
+        for i in range(n):
+            yield self._sample_one()
+
+    def _sample(self, n):
+        """Draw samples from the inverted CDF."""
+        return sample_k(self._forest, self._root, self._semiring,
+                        node_values=self._node_values,
+                        edge_values=self._edge_values,
+                        omega=self._omega,
+                        n_samples=n)
