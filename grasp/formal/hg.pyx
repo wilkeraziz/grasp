@@ -56,7 +56,8 @@ cdef class Hypergraph:
         return 'nodes={0}\n{1}\nedges={2}\n{3}'.format(len(self._nodes),
                                                        '\n'.join(repr(n) for n in self._nodes),
                                                        len(self._edges),
-                                                       '\n'.join(str(e) for e in self._edges))
+                                                       '\n'.join('{0} rule={1}'.format(e, r)
+                                                                 for e, r in zip(self._edges, self._rules)))
 
     def __len__(self):
         return self.n_edges()

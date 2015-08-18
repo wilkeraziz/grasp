@@ -1,3 +1,11 @@
+"""
+
+TODO: a common interface between AcyclicTopSortTable and RobustTopSortTable.
+
+:Authors: - Wilker Aziz
+"""
+
+
 import itertools
 import numpy as np
 from libcpp.queue cimport queue
@@ -265,6 +273,15 @@ cdef class AcyclicTopSortTable(TopSortTable):
                 lines.append('  %d %r' % (n, self._hg.label(n)))
         return '\n'.join(lines)
 
+    def pp(self):
+        cdef id_t i, n
+        cdef list level, lines = []
+        for i, level in enumerate(self.iterlevels(skip=0)):
+            lines.append('level=%d' % i)
+            for n in level:
+                lines.append('  %r' % (self._hg.label(n)))
+        return '\n'.join(lines)
+
 
 cdef class RobustTopSortTable(TopSortTable):
 
@@ -373,3 +390,43 @@ cdef class RobustTopSortTable(TopSortTable):
                     lines.append('  %d %r' % (n, self._hg.label(n)))
         return '\n'.join(lines)
 
+    def pp(self):
+        cdef list level, bucket, lines = []
+        cdef id_t i, j, n
+        for i, level in enumerate(self.iterlevels(skip=0)):
+            lines.append('level=%d' % i)
+            for j, bucket in enumerate(level):
+                if not self.is_loopy(bucket):
+                    lines.append(' acyclic: %r' % self._hg.label(bucket[0]))
+                else:
+                    lines.append(' loopy:')
+                    for n in bucket:
+                        lines.append('  %r' % (self._hg.label(n)))
+        return '\n'.join(lines)
+
+
+class LazyTopSortTable:
+    """
+    A simple container for a TopSortTable object which gets lazily computed.
+    """
+
+    def __init__(self, Hypergraph forest, bint acyclic=False):
+        """
+        :param forest: the forest whose nodes will be sorted
+        :param acyclic: whether the forest contains cycles
+        """
+        self._forest = forest
+        self._acyclic = acyclic
+        self._tsort = None
+
+    def __call__(self):
+        return self.do()
+
+    def do(self):
+        """Return a TopSortTable (acyclic or robust depending on the case) building it if necessary."""
+        if self._tsort is None:
+            if self._acyclic:
+                self._tsort = AcyclicTopSortTable(self._forest)
+            else:
+                self._tsort = RobustTopSortTable(self._forest)
+        return self._tsort

@@ -110,10 +110,21 @@ You might be interested in some specific information about the parser, the gramm
 Here you find some options.
 
 * `--forest` dumps the forest as a grammar (in 'bar' format)
-* `--report-top` tries to top-sort the grammar in order to report its start symbols and exit
 * `--count` reports the number of derivations in the forest (note that this requires running the inside algorithm)
 * `--verbose` increases the verbosity level of the parser
 * `--progress` adds a progressbar to lengthy runs
+
+If you are interested in analysing the grammar, you can also use `grasp.cfg.info` to obtain some additional information:
+
+```bash
+(grasp)waziz@vpn-staff-146-50-68-177:~/workspace/github/grasp/examples/ptb$ python -m grasp.cfg.info wsj00 info-wsj --log --grammarfmt discodop --tsort -v
+2015-08-18 15:52:51,704 INFO Writing files to: info-wsj.*
+2015-08-18 15:52:51,705 INFO Loading main grammar...
+2015-08-18 15:52:52,685 INFO Main grammar: terminals=7798 nonterminals=3091 productions=54462
+path    type      terminals    nonterminals    rules
+------  ------  -----------  --------------  -------
+wsj00   main           7798            3091    54462
+```
 
 ## Viterbi
 

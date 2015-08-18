@@ -42,7 +42,7 @@ def make_dirs(args, exist_ok=True):
             os.makedirs('{0}/slice/trees'.format(outdir), exist_ok=exist_ok)
             if args.save_chain:
                 os.makedirs('{0}/slice/chain'.format(outdir), exist_ok=exist_ok)
-        elif args.framework == 'gibbs':
+        elif args.framework == 'gibbs':  # for future use
             os.makedirs('{0}/gibbs'.format(outdir), exist_ok=exist_ok)
     if args.forest:
         os.makedirs('{0}/forest'.format(outdir), exist_ok=exist_ok)

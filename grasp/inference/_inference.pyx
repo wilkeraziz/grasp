@@ -125,6 +125,45 @@ cpdef list sample_derivations(Hypergraph forest,
     return batch_sample(forest, tsort, semiring.inside, size, omega, node_values, edge_values)
 
 
+cdef class DerivationCounter:
+
+    def __init__(self,
+                 Hypergraph forest,
+                 TopSortTable tsort):
+        self._forest = forest
+        self._tsort = tsort
+        self._omega = EdgeWeight(forest)
+        self._root = self._tsort.root()
+        self._counts_computed = False
+
+    cdef void do(self):
+        if not self._counts_computed:
+
+            # this emulates the Counting semiring
+            omega = BinaryEdgeWeight(self._forest, semiring.inside, semiring.inside)
+
+            if isinstance(self._tsort, AcyclicTopSortTable):
+                self._count_values = acyclic_value_recursion(self._forest,
+                                                            <AcyclicTopSortTable>self._tsort,
+                                                            semiring.inside,
+                                                            omega)
+            else:
+                # TODO: in the Counting semiring this will not converge if cycles exists, do something about it
+                self._count_values = robust_value_recursion(self._forest,
+                                                           <RobustTopSortTable>self._tsort,
+                                                           semiring.inside,
+                                                           omega)
+            self._counts_computed = True
+
+    cpdef id_t count(self, id_t node):
+        self.do()
+        return semiring.inside.as_real(self._count_values[node])
+
+    cpdef id_t n_derivations(self):
+        self.do()
+        return semiring.inside.as_real(self._count_values[self._root])
+
+
 cdef class AncestralSampler:
 
     def __init__(self,
@@ -157,7 +196,7 @@ cdef class AncestralSampler:
                                                 normalise=not semiring.inside.idempotent)
 
         self._root = self._tsort.root()
-        self._counts_computed = False
+        self._counter = DerivationCounter(self._forest, tsort)
 
     property Z:
         def __get__(self):
@@ -179,20 +218,4 @@ cdef class AncestralSampler:
         return semiring.inside.as_real(semiring.inside.divide(w, self.Z))
 
     cpdef int n_derivations(self):
-        if not self._counts_computed:
-
-            # this emulates the Counting semiring
-            omega = BinaryEdgeWeight(self._forest, semiring.inside, semiring.inside)
-
-            if isinstance(self._tsort, AcyclicTopSortTable):
-                self._count_values = acyclic_value_recursion(self._forest,
-                                                            <AcyclicTopSortTable>self._tsort,
-                                                            semiring.inside,
-                                                            omega)
-            else:
-                # TODO: in the Counting semiring this will not converge if cycles exists, do something about it
-                self._count_values = robust_value_recursion(self._forest,
-                                                           <RobustTopSortTable>self._tsort,
-                                                           semiring.inside,
-                                                           omega)
-        return semiring.inside.as_real(self._count_values[self._root])
+        return self._counter.n_derivations()

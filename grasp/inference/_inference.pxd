@@ -45,6 +45,23 @@ cpdef list sample_derivations(Hypergraph forest,
                               weight_t[::1] edge_values=?)
 
 
+cdef class DerivationCounter:
+
+    cdef:
+        Hypergraph _forest
+        TopSortTable _tsort
+        ValueFunction _omega
+        id_t _root
+        bint _counts_computed
+        weight_t[::1] _count_values
+
+    cdef void do(self)
+
+    cpdef id_t count(self, id_t node)
+
+    cpdef id_t n_derivations(self)
+
+
 cdef class AncestralSampler:
 
     cdef:
@@ -54,8 +71,7 @@ cdef class AncestralSampler:
         weight_t[::1] _node_values
         weight_t[::1] _edge_values
         id_t _root
-        bint _counts_computed
-        weight_t[::1] _count_values
+        DerivationCounter _counter
 
     cpdef list sample(self, size_t n)
 

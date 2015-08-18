@@ -12,70 +12,51 @@ from itertools import chain
 from multiprocessing import Pool
 from functools import partial
 from types import SimpleNamespace
+from collections import Counter, defaultdict
 
-from grasp.recipes import smart_wopen, timeit
+from grasp.recipes import timeit, smart_wopen, progressbar
 from grasp.io.results import save_mcmc_derivation, save_mcmc_yields, save_markov_chain
 from grasp.io.results import save_viterbi, save_kbest, save_mc_derivations, save_mc_yields
-from grasp.recipes import progressbar
 
-#from grasp.semiring import SumTimes, MaxTimes, Counting
-#from grasp.inference import KBest, AncestralSampler, derivation_value, viterbi_derivation
-#from grasp.inference import robust_value_recursion as compute_values
-#from grasp.parsing.exact import Earley, Nederhof
+from grasp.parsing.exact.deduction import Earley, Nederhof
+from grasp.parsing.exact.deduction import reweight
+
 from grasp.parsing.sliced.sampling import group_by_projection, group_by_identity
-#from grasp.parsing.sliced.sampling import slice_sampling, apply_filters, apply_batch_filters
 from grasp.parsing.sliced.slicevars import Beta, Exponential, get_prior, VectorOfPriors
-#from grasp.cfg import CFG, Nonterminal
-#from grasp.cfg.symbol import make_span
-from grasp.cfg.projection import DerivationYield  #ItemDerivationYield
-from grasp.cfg import CFG, CFGProduction
 from grasp.parsing.sliced.sampling import apply_batch_filters, apply_filters
+from grasp.parsing.sliced.slicevars import SliceVariables
 
-from .workspace import make_dirs
-from .cmdline import argparser
-from .sentence import make_sentence
-from .reader import load_grammar
-from .rule import get_oov_cfg_productions
+from grasp.cfg import CFG
+from grasp.cfg.symbol import Nonterminal
+from grasp.cfg.projection import DerivationYield
+from grasp.cfg.workspace import make_dirs
+from grasp.cfg.cmdline import argparser
+from grasp.cfg.sentence import make_sentence
+from grasp.cfg.reader import load_grammar
+from grasp.cfg.rule import get_oov_cfg_productions
 
-from grasp.formal.topsort import RobustTopSortTable
+from grasp.formal.topsort import LazyTopSortTable, RobustTopSortTable
 from grasp.formal.hg import cfg_to_hg
 from grasp.formal.fsa import make_dfa
-from grasp.parsing.exact.deduction import Earley, Nederhof
+
+from grasp.inference._value import LookupFunction, derivation_value
+from grasp.inference._inference import viterbi_derivation, AncestralSampler, DerivationCounter
+
 import grasp.semiring as semiring
-from grasp.cfg.symbol import Nonterminal
-from grasp.inference._inference import viterbi_derivation, AncestralSampler
-from grasp.inference._value import derivation_value
-from collections import Counter
-
-from grasp.semiring import SumTimes
-
-
-class LazyTopSortTable(object):
-
-    def __init__(self, forest):
-        self._forest = forest
-        self._tsort = None
-
-    def do(self):
-        if self._tsort is None:
-            self._tsort = RobustTopSortTable(self._forest)
-        return self._tsort
 
 
 def group_raw(forest, raw_samples):
+    """
+    Group "raw derivations", that is, derivations which are still represented by a sequence of edge ids.
+    :param forest:
+    :param raw_samples:
+    :return: best-first list of derivations, each entry is an instance of SimpleNamespace with fields
+     'd' (derivation as a sequence of rules) and 'n' (count).
+    """
     raw_dist = Counter(raw_samples)
     output = [SimpleNamespace(derivation=[forest.rule(e) for e in d], count=n)
               for d, n in raw_dist.most_common()]
     return output
-
-
-def make_forest(hg):
-    forest = CFG()
-    for e in range(hg.n_edges()):
-        lhs = hg.label(hg.head(e))
-        rhs = [hg.label(n) for n in hg.tail(e)]
-        forest.add(CFGProduction(lhs, rhs, hg.weight(e)))
-    return forest
 
 
 def exact_parsing(seg: 'the input segment (e.g. a Sentence)',
@@ -88,11 +69,17 @@ def exact_parsing(seg: 'the input segment (e.g. a Sentence)',
     logging.debug('Building input hypergraph')
     hg = cfg_to_hg(grammars, glue_grammars)
     root = hg.fetch(Nonterminal(options.start))
+
+    # make input DFA
     dfa = make_dfa(seg.signatures)
+
+    # get a parser implementation
     if options.intersection == 'earley':
         parser = Earley(hg, dfa, semiring.inside)
     else:
         parser = Nederhof(hg, dfa, semiring.inside)
+
+    # parse
     logging.debug('Parsing')
     forest = parser.do(root, Nonterminal(options.goal))
 
@@ -100,10 +87,21 @@ def exact_parsing(seg: 'the input segment (e.g. a Sentence)',
         logging.info('[%s] NO PARSE FOUND', seg.id)
         return
 
-    tsorter = LazyTopSortTable(forest)
+    tsorter = LazyTopSortTable(forest, acyclic=False)
 
-    # report info if necessary
-    # report_forest(seg.id, forest, tsorter, outdir, options)
+    # report some information about the forest
+    if options.forest:
+        with smart_wopen('{0}/forest/{1}.gz'.format(outdir, seg.id)) as fo:
+            print(forest, file=fo)
+    if options.count:
+        tsort = tsorter.do()
+        counter = DerivationCounter(forest, tsort)
+        logging.info('Paths: %d', counter.n_derivations())
+        with smart_wopen('{0}/count/{1}.gz'.format(outdir, seg.id)) as fo:
+            print('nodes=%d edges=%d paths=%d' % (forest.n_nodes(),
+                                                  forest.n_edges(),
+                                                  counter.n_derivations()),
+                  file=fo)
 
     # decoding strategies
 
@@ -136,12 +134,6 @@ def exact_parsing(seg: 'the input segment (e.g. a Sentence)',
                             omega_d=omega_d)
 
     logging.info('[%s] Finished!', seg.id)
-
-
-from grasp.parsing.sliced.slicevars import SliceVariables
-from grasp.parsing.exact.deduction import reweight
-from grasp.inference._value import LookupFunction
-from collections import defaultdict
 
 
 def make_batch_conditions(forest, raw_derivations):
@@ -194,7 +186,9 @@ def uninformed_conditions(hg, dfa, slicevars, root, goal, batch, algorithm):
                                    tsort,
                                    LookupFunction(values))
         raw_derivations = sampler.sample(batch)
-        return make_batch_conditions(forest, raw_derivations)
+        conditions = make_batch_conditions(forest, raw_derivations)
+        slicevars.reset(conditions)
+        return conditions
 
 
 def sliced_parsing(seg: 'the input segment (e.g. a Sentence)',
@@ -225,9 +219,9 @@ def sliced_parsing(seg: 'the input segment (e.g. a Sentence)',
     # make initial conditions
     # TODO: consider intialisation heuristics such as attempt_initialisation(fsa, grammars, glue_grammars, options)
     logging.info('Looking for initial set of conditions...')
-    conditions = uninformed_conditions(hg, dfa, u, root, goal, options.batch, options.intersection)
+    uninformed_conditions(hg, dfa, u, root, goal, options.batch, options.intersection)
     logging.info('Done')
-    u.reset(conditions)
+    #u.reset(conditions)
 
     # Sampling
     sizes = [0, 0, 0]  # number of nodes, edges and derivations (for logging purposes)
@@ -243,8 +237,12 @@ def sliced_parsing(seg: 'the input segment (e.g. a Sentence)',
     # sample
     markov_chain = []
     for _ in bar:
-        # create a bottom-up parser with slice variables
-        parser = Nederhof(hg, dfa, semiring.inside, u)
+
+        # get a parser implementation
+        if options.intersection == 'earley':
+            parser = Earley(hg, dfa, semiring.inside, u)
+        else:
+            parser = Nederhof(hg, dfa, semiring.inside, u)
 
         # compute a slice (a randomly pruned forest)
         forest = parser.do(root, goal)
@@ -341,21 +339,18 @@ def core(job, args, outdir):
                          glue.n_nonterminals(), len(glue))
             glue_grammars.append(glue)
 
-    # Report information about the main grammar
-    # report_info(cfg, args)
-
     # Make surface lexicon
     surface_lexicon = set()
     for grammar in chain(main_grammars, glue_grammars):
         surface_lexicon.update(t.surface for t in grammar.iterterminals())
 
     i, input_str = job
-    seg = make_sentence(i, input_str, SumTimes, surface_lexicon, args.unkmodel)
+    seg = make_sentence(i, input_str, semiring.inside, surface_lexicon, args.unkmodel)
 
     grammars = list(main_grammars)
 
     if args.unkmodel == 'passthrough':
-        grammars.append(CFG(get_oov_cfg_productions(seg.oovs, args.unklhs, SumTimes.one)))
+        grammars.append(CFG(get_oov_cfg_productions(seg.oovs, args.unklhs, semiring.inside.one)))
 
     logging.info('[%d] Parsing %d words: %s', seg.id, len(seg), seg)
 
@@ -375,6 +370,8 @@ def traced_core(job, args, outdir):
         print('[%d] parsing...' % job[0], file=sys.stdout)
         dt = core(job, args, outdir)
         print('[%d] parsing time: %s' % (job[0], dt), file=sys.stdout)
+    except SystemExit:
+        pass
     except:
         raise Exception(''.join(traceback.format_exception(*sys.exc_info())))
 

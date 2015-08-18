@@ -28,9 +28,6 @@ def argparser():
     parser.add_argument('--cpus',
                         type=int, default=1,
                         help='number of cpus available (-1 for all)')
-    parser.add_argument('--cython',
-                        action='store_true',
-                        help='uses cython-optimised code')
 
     cmd_grammar(parser.add_argument_group('Grammar'))
     cmd_parser(parser.add_argument_group('Parser'))
@@ -92,15 +89,6 @@ def cmd_tagger(group):
 
 
 def cmd_info(group):
-    group.add_argument('--report-top',
-                       action='store_true',
-                       help='topsort the grammar, report the top symbol(s), and quit')
-    group.add_argument('--report-tsort',
-                       action='store_true',
-                       help='topsort the grammar, report the partial ordering of symbols, and quit')
-    group.add_argument('--report-cycles',
-                       action='store_true',
-                       help='topsort the grammar, report cycles, and quit')
     group.add_argument('--count',
                        action='store_true',
                        help='report the number of derivations in the forest')

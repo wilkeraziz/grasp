@@ -22,51 +22,16 @@ from grasp.parsing.exact import Earley, Nederhof
 from grasp.parsing.sliced.sampling import group_by_projection, group_by_identity
 from grasp.parsing.sliced.sampling import slice_sampling, apply_filters, apply_batch_filters
 from grasp.parsing.sliced.slicevars import Beta, Exponential, get_prior, VectorOfPriors
-from grasp.cfg import TopSortTable, LazyTopSortTable, CFG, Nonterminal
+from grasp.cfg import TopSortTable, LazyTopSortTable, Nonterminal
 from grasp.cfg.symbol import make_span
 from grasp.cfg.projection import ItemDerivationYield, DerivationYield
-from grasp.cfg import CFG, CFGProduction
+from grasp.cfg import CFG
 
 from .workspace import make_dirs
 from .cmdline import argparser
 from .sentence import make_sentence
 from .reader import load_grammar
 from .rule import get_oov_cfg_productions
-
-
-def report_info(cfg: CFG, args):
-    """
-    Report information about the CFG.
-    :param cfg: CFG
-    :param args: command line arguments
-    """
-    if args.report_top or args.report_tsort or args.report_cycles:
-        tsort = TopSortTable(cfg)
-        if args.report_top:
-            logging.info('TOP symbols={0} buckets={1}'.format(tsort.n_top_symbols(), tsort.n_top_buckets()))
-            for bucket in tsort.itertopbuckets():
-                print(' '.join(str(s) for s in bucket))
-            sys.exit(0)
-        if args.report_tsort:
-            logging.info('TOPSORT levels=%d' % tsort.n_levels())
-            print(str(tsort))
-            sys.exit(0)
-        if args.report_cycles:
-            loopy = []
-            for i, level in enumerate(tsort.iterlevels(skip=1)):
-                loopy.append(set())
-                for bucket in filter(lambda b: len(b) > 1, level):
-                    loopy[-1].add(bucket)
-            logging.info('CYCLES symbols=%d cycles=%d' % (tsort.n_loopy_symbols(), tsort.n_cycles()))
-            for i, buckets in enumerate(loopy, 1):
-                if not buckets:
-                    continue
-                print('level=%d' % i)
-                for bucket in buckets:
-                    print(' bucket-size=%d' % len(bucket))
-                    print('\n'.join('  {0}'.format(s) for s in bucket))
-                print()
-            sys.exit(0)
 
 
 def report_forest(uid: int, forest: CFG, tsorter: LazyTopSortTable, outdir: str, options):
@@ -134,31 +99,6 @@ def py_parser(seg: 'the input segment (e.g. a Sentence)',
     return parser.do(root=Nonterminal(options.start), goal=Nonterminal(options.goal))
 
 
-def cy_parser(seg: 'the input segment (e.g. a Sentence)',
-                  grammars: 'list of CFGs',
-                  glue_grammars: 'list of glue CFGs',
-                  options: 'command line options',
-                  outdir: 'where to save results'):
-    """Parse the input exactly."""
-
-    semiring = SumTimes
-
-    from grasp.formal.hg import cfg_to_hg
-    from grasp.formal.fsa import make_dfa
-    from grasp.parsing.exact.deduction import Earley, Nederhof
-
-    hg = cfg_to_hg(grammars, glue_grammars)
-    root = hg.fetch(Nonterminal(options.start))
-    dfa = make_dfa(seg.signatures)
-    if options.intersection == 'earley':
-        parser = Earley(hg, dfa, semiring)
-    else:
-        parser = Nederhof(hg, dfa, semiring)
-    hg = parser.do(root, Nonterminal(options.goal))
-    forest = make_forest(hg)
-    return forest
-
-
 def exact_parsing(seg: 'the input segment (e.g. a Sentence)',
                   grammars: 'list of CFGs',
                   glue_grammars: 'list of glue CFGs',
@@ -166,10 +106,7 @@ def exact_parsing(seg: 'the input segment (e.g. a Sentence)',
                   outdir: 'where to save results'):
     """Parse the input exactly."""
 
-    if options.cython:
-        forest = cy_parser(seg, grammars, glue_grammars, options, outdir)
-    else:
-        forest = py_parser(seg, grammars, glue_grammars, options, outdir)
+    forest = py_parser(seg, grammars, glue_grammars, options, outdir)
     if not forest:
         logging.info('[%s] NO PARSE FOUND', seg.id)
         return
@@ -224,15 +161,6 @@ def exact_parsing(seg: 'the input segment (e.g. a Sentence)',
                        trees)
 
     logging.info('[%s] Finished!', seg.id)
-
-
-def make_forest(hg):
-    forest = CFG()
-    for e in range(hg.n_edges()):
-        lhs = hg.label(hg.head(e))
-        rhs = [hg.label(n) for n in hg.tail(e)]
-        forest.add(CFGProduction(lhs, rhs, hg.weight(e)))
-    return forest
 
 
 def sliced_parsing(seg: 'the input segment (e.g. a Sentence)',
@@ -341,9 +269,6 @@ def core(job, args, outdir):
                          glue.n_nonterminals(), len(glue))
             glue_grammars.append(glue)
 
-    # Report information about the main grammar
-    report_info(cfg, args)
-
     # Make surface lexicon
     surface_lexicon = set()
     for grammar in chain(main_grammars, glue_grammars):
@@ -375,6 +300,8 @@ def traced_core(job, args, outdir):
         print('[%d] parsing...' % job[0], file=sys.stdout)
         dt = core(job, args, outdir)
         print('[%d] parsing time: %s' % (job[0], dt), file=sys.stdout)
+    except SystemExit:
+        pass
     except:
         raise Exception(''.join(traceback.format_exception(*sys.exc_info())))
 
