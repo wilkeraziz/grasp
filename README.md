@@ -4,6 +4,7 @@
 
 - [`Grasp` - Randomised Semiring Parsing](#grasp---randomised-semiring-parsing)
 - [Build](#build)
+  - [Sanity check](#sanity-check)
 - [Uses](#uses)
 - [Name](#name)
 - [Citation](#citation)
