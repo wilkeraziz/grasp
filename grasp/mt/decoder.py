@@ -119,7 +119,7 @@ def t_earley_rescoring(forest, root, model, semiring) -> 'forest and its start s
                                stateless=StatelessScorer(model),
                                do_nothing={root})
     forest = rescorer.do(root=root)
-    root = make_span(root, None, None)
+    root = make_span(root)
     return forest, root
 
 
@@ -291,6 +291,59 @@ def sliced_rescoring(seg, forest, root, model, semiring, args, outdir):
     return {'slice': total_dt}
 
 
+def make_forest(hg):
+    forest = CFG()
+    for e in range(hg.n_edges()):
+        lhs = hg.label(hg.head(e))
+        rhs = [hg.label(n) for n in hg.tail(e)]
+        forest.add(CFGProduction(lhs, rhs, hg.weight(e)))
+    return forest
+
+@timeit
+def t_cy_decode(seg, extra_grammars, glue_grammars, model, args, outdir):
+    """
+    Decode (and time it).
+
+    :param seg: a input segment
+    :param extra_grammars: additional (normal) grammars
+    :param glue_grammars: glue grammars
+    :param model: a linear model
+    :param args: command line options
+    :param outdir: where to save results
+    :return:
+    """
+    semiring = SumTimes
+
+    logging.info('Loading grammar: %s', seg.grammar)
+    # load main SCFG from file
+    main_grammar = load_grammar(seg.grammar)
+    logging.info('Preparing input (%d): %s', seg.id, seg.src)
+    # make input FSA and a pass-through grammar for the given segment
+    input_fsa, pass_grammar = make_input(seg, list(chain([main_grammar], extra_grammars, glue_grammars)), semiring, args.default_symbol)
+    # put all (normal) grammars together
+    grammars = list(chain([main_grammar], extra_grammars, [pass_grammar])) if args.pass_through else list(chain([main_grammar], extra_grammars))
+
+    logging.info('Input: states=%d arcs=%d', input_fsa.n_states(), input_fsa.n_arcs())
+
+    from grasp.dstruct.hg import Hypergraph
+    from grasp.formal.fsa import make_dfa
+    hg = Hypergraph()
+    dfa = make_dfa(seg.src_tokens())
+
+    for grammar in grammars:
+        for r in grammar:
+            hg.add_xedge(r.lhs, r.irhs, semiring.one, r)
+    for grammar in glue_grammars:
+        for r in grammar:
+            hg.add_xedge(r.lhs, r.irhs, semiring.one, r, glue=True)
+
+    from grasp.parsing.exact.deduction import Nederhof as CyNederhof
+    # 1) get a parser
+    parser = CyNederhof(hg, dfa, semiring)
+    root = hg.fetch(Nonterminal(args.start))
+    hg = parser.do(root, Nonterminal(args.goal))
+    print(hg)
+
 @timeit
 def t_decode(seg, extra_grammars, glue_grammars, model, args, outdir):
     """
@@ -329,7 +382,7 @@ def t_decode(seg, extra_grammars, glue_grammars, model, args, outdir):
     # 2) make a forest
     logging.info('Parsing input...')
     f_forest = parser.do(root=Nonterminal(args.start), goal=Nonterminal(args.goal))
-    f_root = make_span(Nonterminal(args.goal), None, None)
+    f_root = make_span(Nonterminal(args.goal))
 
     if not f_forest:
         logging.error('NO PARSE FOUND')

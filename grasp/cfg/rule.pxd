@@ -1,0 +1,5 @@
+
+
+cdef class Rule:
+
+    pass

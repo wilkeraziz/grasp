@@ -4,10 +4,10 @@ import re
 
 
 def make_nltk_tree(derivation, skip=0,
-                   t2str=lambda s: s.underlying_str(),
-                   nt2str=lambda s: s.underlying_str()):
+                   t2str=lambda s: str(s),
+                   nt2str=lambda s: str(s)):
     """
-    Recursively constructs an nlt Tree from a list of rules.
+    Recursively constructs an nltk Tree from a list of rules.
     :param derivation: a sequence of edges
     :param skip: how many levels should be ignored
     """

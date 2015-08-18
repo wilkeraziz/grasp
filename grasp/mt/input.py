@@ -4,7 +4,7 @@
 
 from grasp.cfg.fsa import WDFSA
 from grasp.cfg.scfg import SCFG, Nonterminal, Terminal
-from grasp.cfg.rule import SCFGProduction
+from grasp.cfg.srule import SCFGProduction
 
 
 def make_input(seg, grammars, semiring, unk_lhs):

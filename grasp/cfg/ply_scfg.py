@@ -4,7 +4,7 @@
 
 import ply.yacc as yacc
 from .ply_cfg import CFGLex
-from .rule import SCFGProduction
+from .srule import SCFGProduction
 from .scfg import SCFG
 
 

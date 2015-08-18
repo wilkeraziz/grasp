@@ -60,7 +60,6 @@ def report_forest(uid, forest, tsorter, outdir, options):
 
 
 def exact(uid, input, grammars, glue_grammars, options, outdir):
-
     semiring = SumTimes
     if options.intersection == 'earley':
         parser = Earley(grammars, input.fsa,
@@ -98,7 +97,7 @@ def exact(uid, input, grammars, glue_grammars, options, outdir):
                      get_projection=DerivationYield.tree)
 
     if options.kbest > 0:
-        root = make_span(Nonterminal(options.goal), None, None)  # this is the root after intersection
+        root = make_span(Nonterminal(options.goal))  # this is the root after intersection
         logging.info('K-best...')
         kbestparser = KBest(forest,
                             root,

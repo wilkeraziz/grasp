@@ -4,7 +4,7 @@
 
 from collections import defaultdict
 from grasp.cfg.symbol import Terminal, Nonterminal
-from grasp.cfg.rule import SCFGProduction
+from grasp.cfg.srule import SCFGProduction
 from grasp.cfg.scfg import SCFG
 from grasp.recipes import smart_ropen
 

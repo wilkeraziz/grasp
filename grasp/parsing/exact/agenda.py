@@ -225,7 +225,7 @@ def make_cfg(goal, root, itergenerating, itercomplete, fsa, semiring, recursive=
                 continue
             for end in filter(lambda q: fsa.is_final(q), ends):
                 make_rules(root, start, end)
-                G.add(CFGProduction(make_span(goal, None, None),
+                G.add(CFGProduction(make_span(goal),
                     [make_span(root, start, end)],
                     semiring.one))
         return G
@@ -242,7 +242,7 @@ def make_cfg(goal, root, itergenerating, itercomplete, fsa, semiring, recursive=
             for end in filter(lambda q: fsa.is_final(q), ends):  # to a final state
                 Q.append((root, start, end)) 
                 queuing.add((root, start, end)) 
-                G.add(CFGProduction(make_span(goal, None, None),
+                G.add(CFGProduction(make_span(goal),
                         [make_span(root, start, end)],
                         semiring.one))
         # create rules for symbols which are reachable from other generating symbols (starting from the root ones)

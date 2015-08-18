@@ -27,3 +27,10 @@ from .boolean import Boolean
 from .counting import Counting
 from .inside import SumTimes, Prob
 from .viterbi import MaxTimes
+
+from . import _semiring
+
+prob = _semiring.Prob()
+viterbi = _semiring.Viterbi()
+inside = _semiring.LogProb()
+logprob = inside

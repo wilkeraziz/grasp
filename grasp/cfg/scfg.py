@@ -135,6 +135,7 @@ class SCFG(object):
         self._srules = defaultdict(lambda: defaultdict(list))
         self._sigma = set()
         self._delta = set()
+        self._rules = []
         for srule in syncrules:
             self.add(srule)
 
@@ -148,8 +149,12 @@ class SCFG(object):
     def in_ovocab(self, word):
         return word in self._delta
 
+    def __iter__(self):
+        return iter(self._rules)
+
     def add(self, srule):
         """Add a synchronous rule to the container."""
+        self._rules.append(srule)
         self._srules[srule.lhs][srule.irhs].append(srule)
         self._sigma.update(filter(lambda s: isinstance(s, Terminal), srule.irhs))
         self._delta.update(filter(lambda s: isinstance(s, Terminal), srule.orhs))

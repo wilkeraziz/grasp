@@ -136,7 +136,7 @@ class WDFSA(object):
         for origin, arcs_by_sym in enumerate(self._arcs):
             for symbol, arcs in arcs_by_sym.items():
                 for destination, weight in sorted(arcs.items()):
-                    lines.append('(%d, %d, %s, %s)' % (origin, destination, symbol, weight))
+                    lines.append('(%r, %r, %r, %r)' % (origin, destination, symbol, weight))
         return '\n'.join(lines)
 
 

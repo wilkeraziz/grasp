@@ -25,6 +25,7 @@ from grasp.parsing.sliced.slicevars import Beta, Exponential, get_prior, VectorO
 from grasp.cfg import TopSortTable, LazyTopSortTable, CFG, Nonterminal
 from grasp.cfg.symbol import make_span
 from grasp.cfg.projection import ItemDerivationYield, DerivationYield
+from grasp.cfg import CFG, CFGProduction
 
 from .workspace import make_dirs
 from .cmdline import argparser
@@ -112,13 +113,11 @@ def report_forest(uid: int, forest: CFG, tsorter: LazyTopSortTable, outdir: str,
             print(forest, file=fo)
 
 
-def exact_parsing(seg: 'the input segment (e.g. a Sentence)',
+def py_parser(seg: 'the input segment (e.g. a Sentence)',
                   grammars: 'list of CFGs',
                   glue_grammars: 'list of glue CFGs',
                   options: 'command line options',
                   outdir: 'where to save results'):
-    """Parse the input exactly."""
-
     semiring = SumTimes
     if options.intersection == 'earley':
         parser = Earley(grammars, seg.fsa,
@@ -130,10 +129,47 @@ def exact_parsing(seg: 'the input segment (e.g. a Sentence)',
                           semiring=semiring)
     else:
         raise NotImplementedError("I don't know this intersection algorithm: %s" % options.intersection)
-
     # make a forest
     logging.info('Parsing...')
-    forest = parser.do(root=Nonterminal(options.start), goal=Nonterminal(options.goal))
+    return parser.do(root=Nonterminal(options.start), goal=Nonterminal(options.goal))
+
+
+def cy_parser(seg: 'the input segment (e.g. a Sentence)',
+                  grammars: 'list of CFGs',
+                  glue_grammars: 'list of glue CFGs',
+                  options: 'command line options',
+                  outdir: 'where to save results'):
+    """Parse the input exactly."""
+
+    semiring = SumTimes
+
+    from grasp.formal.hg import cfg_to_hg
+    from grasp.formal.fsa import make_dfa
+    from grasp.parsing.exact.deduction import Earley, Nederhof
+
+    hg = cfg_to_hg(grammars, glue_grammars)
+    root = hg.fetch(Nonterminal(options.start))
+    dfa = make_dfa(seg.signatures)
+    if options.intersection == 'earley':
+        parser = Earley(hg, dfa, semiring)
+    else:
+        parser = Nederhof(hg, dfa, semiring)
+    hg = parser.do(root, Nonterminal(options.goal))
+    forest = make_forest(hg)
+    return forest
+
+
+def exact_parsing(seg: 'the input segment (e.g. a Sentence)',
+                  grammars: 'list of CFGs',
+                  glue_grammars: 'list of glue CFGs',
+                  options: 'command line options',
+                  outdir: 'where to save results'):
+    """Parse the input exactly."""
+
+    if options.cython:
+        forest = cy_parser(seg, grammars, glue_grammars, options, outdir)
+    else:
+        forest = py_parser(seg, grammars, glue_grammars, options, outdir)
     if not forest:
         logging.info('[%s] NO PARSE FOUND', seg.id)
         return
@@ -156,7 +192,7 @@ def exact_parsing(seg: 'the input segment (e.g. a Sentence)',
                      get_projection=DerivationYield.tree)
 
     if options.kbest > 0:
-        root = make_span(Nonterminal(options.goal), None, None)  # this is the root after intersection
+        root = make_span(Nonterminal(options.goal))  # this is the root after intersection
         logging.info('K-best...')
         kbestparser = KBest(forest,
                             root,
@@ -188,6 +224,15 @@ def exact_parsing(seg: 'the input segment (e.g. a Sentence)',
                        trees)
 
     logging.info('[%s] Finished!', seg.id)
+
+
+def make_forest(hg):
+    forest = CFG()
+    for e in range(hg.n_edges()):
+        lhs = hg.label(hg.head(e))
+        rhs = [hg.label(n) for n in hg.tail(e)]
+        forest.add(CFGProduction(lhs, rhs, hg.weight(e)))
+    return forest
 
 
 def sliced_parsing(seg: 'the input segment (e.g. a Sentence)',

@@ -210,6 +210,18 @@ Then analyse the result either on `ipython` or by converting the report to a gra
         gprof2dot -f pstats report.pstats | dot -Tpng -o report.png
 ```
 
+I also like to use [snakeviz](https://jiffyclub.github.io/snakeviz/), you can install it easily:
+
+```bash
+pip install snakeviz
+```
+
+Then, 
+
+```bash
+snakeviz report.pstats
+```
+
         
         
 # Missing 

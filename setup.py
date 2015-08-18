@@ -1,4 +1,26 @@
 from setuptools import setup
+import sys
+
+try:
+    import numpy as np
+except ImportError:
+    print('First you need to install numpy!', file=sys.stderr)
+    sys.exit(1)
+try:
+    import scipy as sp
+except ImportError:
+    print('First you need to install scipy!', file=sys.stderr)
+    sys.exit(1)
+
+try:
+    from Cython.Build import cythonize
+except ImportError:
+    print('First you need to install cython!', file=sys.stderr)
+    sys.exit(1)
+
+ext_modules = cythonize('**/*.pyx',
+                          language='c++',
+                          exclude=['grasp/cpp/*', 'grasp/parsing/sliced/_slicevars*'])
 
 setup(
     name='grasp',
@@ -10,5 +32,7 @@ setup(
     packages=['grasp'],
     install_requires=['tabulate',
                       'nltk',
-                      'ply']
+                      'ply'],
+    include_dirs=[np.get_include()],
+    ext_modules=ext_modules,
 )

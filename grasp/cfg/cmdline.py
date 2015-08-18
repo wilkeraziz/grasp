@@ -28,6 +28,9 @@ def argparser():
     parser.add_argument('--cpus',
                         type=int, default=1,
                         help='number of cpus available (-1 for all)')
+    parser.add_argument('--cython',
+                        action='store_true',
+                        help='uses cython-optimised code')
 
     cmd_grammar(parser.add_argument_group('Grammar'))
     cmd_parser(parser.add_argument_group('Parser'))

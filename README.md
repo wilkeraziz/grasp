@@ -37,7 +37,8 @@ synchronous parsing, context-free models of reordering for machine translation, 
 
 # Build
 
-`Grasp` is written in `python3`. It is recommended to use `virtualenv`.
+`Grasp` is written in `python3` (more specifically python 3.4). 
+It is recommended to use `virtualenv`.
 
 
 ```bash
@@ -45,11 +46,20 @@ virtualenv -p python3 ~/workspace/envs/grasp
 source ~/workspace/envs/grasp/bin/activate
 ```
 
+``Important:`` from now it is assumed you have sourced the virtual environment. 
 
 A few dependencies which `setup.py` does not list, because `setuptools` does not deal very well with them:
 
+ * cython 
  * numpy
  * scipy
+ 
+ 
+```bash
+(grasp)waziz@localhost:~/workspace/github/grasp/$ pip install numpy
+(grasp)waziz@localhost:~/workspace/github/grasp/$ pip install scipy
+(grasp)waziz@localhost:~/workspace/github/grasp/$ pip install cython
+```
 
 Dependencies which `setup.py` will install for you:
 
@@ -60,20 +70,35 @@ Dependencies which `setup.py` will install for you:
 Additional dependencies which you will have to install by yourself:
 
  * [kenlm](https://github.com/kpu/kenlm.git)
+ 
+ 
+```bash
+(grasp)waziz@localhost:~/workspace/github/$ git clone https://github.com/kpu/kenlm.git
+(grasp)waziz@localhost:~/workspace/github/$ cd kenlm
+(grasp)waziz@localhost:~/workspace/github/$ python setup.py install
+```
 
+Optional packages that will help you in a way or another:
+
+ * [snakeviz](https://jiffyclub.github.io/snakeviz/) helps you visualise profiling data
+ 
+ 
+```bash
+(grasp)waziz@localhost:~/workspace/github/grasp/$ pip install snakeviz
+```
 
 If you are contributing to grasp, you can install it in develop mode.
 
 
 ```bash
-python setup.py develop
+(grasp)waziz@localhost:~/workspace/github/grasp/$ python setup.py develop
 ```
 
 
 Otherwise, just run setup install.
 
 ```bash
-python setup.py install
+(grasp)waziz@localhost:~/workspace/github/grasp/$ python setup.py install
 ```
 
 
@@ -94,6 +119,7 @@ pip             - 7.1.0        - active
 ply             - 3.6          - active
 scipy           - 0.15.1       - active
 setuptools      - 11.0         - active
+snakeviz        - 0.4.0        - active
 tabulate        - 0.7.5        - active
 yolk3k          - 0.8.7        - active
 ```
@@ -109,8 +135,9 @@ Note: `Cython` is not a dependency.
 
 # Name
 
-I meant to call it `Rasp`, but it turns out the name was taken :p
-if you have a good suggestion which justifies the G in `Grasp` please let me know.
+The `rasp` part is for **RAndomised Semiring Parsing**. 
+For some time I had no good reason to justify the leading `G`.
+Milos suggested a GNU style recursive definition, thus `G` is for `Grasp` ;)
 
 
 # Citation

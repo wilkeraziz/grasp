@@ -242,7 +242,7 @@ class EarleyRescoring(object):
             for end in ends:
                 make_rules(root, start, end)
                 # the goal item incorporates p(bos) and p(eos|end)
-                goal_rule = CFGProduction(make_span(root, None, None),
+                goal_rule = CFGProduction(make_span(root),
                                     [make_span(root, start, end)],
                                     semiring.times(scorer.initial_score(), scorer.final_score(context=end)))
                 G.add(goal_rule)

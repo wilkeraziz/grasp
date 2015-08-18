@@ -16,6 +16,7 @@ import numpy as np
 import scipy.stats as st
 from collections import defaultdict
 from types import SimpleNamespace
+from grasp.parsing.exact.deduction import SliceVariables as _SliceVariables
 
 
 class Prior(object):
@@ -177,7 +178,7 @@ class Beta(Distribution):
         return st.beta.logpdf(x, a=parameter[0], b=parameter[1])
 
 
-class SliceVariables(object):
+class SliceVariables(_SliceVariables):
     """
     A general slice variable.
 
