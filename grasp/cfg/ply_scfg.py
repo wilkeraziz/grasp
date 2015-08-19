@@ -19,17 +19,29 @@ _EXAMPLE_GRAMMAR_ = """
 
 class SCFGYacc(object):
 
-    def __init__(self, cfg_lexer=None, transform=None):
+    def __init__(self, cfg_lexer=None, transform=None, fprefix='_'):
         if cfg_lexer is None:
             cfg_lexer = CFGLex()
-            cfg_lexer.build(debug=False, nowarn=True)
+            cfg_lexer.build(debug=False, nowarn=True, optimize=True, lextab='scfg_lextab')
         SCFGYacc.tokens = cfg_lexer.tokens
         SCFGYacc.lexer = cfg_lexer.lexer
         self.transform_ = transform
+        self.fprefix_ = fprefix
 
     def p_rule_and_weights(self, p):
-        'rule : NONTERMINAL BAR srhs BAR trhs BAR weight'
-        p[0] = SCFGProduction.create(p[1], p[3], p[5], p[7])
+        'rule : NONTERMINAL BAR srhs BAR trhs BAR fpairs'
+
+        # convert fpairs to fmap
+        i = 0
+        fmap = {}
+        for k, v in p[7]:
+            if k == '':
+                fmap['{0}{1}'.format(self.fprefix_, i)] = v
+                i += 1
+            else:
+                fmap[k] = v
+        # construct a scfg production
+        p[0] = SCFGProduction.create(p[1], p[3], p[5], fmap)
 
     def p_srhs(self, p):
         'srhs : rhs'
@@ -49,12 +61,23 @@ class SCFGYacc(object):
                | rhs NONTERMINAL'''
         p[0] = p[1] + [p[2]]
 
-    def p_weight(self, p):
-        'weight : FVALUE'
-        if self.transform_:
-            p[0] = self.transform_(p[1])
-        else:
-            p[0] = p[1]
+    def p_fpairs(self, p):
+        """fpairs : fpair
+                  | fvalue"""
+        p[0] = [p[1]]
+
+    def p_fpairs_recursion(self, p):
+        """fpairs : fpairs fpair
+                  | fpairs fvalue"""
+        p[0] = p[1] + [p[2]]
+
+    def p_fpair(self, p):
+        """fpair : FNAME EQUALS FVALUE"""
+        p[0] = (p[1], self.transform_(p[3]))
+
+    def p_fvalue(self, p):
+        """fvalue : FVALUE"""
+        p[0] = ('', self.transform_(p[1]))
 
     def p_error(self, p):
         print("Syntax error at '%s'" % p)
@@ -70,6 +93,7 @@ class SCFGYacc(object):
             production = self.parser.parse(line, lexer=self.lexer)
             yield production
 
+
 def cdec_adaptor(istream):
     for line in istream:
         if line.startswith('#') or not line.strip():
@@ -81,10 +105,11 @@ def cdec_adaptor(istream):
         weight = '1.0'
         yield ' ||| '.join((lhs, f_rhs, e_rhs, weight))
 
-def read_grammar(istream, transform=None, cdec_adapt=False):
+
+def read_grammar(istream, transform=float, cdec_adapt=False, fprefix='_'):
     """Read a grammar parsed with CFGYacc from an input stream"""
-    parser = SCFGYacc(transform=transform)
-    parser.build(debug=False, write_tables=False)
+    parser = SCFGYacc(transform=transform, fprefix=fprefix)
+    parser.build(debug=False, optimize=True, write_tables=True, tabmodule='scfg_yacctab')
     if cdec_adapt:
         return SCFG(parser.parse(cdec_adaptor(istream)))
     else:
@@ -94,11 +119,11 @@ if __name__ == '__main__':
     import sys
     import logging
     FORMAT = '%(asctime)-15s %(message)s'
-    G = read_grammar(sys.stdin)
+    G = read_grammar(sys.stdin, fprefix='Prob')
     print('SCFG')
     print(G)
-    print('F-CFG')
-    print(G.f_projection())
-    print('E-CFG')
-    print(G.e_projection())
+    #print('F-CFG')
+    #print(G.f_projection())
+    #print('E-CFG')
+    #print(G.e_projection())
 

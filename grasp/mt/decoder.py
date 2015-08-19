@@ -58,21 +58,21 @@ def load_feature_extractors(args) -> 'list of extractors':  # TODO: generalise i
 
     if args.rt:
         extractor = RuleTable(uid=len(extractors),
-                           name='RuleTable')
+                              name='RuleTable')
         extractors.append(extractor)
         logging.debug('Scorer: %r', extractor)
 
     if args.wp:
         extractor = WordPenalty(uid=len(extractors),
-                             name=args.wp[0],
-                             penalty=float(args.wp[1]))
+                                name=args.wp[0],
+                                penalty=float(args.wp[1]))
         extractors.append(extractor)
         logging.debug('Scorer: %r', extractor)
 
     if args.ap:
         extractor = ArityPenalty(uid=len(extractors),
-                              name=args.ap[0],
-                              penalty=float(args.ap[1]))
+                                 name=args.ap[0],
+                                 penalty=float(args.ap[1]))
         extractors.append(extractor)
         logging.debug('Scorer: %r', extractor)
 
@@ -88,11 +88,11 @@ def load_feature_extractors(args) -> 'list of extractors':  # TODO: generalise i
 
     if args.lm:
         extractor = KenLMScorer(uid=len(extractors),
-                             name=args.lm[0],
-                             order=int(args.lm[1]),
-                             path=args.lm[2],
-                             bos=Terminal(KenLMScorer.DEFAULT_BOS_STRING),
-                             eos=Terminal(KenLMScorer.DEFAULT_EOS_STRING))
+                                name=args.lm[0],
+                                order=int(args.lm[1]),
+                                path=args.lm[2],
+                                bos=Terminal(KenLMScorer.DEFAULT_BOS_STRING),
+                                eos=Terminal(KenLMScorer.DEFAULT_EOS_STRING))
         extractors.append(extractor)
         logging.debug('Scorer: %r', extractor)
 

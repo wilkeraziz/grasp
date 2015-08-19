@@ -102,10 +102,10 @@ class SCFGProduction(Rule):
     def __str__(self):
         A = iter(self.alignment)
         return '%s ||| %s ||| %s ||| %s' % (
-            self.lhs,
-            ' '.join(str(s) for s in self.irhs),
-            ' '.join(str(s) if isinstance(s, Terminal) else '[%d]' % (next(A)) for s in self.orhs),
-            self.weight())
+            repr(self.lhs),
+            ' '.join(repr(s) for s in self.irhs),
+            ' '.join(repr(s) if isinstance(s, Terminal) else '[%d]' % (next(A)) for s in self.orhs),
+            ' '.join('{0}={1}'.format(k, v) for k, v in sorted(self._fmap.items())))
 
     def project_rhs(self):
         """Computes the target context-free production by projecting source labels through nonterminal alignment."""

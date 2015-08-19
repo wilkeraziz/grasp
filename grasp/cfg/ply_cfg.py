@@ -4,6 +4,7 @@
 
 import ply.lex as lex
 import ply.yacc as yacc
+import sys
 
 from .symbol import Terminal, Nonterminal
 from .rule import CFGProduction
@@ -25,15 +26,15 @@ class CFGLex(object):
     tokens = (
             'TERMINAL',
             'NONTERMINAL',
-            #'FNAME', 
+            'FNAME',
             'FVALUE',
             'BAR', 
-            #'EQUALS'.
+            'EQUALS'
             )
 
     t_BAR    = r'[\|]{3}'
-    #t_EQUALS = r'='
-    #t_FNAME  = r"[^ '=\[\]\|]+"
+    t_EQUALS = r'='
+    t_FNAME  = r"[^ '=\[\]\|]+"
 
     def t_TERMINAL(self, t):
         r"'[^ ]*'"
@@ -92,7 +93,7 @@ class CFGYacc(object):
     def __init__(self, cfg_lexer=None, transform=None):
         if cfg_lexer is None:
             cfg_lexer = CFGLex()
-            cfg_lexer.build(debug=False, nowarn=True)
+            cfg_lexer.build(debug=False, nowarn=True, optimize=True, lextab='cfg_lextab')
         CFGYacc.tokens = cfg_lexer.tokens
         CFGYacc.lexer = cfg_lexer.lexer
         self.transform_ = transform
@@ -151,22 +152,24 @@ def read_basic(istream, transform):
         yield CFGProduction(lhs, rhs, fvalue)
 
 
-def read_grammar(path, transform=None, ply_based=False):
+def read_grammar(istream, transform=float, ply_based=False):
     """
     Read a grammar from an input stream.
-    :param path: path to grammar file.
+    :param istream: an input stream or a path to grammar file.
     :param transform: a transformation (e.g. log).
     :param ply_based: whether or not to use a lex-yacc parser (seems slow).
     :return: a CFG
     """
+    if type(istream) is str:
+        istream = smart_ropen(istream)
     if ply_based:
         parser = CFGYacc(transform=transform)
-        parser.build(debug=False, write_tables=False)
-        return CFG(parser.parse(smart_ropen(path)))
+        parser.build(debug=False, optimize=True, write_tables=True, tabmodule='cfg_yacctab')
+        return CFG(parser.parse(istream))
     else:
-        return CFG(read_basic(smart_ropen(path), transform))
+        return CFG(read_basic(istream, transform))
 
 if __name__ == '__main__':
     import sys
-    print(read_grammar(sys.stdin))
+    print(read_grammar(sys.stdin, ply_based=True))
 
