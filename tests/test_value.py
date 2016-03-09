@@ -4,29 +4,37 @@
 
 import unittest
 
-from grasp.formal.hg import Hypergraph
+
 from grasp.formal.topsort import AcyclicTopSortTable, RobustTopSortTable
 from grasp.inference._value import acyclic_value_recursion, robust_value_recursion
-from grasp.cfg import CFG, CFGProduction, Terminal, Nonterminal
+from grasp.cfg import CFG, Terminal, Nonterminal
+from grasp.cfg.rule import NewCFGProduction as CFGProduction
 import grasp.semiring as semiring
+from grasp.formal.scfgop import cfg_to_hg
+from grasp.cfg.model import PCFG
+
+
+def get_rule(lhs, rhs, prob):
+    return CFGProduction.MakeStandardCFGProduction(lhs, rhs, prob, fname='Prob', transform=float)
 
 
 class AcyclicValueRecursionTestCase(unittest.TestCase):
 
     def setUp(self):
         self.cfg = CFG()
-        self.cfg.add(CFGProduction(Nonterminal('S02'), [Nonterminal('S01'), Nonterminal('X12'), Nonterminal('PUNC')], 0.5))
-        self.cfg.add(CFGProduction(Nonterminal('S01'), [Nonterminal('X01')], 0.1))
-        self.cfg.add(CFGProduction(Nonterminal('X01'), [Terminal('Hello')], 0.7))
-        self.cfg.add(CFGProduction(Nonterminal('X01'), [Terminal('hello')], 0.1))
-        self.cfg.add(CFGProduction(Nonterminal('X12'), [Terminal('World')], 0.6))
-        self.cfg.add(CFGProduction(Nonterminal('X12'), [Terminal('world')], 0.2))
-        self.cfg.add(CFGProduction(Nonterminal('PUNC'), [Terminal('!')], 0.1))
-        self.cfg.add(CFGProduction(Nonterminal('PUNC'), [Terminal('!!!')], 0.3))
-        self.cfg.add(CFGProduction(Nonterminal('A'), [Terminal('dead')], 0.3))
-        self.cfg.add(CFGProduction(Nonterminal('B'), [], 0.3))
-        self.forest = Hypergraph()
-        self.forest.update(self.cfg)
+        self.cfg.add(get_rule(Nonterminal('S02'),
+                              [Nonterminal('S01'), Nonterminal('X12'), Nonterminal('PUNC')],
+                              0.5))
+        self.cfg.add(get_rule(Nonterminal('S01'), [Nonterminal('X01')], 0.1))
+        self.cfg.add(get_rule(Nonterminal('X01'), [Terminal('Hello')], 0.7))
+        self.cfg.add(get_rule(Nonterminal('X01'), [Terminal('hello')], 0.1))
+        self.cfg.add(get_rule(Nonterminal('X12'), [Terminal('World')], 0.6))
+        self.cfg.add(get_rule(Nonterminal('X12'), [Terminal('world')], 0.2))
+        self.cfg.add(get_rule(Nonterminal('PUNC'), [Terminal('!')], 0.1))
+        self.cfg.add(get_rule(Nonterminal('PUNC'), [Terminal('!!!')], 0.3))
+        self.cfg.add(get_rule(Nonterminal('A'), [Terminal('dead')], 0.3))
+        self.cfg.add(get_rule(Nonterminal('B'), [], 0.3))
+        self.forest = cfg_to_hg([self.cfg], [], PCFG('Prob'))
         self.tsort = AcyclicTopSortTable(self.forest)
 
     def test_root(self):

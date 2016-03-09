@@ -36,7 +36,7 @@ cdef class Hypergraph:
 
     cpdef id_t add_node(self, Symbol label)
 
-    cpdef id_t add_edge(self, Rule rule, bint glue=?)
+    #cpdef id_t add_edge(self, Rule rule, bint glue=?)
 
     cpdef id_t add_xedge(self, Symbol lhs, tuple rhs, weight_t weight, Rule rule, bint glue=?)
 
@@ -58,11 +58,13 @@ cdef class Hypergraph:
 
     cpdef bint is_source(self, id_t head)
 
+    cpdef bint is_glue(self, id_t e)
+
     cpdef Symbol label(self, id_t n)
 
     cpdef Rule rule(self, id_t e)
 
-    cpdef update(self, rules, bint glue=?)
+    #cpdef update(self, rules, bint glue=?)
 
     cpdef size_t n_nodes(self)
 
@@ -83,4 +85,19 @@ cdef class Hypergraph:
     cpdef bint self_depends(self, id_t node)
 
 
-cpdef Hypergraph cfg_to_hg(grammars, glue_grammars)
+cdef class Derivation:  # TODO: traverse in order?
+
+    cdef Hypergraph _hg
+    cdef tuple _rules
+    cdef tuple _weights
+
+    cpdef tuple weights(self)
+
+    cpdef tuple rules(self)
+
+    cpdef iteritems(self)
+
+
+cpdef Derivation make_derivation(Hypergraph forest, tuple edges)
+
+

@@ -21,6 +21,9 @@ cdef class ValueFunction:
     A value function assigns a value to an edge.
     """
 
+    def __init__(self):
+        pass
+
     def __call__(self, id_t e):
         return self.value(e)
 
@@ -48,11 +51,44 @@ cdef class EdgeWeight(ValueFunction):
     A value function which reproduces the edge's weight in a hypergraph.
     """
 
-    def __init__(self, hg):
+    def __init__(self, Hypergraph hg):
         self.hg = hg
 
     cpdef weight_t value(self, id_t e):
         return self.hg.weight(e)
+
+
+cdef class ScaledEdgeWeight(ValueFunction):
+    """
+    A value function which reproduces the edge's weight in a hypergraph.
+    """
+
+    def __init__(self, Hypergraph hg, weight_t scalar):
+        self.hg = hg
+        self.scalar = scalar
+
+    cpdef weight_t value(self, id_t e):
+        return self.hg.weight(e) * self.scalar
+
+
+cdef class ThresholdValueFunction(ValueFunction):
+    """
+    Applies a threshold to an edge's value.
+    """
+
+    def __init__(self, ValueFunction f, Semiring input_semiring, weight_t threshold, Semiring output_semiring):
+        self.f = f
+        self.input_semiring = input_semiring
+        self.threshold = threshold
+        self.output_semiring = output_semiring
+
+    cpdef weight_t value(self, id_t e):
+        """
+        Returns 1 (in the output semiring) if the edge's value is greater than the threshold (both in the input semiring),
+        otherwise it returns 0 (in the output semiring).
+        """
+        return self.output_semiring.one if self.input_semiring.gt(self.f.value(e), self.threshold) else self.output_semiring.zero
+
 
 cdef class BinaryEdgeWeight(ValueFunction):
 

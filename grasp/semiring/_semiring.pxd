@@ -45,6 +45,8 @@ cdef class Semiring:
 
     cpdef weight_t[::1] ones(self, size_t size)
 
+    cpdef weight_t[::1] normalise(self, weight_t[::1] values)
+
 
 cdef class ProbTimes(Times): pass
 

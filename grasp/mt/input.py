@@ -3,7 +3,8 @@
 """
 
 from grasp.cfg.fsa import WDFSA
-from grasp.cfg.scfg import SCFG, Nonterminal, Terminal
+from grasp.cfg.symbol import Terminal, Nonterminal
+from grasp.cfg.scfg import SCFG
 from grasp.cfg.srule import SCFGProduction
 
 

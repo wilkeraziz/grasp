@@ -10,8 +10,8 @@ from libcpp.vector cimport vector
 import grasp.ptypes as ptypes
 import grasp.semiring as semiring
 from grasp.formal.topsort cimport AcyclicTopSortTable, RobustTopSortTable
-from grasp.inference._value cimport EdgeWeight, LazyEdgeValues, LookupFunction, BinaryEdgeWeight
-from grasp.inference._value cimport acyclic_value_recursion, robust_value_recursion, compute_edge_values
+from grasp.alg.value cimport EdgeWeight, LazyEdgeValues, LookupFunction, BinaryEdgeWeight
+from grasp.alg.value cimport acyclic_value_recursion, robust_value_recursion, compute_edge_values
 from grasp.ptypes cimport weight_t, id_t
 
 
@@ -137,6 +137,7 @@ cdef class DerivationCounter:
         self._counts_computed = False
 
     cdef void do(self):
+        cdef ValueFunction omega
         if not self._counts_computed:
 
             # this emulates the Counting semiring

@@ -1,15 +1,14 @@
 """
-@author wilkeraziz
+:Authors: - Wilker Aziz
 """
 
 import ply.lex as lex
 import ply.yacc as yacc
-import sys
 
 from .symbol import Terminal, Nonterminal
-from .rule import CFGProduction
 from .cfg import CFG
 from grasp.recipes import smart_ropen
+from grasp.cfg.rule import NewCFGProduction as CFGProduction
 
 
 _EXAMPLE_GRAMMAR_ = """
@@ -74,33 +73,31 @@ class CFGLex(object):
 class CFGYacc(object):
     """
     Parse a weighted CFG from a text file formatted as the _EXAMPLE_GRAMMAR_ above.
-
-    >>> parser = CFGYacc()
-    >>> _ = parser.build(debug=False, write_tables=False)
-    >>> G = [r for r in parser.parse(_EXAMPLE_GRAMMAR_.splitlines())]
-    >>> len(G)
-    5
-    >>> G[0]
-    CFGProduction(Nonterminal('S'), (Terminal('<s>'), Nonterminal('X'), Terminal('<s>')), 1.0)
-    >>> str(G[0])
-    "[S] ||| '<s>' [X] '<s>' ||| 1.0"
-    >>> G[3]
-    CFGProduction(Nonterminal('X'), (Terminal('2'),), 0.25)
-    >>> str(G[3])
-    "[X] ||| '2' ||| 0.25"
     """
 
-    def __init__(self, cfg_lexer=None, transform=None):
+    def __init__(self, cfg_lexer=None, transform=None, fprefix='UnnamedFeature'):
         if cfg_lexer is None:
             cfg_lexer = CFGLex()
             cfg_lexer.build(debug=False, nowarn=True, optimize=True, lextab='cfg_lextab')
         CFGYacc.tokens = cfg_lexer.tokens
         CFGYacc.lexer = cfg_lexer.lexer
         self.transform_ = transform
+        self.fprefix_ = fprefix
 
     def p_rule_and_weights(self, p):
-        'rule : NONTERMINAL BAR rhs BAR weight'
-        p[0] = CFGProduction(p[1], p[3], p[5])
+        'rule : NONTERMINAL BAR rhs BAR fpairs'
+
+        # convert fpairs to fmap
+        i = 0
+        fmap = {}
+        for k, v in p[5]:
+            if k == '':
+                fmap['{0}{1}'.format(self.fprefix_, i)] = v
+                i += 1
+            else:
+                fmap[k] = v
+        # construct a scfg production
+        p[0] = CFGProduction(p[1], p[3], fmap)
 
     def p_rhs(self, p):
         '''rhs : TERMINAL
@@ -112,12 +109,23 @@ class CFGYacc(object):
                | rhs NONTERMINAL'''
         p[0] = p[1] + [p[2]]
 
-    def p_weight(self, p):
-        'weight : FVALUE'
-        if self.transform_:
-            p[0] = self.transform_(p[1])
-        else:
-            p[0] = p[1]
+    def p_fpairs(self, p):
+        """fpairs : fpair
+                  | fvalue"""
+        p[0] = [p[1]]
+
+    def p_fpairs_recursion(self, p):
+        """fpairs : fpairs fpair
+                  | fpairs fvalue"""
+        p[0] = p[1] + [p[2]]
+
+    def p_fpair(self, p):
+        """fpair : FNAME EQUALS FVALUE"""
+        p[0] = (p[1], self.transform_(p[3]))
+
+    def p_fvalue(self, p):
+        """fvalue : FVALUE"""
+        p[0] = ('', self.transform_(p[1]))
 
     def p_error(self, p):
         print("Syntax error at '%s'" % p, file=sys.stderr)
@@ -134,7 +142,7 @@ class CFGYacc(object):
             yield production
 
 
-def read_basic(istream, transform):
+def read_basic(istream, transform, fprefix='UnnamedFeature'):
     for line in istream:
         if line.startswith('#'):
             continue
@@ -148,28 +156,63 @@ def read_basic(istream, transform):
             raise ValueError('Expected a nonterminal LHS, got something else: %s' % fields[0])
         lhs = Nonterminal(fields[0][1:-1])  # ignore brackets
         rhs = tuple(Nonterminal(x[1:-1]) if x.startswith('[') and x.endswith(']') else Terminal(x[1:-1]) for x in fields[1].split())
-        fvalue = transform(float(fields[2]))
-        yield CFGProduction(lhs, rhs, fvalue)
+        fmap = {}
+        unnamed = 0
+        for pair in fields[2].split():
+            parts = pair.split('=')
+            if len(parts) == 2:
+                try:
+                    fmap[parts[0]] = float(parts[1])
+                except ValueError:
+                    raise ValueError('Feature values must be real numbers: %s' % parts[1])
+            elif len(parts) == 1:
+                try:
+                    fmap['{0}{1}'.format(fprefix, unnamed)] = float(parts[0])
+                except ValueError:
+                    raise ValueError('Feature values must be real numbers: %s' % parts[0])
+                unnamed += 1
+            else:
+                raise ValueError("Wrong feature-value format (perhaps you have '=' as part of the feature name?): %s" % pair)
+        yield CFGProduction(lhs, rhs, fmap)
 
 
-def read_grammar(istream, transform=float, ply_based=False):
+def cdec_adaptor(istream):
+    for line in istream:
+        if line.startswith('#') or not line.strip():
+            continue
+        fields = line.split('|||')
+        fields[1] = ' '.join(s if s.startswith('[') and s.endswith(']') else "'%s'" % s for s in fields[1].split())
+        yield ' ||| '.join(fields)
+
+
+def read_grammar(istream, transform=float, cdec_adapt=False, fprefix='UnnamedFeature', ply_based=True):
     """
     Read a grammar from an input stream.
     :param istream: an input stream or a path to grammar file.
     :param transform: a transformation (e.g. log).
-    :param ply_based: whether or not to use a lex-yacc parser (seems slow).
+    :param cdec_adapt: wehter or not the input grammar is in cdec format
+    :param fprefix: prefix used in naming unnamed features
+    :param ply_based: whether or not to use a lex-yacc parser
     :return: a CFG
     """
+
     if type(istream) is str:
         istream = smart_ropen(istream)
+    if cdec_adapt:
+        istream = cdec_adaptor(istream)
     if ply_based:
-        parser = CFGYacc(transform=transform)
+        parser = CFGYacc(transform=transform, fprefix=fprefix)
         parser.build(debug=False, optimize=True, write_tables=True, tabmodule='cfg_yacctab')
         return CFG(parser.parse(istream))
     else:
         return CFG(read_basic(istream, transform))
 
+
 if __name__ == '__main__':
     import sys
-    print(read_grammar(sys.stdin, ply_based=True))
+    cdec_adapt = False
+    if len(sys.argv) == 2:
+        if sys.argv[1] == 'cdec':
+            cdec_adapt = True
+    print(read_grammar(sys.stdin, cdec_adapt=cdec_adapt, ply_based=True))
 

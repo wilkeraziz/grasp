@@ -21,8 +21,9 @@ except ImportError:
 ext_modules = cythonize('**/*.pyx',
                         language='c++',
                         exclude=['grasp/cpp/*',
-                                 'grasp/parsing/sliced/_slicevars*',
-                                 'grasp/parsing/exact/_rescoring*'])
+                                 'grasp/parsing/exact/_earley_draft*',
+                                 ],
+                        )
 
 setup(
     name='grasp',

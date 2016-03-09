@@ -31,6 +31,8 @@ from grasp.ff.lm import KenLMScorer
 from grasp.ff.lookup import RuleTable
 from grasp.ff.stateless import WordPenalty, ArityPenalty, StatelessLM
 from grasp.ff.scorer import StatefulScorer, StatelessScorer, TableLookupScorer, apply_scorers
+
+
 from grasp.ff.loglinear import LogLinearModel, read_weights
 from grasp.recipes import timeit, smart_wopen
 from .input import make_input
@@ -291,59 +293,6 @@ def sliced_rescoring(seg, forest, root, model, semiring, args, outdir):
     return {'slice': total_dt}
 
 
-def make_forest(hg):
-    forest = CFG()
-    for e in range(hg.n_edges()):
-        lhs = hg.label(hg.head(e))
-        rhs = [hg.label(n) for n in hg.tail(e)]
-        forest.add(CFGProduction(lhs, rhs, hg.weight(e)))
-    return forest
-
-@timeit
-def t_cy_decode(seg, extra_grammars, glue_grammars, model, args, outdir):
-    """
-    Decode (and time it).
-
-    :param seg: a input segment
-    :param extra_grammars: additional (normal) grammars
-    :param glue_grammars: glue grammars
-    :param model: a linear model
-    :param args: command line options
-    :param outdir: where to save results
-    :return:
-    """
-    semiring = SumTimes
-
-    logging.info('Loading grammar: %s', seg.grammar)
-    # load main SCFG from file
-    main_grammar = load_grammar(seg.grammar)
-    logging.info('Preparing input (%d): %s', seg.id, seg.src)
-    # make input FSA and a pass-through grammar for the given segment
-    input_fsa, pass_grammar = make_input(seg, list(chain([main_grammar], extra_grammars, glue_grammars)), semiring, args.default_symbol)
-    # put all (normal) grammars together
-    grammars = list(chain([main_grammar], extra_grammars, [pass_grammar])) if args.pass_through else list(chain([main_grammar], extra_grammars))
-
-    logging.info('Input: states=%d arcs=%d', input_fsa.n_states(), input_fsa.n_arcs())
-
-    from grasp.dstruct.hg import Hypergraph
-    from grasp.formal.fsa import make_dfa
-    hg = Hypergraph()
-    dfa = make_dfa(seg.src_tokens())
-
-    for grammar in grammars:
-        for r in grammar:
-            hg.add_xedge(r.lhs, r.irhs, semiring.one, r)
-    for grammar in glue_grammars:
-        for r in grammar:
-            hg.add_xedge(r.lhs, r.irhs, semiring.one, r, glue=True)
-
-    from grasp.parsing.exact.deduction import Nederhof as CyNederhof
-    # 1) get a parser
-    parser = CyNederhof(hg, dfa, semiring)
-    root = hg.fetch(Nonterminal(args.start))
-    hg = parser.do(root, Nonterminal(args.goal))
-    print(hg)
-
 @timeit
 def t_decode(seg, extra_grammars, glue_grammars, model, args, outdir):
     """
@@ -439,7 +388,6 @@ def traced_load_and_decode(seg, args, outdir):
 
         # Load feature extractors
         extractors = load_feature_extractors(args)
-
         # Load the model
         model = LogLinearModel(read_weights(args.weights, args.temperature), extractors)
 

@@ -1,8 +1,8 @@
 from cpython.object cimport Py_EQ, Py_NE
+from grasp.semiring._semiring cimport Semiring
 from grasp.formal.fsa cimport Arc, DFA
 from grasp.ptypes cimport id_t, weight_t
 from collections import defaultdict, deque
-from grasp.cfg.rule import CFGProduction
 cimport numpy as np
 import numpy as np
 import grasp.ptypes as ptypes
@@ -134,6 +134,13 @@ cdef class Agenda:
     def __len__(self):
         return len(self._active)
 
+    def __str__(self):
+        lines = []
+        for lhs, items in self._complete.items():
+            for item in items:
+                lines.append('{2} ||| {0} ||| {1}'.format(item, self._hg.rule(item.edge), (self._hg.head(item.edge), item.start, item.end)))
+        return '\n'.join(lines)
+
     cdef Item pop(self):
         return self._active.pop()
 
@@ -168,7 +175,16 @@ cdef class Agenda:
     cdef set destinations(self, id_t node, id_t start):
         return self._generating[node].get(start, set())
 
-    cdef Hypergraph make_output(self, id_t root, Nonterminal goal, DFA dfa):
+    cdef Hypergraph make_output(self, id_t root, Rule goal_rule, set initial, set final, list mapping=None):
+        """
+        :param root: root node of the input hypergraph
+        :param goal_rule: a rule that introduces a unique goal symbol
+        :param initial: set of initial states (if None, does not constrain goal rules to spanning from initial states)
+        :param final: set of final states (if None, does not constrain goal rules to spanning to final states)
+        :param mapping: a list where to store a mapping from output edges to input edges
+            when an output edge has no input correspondent (case of edges incoming to the goal node), we map it to -1
+        :return: intersection
+        """
         cdef:
             Hypergraph output = Hypergraph()
             Item item
@@ -181,18 +197,21 @@ cdef class Agenda:
 
         Q = deque([])  # queue of LHS annotated symbols whose rules are to be created
         # first we create rules for the roots
+
         for start, ends in self._generating[root].items():
-            if not dfa.is_initial(start):  # must span from an initial state
+            if initial is not None and start not in initial:  # must span from an initial state
                 continue
             for end in ends:
-                if not dfa.is_final(end):    # to a final state
+                if final is not None and end not in final:    # to a final state
                     continue
                 Q.append((root, start, end))
                 discovered.add((root, start, end))
-                output.add_xedge(make_span(goal),
+                output.add_xedge(make_span(goal_rule.lhs),
                                  (make_span(self._hg.label(root), start, end),),
                                  0.0,
-                                 CFGProduction(goal, [self._hg.label(root)], 0.0))
+                                 goal_rule)  # CFGProduction(goal, [self._hg.label(root)], 0.0)
+                if mapping is not None:
+                    mapping.append(-1)
 
         # create rules for symbols which are reachable from other generating symbols (starting from the root ones)
         n_discovered = len(discovered)
@@ -213,20 +232,14 @@ cdef class Agenda:
                         Q.append((nid, item.states[i], item.states[i + 1]))
                     rhs[i] = make_span(self._hg.label(nid), item.states[i], item.states[i + 1])
 
-                output.add_xedge(lhs, tuple(rhs), item.weight, self._hg.rule(e))
+                aux = output.add_xedge(lhs, tuple(rhs), item.weight, self._hg.rule(e))
+                if mapping is not None:
+                    mapping.append(e)
+
         return output
 
 
-cdef class SliceVariables:
-
-    cpdef bint is_inside(self, key, p): pass
-
-    cpdef weight_t logpdf(self, key, p): pass
-
-    cpdef weight_t pdf(self, key, p): pass
-
-
-cdef class DeductiveParser:
+cdef class DeductiveIntersection:
     """
     This is implements the core of the deductive parser.
 
@@ -251,9 +264,10 @@ cdef class DeductiveParser:
         * offers a default implementation of scan, complete_itself and complete_others
     """
 
-    def __init__(self, Hypergraph hg, DFA dfa, semiring, SliceVariables slicevars):
+    def __init__(self, Hypergraph hg,
+                 Semiring semiring,
+                 SliceVariables slicevars):
         self._hg = hg
-        self._dfa = dfa
         self._semiring = semiring
         self._slicevars = slicevars
 
@@ -287,33 +301,17 @@ cdef class DeductiveParser:
         """Pop and return an active item."""
         return self._agenda.pop()
 
+    #cdef weight_t score_on_creation(self, id_t e):
+    #    raise NotImplementedError('I do not know how to score an item on creation.')
+
+    #cdef weight_t score_on_completion(self, Item item):
+    #    raise NotImplementedError('I do not know how to score an item on completion.')
+
+    #cdef weight_t score_on_scan(self, Item item, Arc arc):
+    #    raise NotImplementedError('I do not know how to score an item on scan.')
+
     cdef bint scan(self, Item item):
-        """
-        Scan:
-
-                 [X -> alpha * x beta, [i ... j]]:w1
-            ----------------------------------------------        <j, x, k>:w2 in E
-              [X -> alpha x * beta, [i ... j k]]: w1 * w2
-
-        :param item: an item whose next node is terminal.
-        :return: whether the terminal could be scanned.
-        """
-        cdef:
-            Symbol terminal = self.next_symbol(item)
-            id_t sfrom = item.end
-            id_t a_i = self._dfa.fetch(sfrom, terminal)
-
-        if a_i < 0:
-            return False
-
-        cdef:
-            Arc arc = self._dfa.arc(a_i)
-
-        self.push(self._ifactory.advance(item,
-                                         arc.destination,
-                                         self._semiring.times(item.weight, arc.weight)))
-
-        return True
+        raise NotImplementedError('I do not know how to scan an item.')
 
     cdef bint complete_itself(self, Item item):
         """
@@ -355,7 +353,7 @@ cdef class DeductiveParser:
             self.push(self._ifactory.advance(incomplete, item.end, incomplete.weight))
         return n_items0 < len(self._ifactory)
 
-    cdef void inference(self, Item item):
+    cdef void process(self, Item item):
         """
         Apply inference rules.
 
@@ -378,7 +376,7 @@ cdef class DeductiveParser:
                 self.process_incomplete(item)
                 self._agenda.make_waiting(item)
 
-    cpdef Hypergraph do(self, id_t root, Symbol goal):
+    cdef void inference(self, id_t root):
         """
         Compute the intersection between the hypergraph and the DFA.
 
@@ -394,30 +392,94 @@ cdef class DeductiveParser:
 
         while agenda:
             item = agenda.pop()
-            self.inference(item)
+            self.process(item)
 
-        return agenda.make_output(root, goal, self._dfa)
+    cpdef Hypergraph do(self, id_t root, Rule goal_rule):
+        raise NotImplementedError('I do not know what to do.')
 
     cdef void axioms(self, id_t root):
         """Instantiate trivial items."""
-        pass
+        raise NotImplementedError('I do not know how to create axioms.')
 
     cdef void process_incomplete(self, Item item):
         """Process a complete item which falls within the slice."""
-        pass
+        raise NotImplementedError('I do not know how to process incomplete items.')
 
     cdef void process_complete(self, Item item):
         """Process an incomplete item whose next node is nonterminal."""
-        pass
+        raise NotImplementedError('I do not know how to process complete items.')
 
 
-cdef class Earley(DeductiveParser):
+cdef class Parser(DeductiveIntersection):
+
+    def __init__(self, Hypergraph hg,
+                 DFA dfa,
+                 Semiring semiring,
+                 SliceVariables slicevars):
+        super(Parser, self).__init__(hg, semiring, slicevars)
+        self._dfa = dfa
+
+    #cdef weight_t score_on_creation(self, id_t e):
+    #    return self._hg.weight(e)
+
+    #cdef weight_t score_on_completion(self, Item item):
+    #    return item.weight
+
+    #cdef weight_t score_on_scan(self, Item item, Arc arc):
+    #    return self._semiring.times(item.weight, arc.weight)
+
+    cdef bint scan(self, Item item):
+        """
+        Scan:
+
+                 [X -> alpha * x beta, [i ... j]]:w1
+            ----------------------------------------------        <j, x, k>:w2 in E
+              [X -> alpha x * beta, [i ... j k]]: w1 * w2
+
+        :param item: an item whose next node is terminal.
+        :return: whether the terminal could be scanned.
+        """
+        cdef:
+            Symbol terminal = self.next_symbol(item)
+            id_t sfrom = item.end
+            id_t a_i = self._dfa.fetch(sfrom, terminal)
+
+        if a_i < 0:
+            return False
+
+        cdef:
+            Arc arc = self._dfa.arc(a_i)
+
+        self.push(self._ifactory.advance(item,
+                                         arc.destination,
+                                         self._semiring.times(item.weight, arc.weight)))
+
+        return True
+
+    cpdef Hypergraph do(self, id_t root, Rule goal_rule):
+        """
+        Compute the intersection between the hypergraph and the DFA.
+
+        :param root: input root node.
+        :param goal: symbol to be associated with the output goal node.
+        :return: the intersection
+        """
+
+        self.inference(root)
+
+        return self._agenda.make_output(root,
+                                        goal_rule,
+                                        initial=set(self._dfa.iterinitial()),
+                                        final=set(self._dfa.iterfinal()))
+
+
+cdef class EarleyParser(Parser):
     """
     The Earley parser is specialises the skeleton deductive parser by implementing top-down prediction.
     """
     
-    def __init__(self, Hypergraph hg, DFA dfa, semiring, SliceVariables slicevars=None):
-        super(Earley, self).__init__(hg, dfa, semiring, slicevars)
+    def __init__(self, Hypergraph hg, DFA dfa, Semiring semiring, SliceVariables slicevars=None):
+        super(EarleyParser, self).__init__(hg, dfa, semiring, slicevars)
         self._predictions = set()
         
     cdef void axioms(self, id_t root):
@@ -458,15 +520,15 @@ cdef class Earley(DeductiveParser):
             self.complete_itself(item)
 
 
-cdef class Nederhof(DeductiveParser):
+cdef class NederhofParser(Parser):
     """
     This is an implementation of the CKY-inspired intersection due to Nederhof and Satta (2008).
 
     It specialises the skeleton deductive parser by implementing delayed axioms.
     """
 
-    def __init__(self, Hypergraph hg, DFA dfa, semiring, SliceVariables slicevars=None):
-        super(Nederhof, self).__init__(hg, dfa, semiring, slicevars)
+    def __init__(self, Hypergraph hg, DFA dfa, Semiring semiring, SliceVariables slicevars=None):
+        super(NederhofParser, self).__init__(hg, dfa, semiring, slicevars)
 
         # indexes edges by tail[0]
         self._edges_by_tail0 = [[] for _ in range(self._hg.n_nodes())]
@@ -546,6 +608,130 @@ cdef class Nederhof(DeductiveParser):
             self._complete_tail0(head, start, end, self._semiring.one)   # instantiate new items from matching rules
 
 
+cdef class Rescorer(DeductiveIntersection):
+
+    def __init__(self, Hypergraph hg,
+                 StatelessScorer stateless,
+                 StatefulScorer stateful,
+                 Semiring semiring,
+                 SliceVariables slicevars):
+        super(Rescorer, self).__init__(hg, semiring, slicevars)
+        self._stateless = stateless
+        self._stateful = stateful
+        if self._stateful:
+            self._initial = self._stateful.initial()
+            self._final = self._stateful.final()
+        else:
+            self._initial = 0
+            self._final = 0
+        self._mapping = []
+
+    cdef weight_t score_on_creation(self, id_t e):
+        if self._stateless:
+            return self._semiring.times(self._hg.weight(e), self._stateless.score(self._hg.rule(e)))
+        else:
+            return self._hg.weight(e)
+
+    cdef bint scan(self, Item item):
+        cdef weight_t weight
+        cdef id_t to
+        if self._stateful:
+            weight, to = self._stateful.score(self.next_symbol(item), context=item.end)
+            # scan the item
+            self.push(self._ifactory.advance(item,
+                                             to,
+                                             self._semiring.times(item.weight, weight)))
+            return True
+        else:
+            self.push(self._ifactory.advance(item,
+                                             0,
+                                             item.weight))
+            return True
+
+    cpdef Hypergraph do(self, id_t root, Rule goal_rule):
+        self.inference(root)
+
+        # a rescorer does not constrain the final state
+        return self._agenda.make_output(root,
+                                        goal_rule,
+                                        initial=set([self._initial]),
+                                        final=None,
+                                        mapping=self._mapping)
+
+    cpdef id_t maps_to(self, id_t e):
+        """
+        :param e: an annotated edge (that is, in the output forest)
+        :return: the original unnanotated edge (that is, in the input forest)
+        """
+        return self._mapping[e]
+
+
+cdef class EarleyRescorer(Rescorer):
+    """
+    The Earley parser is specialises the skeleton deductive parser by implementing top-down prediction.
+    """
+
+    def __init__(self, Hypergraph hg,
+                 StatelessScorer stateless,
+                 StatefulScorer stateful,
+                 Semiring semiring,
+                 SliceVariables slicevars=None):
+        super(EarleyRescorer, self).__init__(hg,
+                                             stateless=stateless,
+                                             stateful=stateful,
+                                             semiring=semiring,
+                                             slicevars=slicevars)
+        self._predictions = set()
+
+    cdef void axioms(self, id_t root):
+        cdef id_t start = self._initial
+        cdef id_t e
+        for e in self._hg.iterbs(root):
+            # In MT for some reason, in some decoders, people don't score the top rule
+            # that is, they would do something like this
+            # self.push(self._ifactory.insert(e, (start,), self._hg.weight(e)))
+            # I don't see a real good reason for that and I don't want to program bypasses, thus
+            # I score top rules normally as follows
+            self.push(self._ifactory.insert(e, (start,), self.score_on_creation(e)))
+            self._predictions.add((root, start))
+
+
+    cdef bint _predict(self, Item item):
+        cdef:
+            id_t n_i = self._hg.child(item.edge, item.dot)  # id of the next node
+            id_t start = item.end  # the next node will rewrite from the last state of this item
+            id_t n_preds = len(self._predictions)
+
+        self._predictions.add((n_i, start))
+        if n_preds == len(self._predictions):  # no new candidates
+            return False
+
+        cdef id_t e_i
+
+        for e_i in self._hg.iterbs(n_i):
+            self.push(self._ifactory.insert(e_i, (start,), self.score_on_creation(e_i)))
+
+        if False:
+
+            if start == self._initial:  # for initial states we just add whatever edge matches
+                for e_i in self._hg.iterbs(n_i):
+                    self.push(self._ifactory.insert(e_i, (start,), self.score_on_creation(e_i)))
+            else:  # if a state is not initial, we only create items based on edges which are not  *glue*
+                for e_i in self._hg.iterbs(n_i):
+                    if self.is_glue(e_i):
+                        continue
+                    self.push(self._ifactory.insert(e_i, (start,), self.score_on_creation(e_i)))
+
+        return True
+
+    cdef void process_complete(self, Item item):
+        self.complete_others(item)
+
+    cdef void process_incomplete(self, Item item):
+        if not self._predict(item):
+            self.complete_itself(item)
+
+
 cpdef weight_t[::1] reweight(Hypergraph forest, SliceVariables slicevars, Semiring semiring):
     cdef weight_t[::1] values = np.zeros(forest.n_edges(), dtype=ptypes.weight)
     cdef id_t e
@@ -561,7 +747,6 @@ cpdef weight_t[::1] reweight(Hypergraph forest, SliceVariables slicevars, Semiri
 
 
 # TODO:
-# rescoring
 # sliced rescoring
 # prune/reweight
 

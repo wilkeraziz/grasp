@@ -1,6 +1,7 @@
 from grasp.cfg.symbol cimport Terminal
 from grasp.ptypes cimport id_t, weight_t
 from .hg cimport tail_t
+from cpython.object cimport Py_EQ, Py_NE
 
 cdef class Node:
     """
@@ -111,20 +112,20 @@ cdef class Hypergraph:
             self._glue.add(e)
         return e
 
-    cpdef id_t add_edge(self, Rule rule, bint glue=False):
-        """
-        Map a rule to an edge (always creates a new edge).
-        :param rule: a Rule
-        :param glue: whether the rule is constrained to rewriting from initial states only.
-        :return: index of the corresponding edge
-        """
-        cdef id_t head = self.add_node(rule.lhs)
-        cdef tuple tail = tuple([self.add_node(sym) for sym in rule.rhs])
-        cdef id_t e = self._add_edge(Edge(head, tail, rule.weight))
-        self._rules.append(rule)
-        if glue:
-            self._glue.add(e)
-        return e
+    #cpdef id_t add_edge(self, Rule rule, bint glue=False):
+    #    """
+    #    Map a rule to an edge (always creates a new edge).
+    #    :param rule: a Rule
+    #    :param glue: whether the rule is constrained to rewriting from initial states only.
+    #    :return: index of the corresponding edge
+    #    """
+    #    cdef id_t head = self.add_node(rule.lhs)
+    #    cdef tuple tail = tuple([self.add_node(sym) for sym in rule.rhs])
+    #    cdef id_t e = self._add_edge(Edge(head, tail, rule.weight))
+    #    self._rules.append(rule)
+    #    if glue:
+    #        self._glue.add(e)
+    #    return e
 
     cpdef id_t fetch(self, Symbol sym, id_t default=-1):
         """Return the node associated with a given symbol or a default value."""
@@ -161,6 +162,9 @@ cdef class Hypergraph:
         """Whether the node has an empty backward-star (no incoming edges)"""
         return len(self._bs[head]) == 0
 
+    cpdef bint is_glue(self, id_t e):
+        return e in self._glue
+
     cpdef Symbol label(self, id_t n):
         """The label associated with a node"""
         return self._nodes[n].label
@@ -169,15 +173,15 @@ cdef class Hypergraph:
         """The rule associated with an edge"""
         return self._rules[e]
 
-    cpdef update(self, rules, bint glue=False):
-        """
-        Creates nodes and edges corresponding to a given CFG.
-        :param rules: an iterable over Rule objects.
-        :param glue: whether these rules come from a glue grammar
-        """
-        cdef Rule rule
-        for rule in rules:
-            self.add_edge(rule, glue=glue)
+    #cpdef update(self, rules, bint glue=False):
+    #    """
+    #    Creates nodes and edges corresponding to a given CFG.
+    #    :param rules: an iterable over Rule objects.
+    #    :param glue: whether these rules come from a glue grammar
+    #    """
+    #    cdef Rule rule
+    #    for rule in rules:
+    #        self.add_edge(rule, glue=glue)
 
     cpdef size_t n_nodes(self):
         """Number of nodes"""
@@ -214,6 +218,58 @@ cdef class Hypergraph:
         return node in <set>self._deps[node]
 
 
+cdef class Derivation:
+
+    def __init__(self, Hypergraph derivation):
+        self._hg = derivation
+        self._rules = None
+        self._weights = None
+
+    cpdef tuple weights(self):
+        cdef id_t e
+        if self._weights is None:
+            self._weights = tuple([self._hg.weight(e) for e in range(self._hg.n_edges())])
+        return self._weights
+
+    cpdef tuple rules(self):
+        cdef id_t e
+        if self._rules is None:
+            self._rules = tuple([self._hg.rule(e) for e in range(self._hg.n_edges())])
+        return self._rules
+
+    cpdef iteritems(self):
+        return zip(self._rules, self._weights)
+
+    def __hash__(self):
+        return hash(self.rules())
+
+    def __richcmp__(Derivation x, Derivation y, int opt):
+        if opt == Py_EQ:
+            return x.rules() == y.rules()
+        elif opt == Py_NE:
+            return x.rules() != y.rules()
+        else:
+            raise ValueError('Cannot compare derivations with opt=%d' % opt)
+
+    #cpdef tuple annotated_rules(self):
+        #cdef id_t e
+        #if self._annotated_rules is None:
+        #    for e in range(self._hg.n_edges()):
+        #        LHS = self._hg.label(self._hg.head(e))
+
+
+cpdef Derivation make_derivation(Hypergraph forest, tuple edges):
+    cdef:
+        Hypergraph hg = Hypergraph()
+        id_t e, c
+
+    for e in edges:
+        hg.add_xedge(forest.label(forest.head(e)),
+                     tuple([forest.label(c) for c in forest.tail(e)]),
+                     forest.weight(e),
+                     forest.rule(e))
+
+    return Derivation(hg)
 
 # algorithms
 # topsort
@@ -227,23 +283,6 @@ cdef class Hypergraph:
 # The struct is viable if every algorithm that deals with a hypergraph is ported to cython
 # I think I will maintain both for the time being
 
-
-cpdef Hypergraph cfg_to_hg(grammars, glue_grammars):
-    """
-    Construct a hypergraph from a collection of grammars.
-
-    :param grammars: a sequence of CFG objects.
-    :param glue_grammars: a sequence of CFG objects (the "glue" constraint applies).
-    :return: a Hypergraph
-    """
-    cdef Hypergraph hg = Hypergraph()
-
-    for grammar in grammars:  # TODO make Grammar/CFG an Extension type
-        hg.update(grammar)
-    for grammar in glue_grammars:
-        hg.update(grammar, glue=True)
-
-    return hg
 
 # TODO:
 # semirings

@@ -8,12 +8,12 @@ import sys
 import numpy as np
 from itertools import chain
 from .symbol import Terminal, Nonterminal
-from .rule import CFGProduction
+from grasp.cfg.rule import NewCFGProduction as CFGProduction
 from .cfg import CFG
 from grasp.recipes import smart_ropen
 
 
-def iterrules(path, transform):
+def iterrules(path, transform, fname='Prob'):
     fi = smart_ropen(path)
     for line in fi:
         line = line.strip()
@@ -25,12 +25,12 @@ def iterrules(path, transform):
         num = float(num)
         den = float(den)
         rhs = fields[1:-2]  # fields[-2] is the yield function, which we are ignoring
-        #if len(rhs) != 2:
-        #    logging.debug('Unary rule: %s %s' % (lhs, rhs))
-        yield CFGProduction(Nonterminal(lhs), [Nonterminal(s) for s in rhs], transform(num/den))
+        yield CFGProduction(Nonterminal(lhs),
+                            [Nonterminal(s) for s in rhs],
+                            {fname: transform(num/den)})
 
 
-def iterlexicon(path, transform):
+def iterlexicon(path, transform, fname='Prob'):
     fi = smart_ropen(path)
     for line in fi:
         line = line.strip()
@@ -43,12 +43,15 @@ def iterlexicon(path, transform):
             num, den = fraction.split('/')
             num = float(num)
             den = float(den)
-            r = CFGProduction(Nonterminal(tag), [Terminal(word)], transform(num/den))
+            r = CFGProduction(Nonterminal(tag),
+                              (Terminal(word),),
+                              {fname: transform(num/den)})
             yield r
 
 
-def read_grammar(rules_file, lexicon_file, transform=np.log):
-    return CFG(chain(iterrules(rules_file, transform), iterlexicon(lexicon_file, transform)))
+def read_grammar(rules_file, lexicon_file, transform=np.log, fname='LogProb'):
+    return CFG(chain(iterrules(rules_file, transform, fname),
+                     iterlexicon(lexicon_file, transform, fname)))
 
 if __name__ == '__main__':
     if len(sys.argv) != 3:

@@ -5,7 +5,7 @@
 from grasp.semiring._semiring cimport Semiring
 from grasp.formal.hg cimport Hypergraph
 from grasp.formal.topsort cimport TopSortTable
-from grasp.inference._value cimport ValueFunction
+from grasp.alg.value cimport ValueFunction
 from grasp.ptypes cimport weight_t, id_t
 
 

@@ -18,7 +18,7 @@ it can handle an arbitrary FSA (including non-determinism).
 import logging
 from grasp.cfg.symbol import Terminal, Nonterminal, make_span
 from grasp.cfg.cfg import CFG
-from grasp.cfg.rule import CFGProduction
+from grasp.cfg.rule import _CFGProduction as CFGProduction
 from .dottedrule import DottedRule as Item
 from .agenda import ActiveQueue, Agenda
 
@@ -244,7 +244,7 @@ class EarleyRescoring(object):
                 # the goal item incorporates p(bos) and p(eos|end)
                 goal_rule = CFGProduction(make_span(root),
                                     [make_span(root, start, end)],
-                                    semiring.times(scorer.initial_score(), scorer.final_score(context=end)))
+                                    semiring.times(scorer.initial_score(), scorer.final_score(end)))
                 G.add(goal_rule)
                 map_edges(goal_rule, None)
 

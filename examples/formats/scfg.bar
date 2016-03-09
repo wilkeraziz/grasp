@@ -1,3 +1,4 @@
+# in comparison to a cdec grammar, terminals are wrapped around single quotes
 [S] ||| [X,1] ||| [1] ||| 1.0 Top=1.0
 [X] ||| [X,1] [X,2] ||| [1] [2] ||| 0.25 Monotone=1.0
 [X] ||| [X,1] [X,2] ||| [2] [1] ||| 0.25 Inverted=1.0

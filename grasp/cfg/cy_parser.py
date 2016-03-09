@@ -8,44 +8,46 @@ One can choose from all available implementations.
 import logging
 import sys
 import traceback
+
+
 from itertools import chain
 from multiprocessing import Pool
 from functools import partial
 from types import SimpleNamespace
 from collections import Counter, defaultdict
 
-from grasp.recipes import timeit, smart_wopen, progressbar
+from grasp.alg.deduction import EarleyParser, NederhofParser, reweight
+from grasp.alg.slicevars import get_distribution, get_prior, SpanSliceVariables, VectorOfPriors
+from grasp.alg.value import LookupFunction, derivation_value, EdgeWeight
+from grasp.alg.inference import viterbi_derivation, AncestralSampler, DerivationCounter
+from grasp.alg.chain import group_by_identity, apply_batch_filters, apply_filters
+
+from grasp.recipes import timeit, smart_wopen, progressbar, deprecated
 from grasp.io.results import save_mcmc_derivation, save_mcmc_yields, save_markov_chain
 from grasp.io.results import save_viterbi, save_kbest, save_mc_derivations, save_mc_yields
 
-from grasp.parsing.exact.deduction import Earley, Nederhof
-from grasp.parsing.exact.deduction import reweight
-
-from grasp.parsing.sliced.sampling import group_by_projection, group_by_identity
-from grasp.parsing.sliced.slicevars import Beta, Exponential, get_prior, VectorOfPriors
-from grasp.parsing.sliced.sampling import apply_batch_filters, apply_filters
-from grasp.parsing.sliced.slicevars import SliceVariables
-
 from grasp.cfg import CFG
 from grasp.cfg.symbol import Nonterminal
+from grasp.cfg.rule import NewCFGProduction
 from grasp.cfg.projection import DerivationYield
 from grasp.cfg.workspace import make_dirs
 from grasp.cfg.cmdline import argparser
 from grasp.cfg.sentence import make_sentence
 from grasp.cfg.reader import load_grammar
 from grasp.cfg.rule import get_oov_cfg_productions
+from grasp.cfg.model import PCFG
 
 from grasp.formal.topsort import LazyTopSortTable, RobustTopSortTable
-from grasp.formal.hg import cfg_to_hg
+from grasp.formal.scfgop import cfg_to_hg
 from grasp.formal.fsa import make_dfa
+from grasp.formal.hg import make_derivation
 
-from grasp.inference._value import LookupFunction, derivation_value
-from grasp.inference._inference import viterbi_derivation, AncestralSampler, DerivationCounter
 
 import grasp.semiring as semiring
+import itertools
 
 
-def group_raw(forest, raw_samples):
+def group_raw(forest, raw_samples):  # TODO: compute values as well
     """
     Group "raw derivations", that is, derivations which are still represented by a sequence of edge ids.
     :param forest:
@@ -54,8 +56,13 @@ def group_raw(forest, raw_samples):
      'd' (derivation as a sequence of rules) and 'n' (count).
     """
     raw_dist = Counter(raw_samples)
-    output = [SimpleNamespace(derivation=[forest.rule(e) for e in d], count=n)
+    edge_value = EdgeWeight(forest)
+
+    output = [SimpleNamespace(derivation=make_derivation(forest, d),
+                              count=n,
+                              value=edge_value.reduce(semiring.inside.times, d))
               for d, n in raw_dist.most_common()]
+
     return output
 
 
@@ -67,7 +74,7 @@ def exact_parsing(seg: 'the input segment (e.g. a Sentence)',
     """Parse the input exactly."""
 
     logging.debug('Building input hypergraph')
-    hg = cfg_to_hg(grammars, glue_grammars)
+    hg = cfg_to_hg(grammars, glue_grammars, omega=PCFG(fname='LogProb'))
     root = hg.fetch(Nonterminal(options.start))
 
     # make input DFA
@@ -75,13 +82,16 @@ def exact_parsing(seg: 'the input segment (e.g. a Sentence)',
 
     # get a parser implementation
     if options.intersection == 'earley':
-        parser = Earley(hg, dfa, semiring.inside)
+        parser = EarleyParser(hg, dfa, semiring.inside)
     else:
-        parser = Nederhof(hg, dfa, semiring.inside)
+        parser = NederhofParser(hg, dfa, semiring.inside)
 
     # parse
     logging.debug('Parsing')
-    forest = parser.do(root, Nonterminal(options.goal))
+    goal_rule = NewCFGProduction(Nonterminal(options.goal),
+                              [Nonterminal(options.goal)],
+                                 {'LogProb': semiring.inside.one})
+    forest = parser.do(root, goal_rule)
 
     if not forest:
         logging.info('[%s] NO PARSE FOUND', seg.id)
@@ -104,20 +114,22 @@ def exact_parsing(seg: 'the input segment (e.g. a Sentence)',
                   file=fo)
 
     # decoding strategies
-
-    omega_d = lambda d: semiring.inside.times.reduce([r.weight for r in d])
+    omega_d = lambda d: semiring.inside.times.reduce(d.weights())
 
     if options.viterbi:
         tsort = tsorter.do()
         logging.info('Viterbi...')
 
-        d = viterbi_derivation(forest, tsort)
-        score = derivation_value(forest, d, semiring.inside)
-        logging.info('Viterbi derivation: %s', score)  #, DerivationYield.derivation(d))
+        raw_viterbi = viterbi_derivation(forest, tsort)
+        viterbi = make_derivation(forest, raw_viterbi)
+
+        score = omega_d(viterbi)
+        logging.info('Viterbi derivation: %s', score)
         logging.info('Saving...')
         save_viterbi('{0}/viterbi/{1}.gz'.format(outdir, seg.id),
-                     [forest.rule(e) for e in d],
-                     omega_d=omega_d,
+                     SimpleNamespace(derivation=viterbi,
+                                     count=1,
+                                     value=score),
                      get_projection=DerivationYield.derivation)
 
     if options.samples > 0:
@@ -130,8 +142,7 @@ def exact_parsing(seg: 'the input segment (e.g. a Sentence)',
         derivations = group_raw(forest, raw_samples)
         save_mc_derivations('{0}/ancestral/derivations/{1}.gz'.format(outdir, seg.id),
                             derivations,
-                            inside=sampler.Z,
-                            omega_d=omega_d)
+                            inside=sampler.Z)
 
     logging.info('[%s] Finished!', seg.id)
 
@@ -149,7 +160,7 @@ def make_batch_conditions(forest, raw_derivations):
     return conditions
 
 
-def uninformed_conditions(hg, dfa, slicevars, root, goal, batch, algorithm):
+def uninformed_conditions(hg, dfa, slicevars, root, goal_rule, batch, algorithm):
     """
     Search for an initial set of conditions without any heuristics.
 
@@ -168,13 +179,13 @@ def uninformed_conditions(hg, dfa, slicevars, root, goal, batch, algorithm):
     while True:
 
         if algorithm == 'earley':
-            parser = Earley(hg, dfa, semiring.inside, slicevars)
+            parser = EarleyParser(hg, dfa, semiring.inside, slicevars)
         else:
-            parser = Nederhof(hg, dfa, semiring.inside, slicevars)
+            parser = NederhofParser(hg, dfa, semiring.inside, slicevars)
 
         # compute a slice (a randomly pruned forest)
         logging.debug('Computing slice...')
-        forest = parser.do(root, goal)
+        forest = parser.do(root, goal_rule)
         if not forest:
             logging.debug('NO PARSE FOUND')
             slicevars.reset()  # reset the slice variables (keeping conditions unchanged if any)
@@ -200,26 +211,27 @@ def sliced_parsing(seg: 'the input segment (e.g. a Sentence)',
 
     # Input Hypergraph
     logging.debug('Building input hypergraph')
-    hg = cfg_to_hg(grammars, glue_grammars)
+    hg = cfg_to_hg(grammars, glue_grammars, omega=PCFG(fname='LogProb'))
     root = hg.fetch(Nonterminal(options.start))
     dfa = make_dfa(seg.signatures)
-    goal = Nonterminal(options.goal)
+    goal_rule = NewCFGProduction(Nonterminal(options.goal),
+                                 [Nonterminal(options.goal)],
+                                 {'LogProb': semiring.inside.one})
 
     # Slice variables
+    dist = get_distribution(options.free_dist)
     if options.free_dist == 'beta':
-        dist = Beta
         prior = VectorOfPriors(get_prior(options.prior_a[0], options.prior_a[1]),
                                get_prior(options.prior_b[0], options.prior_b[1]))
     elif options.free_dist == 'exponential':
-        dist = Exponential
         prior = get_prior(options.prior_scale[0], options.prior_scale[1])
 
-    u = SliceVariables({}, dist, prior)
-    logging.debug('%s prior=%r', dist.__name__, prior)
+    u = SpanSliceVariables({}, dist, prior)
+    logging.debug('%r', u)
     # make initial conditions
     # TODO: consider intialisation heuristics such as attempt_initialisation(fsa, grammars, glue_grammars, options)
     logging.info('Looking for initial set of conditions...')
-    uninformed_conditions(hg, dfa, u, root, goal, options.batch, options.intersection)
+    uninformed_conditions(hg, dfa, u, root, goal_rule, options.batch, options.intersection)
     logging.info('Done')
     #u.reset(conditions)
 
@@ -240,12 +252,12 @@ def sliced_parsing(seg: 'the input segment (e.g. a Sentence)',
 
         # get a parser implementation
         if options.intersection == 'earley':
-            parser = Earley(hg, dfa, semiring.inside, u)
+            parser = EarleyParser(hg, dfa, semiring.inside, u)
         else:
-            parser = Nederhof(hg, dfa, semiring.inside, u)
+            parser = NederhofParser(hg, dfa, semiring.inside, u)
 
         # compute a slice (a randomly pruned forest)
-        forest = parser.do(root, goal)
+        forest = parser.do(root, goal_rule)
         if not forest:
             raise ValueError('A slice can never be emtpy.')
 
@@ -257,7 +269,18 @@ def sliced_parsing(seg: 'the input segment (e.g. a Sentence)',
         # update the slice variables and the state of the Markov chain
         u.reset(make_batch_conditions(forest, raw_derivations))
 
-        markov_chain.append([tuple(forest.rule(e) for e in d) for d in raw_derivations])
+        # TODO: compute values!
+        # TODO: make a derivation class
+        # it is a hypergraph with its own edges, weights and rules
+        # so that we can ask its value directly
+        # it will basically replace the following
+        # >>> tuple(forest.rule(e) for e in d)
+        # then fix viterbi, MC, MCMC (all save_* methods
+        # and kbest
+        #markov_chain.append([tuple(forest.rule(e) for e in d) for d in raw_derivations])
+
+        # this representation is forest agnostic
+        markov_chain.append([make_derivation(forest, d) for d in raw_derivations])
 
         # update logging information
         sizes[0], sizes[1] = forest.n_nodes(), forest.n_edges()
@@ -275,15 +298,13 @@ def sliced_parsing(seg: 'the input segment (e.g. a Sentence)',
     # group by trees (free of nonterminal annotation)
     #trees = group_by_projection(samples, DerivationYield.tree)
     # save everything
-    omega_d = lambda d: semiring.inside.times.reduce([r.weight for r in d])
+    #omega_d = lambda d: semiring.inside.times.reduce([r.weight for r in d])
     save_mcmc_derivation('{0}/slice/derivations/{1}.gz'.format(outdir, seg.id),
-                         derivations,
-                         omega_d=omega_d)
+                         derivations)
     #save_mcmc_yields('{0}/slice/trees/{1}.gz'.format(outdir, seg.id), trees)
     if options.save_chain:
         save_markov_chain('{0}/slice/chain/{1}.gz'.format(outdir, seg.id),
                           markov_chain,
-                          omega_d=omega,
                           flat=False)
 
 
@@ -350,7 +371,8 @@ def core(job, args, outdir):
     grammars = list(main_grammars)
 
     if args.unkmodel == 'passthrough':
-        grammars.append(CFG(get_oov_cfg_productions(seg.oovs, args.unklhs, semiring.inside.one)))
+        # TODO: what feature value? one? zero?
+        grammars.append(CFG(get_oov_cfg_productions(seg.oovs, args.unklhs, 'LogProb', semiring.inside.one)))
 
     logging.info('[%d] Parsing %d words: %s', seg.id, len(seg), seg)
 

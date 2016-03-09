@@ -14,11 +14,12 @@ import numpy as np
 from grasp.recipes import timeit
 from grasp.io.report import EmptyReport
 from grasp.semiring import SumTimes
-from grasp.cfg import CFG, CFGProduction, Terminal, Nonterminal, TopSortTable
+from grasp.cfg import CFG, Terminal, Nonterminal, TopSortTable
+from grasp.cfg.rule import _CFGProduction as CFGProduction
 from grasp.cfg.utils import make_nltk_tree, inlinetree
 from grasp.inference.ancestral import AncestralSampler
-from grasp.parsing.exact import EarleyRescoring
-from .slicevars import ExpSliceVariables, ConstantPrior, SymmetricGamma, AsymmetricGamma
+from grasp.parsing.exact.rescoring import EarleyRescoring
+from grasp.parsing.sliced._slicevars import ExpSpanSliceVariables, ConstantPrior, SymmetricGamma, AsymmetricGamma
 from grasp.recipes import progressbar
 
 
@@ -180,7 +181,8 @@ class SlicedRescoring(object):
                 prior = AsymmetricGamma(scales=gamma_priors(self._forest, self._semiring, percentile=percentile))
             logging.debug('Asymmetric Gamma: %s', prior_parameter)
 
-        return ExpSliceVariables(conditions=conditions, prior=prior)
+        return ExpSpanSliceVariables(conditions, prior)
+
 
     def _uniform(self, l_slice, g, batch_size, prev_d):
         semiring = self._semiring

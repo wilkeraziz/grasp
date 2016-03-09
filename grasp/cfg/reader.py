@@ -34,3 +34,6 @@ def load_grammar(path, grammarfmt, log_transform):
     else:
         raise NotImplementedError("I don't know this grammar format: %s" % grammarfmt)
     return cfg
+
+
+# TODO: make __main__

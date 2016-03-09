@@ -18,7 +18,7 @@ from grasp.semiring import SumTimes
 from grasp.inference.value import robust_value_recursion as compute_values
 from grasp.inference.sample import sample_k
 from grasp.cfg.coarse import itercoarse, refine_conditions, iteritg
-from grasp.parsing.exact import Nederhof as ExactNederhof
+from grasp.parsing.exact.nederhof import Nederhof as ExactNederhof
 
 
 def initialise_coarse(input_fsa, grammars, glue_grammars, options):

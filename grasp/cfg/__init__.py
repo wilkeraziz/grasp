@@ -5,9 +5,8 @@
 from .cfg import Grammar
 from .sentence import Input
 from .cfg import CFG
-from .scfg import SCFG
+#from .scfg import SCFG
 from .fsa import WDFSA
-from .rule import CFGProduction
 from .srule import SCFGProduction
 from .symbol import Terminal, Nonterminal, Span
 from .sentence import Sentence

@@ -51,6 +51,11 @@ cdef class Semiring:
     cpdef weight_t[::1] ones(self, size_t size):
         return np.full(size, self.one, ptypes.weight)
 
+    cpdef weight_t[::1] normalise(self, weight_t[::1] values):
+        cdef weight_t v
+        cdef weight_t total = self.plus.reduce(values)
+        return np.array([self.divide(v, total) for v in values], dtype=ptypes.weight)
+
 
 cdef class ProbTimes(Times):
 

@@ -5,7 +5,7 @@
 import re
 from collections import defaultdict
 from .symbol import Terminal, Nonterminal
-from .rule import CFGProduction
+from .rule import _CFGProduction as CFGProduction
 
 
 _LHS_SPLIT_ = re.compile(r'(.+)_.+')

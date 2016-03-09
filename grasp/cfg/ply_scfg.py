@@ -19,7 +19,7 @@ _EXAMPLE_GRAMMAR_ = """
 
 class SCFGYacc(object):
 
-    def __init__(self, cfg_lexer=None, transform=None, fprefix='_'):
+    def __init__(self, cfg_lexer=None, transform=None, fprefix='UnnamedFeature'):
         if cfg_lexer is None:
             cfg_lexer = CFGLex()
             cfg_lexer.build(debug=False, nowarn=True, optimize=True, lextab='scfg_lextab')
@@ -99,15 +99,21 @@ def cdec_adaptor(istream):
         if line.startswith('#') or not line.strip():
             continue
         fields = line.split('|||')
-        lhs = fields[0]
-        f_rhs = ' '.join(s if s.startswith('[') and s.endswith(']') else "'%s'" % s for s in fields[1].split())
-        e_rhs = ' '.join(s if s.startswith('[') and s.endswith(']') else "'%s'" % s for s in fields[2].split())
-        weight = '1.0'
-        yield ' ||| '.join((lhs, f_rhs, e_rhs, weight))
+        fields[1] = ' '.join(s if s.startswith('[') and s.endswith(']') else "'%s'" % s for s in fields[1].split())
+        fields[2] = ' '.join(s if s.startswith('[') and s.endswith(']') else "'%s'" % s for s in fields[2].split())
+        yield ' ||| '.join(fields)
 
 
-def read_grammar(istream, transform=float, cdec_adapt=False, fprefix='_'):
-    """Read a grammar parsed with CFGYacc from an input stream"""
+def read_grammar(istream, transform=float, cdec_adapt=False, fprefix='UnnamedFeature'):
+    """
+    Read a grammar parsed with CFGYacc from an input stream
+
+    :param istream: an input stream or a path to grammar file.
+    :param transform: a transformation (e.g. log).
+    :param cdec_adapt: if True the grammar is seen as in cdec-format
+    :param fprefix: prefix used in naming unnamed features
+    :return: an SCFG
+    """
     parser = SCFGYacc(transform=transform, fprefix=fprefix)
     parser.build(debug=False, optimize=True, write_tables=True, tabmodule='scfg_yacctab')
     if cdec_adapt:
@@ -117,9 +123,11 @@ def read_grammar(istream, transform=float, cdec_adapt=False, fprefix='_'):
 
 if __name__ == '__main__':
     import sys
-    import logging
-    FORMAT = '%(asctime)-15s %(message)s'
-    G = read_grammar(sys.stdin, fprefix='Prob')
+    cdec_format = False
+    if len(sys.argv) == 2:
+        if sys.argv[1] == 'cdec':
+            cdec_format = True
+    G = read_grammar(sys.stdin, cdec_adapt=cdec_format)
     print('SCFG')
     print(G)
     #print('F-CFG')

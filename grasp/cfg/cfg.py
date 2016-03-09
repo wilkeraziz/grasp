@@ -7,8 +7,6 @@ This module contains class definitions for weighted context-free grammars and ut
 from collections import defaultdict
 from itertools import chain
 from .symbol import Terminal, Nonterminal
-from .rule import CFGProduction
-
 
 class Grammar:
 
@@ -19,49 +17,6 @@ class CFG(Grammar):
     """A context-free grammar.
 
     An object which acts much like a dictionary (and sometimes a set).
-
-    >>> cfg = CFG([CFGProduction(Nonterminal('S'), [Terminal('BOS'), Nonterminal('X'), Terminal('EOS')], 1.0)])
-    >>> # let's start testing length
-    >>> cfg.n_nonterminals()
-    2
-    >>> cfg.n_terminals()
-    2
-    >>> len(cfg)
-    1
-    >>> # then checks
-    >>> cfg.is_terminal(Terminal('a'))
-    False
-    >>> cfg.is_terminal(Terminal('BOS'))
-    True
-    >>> cfg.is_nonterminal(Nonterminal('Y'))
-    False
-    >>> cfg.is_nonterminal(Nonterminal('X'))
-    True
-    >>> cfg.can_rewrite(Nonterminal('X'))
-    False
-    >>> # then iterators
-    >>> set(cfg.iterterminals()) == set([Terminal('BOS'), Terminal('EOS')])
-    True
-    >>> set(cfg.iternonterminals()) == set([Nonterminal('S'), Nonterminal('X')])
-    True
-    >>> set(iter(cfg)) == set([CFGProduction(Nonterminal('S'), [Terminal('BOS'), Nonterminal('X'), Terminal('EOS')], 1.0)])
-    True
-    >>> # then topsort
-    >>> cfg.add(CFGProduction(Nonterminal('X'), [Terminal('a')], 1.0))
-    True
-    >>> topsort = (frozenset([Terminal('BOS'), Terminal('a'), Terminal('EOS')]), frozenset([Nonterminal('X')]), frozenset([Nonterminal('S')]))
-    >>> cfg.topsort()
-    >>> cfg.add(CFGProduction(Nonterminal('X'), [Nonterminal('Y')], 1.0))
-    True
-    >>> cfg.add(CFGProduction(Nonterminal('Y'), [Terminal('b')], 1.0))
-    True
-    >>> cfg.add(CFGProduction(Nonterminal('Y'), [Terminal('b')], 1.0))
-    False
-    >>> topsort = (frozenset([Terminal('a'), Terminal('b'), Terminal('EOS'), Terminal('Y'), Terminal('BOS')]), frozenset([Nonterminal('X'), Nonterminal('Y')]), frozenset([Nonterminal('S')]))
-    >>> cfg.topsort()
-    >>> cfg.add(CFGProduction(Nonterminal('Y'), [Nonterminal('X')], 1.0))
-    True
-    >>> cfg.topsort()
     """
 
     def __init__(self, rules=[]):

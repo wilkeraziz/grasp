@@ -31,6 +31,21 @@ cdef class EdgeWeight(ValueFunction):
     cdef Hypergraph hg
 
 
+cdef class ScaledEdgeWeight(ValueFunction):
+
+    cdef Hypergraph hg
+    cdef weight_t scalar
+
+
+cdef class ThresholdValueFunction(ValueFunction):
+
+    cdef:
+        ValueFunction f
+        Semiring input_semiring
+        weight_t threshold
+        Semiring output_semiring
+
+
 cdef class BinaryEdgeWeight(ValueFunction):
 
     cdef Hypergraph hg

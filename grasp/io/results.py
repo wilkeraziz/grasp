@@ -5,27 +5,28 @@ This module contains functions that save the output of different decoding strate
 """
 
 from grasp.recipes import smart_wopen
-from grasp.semiring import SumTimes
+import grasp.semiring as semiring
 from grasp.cfg.projection import DerivationYield
 
 
-def save_viterbi(path, derivation, omega_d, get_projection, derivation2str=DerivationYield.derivation):
+def save_viterbi(path, viterbi, get_projection, derivation2str=DerivationYield.derivation):
     """
 
     :param path: where to save
-    :param derivation: the best derivation
+    :param viterbi: the best derivation
     :param omega_d: a function over derivations
     :param get_projection: a function which returns a projection of a derivation
     """
     with smart_wopen(path) as out:
         print('# score\tyield\tderivation', file=out)
-        print('{0}\t{1}\t{2}'.format(omega_d(derivation),
-                                     get_projection(derivation),
-                                     derivation2str(derivation)),
+        rules = viterbi.derivation.rules()
+        print('{0}\t{1}\t{2}'.format(viterbi.value,
+                                     get_projection(rules),
+                                     derivation2str(rules)),
               file=out)
 
 
-def save_kbest(path, derivations, omega_d, get_projection, derivation2str=DerivationYield.derivation):
+def save_kbest(path, derivations, get_projection, derivation2str=DerivationYield.derivation):
     """
 
     :param path: where to save
@@ -36,13 +37,13 @@ def save_kbest(path, derivations, omega_d, get_projection, derivation2str=Deriva
     with smart_wopen(path) as out:
         print('# score\tyield\tderivation', file=out)
         for d in derivations:
-            print('{0}\t{1}\t{2}'.format(omega_d(d),
+            print('{0}\t{1}\t{2}'.format(d.value,
                                          get_projection(d),
                                          derivation2str(d)),
                   file=out)
 
 
-def save_mc_derivations(path, samples, inside, omega_d, derivation2str=DerivationYield.derivation, semiring=SumTimes):
+def save_mc_derivations(path, samples, inside, derivation2str=DerivationYield.derivation, semiring=semiring.inside):
     """
 
     :param path: where to save
@@ -55,13 +56,13 @@ def save_mc_derivations(path, samples, inside, omega_d, derivation2str=Derivatio
         print('# MC samples={0} inside={1}'.format(total, inside), file=out)
         print('# exact\testimate\tcount\tscore\tderivation', file=out)
         for sample in samples:
-            score = omega_d(sample.derivation)
+            score = sample.value
             prob = semiring.as_real(semiring.divide(score, inside))
             print('{0}\t{1}\t{2}\t{3}\t{4}'.format(prob,
                                                    sample.count/total,
                                                    sample.count,
                                                    score,
-                                                   derivation2str(sample.derivation)),
+                                                   derivation2str(sample.derivation.rules())),
                   file=out)
 
 
@@ -82,7 +83,7 @@ def save_mc_yields(path, samples):
                   file=out)
 
 
-def save_mcmc_derivation(path, samples, omega_d, derivation2str=DerivationYield.derivation):
+def save_mcmc_derivation(path, samples, derivation2str=DerivationYield.derivation):
     """
 
     :param path: where to save
@@ -96,8 +97,8 @@ def save_mcmc_derivation(path, samples, omega_d, derivation2str=DerivationYield.
         for i, sample in enumerate(samples, 1):
             print('{0}\t{1}\t{2}\t{3}'.format(sample.count/total,  # estimate
                                               sample.count,
-                                              omega_d(sample.derivation),
-                                              derivation2str(sample.derivation)),
+                                              0.0, #omega_d(sample.derivation),  # TODO: fix it
+                                              derivation2str(sample.derivation.rules())),
                   file=out)
 
 
@@ -131,19 +132,19 @@ def save_markov_chain(path, markov_chain, omega_d=None, flat=True, derivation2st
         if omega_d is None:
             with smart_wopen(path) as out:
                 for d in markov_chain:
-                    print(derivation2str(d), file=out)
+                    print(derivation2str(d.rules()), file=out)
         else:
             with smart_wopen(path) as out:
                 for d in markov_chain:
-                    print('{0}\t{1}'.format(omega_d(d), derivation2str(d)), file=out)
+                    print('{0}\t{1}'.format(omega_d(d.rules()), derivation2str(d.rules())), file=out)
     else:
         if omega_d is None:
             with smart_wopen(path) as out:
                 for i, batch in enumerate(markov_chain):
                     for d in batch:
-                        print('{0}\t{1}'.format(i, derivation2str(d)), file=out)
+                        print('{0}\t{1}'.format(i, derivation2str(d.rules())), file=out)
         else:
             with smart_wopen(path) as out:
                 for i, batch in enumerate(markov_chain):
                     for d in batch:
-                        print('{0}\t{1}\t{2}'.format(i, omega_d(d), derivation2str(d)), file=out)
+                        print('{0}\t{1}\t{2}'.format(i, omega_d(d.rules()), derivation2str(d.rules())), file=out)

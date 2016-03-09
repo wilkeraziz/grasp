@@ -19,6 +19,8 @@ from grasp.formal.hg cimport Hypergraph
 
 cdef np.int_t[::1] acyclic_topsort(Hypergraph hg):
 
+    assert hg.n_nodes(), 'I cannot topsort an empty hypergraph'
+
     cdef:
         vector[bint] booked
         vector[unordered_set[id_t]] deps
@@ -98,6 +100,8 @@ cdef strong_connect(id_t v,
 
 cdef void c_tarjan(Hypergraph hg, vector[vector[id_t]]& order):
 
+    assert hg.n_nodes(), 'I cannot topsort an empty hypergraph'
+
     cdef:
         vector[tarjan_node_t] nodes
         id_t index = 0
@@ -127,6 +131,8 @@ cpdef list tarjan(Hypergraph hg):
 
 
 cdef np.int_t[::1] robust_topsort(Hypergraph hg, vector[vector[id_t]]& components):
+
+    assert hg.n_nodes(), 'I cannot topsort an empty hypergraph'
 
     # map nodes to components
     cdef:
@@ -196,6 +202,7 @@ cdef class TopSortTable: pass
 cdef class AcyclicTopSortTable(TopSortTable):
 
     def __init__(self, Hypergraph hg):
+        assert hg.n_nodes(), 'I cannot topsort an empty hypergraph'
         self._hg = hg
         cdef size_t c, i
         cdef id_t n
@@ -286,6 +293,8 @@ cdef class AcyclicTopSortTable(TopSortTable):
 cdef class RobustTopSortTable(TopSortTable):
 
     def __init__(self, Hypergraph hg):
+        assert hg.n_nodes(), 'I cannot topsort an empty hypergraph'
+
         self._hg = hg
 
         c_tarjan(hg, self._components)
@@ -415,6 +424,7 @@ class LazyTopSortTable:
         :param forest: the forest whose nodes will be sorted
         :param acyclic: whether the forest contains cycles
         """
+        assert forest.n_nodes(), 'I cannot topsort an empty hypergraph'
         self._forest = forest
         self._acyclic = acyclic
         self._tsort = None

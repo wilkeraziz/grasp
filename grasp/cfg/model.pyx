@@ -3,9 +3,35 @@
 """
 
 from collections import defaultdict
-from grasp.cfg.utils import smart_ropen
 import re
 from ast import literal_eval
+from grasp.cfg.rule cimport Rule, NewCFGProduction
+from grasp.ptypes cimport weight_t
+import numpy as np
+
+
+cdef class Model:
+
+    pass
+
+
+cdef class PCFG(Model):
+
+    def __init__(self, str fname='LogProb', transform=None):
+        self._fname = fname
+        self._transform = transform
+
+    def __call__(self, NewCFGProduction rule):
+        return rule.fvalue(self._fname) if self._transform is None else self._transform(rule.fvalue(self._fname))
+
+
+cdef class DummyConstant(Model):
+
+    def __init__(self, weight_t value):
+        self._value = value
+
+    def __call__(self, Rule whatever):
+        return self._value
 
 
 class LinearModel(object):
@@ -31,17 +57,6 @@ class LinearModel(object):
 
 def cdec_basic():
     return LinearModel(dict(EgivenFCoherent=1.0, SampleCountF=1.0, CountEF=1.0, MaxLexFgivenE=1.0, MaxLexEgivenF=1.0, IsSingletonF=1.0, IsSingletonFE=1.0, Glue=1.0))
-
-
-def load_cdef_file(path):
-    wmap = {}
-    with smart_ropen(path) as fi:
-        for line in fi.readlines():
-            fields = line.split()
-            if len(fields) != 2:
-                continue
-            wmap[fields[0]] = float(fields[1])
-    return LinearModel(wmap)
 
 
 def get_weights(wmap, prefix):

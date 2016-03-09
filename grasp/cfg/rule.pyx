@@ -5,11 +5,16 @@ This module contains class definitions for rules, such as a context-free product
 """
 
 import logging
-from weakref import WeakValueDictionary
-from grasp.cfg.symbol import Terminal, Nonterminal
+from grasp.cfg.symbol cimport Terminal
+from grasp.ptypes cimport weight_t
+from cpython.object cimport Py_EQ, Py_NE
 
 
 cdef class Rule:
+    """
+    A Rule is a container for a LHS symbol, a sequence of RHS symbols
+    and a set of named features.
+    """
 
     property lhs:
         def __get__(self):
@@ -19,75 +24,116 @@ cdef class Rule:
         def __get__(self):
             raise NotImplementedError()
 
-    property weight:
+    cpdef weight_t fvalue(self, fname, weight_t default=0.0):
+        raise NotImplementedError()
+
+
+
+cdef class NewCFGProduction(Rule):
+    """
+    Implements a context-free production.
+    """
+
+    def __init__(self, Nonterminal lhs, rhs, fmap):
+        self._lhs = lhs
+        self._rhs = tuple(rhs)
+        self._fmap = dict(fmap)
+        self._hash = hash((self._lhs, self._rhs, tuple(self._fmap.items())))
+
+    property lhs:
         def __get__(self):
-            raise NotImplementedError()
+            """Return the LHS symbol (a Nonterminal) aka the head."""
+            return self._lhs
 
+    property rhs:
+        def __get__(self):
+            """A tuple of symbols (terminals and nonterminals) representing the RHS aka the tail."""
+            return self._rhs
 
-class CFGProduction(Rule):
-    """
-    Implements a context-free production. 
-    
-    References to productions are managed by the CFGProduction class.
-    We use WeakValueDictionary for builtin reference counting.
-    The symbols in the production must all be immutable (thus hashable).
+    property fpairs:
+        def __get__(self):
+            return self._fmap.items()
 
-    >>> CFGProduction(1, [1,2,3], 0.0)  # integers are hashable
-    CFGProduction(1, (1, 2, 3), 0.0)
-    >>> CFGProduction(('S', 1, 3), [('X', 1, 2), ('X', 2, 3)], 0.0)  # tuples are hashable
-    CFGProduction(('S', 1, 3), (('X', 1, 2), ('X', 2, 3)), 0.0)
-    >>> CFGProduction(Nonterminal('S'), [Terminal('<s>'), Nonterminal('X'), Terminal('</s>')], 0.0)  # Terminals and Nonterminals are also hashable
-    CFGProduction(Nonterminal('S'), (Terminal('<s>'), Nonterminal('X'), Terminal('</s>')), 0.0)
-    """
-
-    #_rules = WeakValueDictionary()
-    #_rules = defaultdict(None)
-
-    #def __new__(cls, lhs, rhs, weight):
-    #    """The symbols in lhs and in the rhs must be hashable."""
-    #    skeleton = (lhs, tuple(rhs), weight)
-    #    obj = CFGProduction._rules.get(skeleton, None)
-    #    if not obj:
-    #        obj = object.__new__(cls)
-    #        CFGProduction._rules[skeleton] = obj
-    #        obj._skeleton = skeleton
-    #    return obj
-
-    def __init__(self, lhs, rhs, weight):
-        self._skeleton = (lhs, tuple(rhs), weight)
-    
-    @property
-    def lhs(self):
-        """Return the LHS symbol (a Nonterminal) aka the head."""
-        return self._skeleton[0]
-
-    @property
-    def rhs(self):
-        """A tuple of symbols (terminals and nonterminals) representing the RHS aka the tail."""
-        return self._skeleton[1]
-    
-    @property
-    def weight(self):
-        return self._skeleton[2]
+    cpdef weight_t fvalue(self, fname, weight_t default=0.0):
+        return self._fmap.get(fname, default)
 
     def __hash__(self):
-        return hash(self._skeleton)
+        return self._hash
 
-    def __eq__(self, other):
-        return self._skeleton == other._skeleton
+    def __richcmp__(NewCFGProduction x, NewCFGProduction y, int opt):
+        cdef bint eq = type(x) == type(y) and x.lhs == y.lhs  and x.rhs == y.rhs and x.fpairs == y.fpairs
+        if opt == Py_EQ:
+            return eq
+        elif opt == Py_NE:
+            return not eq
+        else:
+            raise ValueError('Cannot compare rules with opt=%d' % opt)
 
     def __repr__(self):
-        return '%s(%s, %s, %s)' % (CFGProduction.__name__, repr(self.lhs), repr(self.rhs), repr(self.weight))
+        return '%s(%s, %s, %s)' % (NewCFGProduction.__name__,
+                                   repr(self.lhs),
+                                   repr(self.rhs),
+                                   repr(self._fmap))
+
+    def __str__(self):
+        return '%r ||| %s ||| %s' % (self.lhs,
+                                     ' '.join(repr(s) for s in self.rhs),
+                                     ' '.join('{0}={1}'.format(k, v) for k, v in sorted(self.fpairs)))
+
+    @classmethod
+    def MakeStandardCFGProduction(cls, Nonterminal lhs, rhs, float weight, fname='Prob', transform=float):
+        return NewCFGProduction(lhs, rhs, {fname: transform(weight)})
+
+
+cdef class _CFGProduction(Rule):
+    """
+    Implements a context-free production.
+    """
+
+    def __init__(self, Nonterminal lhs, rhs, weight_t weight):
+        self._lhs = lhs
+        self._rhs = tuple(rhs)
+        self._weight = weight
+        self._hash = hash((self._lhs, self._rhs, self._weight))
+    
+    property lhs:
+        def __get__(self):
+            """Return the LHS symbol (a Nonterminal) aka the head."""
+            return self._lhs
+
+    property rhs:
+        def __get__(self):
+            """A tuple of symbols (terminals and nonterminals) representing the RHS aka the tail."""
+            return self._rhs
+    
+    property weight:
+        def __get__(self):
+            return self._weight
+
+    def __hash__(self):
+        return self._hash
+
+    def __richcmp__(x, y, opt):
+        cdef bint eq = type(x) == type(y) and x.weight == y.weight and x.lhs == y.lhs  and x.rhs == y.rhs
+        if opt == Py_EQ:
+            return eq
+        elif opt == Py_NE:
+            return not eq
+        else:
+            raise ValueError('Cannot compare rules with opt=%d' % opt)
+
+    def __repr__(self):
+        return '%s(%s, %s, %s)' % (_CFGProduction.__name__, repr(self.lhs), repr(self.rhs), repr(self.weight))
 
     def __str__(self):
         return '%r ||| %s ||| %s' % (self.lhs, ' '.join(repr(s) for s in self.rhs), self.weight)
 
-    def pprint(self, make_symbol):
-        return '%s ||| %s ||| %s' % (make_symbol(self.lhs), ' '.join(str(make_symbol(s)) for s in self.rhs), self.weight)
+    #def pprint(self, make_symbol):
+    #    return '%s ||| %s ||| %s' % (make_symbol(self.lhs), ' '.join(str(make_symbol(s)) for s in self.rhs), self.weight)
 
 
-def get_oov_cfg_productions(oovs, unk_lhs, weight):
+def get_oov_cfg_productions(oovs, unk_lhs, fname, fvalue):
     for word in oovs:
-        r = CFGProduction(Nonterminal(unk_lhs), [Terminal(word)], weight)
+        r = NewCFGProduction(Nonterminal(unk_lhs), (Terminal(word),), {fname: fvalue})
         logging.debug('Passthrough rule for %s: %s', word, r)
         yield r

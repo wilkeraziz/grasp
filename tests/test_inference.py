@@ -1,13 +1,19 @@
 
 import unittest
 
-from grasp.formal.hg import Hypergraph
 from grasp.formal.topsort import AcyclicTopSortTable, RobustTopSortTable
 from grasp.inference._inference import viterbi_derivation, sample_derivations, AncestralSampler
 from grasp.inference._value import EdgeWeight
-from grasp.cfg import CFG, CFGProduction, Terminal, Nonterminal
+from grasp.cfg import CFG, Terminal, Nonterminal
+from grasp.cfg.rule import NewCFGProduction as CFGProduction
 import grasp.semiring as semiring
 from collections import Counter
+from grasp.formal.scfgop import cfg_to_hg
+from grasp.cfg.model import PCFG
+
+
+def get_rule(lhs, rhs, logprob):
+    return CFGProduction.MakeStandardCFGProduction(lhs, rhs, logprob, fname='LogProb', transform=float)
 
 
 class InferenceTestCase(unittest.TestCase):
@@ -15,38 +21,37 @@ class InferenceTestCase(unittest.TestCase):
     def setUp(self):
         self.semiring = semiring.viterbi
         self.cfg = CFG()
-        self.cfg.add(CFGProduction(Nonterminal('S02'),
+        self.cfg.add(get_rule(Nonterminal('S02'),
                                    [Nonterminal('S01'), Nonterminal('X12'), Nonterminal('PUNC')],
                                    self.semiring.from_real(0.5)))
-        self.cfg.add(CFGProduction(Nonterminal('S01'),
+        self.cfg.add(get_rule(Nonterminal('S01'),
                                    [Nonterminal('X01')],
                                    self.semiring.from_real(0.1)))
-        self.cfg.add(CFGProduction(Nonterminal('X01'),
+        self.cfg.add(get_rule(Nonterminal('X01'),
                                    [Terminal('Hello')],
                                    self.semiring.from_real(0.7)))
-        self.cfg.add(CFGProduction(Nonterminal('X01'),
+        self.cfg.add(get_rule(Nonterminal('X01'),
                                    [Terminal('hello')],
                                    self.semiring.from_real(0.1)))
-        self.cfg.add(CFGProduction(Nonterminal('X12'),
+        self.cfg.add(get_rule(Nonterminal('X12'),
                                    [Terminal('World')],
                                    self.semiring.from_real(0.6)))
-        self.cfg.add(CFGProduction(Nonterminal('X12'),
+        self.cfg.add(get_rule(Nonterminal('X12'),
                                    [Terminal('world')],
                                    self.semiring.from_real(0.2)))
-        self.cfg.add(CFGProduction(Nonterminal('PUNC'),
+        self.cfg.add(get_rule(Nonterminal('PUNC'),
                                    [Terminal('!')],
                                    self.semiring.from_real(0.1)))
-        self.cfg.add(CFGProduction(Nonterminal('PUNC'),
+        self.cfg.add(get_rule(Nonterminal('PUNC'),
                                    [Terminal('!!!')],
                                    self.semiring.from_real(0.3)))
-        self.cfg.add(CFGProduction(Nonterminal('A'),
+        self.cfg.add(get_rule(Nonterminal('A'),
                                    [Terminal('dead')],
                                    self.semiring.from_real(0.3)))
-        self.cfg.add(CFGProduction(Nonterminal('B'),
+        self.cfg.add(get_rule(Nonterminal('B'),
                                    [],
                                    self.semiring.from_real(0.3)))
-        self.forest = Hypergraph()
-        self.forest.update(self.cfg)
+        self.forest = cfg_to_hg([self.cfg], [], PCFG('LogProb'))
         self.tsort = AcyclicTopSortTable(self.forest)
         self.omega = EdgeWeight(self.forest)
 
@@ -92,7 +97,7 @@ class InferenceTestCase(unittest.TestCase):
         top, n = ranking[0]
         #print()
         #print(n/size, sampler.prob(top))
-        self.assertEqual(sampler.Z, -4.358310108056565)
+        self.assertEqual(sampler.Z, -4.358310174252031)
         self.assertAlmostEqual(n/size, sampler.prob(top), places=1, msg='Random effects apply - double check.')
 
 

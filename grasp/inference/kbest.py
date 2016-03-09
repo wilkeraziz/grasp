@@ -21,7 +21,7 @@ The algorithm is due to Huang and Chiang (2005).
 import heapq
 from collections import deque, defaultdict
 from grasp.cfg.projection import ItemDerivationYield
-from grasp.semiring import MaxTimes
+import grasp.semiring as _semiring
 
 
 class Derivation(object):
@@ -130,7 +130,7 @@ class KBest(object):
     This implements the complete algorithm.
     """
 
-    def __init__(self, forest, root, k, semiring=MaxTimes, traversal=ItemDerivationYield.string, uniqueness=False):
+    def __init__(self, forest, root, k, semiring=_semiring.viterbi, traversal=ItemDerivationYield.string, uniqueness=False):
         """
         @param forest: a hypergraph-like object
         @param root: goal node

@@ -7,7 +7,7 @@ A dotted rule is an immutable object and its instances are managed by the class 
 
 from weakref import WeakValueDictionary
 from grasp.cfg.symbol import Terminal, Nonterminal, make_span
-from grasp.cfg.rule import CFGProduction
+from grasp.cfg.rule import _CFGProduction as CFGProduction
 from functools import reduce
 
 from collections import defaultdict

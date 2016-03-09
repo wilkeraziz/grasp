@@ -12,11 +12,11 @@ from collections import defaultdict, Counter
 from types import SimpleNamespace
 
 from grasp.recipes import progressbar
-from grasp.semiring import SumTimes
+import grasp.semiring as _semiring
 from grasp.cfg import Nonterminal, TopSortTable
 from grasp.inference import AncestralSampler
-from grasp.parsing.exact import Nederhof
-from grasp.parsing.sliced.slicevars import Beta, VectorOfPriors, ConstantPrior, SliceVariables
+from grasp.parsing.exact.nederhof import Nederhof
+from grasp.alg.slicevars import Beta, VectorOfPriors, ConstantPrior, SpanSliceVariables
 
 from .heuristic import attempt_initialisation
 from .utils import make_batch_conditions
@@ -75,10 +75,10 @@ def slice_sampling(fsa, grammars, glue_grammars,
                    free_dist=Beta,
                    free_dist_prior=VectorOfPriors(ConstantPrior(0.1), ConstantPrior(1.0)),
                    progress=False):
-    semiring = SumTimes
+    semiring = _semiring.inside
 
     # configure slice variables
-    u = SliceVariables({}, free_dist, free_dist_prior)
+    u = SpanSliceVariables({}, free_dist, free_dist_prior)
     logging.debug('%s prior=%r', free_dist.__name__, free_dist_prior)
     # make initial conditions
     # TODO: consider intialisation heuristics such as attempt_initialisation(fsa, grammars, glue_grammars, options)
@@ -131,76 +131,3 @@ def slice_sampling(fsa, grammars, glue_grammars,
 
     return markov_chain
 
-
-def apply_filters(markov_chain, burn=0, lag=1, resample=0):
-    """
-    Filter a Markov chain using a few known tricks to reduce autocorrelation.
-
-    :param markov_chain: the chain of samples (or batches of samples)
-    :param burn: discard a number of states from the beginning of the chain
-    :param lag: retains states constantly spaced
-    :param resample: resamples with replacement a number of states
-    :return: a stream of states
-    """
-
-    iterable = iter(markov_chain)
-    total = len(markov_chain)
-
-    # burn from the left end
-    if burn > 0:
-        iterable = itertools.islice(iterable, burn, len(markov_chain))
-        total -= burn
-
-    # evenly spaced samples
-    if lag > 1 and total > 0:
-        iterable = itertools.islice(iterable, lag - 1, total, lag)
-        total //= lag
-
-    filtered_chain = list(iterable)
-
-    # resampling step
-    if resample > 0:
-        filtered_chain = [filtered_chain[i] for i in np.random.randint(0, len(filtered_chain), resample)]
-
-    return filtered_chain
-
-
-def apply_batch_filters(batches, resample=0):
-    """
-    After applying the usual filters to a Markov chain whose states are batches of samples,
-     rather than single samples, we flatten these batches, making a stream of samples.
-    In this case, one might want to resample from the batch instead of leaving it whole.
-
-    :param batches: a sequence of batches of samples
-    :param resample: resamples with replacement a number of elements from each batch
-    :return: a stream of samples
-    """
-    if resample > 0:
-        samples = []
-        for batch in batches:
-            choices = np.random.randint(0, len(batch), resample)
-            samples.extend(batch[i] for i in choices)
-    else:
-        samples = list(itertools.chain(*batches))
-    return samples
-
-
-def group_by_identity(derivations):
-    counts = Counter(derivations)
-    output = []
-    for d, n in counts.most_common():
-        output.append(SimpleNamespace(derivation=d, count=n))
-    return output
-
-
-def group_by_projection(samples, get_projection):
-    p2d = defaultdict(set)
-    counts = Counter()
-    for d in samples:
-        y = get_projection(d)
-        counts[y] += 1
-        p2d[y].add(d)
-    output = []
-    for y, n in counts.most_common():
-        output.append(SimpleNamespace(projection=y, count=n, derivations=p2d[y]))
-    return output

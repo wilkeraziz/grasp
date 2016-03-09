@@ -14,7 +14,7 @@ This module also provides a top-down algorithm that constructs products that are
 from collections import deque, defaultdict
 from itertools import chain
 from grasp.cfg.symbol import Nonterminal, make_span
-from grasp.cfg.rule import CFGProduction
+from grasp.cfg.rule import _CFGProduction as CFGProduction
 from grasp.cfg.cfg import CFG
 
 
