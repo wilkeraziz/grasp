@@ -2,8 +2,8 @@
 import unittest
 
 from grasp.formal.topsort import AcyclicTopSortTable, RobustTopSortTable
-from grasp.inference._inference import viterbi_derivation, sample_derivations, AncestralSampler
-from grasp.inference._value import EdgeWeight
+from grasp.alg.inference import viterbi_derivation, sample_derivations, AncestralSampler
+from grasp.alg.value import EdgeWeight
 from grasp.cfg import CFG, Terminal, Nonterminal
 from grasp.cfg.rule import NewCFGProduction as CFGProduction
 import grasp.semiring as semiring

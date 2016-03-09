@@ -6,7 +6,7 @@ import unittest
 
 
 from grasp.formal.topsort import AcyclicTopSortTable, RobustTopSortTable
-from grasp.inference._value import acyclic_value_recursion, robust_value_recursion
+from grasp.alg.value import acyclic_value_recursion, robust_value_recursion
 from grasp.cfg import CFG, Terminal, Nonterminal
 from grasp.cfg.rule import NewCFGProduction as CFGProduction
 import grasp.semiring as semiring

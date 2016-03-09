@@ -4,9 +4,9 @@ Authors: - Wilker Aziz
 
 import unittest
 
-from grasp.ff._state import StateMapper
-from grasp.ff._extractor import FValue, FVec, FMap
-from grasp.ff._lookup import RuleTable, CDEC_DEFAULT
+from grasp.scoring.state import StateMapper
+from grasp.scoring.extractor import FValue, FVec, FMap
+from grasp.scoring.lookup import RuleTable, CDEC_DEFAULT
 import numpy as np
 import grasp.ptypes as ptypes
 
