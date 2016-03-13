@@ -1,17 +1,21 @@
 from grasp.alg.deduction cimport EarleyRescorer
 from grasp.alg.slicing cimport SliceReturn, slice_forest
 cimport grasp.alg.slicevars as sv
-from grasp.alg.value cimport ValueFunction, EdgeWeight, ScaledEdgeWeight, LookupFunction, ThresholdValueFunction
+from grasp.alg.value cimport ValueFunction, EdgeWeight, CascadeValueFunction
+from grasp.alg.value cimport ScaledEdgeWeight, LookupFunction, ThresholdValueFunction
+from grasp.alg.value cimport derivation_value
 from grasp.alg.inference cimport AncestralSampler
-
+from grasp.formal.traversal import bracketed_string
 
 from grasp.formal.hg cimport Hypergraph
+from grasp.formal.traversal cimport top_down_left_right
 from grasp.formal.topsort cimport TopSortTable, AcyclicTopSortTable
 
 from grasp.scoring.scorer cimport StatelessScorer, StatefulScorer
 from grasp.semiring._semiring cimport Semiring
 from grasp.cfg.symbol cimport Symbol, Terminal
-from grasp.cfg.rule cimport Rule
+from grasp.cfg.rule cimport Rule, get_leaves
+from grasp.cfg.rule cimport NewCFGProduction as CFGProduction
 
 from types import SimpleNamespace
 import grasp.ptypes as ptypes
@@ -22,18 +26,30 @@ import itertools
 from collections import deque, defaultdict, Counter
 from grasp.recipes import progressbar
 
+from grasp.cfg.projection import DerivationYield
+
+from cpython.object cimport Py_EQ, Py_NE, Py_LT
+
+import logging
 
 
-cpdef Hypergraph stateless_rescoring(Hypergraph hg,
-                                     StatelessScorer stateless,
-                                     Semiring semiring):
+cdef class StatelessValueFunction(ValueFunction):
+
+    def __init__(self, Hypergraph hg, StatelessScorer stateless):
+        self.hg = hg
+        self.stateless = stateless
+
+    cpdef weight_t value(self, id_t e):
+        return self.stateless.score(self.hg.rule(e))
+
+
+cpdef Hypergraph weight_edges(Hypergraph hg, ValueFunction omega):
     """
     Plain obvious stateless rescoring.
 
     :param forest: a CFG
-    :param stateless: StatelessScorer
-    :param semiring: provides times
-    :return: the rescored CFG
+    :param omega: a value function to score edges
+    :return: a hypergraph scored by omega
     """
 
     cdef Hypergraph ohg = Hypergraph()
@@ -44,7 +60,7 @@ cpdef Hypergraph stateless_rescoring(Hypergraph hg,
         ohg.add_node(hg.label(n))
     # this is to make sure the rule-edge correspondence remains unchanged
     for e in range(hg.n_edges()):
-        weight = semiring.times(hg.weight(e), stateless.score(hg.rule(e)))
+        weight = omega.value(e)
         ohg.add_xedge(hg.label(hg.head(e)),
                       tuple([hg.label(c) for c in hg.tail(e)]),
                       weight,
@@ -53,15 +69,11 @@ cpdef Hypergraph stateless_rescoring(Hypergraph hg,
     return ohg
 
 
-cdef AncestralSampler get_ancestral_sampler(Hypergraph forest, TopSortTable tsort, weight_t temperature):
-    """
-    Return an ancestral sampler for the forest.
-    :param forest:
-    :param tsort:
-    :param temperature: if set to anything different from 1.0, it scales (in log domain) the distribution with 1/temperature.
-    :return: AncestralSampler
-    """
-    return AncestralSampler(forest, tsort) if temperature == 1.0 else AncestralSampler(forest, tsort, omega=ScaledEdgeWeight(forest, 1.0/temperature))
+cpdef Hypergraph stateless_rescoring(Hypergraph hg,
+                                     StatelessScorer stateless,
+                                     Semiring semiring):
+    return weight_edges(hg, CascadeValueFunction(semiring.times,
+                                                 [EdgeWeight(hg), StatelessValueFunction(hg, stateless)]))
 
 
 cdef dict make_span_conditions(Hypergraph forest, tuple raw_derivation, Semiring semiring):
@@ -93,9 +105,36 @@ cdef gamma_priors(Hypergraph forest, Semiring semiring, weight_t percentile=-1):
     return priors
 
 
+cdef class SampleReturn:
 
+    cdef readonly tuple edges
+    cdef readonly weight_t score
 
+    def __init__(self, tuple edges, weight_t score):
+        self.edges = edges
+        self.score = score
 
+    def __len__(self):
+        return len(self.edges)
+
+    def __iter__(self):
+        return iter(self.edges)
+
+    def __getitem__(self, item):
+        return self.edges[item]
+
+    def __hash__(self):
+        return hash(self.edges)
+
+    def __richcmp__(x, y, opt):
+        if opt == Py_EQ:
+            return x.edges == y.edges
+        elif opt == Py_NE:
+            return x.edges != y.edges
+        elif opt == Py_LT:
+            return x.score < y.score
+        else:
+            raise ValueError('Cannot compare SampleReturn with opt=%d' % opt)
 
 
 cdef class SlicedRescoring:
@@ -167,6 +206,22 @@ cdef class SlicedRescoring:
                  Rule dead_rule,
                  Terminal dead_terminal,
                  weight_t temperature0=1.0):
+        """
+        Here
+            lfunc is l(d),
+            n(d) is made of stateless and stateful scorers (for convenience we allow both types).
+
+        :param forest:
+        :param tsort:
+        :param stateless:
+        :param stateful:
+        :param semiring:
+        :param goal_rule:
+        :param dead_rule:
+        :param dead_terminal:
+        :param temperature0:
+        :return:
+        """
         self._forest = forest
         self._tsort = tsort
         self._stateless = stateless
@@ -175,8 +230,6 @@ cdef class SlicedRescoring:
         self._goal_rule = goal_rule
         self._dead_rule = dead_rule
         self._dead_terminal = dead_terminal
-
-        self._sampler0 = get_ancestral_sampler(self._forest, self._tsort, temperature0)
 
         #logging.info('l-forest: derivations=%d', self._sampler0.n_derivations())
 
@@ -188,13 +241,11 @@ cdef class SlicedRescoring:
         #                  derivations=self._sampler0.n_derivations(),
         #                  ancestral_time=dt)
 
-    cdef tuple sample_d0(self):
-        """Draw an initial derivation from the locally weighted forest."""
-        return self._sampler0.sample(1)[0]
+
 
     cdef _make_slice_variables(self, conditions, str prior_type, str prior_parameter):
         if prior_type == 'const':
-            prior = sv.ConstantPrior(const=float(prior_parameter))
+            prior = sv.ConstantPrior(float(prior_parameter))
         elif prior_type == 'sym':
             prior = sv.SymmetricGamma(scale=float(prior_parameter))
         elif prior_type == 'asym':
@@ -212,7 +263,10 @@ cdef class SlicedRescoring:
 
         return sv.ExpSpanSliceVariables(conditions, prior)
 
-    cdef weight_t _rescore_derivation(self, list rules):
+    cdef weight_t _lfunc(self, Hypergraph forest, tuple derivation):
+        return derivation_value(forest, derivation, self._semiring)
+
+    cdef weight_t _nfunc(self, Hypergraph forest, tuple derivation):
         """
         Rescores a derivation seen as a sequence of rule applications, thus abstracting away from the
         hypergraph representation.
@@ -222,28 +276,23 @@ cdef class SlicedRescoring:
         """
         cdef:
             Semiring semiring = self._semiring
-            weight_t w = semiring.one
-            id_t e
+            weight_t stateless, stateful
+            id_t e, leaf
             Rule r
+            list rules = [forest.rule(e) for e in derivation]
+            tuple leaves = top_down_left_right(forest, derivation, terminal_only=True)
+
+        # score using the complete f(d|u)
         # 1. Stateless scorers
-        # TODO: stateless.total_score(derivation) instead of edge by edge
-        w = semiring.times.reduce([self._stateless.score(r) for r in rules])
+        stateless = semiring.times.reduce([self._stateless.score(forest.rule(e)) for e in derivation])
         # 2. Stateful scorers
-        w = semiring.times(w, self._stateful.score_derivation(rules))
-        return w
+        stateful = self._stateful.score_yield([forest.label(leaf) for leaf in leaves])
+        return semiring.times(stateless, stateful)
 
-    cdef LookupFunction _get_uniform_distribution(self, Hypergraph forest):
-        """Return a value function that scores edges uniformly with respect to their head nodes."""
-        cdef:
-            weight_t[::1] uniform = np.zeros(forest.n_edges(), dtype=ptypes.weight)
-            id_t e
-        for e in range(forest.n_edges()):
-            # semiring.from_real(1/|BS(head(e))|) =
-            #   semiring.times.inverse(|BS(head(e))|)
-            uniform[e] = self._semiring.times.inverse(self._semiring.from_real(forest.n_incoming(forest.head(e))))
-        return LookupFunction(uniform)
+    cdef weight_t _ffunc(self, Hypergraph forest, tuple derivation):
+        return self._semiring.times(self._nfunc(forest, derivation), self._lfunc(forest, derivation))
 
-    cdef _uniform(self, Hypergraph forest, TopSortTable tsort, LookupFunction u, int batch_size, tuple d0):
+    cdef _uniform(self, Hypergraph forest, TopSortTable tsort, ValueFunction u, int batch_size, tuple d0):
         """
         Draw from the slice by uniform sampling from the support and then resampling.
         :param forest: locally scored sliced forest
@@ -256,13 +305,14 @@ cdef class SlicedRescoring:
         cdef:
             Semiring semiring = self._semiring
             list support
-            weight_t[::1] empdist  # empirical distribution
+            weight_t[::1] empdist, fd  # empirical distribution
             id_t e
             tuple d, sampled_derivation
             size_t i, n
             weight_t nonlocal_score, residual_score, score, denominator
             AncestralSampler sampler
 
+        logging.debug(' [uniform] Uniform sampling %d candidates from S to compete against previous state', batch_size)
         assert d0 is not None, 'Uniform sampling requires the previous state of the Markov chain'
 
         # 1. A uniform sampler over state space
@@ -276,14 +326,17 @@ cdef class SlicedRescoring:
         # 2. Compute the empirical (importance) distribution r(d) \propto f(d|u)/g(d|u)
         support = [None] * len(counts)
         empdist = np.zeros(len(counts))
+        fd = np.zeros(len(counts))
         for i, (d, n) in enumerate(counts.items()):
             support[i] = d
             # score using the complete f(d|u)
-            nonlocal_score = self._rescore_derivation([forest.rule(e) for e in d])  # this is n(d)
+            nonlocal_score = self._nfunc(forest, d)  # this is n(d)
             residual_score = u.reduce(semiring.times, d)  # this is u(d)
             score = semiring.times(residual_score, nonlocal_score)
             # take the sample frequency into account
             empdist[i] = semiring.times(score, semiring.from_real(n))
+            # f(d) = n(d) * l(d)
+            fd[i] = semiring.times(nonlocal_score, self._lfunc(forest, d))
         empdist = semiring.normalise(empdist)
 
         # 3. Sample a derivation
@@ -291,9 +344,9 @@ cdef class SlicedRescoring:
         sampled_derivation = support[i]
         # make conditions based on the slice variables and l(d)
         #c_i = make_span_conditions(forest, d_i, semiring)
-        return sampled_derivation  #, c_i, sampler.n_derivations()
+        return SampleReturn(sampled_derivation, fd[i])  #, c_i, sampler.n_derivations()
 
-    cdef _importance(self, Hypergraph forest, TopSortTable tsort, LookupFunction u, int batch_size, tuple d0=None):
+    cdef _weighted(self, Hypergraph forest, TopSortTable tsort, ValueFunction u, int batch_size, tuple d0):
         """
         Draw from the slice by importance sampling.
         Proposal types:
@@ -301,15 +354,15 @@ cdef class SlicedRescoring:
                 where u is the value of the slice variable associated with the edge's head symbol
         :param forest: locally scored sliced forest
         :param tsort: forest's top sort table
-        :param u:
+        :param u: residual function
         :param batch_size: number of samples
-        :param d0: previous state of the Markov chain (if provided, it is forced into the sample).
+        :param d0: previous state of the Markov chain (ignored by this method).
         :return: derivation (consistent with input slice), conditions, number of derivations in the slice
         """
         cdef:
             Semiring semiring = self._semiring
             list support
-            weight_t[::1] empdist
+            weight_t[::1] empdist, fd
             id_t e
             tuple d, sampled_derivation
             size_t i, n
@@ -317,21 +370,27 @@ cdef class SlicedRescoring:
             # sample from u(d)
             AncestralSampler sampler = AncestralSampler(forest, tsort, u)
 
+        if d0:
+            logging.debug(' [cimportance] Importance sampling %d candidates from S to against previous state', batch_size)
+        else:
+            logging.debug(' [importance] Importance sampling %d candidates from S', batch_size)
         # 1. Sample a number of derivations from u(d) and group them by identity
         counts = Counter(sampler.sample(batch_size))
         if d0:
-            # make sure d0 is in the sample
             counts.update([d0])
         # 2. Compute the empirical (importance) distribution r(d) \propto f(d|u)/g(d|u)
         support = [None] * len(counts)
         empdist = np.zeros(len(counts))
+        fd = np.zeros(len(counts))
         for i, (d, n) in enumerate(counts.items()):
             support[i] = d
             # n(d) * u(d) / u(d) = n(d)
             # this is the global part n(d)
-            nonlocal_score = self._rescore_derivation([forest.rule(e) for e in d])
+            nonlocal_score = self._nfunc(forest, d)  # this is n(d)
             # take the sample frequency into account
             empdist[i] = semiring.times(nonlocal_score, semiring.from_real(n))
+            # f(d) = n(d) * l(d)
+            fd[i] = semiring.times(nonlocal_score, self._lfunc(forest, d))
         empdist = semiring.normalise(empdist)
 
         # 3. Sample a derivation
@@ -339,9 +398,18 @@ cdef class SlicedRescoring:
         sampled_derivation = support[i]
         # make conditions based on the slice variables and l(d)
         #c_i = make_span_conditions(forest, d_i, semiring)
-        return sampled_derivation  #, c_i, sampler.n_derivations()
+        return SampleReturn(sampled_derivation, fd[i])  #, c_i, sampler.n_derivations()
 
-    cdef _exact(self, Hypergraph forest, TopSortTable tsort, LookupFunction u, int batch_size, tuple d0=None):
+    cdef _importance(self, Hypergraph forest, TopSortTable tsort, ValueFunction u, int batch_size):
+        # does not force d0 in the sample
+        return self._weighted(forest, tsort, u, batch_size, d0=None)
+
+    cdef _cimportance(self, Hypergraph forest, TopSortTable tsort, ValueFunction u, int batch_size, tuple d0):
+        # forces d0 into the sample
+        assert d0 is not None, 'I need a valid previous state'
+        return self._weighted(forest, tsort, u, batch_size, d0)
+
+    cdef _exact(self, Hypergraph forest, TopSortTable tsort, ValueFunction u, int batch_size):
         """
         Draw from the slice by exact rescoring.
         :param forest: locally scored sliced forest
@@ -353,33 +421,36 @@ cdef class SlicedRescoring:
         """
         cdef:
             Semiring semiring = self._semiring
-            # compute f(d|u) \propto \pi(d) g(d) exactly
-            # TODO: change EarleyRescorer to accept a value function!
-            # omega=g
             EarleyRescorer rescorer
-            # TODO: make a goal_rule for exact rescoring
             Hypergraph rescored_forest
             AncestralSampler sampler
             tuple d_in_rescored, d_in_original
             list rules
             id_t e
+            weight_t fd
 
+        logging.debug(' [exact] Exactly rescoring the slice')
         # 1. Forest rescoring
         rescorer = EarleyRescorer(forest, self._stateless, self._stateful, semiring)
         rescored_forest = rescorer.do(tsort.root(), self._goal_rule)
 
         # 2. Sample a derivation
-        sampler = AncestralSampler(rescored_forest, TopSortTable(rescored_forest))
+        logging.debug(' [exact] Top sorting the rescored slice')
+        rescored_tsort = AcyclicTopSortTable(rescored_forest)
+        logging.debug(' [exact] Sampling the next state')
+        sampler = AncestralSampler(rescored_forest, rescored_tsort)
         # get a derivation from f(d|u) (the rescored forest)
         d_in_rescored = sampler.sample(1)[0]
+        fd = derivation_value(rescored_forest, d_in_rescored, semiring)
         # maps it to the original forest, that is, removes annotation
         d_in_original = tuple([rescorer.maps_to(e) for e in d_in_rescored if rescorer.maps_to(e) >= 0])
+
 
         # 3. Make new conditions for slice variables
         # edges and weights must come from l
         #c_i = make_span_conditions(forest, d_from_l, semiring)
-
-        return d_in_original  #, c_i, sampler.n_derivations()
+        #, c_i, sampler.n_derivations()
+        return SampleReturn(d_in_original, fd)
 
     cdef _sample(self, Hypergraph forest, TopSortTable tsort, ValueFunction u, tuple prev_d, int batch_size, str algorithm):
         """
@@ -396,37 +467,77 @@ cdef class SlicedRescoring:
         if algorithm == 'uniform':
             return self._uniform(forest, tsort, u, batch_size, prev_d)
         elif algorithm == 'importance':
-            return self._importance(forest, tsort, u, batch_size, prev_d)
+            return self._importance(forest, tsort, u, batch_size)
+        elif algorithm == 'cimportance':
+            return self._cimportance(forest, tsort, u, batch_size, prev_d)
         else:  # defaults to exact sampling
-            return self._exact(forest, tsort, u, batch_size, prev_d)
+            return self._exact(forest, tsort, u, batch_size)
+
+    cdef tuple _initialise(self, forest, tsort, semiring, strategy, temperature):
+        """
+        Returns an initial sample and the size of the forest (in number of derivations).
+        :param forest:
+        :param tsort:
+        :param semiring:
+        :param strategy: sample uniformly (use: uniform) or from the forest's distribution (use: local)
+        :param temperature:
+        :return: (sample, number of derivations)
+        """
+        cdef:
+            AncestralSampler sampler
+            tuple sample
+            weight_t fd
+
+        if strategy == 'uniform':
+            sampler = AncestralSampler(forest,
+                             tsort,
+                             omega=ThresholdValueFunction(EdgeWeight(forest),
+                                                          semiring,
+                                                          semiring.zero,
+                                                          semiring))
+        else:  # local
+            if temperature == 1.0:
+                sampler = AncestralSampler(forest, tsort)
+            else:
+                sampler = AncestralSampler(forest, tsort, omega=ScaledEdgeWeight(forest, 1.0/temperature))
+
+        sample = sampler.sample(1)[0]
+        # f(d) = n(d) * l(d)
+        fd = self._ffunc(forest, sample)
+        return SampleReturn(sample, fd), semiring.as_real(sampler.Z)
 
 
-    cdef sample(self, args):
+    cpdef sample(self, args):
         cdef Hypergraph D = self._forest
         cdef TopSortTable tsort_D = self._tsort
         cdef Semiring semiring = self._semiring
-        # 1. Initialise a Markov chain of derivations in D
-        cdef object markov_chain = deque([self.sample_d0()])
-        # 2. Initialise slice variables
-        cdef sv.SpanSliceVariables slicevars = self._make_slice_variables(make_span_conditions(D, markov_chain[-1], semiring),
-                                                                      args.prior[0], args.prior[1])
+        cdef object markov_chain = deque([])
         cdef:
+            sv.SpanSliceVariables slicevars
             SliceReturn slice_return
             TopSortTable tsort_S  # top sort table associated with S
 
-        #logging.info('Initial sample: prob=%s tree=%s', self._sampler0.prob(d0),
-        #             inlinetree(make_nltk_tree(d0)))
+        # Draw the initial sample
+        (d0, n_derivations) = self._initialise(D, tsort_D, semiring, args.initial, args.temperature0)
+        # Prepare slice variables
+        slicevars = self._make_slice_variables(make_span_conditions(D, d0.edges, semiring),
+                                               args.prior[0], args.prior[1])
+        # Initialise the Markov chain
+        markov_chain.append(d0)
 
+        logging.info('The forest contains %d derivations', n_derivations)
+        logging.info('Initial sample f(d)=%f: %s', d0.score, bracketed_string(D, d0.edges))
+        #logging.debug('Initial conditions:\n%s', '\n'.join(['{0}: {1}'.format(c, p) for c, p in cond0.items()]))
         # get slice variables
 
         # BEGIN LOG STUFF
-        slices_sizes = [self._sampler0.n_derivations()]
+        slices_sizes = [n_derivations]
         # mean ratio of sliced edges constrained by u either uniformly or exponentially distributed
         muni, mexp = 1.0, 1.0
         #report_size = lambda: ' |D|={:5d} uni={:5f} exp={:5f}'.format(slices_sizes[-1], muni, mexp)
 
         #if args.progress:
-        #    bar = progressbar(range(args.burn + (args.samples * args.lag)), prefix='Sampling', dynsuffix=report_size)
+        #    bar = progressbar(range(args.burn + (args.samples * args.lag)), prefix='Sampling')  #, dynsuffix=report_size
         #else:
         #    bar = range(args.burn + (args.samples * args.lag))
         # END LOG STUFF
@@ -443,7 +554,8 @@ cdef class SlicedRescoring:
 
 
             # 1. First we obtain the slice
-            slice_return = slice_forest(D, tsort_D, markov_chain[-1], slicevars, semiring, self._dead_rule, self._dead_terminal)
+            logging.debug('1a. Computing the slice')
+            slice_return = slice_forest(D, tsort_D, markov_chain[-1].edges, slicevars, semiring, self._dead_rule, self._dead_terminal)
 
             # Slice returns contains
             #   S: the support
@@ -452,17 +564,22 @@ cdef class SlicedRescoring:
             #   d0_in_S: last state of the Markov chain indexed by edges in S
 
             # we need to top sort nodes in the slice before continuing
+            logging.debug('1b. Sorting the slice')
             tsort_S = AcyclicTopSortTable(slice_return.S)
 
-            # 2. Then we sample from the slice and map the sample back to D
-            d_in_S = self._sample(slice_return.S, tsort_S, slice_return.u, slice_return.d0_in_S, args.batch, args.within)
-            d_in_D = slice_return.back_to_D(d_in_S)
+            # TODO: count the number of derivations in S
 
+            # 2. Then we sample from the slice and map the sample back to D
+            logging.debug('2. Sampling from slice')
+            d_in_S = self._sample(slice_return.S, tsort_S, slice_return.u, slice_return.d0_in_S, args.batch, args.within)
+            d_in_D = SampleReturn(slice_return.back_to_D(d_in_S.edges), d_in_S.score)
+
+            # 3. Update the Markov chain and slice variables
+            logging.debug('3. Update the Markov chain and slice variables')
             # update the history
             markov_chain.append(d_in_D)
-
             # reset slice variables based on the sampled derivation
-            slicevars.reset(make_span_conditions(D, d_in_D, semiring))
+            slicevars.reset(make_span_conditions(D, d_in_D.edges, semiring))
 
             # reports
             # slices_sizes.append(n_i)
@@ -483,5 +600,5 @@ cdef class SlicedRescoring:
 
         #logging.info('Slice size: mean=%s std=%s', np.mean(slices_sizes[1:]), np.std(slices_sizes[1:]))
         # I always burn the initial derivation (because it is always byproduct of some heuristic)
-        # markov_chain.popleft()
-        return markov_chain
+        markov_chain.popleft()
+        return d0, markov_chain

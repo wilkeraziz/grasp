@@ -91,6 +91,10 @@ cdef class Derivation:  # TODO: traverse in order?
     cdef tuple _rules
     cdef tuple _weights
 
+    cpdef Hypergraph hg(self)
+
+    cpdef tuple edges(self)
+
     cpdef tuple weights(self)
 
     cpdef tuple rules(self)

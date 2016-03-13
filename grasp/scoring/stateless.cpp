@@ -481,6 +481,8 @@ static const char *__pyx_f[] = {
   "__init__.pxd",
   "stringsource",
   "type.pxd",
+  "grasp/semiring/_semiring.pxd",
+  "grasp/scoring/frepr.pxd",
   "grasp/scoring/extractor.pxd",
   "grasp/cfg/symbol.pxd",
 };
@@ -820,17 +822,34 @@ typedef __pyx_t_5numpy_double_t __pyx_t_5grasp_6ptypes_weight_t;
 
 
 /*--- Type declarations ---*/
-struct __pyx_obj_5grasp_7scoring_9extractor_FRepr;
-struct __pyx_obj_5grasp_7scoring_9extractor_FValue;
-struct __pyx_obj_5grasp_7scoring_9extractor_FVec;
-struct __pyx_obj_5grasp_7scoring_9extractor_FMap;
+struct __pyx_obj_5grasp_8semiring_9_semiring_Operator;
+struct __pyx_obj_5grasp_8semiring_9_semiring_Plus;
+struct __pyx_obj_5grasp_8semiring_9_semiring_Times;
+struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring;
+struct __pyx_obj_5grasp_8semiring_9_semiring_ProbTimes;
+struct __pyx_obj_5grasp_8semiring_9_semiring_LogProbTimes;
+struct __pyx_obj_5grasp_8semiring_9_semiring_ViterbiTimes;
+struct __pyx_obj_5grasp_8semiring_9_semiring_ProbPlus;
+struct __pyx_obj_5grasp_8semiring_9_semiring_LogProbPlus;
+struct __pyx_obj_5grasp_8semiring_9_semiring_ViterbiPlus;
+struct __pyx_obj_5grasp_8semiring_9_semiring_Prob;
+struct __pyx_obj_5grasp_8semiring_9_semiring_LogProb;
+struct __pyx_obj_5grasp_8semiring_9_semiring_Viterbi;
+struct __pyx_obj_5grasp_7scoring_5frepr_FRepr;
+struct __pyx_obj_5grasp_7scoring_5frepr_FValue;
+struct __pyx_obj_5grasp_7scoring_5frepr_FVec;
+struct __pyx_obj_5grasp_7scoring_5frepr_FMap;
+struct __pyx_obj_5grasp_7scoring_5frepr_FComponents;
 struct __pyx_obj_5grasp_7scoring_9extractor_Extractor;
+struct __pyx_obj_5grasp_7scoring_9extractor_TableLookup;
+struct __pyx_obj_5grasp_7scoring_9extractor_Stateless;
+struct __pyx_obj_5grasp_7scoring_9extractor_StatefulFRepr;
+struct __pyx_obj_5grasp_7scoring_9extractor_Stateful;
 struct __pyx_obj_5grasp_3cfg_6symbol_Symbol;
 struct __pyx_obj_5grasp_3cfg_6symbol_Terminal;
 struct __pyx_obj_5grasp_3cfg_6symbol_Nonterminal;
 struct __pyx_obj_5grasp_3cfg_6symbol_Span;
 struct __pyx_obj_5grasp_3cfg_6symbol_SymbolFactory;
-struct __pyx_obj_5grasp_7scoring_9stateless_Stateless;
 struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty;
 struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty;
 struct __pyx_array_obj;
@@ -886,59 +905,237 @@ struct __pyx_opt_args_5grasp_3cfg_6symbol_make_span {
   int sto;
 };
 
-/* "grasp/scoring/extractor.pxd":7
+/* "grasp/semiring/_semiring.pxd":4
+ * 
+ * 
+ * cdef class Operator:             # <<<<<<<<<<<<<<
+ * 
+ *     cdef readonly weight_t identity
+ */
+struct __pyx_obj_5grasp_8semiring_9_semiring_Operator {
+  PyObject_HEAD
+  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Operator *__pyx_vtab;
+  __pyx_t_5grasp_6ptypes_weight_t identity;
+};
+
+
+/* "grasp/semiring/_semiring.pxd":13
+ * 
+ * 
+ * cdef class Plus(Operator):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef readonly bint idempotent
+ */
+struct __pyx_obj_5grasp_8semiring_9_semiring_Plus {
+  struct __pyx_obj_5grasp_8semiring_9_semiring_Operator __pyx_base;
+  int idempotent;
+};
+
+
+/* "grasp/semiring/_semiring.pxd":20
+ * 
+ * 
+ * cdef class Times(Operator):             # <<<<<<<<<<<<<<
+ * 
+ *     cpdef weight_t inverse(self, weight_t a)
+ */
+struct __pyx_obj_5grasp_8semiring_9_semiring_Times {
+  struct __pyx_obj_5grasp_8semiring_9_semiring_Operator __pyx_base;
+};
+
+
+/* "grasp/semiring/_semiring.pxd":25
+ * 
+ * 
+ * cdef class Semiring:             # <<<<<<<<<<<<<<
+ * 
+ *     cdef readonly bint LOG
+ */
+struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring {
+  PyObject_HEAD
+  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Semiring *__pyx_vtab;
+  int LOG;
+  int idempotent;
+  __pyx_t_5grasp_6ptypes_weight_t one;
+  __pyx_t_5grasp_6ptypes_weight_t zero;
+  struct __pyx_obj_5grasp_8semiring_9_semiring_Plus *plus;
+  struct __pyx_obj_5grasp_8semiring_9_semiring_Times *times;
+};
+
+
+/* "grasp/semiring/_semiring.pxd":51
+ * 
+ * 
+ * cdef class ProbTimes(Times): pass             # <<<<<<<<<<<<<<
+ * 
+ * cdef class LogProbTimes(Times): pass
+ */
+struct __pyx_obj_5grasp_8semiring_9_semiring_ProbTimes {
+  struct __pyx_obj_5grasp_8semiring_9_semiring_Times __pyx_base;
+};
+
+
+/* "grasp/semiring/_semiring.pxd":53
+ * cdef class ProbTimes(Times): pass
+ * 
+ * cdef class LogProbTimes(Times): pass             # <<<<<<<<<<<<<<
+ * 
+ * cdef class ViterbiTimes(Times): pass
+ */
+struct __pyx_obj_5grasp_8semiring_9_semiring_LogProbTimes {
+  struct __pyx_obj_5grasp_8semiring_9_semiring_Times __pyx_base;
+};
+
+
+/* "grasp/semiring/_semiring.pxd":55
+ * cdef class LogProbTimes(Times): pass
+ * 
+ * cdef class ViterbiTimes(Times): pass             # <<<<<<<<<<<<<<
+ * 
+ * cdef class ProbPlus(Plus): pass
+ */
+struct __pyx_obj_5grasp_8semiring_9_semiring_ViterbiTimes {
+  struct __pyx_obj_5grasp_8semiring_9_semiring_Times __pyx_base;
+};
+
+
+/* "grasp/semiring/_semiring.pxd":57
+ * cdef class ViterbiTimes(Times): pass
+ * 
+ * cdef class ProbPlus(Plus): pass             # <<<<<<<<<<<<<<
+ * 
+ * cdef class LogProbPlus(Plus): pass
+ */
+struct __pyx_obj_5grasp_8semiring_9_semiring_ProbPlus {
+  struct __pyx_obj_5grasp_8semiring_9_semiring_Plus __pyx_base;
+};
+
+
+/* "grasp/semiring/_semiring.pxd":59
+ * cdef class ProbPlus(Plus): pass
+ * 
+ * cdef class LogProbPlus(Plus): pass             # <<<<<<<<<<<<<<
+ * 
+ * cdef class ViterbiPlus(Plus): pass
+ */
+struct __pyx_obj_5grasp_8semiring_9_semiring_LogProbPlus {
+  struct __pyx_obj_5grasp_8semiring_9_semiring_Plus __pyx_base;
+};
+
+
+/* "grasp/semiring/_semiring.pxd":61
+ * cdef class LogProbPlus(Plus): pass
+ * 
+ * cdef class ViterbiPlus(Plus): pass             # <<<<<<<<<<<<<<
+ * 
+ * cdef class Prob(Semiring): pass
+ */
+struct __pyx_obj_5grasp_8semiring_9_semiring_ViterbiPlus {
+  struct __pyx_obj_5grasp_8semiring_9_semiring_Plus __pyx_base;
+};
+
+
+/* "grasp/semiring/_semiring.pxd":63
+ * cdef class ViterbiPlus(Plus): pass
+ * 
+ * cdef class Prob(Semiring): pass             # <<<<<<<<<<<<<<
+ * 
+ * cdef class LogProb(Semiring): pass
+ */
+struct __pyx_obj_5grasp_8semiring_9_semiring_Prob {
+  struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring __pyx_base;
+};
+
+
+/* "grasp/semiring/_semiring.pxd":65
+ * cdef class Prob(Semiring): pass
+ * 
+ * cdef class LogProb(Semiring): pass             # <<<<<<<<<<<<<<
+ * 
+ * cdef class Viterbi(Semiring): pass
+ */
+struct __pyx_obj_5grasp_8semiring_9_semiring_LogProb {
+  struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring __pyx_base;
+};
+
+
+/* "grasp/semiring/_semiring.pxd":67
+ * cdef class LogProb(Semiring): pass
+ * 
+ * cdef class Viterbi(Semiring): pass             # <<<<<<<<<<<<<<
+ * 
+ */
+struct __pyx_obj_5grasp_8semiring_9_semiring_Viterbi {
+  struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring __pyx_base;
+};
+
+
+/* "grasp/scoring/frepr.pxd":8
  * 
  * 
  * cdef class FRepr:             # <<<<<<<<<<<<<<
  * 
- *     cpdef weight_t dot(self, FRepr w)
+ *     cpdef FRepr prod(self, weight_t scalar)
  */
-struct __pyx_obj_5grasp_7scoring_9extractor_FRepr {
+struct __pyx_obj_5grasp_7scoring_5frepr_FRepr {
   PyObject_HEAD
-  struct __pyx_vtabstruct_5grasp_7scoring_9extractor_FRepr *__pyx_vtab;
+  struct __pyx_vtabstruct_5grasp_7scoring_5frepr_FRepr *__pyx_vtab;
 };
 
 
-/* "grasp/scoring/extractor.pxd":12
+/* "grasp/scoring/frepr.pxd":17
  * 
  * 
  * cdef class FValue(FRepr):             # <<<<<<<<<<<<<<
  * 
  *     cdef readonly weight_t value
  */
-struct __pyx_obj_5grasp_7scoring_9extractor_FValue {
-  struct __pyx_obj_5grasp_7scoring_9extractor_FRepr __pyx_base;
+struct __pyx_obj_5grasp_7scoring_5frepr_FValue {
+  struct __pyx_obj_5grasp_7scoring_5frepr_FRepr __pyx_base;
   __pyx_t_5grasp_6ptypes_weight_t value;
 };
 
 
-/* "grasp/scoring/extractor.pxd":17
+/* "grasp/scoring/frepr.pxd":22
  * 
  * 
  * cdef class FVec(FRepr):             # <<<<<<<<<<<<<<
  * 
  *     cdef readonly weight_t[::1] vec
  */
-struct __pyx_obj_5grasp_7scoring_9extractor_FVec {
-  struct __pyx_obj_5grasp_7scoring_9extractor_FRepr __pyx_base;
+struct __pyx_obj_5grasp_7scoring_5frepr_FVec {
+  struct __pyx_obj_5grasp_7scoring_5frepr_FRepr __pyx_base;
   __Pyx_memviewslice vec;
 };
 
 
-/* "grasp/scoring/extractor.pxd":22
+/* "grasp/scoring/frepr.pxd":27
  * 
  * 
  * cdef class FMap(FRepr):             # <<<<<<<<<<<<<<
  * 
  *     cdef readonly dict map
  */
-struct __pyx_obj_5grasp_7scoring_9extractor_FMap {
-  struct __pyx_obj_5grasp_7scoring_9extractor_FRepr __pyx_base;
+struct __pyx_obj_5grasp_7scoring_5frepr_FMap {
+  struct __pyx_obj_5grasp_7scoring_5frepr_FRepr __pyx_base;
   PyObject *map;
 };
 
 
-/* "grasp/scoring/extractor.pxd":27
+/* "grasp/scoring/frepr.pxd":32
+ * 
+ * 
+ * cdef class FComponents(FRepr):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef readonly list components
+ */
+struct __pyx_obj_5grasp_7scoring_5frepr_FComponents {
+  struct __pyx_obj_5grasp_7scoring_5frepr_FRepr __pyx_base;
+  PyObject *components;
+};
+
+
+/* "grasp/scoring/extractor.pxd":8
  * 
  * 
  * cdef class Extractor:             # <<<<<<<<<<<<<<
@@ -950,6 +1147,56 @@ struct __pyx_obj_5grasp_7scoring_9extractor_Extractor {
   struct __pyx_vtabstruct_5grasp_7scoring_9extractor_Extractor *__pyx_vtab;
   int _uid;
   PyObject *_name;
+};
+
+
+/* "grasp/scoring/extractor.pxd":20
+ * 
+ * 
+ * cdef class TableLookup(Extractor):             # <<<<<<<<<<<<<<
+ * 
+ *     cpdef FRepr featurize(self, rule)
+ */
+struct __pyx_obj_5grasp_7scoring_9extractor_TableLookup {
+  struct __pyx_obj_5grasp_7scoring_9extractor_Extractor __pyx_base;
+};
+
+
+/* "grasp/scoring/extractor.pxd":25
+ * 
+ * 
+ * cdef class Stateless(Extractor):             # <<<<<<<<<<<<<<
+ * 
+ *     cpdef FRepr featurize(self, edge)
+ */
+struct __pyx_obj_5grasp_7scoring_9extractor_Stateless {
+  struct __pyx_obj_5grasp_7scoring_9extractor_Extractor __pyx_base;
+};
+
+
+/* "grasp/scoring/extractor.pxd":30
+ * 
+ * 
+ * cdef class StatefulFRepr:             # <<<<<<<<<<<<<<
+ * 
+ *     cdef readonly FRepr frepr
+ */
+struct __pyx_obj_5grasp_7scoring_9extractor_StatefulFRepr {
+  PyObject_HEAD
+  struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *frepr;
+  PyObject *state;
+};
+
+
+/* "grasp/scoring/extractor.pxd":36
+ * 
+ * 
+ * cdef class Stateful(Extractor):             # <<<<<<<<<<<<<<
+ * 
+ *     cpdef object initial(self)
+ */
+struct __pyx_obj_5grasp_7scoring_9extractor_Stateful {
+  struct __pyx_obj_5grasp_7scoring_9extractor_Extractor __pyx_base;
 };
 
 
@@ -1021,37 +1268,25 @@ struct __pyx_obj_5grasp_3cfg_6symbol_SymbolFactory {
 /* "grasp/scoring/stateless.pxd":5
  * 
  * 
- * cdef class Stateless(Extractor):             # <<<<<<<<<<<<<<
+ * cdef class WordPenalty(Stateless):             # <<<<<<<<<<<<<<
  * 
- *     cpdef FRepr featurize(self, edge)
+ *     cdef weight_t _penalty
  */
-struct __pyx_obj_5grasp_7scoring_9stateless_Stateless {
-  struct __pyx_obj_5grasp_7scoring_9extractor_Extractor __pyx_base;
+struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty {
+  struct __pyx_obj_5grasp_7scoring_9extractor_Stateless __pyx_base;
+  __pyx_t_5grasp_6ptypes_weight_t _penalty;
 };
 
 
 /* "grasp/scoring/stateless.pxd":10
  * 
  * 
- * cdef class WordPenalty(Stateless):             # <<<<<<<<<<<<<<
- * 
- *     cdef weight_t _penalty
- */
-struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty {
-  struct __pyx_obj_5grasp_7scoring_9stateless_Stateless __pyx_base;
-  __pyx_t_5grasp_6ptypes_weight_t _penalty;
-};
-
-
-/* "grasp/scoring/stateless.pxd":14
- *     cdef weight_t _penalty
- * 
  * cdef class ArityPenalty(Stateless):             # <<<<<<<<<<<<<<
  * 
  *     cdef weight_t _penalty
  */
 struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty {
-  struct __pyx_obj_5grasp_7scoring_9stateless_Stateless __pyx_base;
+  struct __pyx_obj_5grasp_7scoring_9extractor_Stateless __pyx_base;
   __pyx_t_5grasp_6ptypes_weight_t _penalty;
 };
 
@@ -1133,21 +1368,214 @@ struct __pyx_memoryviewslice_obj {
 
 
 
-/* "grasp/scoring/extractor.pxd":7
+/* "grasp/semiring/_semiring.pxd":4
+ * 
+ * 
+ * cdef class Operator:             # <<<<<<<<<<<<<<
+ * 
+ *     cdef readonly weight_t identity
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Operator {
+  __pyx_t_5grasp_6ptypes_weight_t (*evaluate)(struct __pyx_obj_5grasp_8semiring_9_semiring_Operator *, __pyx_t_5grasp_6ptypes_weight_t, __pyx_t_5grasp_6ptypes_weight_t);
+  __pyx_t_5grasp_6ptypes_weight_t (*reduce)(struct __pyx_obj_5grasp_8semiring_9_semiring_Operator *, PyObject *, int __pyx_skip_dispatch);
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Operator *__pyx_vtabptr_5grasp_8semiring_9_semiring_Operator;
+
+
+/* "grasp/semiring/_semiring.pxd":13
+ * 
+ * 
+ * cdef class Plus(Operator):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef readonly bint idempotent
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Plus {
+  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Operator __pyx_base;
+  int (*choice)(struct __pyx_obj_5grasp_8semiring_9_semiring_Plus *, __Pyx_memviewslice, int __pyx_skip_dispatch);
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Plus *__pyx_vtabptr_5grasp_8semiring_9_semiring_Plus;
+
+
+/* "grasp/semiring/_semiring.pxd":20
+ * 
+ * 
+ * cdef class Times(Operator):             # <<<<<<<<<<<<<<
+ * 
+ *     cpdef weight_t inverse(self, weight_t a)
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Times {
+  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Operator __pyx_base;
+  __pyx_t_5grasp_6ptypes_weight_t (*inverse)(struct __pyx_obj_5grasp_8semiring_9_semiring_Times *, __pyx_t_5grasp_6ptypes_weight_t, int __pyx_skip_dispatch);
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Times *__pyx_vtabptr_5grasp_8semiring_9_semiring_Times;
+
+
+/* "grasp/semiring/_semiring.pxd":25
+ * 
+ * 
+ * cdef class Semiring:             # <<<<<<<<<<<<<<
+ * 
+ *     cdef readonly bint LOG
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Semiring {
+  __pyx_t_5grasp_6ptypes_weight_t (*as_real)(struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring *, __pyx_t_5grasp_6ptypes_weight_t, int __pyx_skip_dispatch);
+  __pyx_t_5grasp_6ptypes_weight_t (*from_real)(struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring *, __pyx_t_5grasp_6ptypes_weight_t, int __pyx_skip_dispatch);
+  int (*gt)(struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring *, __pyx_t_5grasp_6ptypes_weight_t, __pyx_t_5grasp_6ptypes_weight_t, int __pyx_skip_dispatch);
+  __pyx_t_5grasp_6ptypes_weight_t (*heapify)(struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring *, __pyx_t_5grasp_6ptypes_weight_t, int __pyx_skip_dispatch);
+  __pyx_t_5grasp_6ptypes_weight_t (*divide)(struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring *, __pyx_t_5grasp_6ptypes_weight_t, __pyx_t_5grasp_6ptypes_weight_t, int __pyx_skip_dispatch);
+  __Pyx_memviewslice (*zeros)(struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring *, size_t, int __pyx_skip_dispatch);
+  __Pyx_memviewslice (*ones)(struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring *, size_t, int __pyx_skip_dispatch);
+  __Pyx_memviewslice (*normalise)(struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring *, __Pyx_memviewslice, int __pyx_skip_dispatch);
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Semiring *__pyx_vtabptr_5grasp_8semiring_9_semiring_Semiring;
+
+
+/* "grasp/semiring/_semiring.pxd":51
+ * 
+ * 
+ * cdef class ProbTimes(Times): pass             # <<<<<<<<<<<<<<
+ * 
+ * cdef class LogProbTimes(Times): pass
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ProbTimes {
+  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Times __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ProbTimes *__pyx_vtabptr_5grasp_8semiring_9_semiring_ProbTimes;
+
+
+/* "grasp/semiring/_semiring.pxd":53
+ * cdef class ProbTimes(Times): pass
+ * 
+ * cdef class LogProbTimes(Times): pass             # <<<<<<<<<<<<<<
+ * 
+ * cdef class ViterbiTimes(Times): pass
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_LogProbTimes {
+  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Times __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_LogProbTimes *__pyx_vtabptr_5grasp_8semiring_9_semiring_LogProbTimes;
+
+
+/* "grasp/semiring/_semiring.pxd":55
+ * cdef class LogProbTimes(Times): pass
+ * 
+ * cdef class ViterbiTimes(Times): pass             # <<<<<<<<<<<<<<
+ * 
+ * cdef class ProbPlus(Plus): pass
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ViterbiTimes {
+  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Times __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ViterbiTimes *__pyx_vtabptr_5grasp_8semiring_9_semiring_ViterbiTimes;
+
+
+/* "grasp/semiring/_semiring.pxd":57
+ * cdef class ViterbiTimes(Times): pass
+ * 
+ * cdef class ProbPlus(Plus): pass             # <<<<<<<<<<<<<<
+ * 
+ * cdef class LogProbPlus(Plus): pass
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ProbPlus {
+  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Plus __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ProbPlus *__pyx_vtabptr_5grasp_8semiring_9_semiring_ProbPlus;
+
+
+/* "grasp/semiring/_semiring.pxd":59
+ * cdef class ProbPlus(Plus): pass
+ * 
+ * cdef class LogProbPlus(Plus): pass             # <<<<<<<<<<<<<<
+ * 
+ * cdef class ViterbiPlus(Plus): pass
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_LogProbPlus {
+  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Plus __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_LogProbPlus *__pyx_vtabptr_5grasp_8semiring_9_semiring_LogProbPlus;
+
+
+/* "grasp/semiring/_semiring.pxd":61
+ * cdef class LogProbPlus(Plus): pass
+ * 
+ * cdef class ViterbiPlus(Plus): pass             # <<<<<<<<<<<<<<
+ * 
+ * cdef class Prob(Semiring): pass
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ViterbiPlus {
+  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Plus __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ViterbiPlus *__pyx_vtabptr_5grasp_8semiring_9_semiring_ViterbiPlus;
+
+
+/* "grasp/semiring/_semiring.pxd":63
+ * cdef class ViterbiPlus(Plus): pass
+ * 
+ * cdef class Prob(Semiring): pass             # <<<<<<<<<<<<<<
+ * 
+ * cdef class LogProb(Semiring): pass
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Prob {
+  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Semiring __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Prob *__pyx_vtabptr_5grasp_8semiring_9_semiring_Prob;
+
+
+/* "grasp/semiring/_semiring.pxd":65
+ * cdef class Prob(Semiring): pass
+ * 
+ * cdef class LogProb(Semiring): pass             # <<<<<<<<<<<<<<
+ * 
+ * cdef class Viterbi(Semiring): pass
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_LogProb {
+  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Semiring __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_LogProb *__pyx_vtabptr_5grasp_8semiring_9_semiring_LogProb;
+
+
+/* "grasp/semiring/_semiring.pxd":67
+ * cdef class LogProb(Semiring): pass
+ * 
+ * cdef class Viterbi(Semiring): pass             # <<<<<<<<<<<<<<
+ * 
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Viterbi {
+  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Semiring __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Viterbi *__pyx_vtabptr_5grasp_8semiring_9_semiring_Viterbi;
+
+
+/* "grasp/scoring/frepr.pxd":8
  * 
  * 
  * cdef class FRepr:             # <<<<<<<<<<<<<<
  * 
- *     cpdef weight_t dot(self, FRepr w)
+ *     cpdef FRepr prod(self, weight_t scalar)
  */
 
-struct __pyx_vtabstruct_5grasp_7scoring_9extractor_FRepr {
-  __pyx_t_5grasp_6ptypes_weight_t (*dot)(struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *, struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_5grasp_7scoring_5frepr_FRepr {
+  struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *(*prod)(struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *, __pyx_t_5grasp_6ptypes_weight_t, int __pyx_skip_dispatch);
+  __pyx_t_5grasp_6ptypes_weight_t (*dot)(struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *, struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *(*hadamard)(struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *, struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *, struct __pyx_obj_5grasp_8semiring_9_semiring_Operator *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_5grasp_7scoring_9extractor_FRepr *__pyx_vtabptr_5grasp_7scoring_9extractor_FRepr;
+static struct __pyx_vtabstruct_5grasp_7scoring_5frepr_FRepr *__pyx_vtabptr_5grasp_7scoring_5frepr_FRepr;
 
 
-/* "grasp/scoring/extractor.pxd":12
+/* "grasp/scoring/frepr.pxd":17
  * 
  * 
  * cdef class FValue(FRepr):             # <<<<<<<<<<<<<<
@@ -1155,13 +1583,13 @@ static struct __pyx_vtabstruct_5grasp_7scoring_9extractor_FRepr *__pyx_vtabptr_5
  *     cdef readonly weight_t value
  */
 
-struct __pyx_vtabstruct_5grasp_7scoring_9extractor_FValue {
-  struct __pyx_vtabstruct_5grasp_7scoring_9extractor_FRepr __pyx_base;
+struct __pyx_vtabstruct_5grasp_7scoring_5frepr_FValue {
+  struct __pyx_vtabstruct_5grasp_7scoring_5frepr_FRepr __pyx_base;
 };
-static struct __pyx_vtabstruct_5grasp_7scoring_9extractor_FValue *__pyx_vtabptr_5grasp_7scoring_9extractor_FValue;
+static struct __pyx_vtabstruct_5grasp_7scoring_5frepr_FValue *__pyx_vtabptr_5grasp_7scoring_5frepr_FValue;
 
 
-/* "grasp/scoring/extractor.pxd":17
+/* "grasp/scoring/frepr.pxd":22
  * 
  * 
  * cdef class FVec(FRepr):             # <<<<<<<<<<<<<<
@@ -1169,13 +1597,13 @@ static struct __pyx_vtabstruct_5grasp_7scoring_9extractor_FValue *__pyx_vtabptr_
  *     cdef readonly weight_t[::1] vec
  */
 
-struct __pyx_vtabstruct_5grasp_7scoring_9extractor_FVec {
-  struct __pyx_vtabstruct_5grasp_7scoring_9extractor_FRepr __pyx_base;
+struct __pyx_vtabstruct_5grasp_7scoring_5frepr_FVec {
+  struct __pyx_vtabstruct_5grasp_7scoring_5frepr_FRepr __pyx_base;
 };
-static struct __pyx_vtabstruct_5grasp_7scoring_9extractor_FVec *__pyx_vtabptr_5grasp_7scoring_9extractor_FVec;
+static struct __pyx_vtabstruct_5grasp_7scoring_5frepr_FVec *__pyx_vtabptr_5grasp_7scoring_5frepr_FVec;
 
 
-/* "grasp/scoring/extractor.pxd":22
+/* "grasp/scoring/frepr.pxd":27
  * 
  * 
  * cdef class FMap(FRepr):             # <<<<<<<<<<<<<<
@@ -1183,13 +1611,28 @@ static struct __pyx_vtabstruct_5grasp_7scoring_9extractor_FVec *__pyx_vtabptr_5g
  *     cdef readonly dict map
  */
 
-struct __pyx_vtabstruct_5grasp_7scoring_9extractor_FMap {
-  struct __pyx_vtabstruct_5grasp_7scoring_9extractor_FRepr __pyx_base;
+struct __pyx_vtabstruct_5grasp_7scoring_5frepr_FMap {
+  struct __pyx_vtabstruct_5grasp_7scoring_5frepr_FRepr __pyx_base;
 };
-static struct __pyx_vtabstruct_5grasp_7scoring_9extractor_FMap *__pyx_vtabptr_5grasp_7scoring_9extractor_FMap;
+static struct __pyx_vtabstruct_5grasp_7scoring_5frepr_FMap *__pyx_vtabptr_5grasp_7scoring_5frepr_FMap;
 
 
-/* "grasp/scoring/extractor.pxd":27
+/* "grasp/scoring/frepr.pxd":32
+ * 
+ * 
+ * cdef class FComponents(FRepr):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef readonly list components
+ */
+
+struct __pyx_vtabstruct_5grasp_7scoring_5frepr_FComponents {
+  struct __pyx_vtabstruct_5grasp_7scoring_5frepr_FRepr __pyx_base;
+  struct __pyx_obj_5grasp_7scoring_5frepr_FComponents *(*concatenate)(struct __pyx_obj_5grasp_7scoring_5frepr_FComponents *, struct __pyx_obj_5grasp_7scoring_5frepr_FComponents *, int __pyx_skip_dispatch);
+};
+static struct __pyx_vtabstruct_5grasp_7scoring_5frepr_FComponents *__pyx_vtabptr_5grasp_7scoring_5frepr_FComponents;
+
+
+/* "grasp/scoring/extractor.pxd":8
  * 
  * 
  * cdef class Extractor:             # <<<<<<<<<<<<<<
@@ -1198,10 +1641,61 @@ static struct __pyx_vtabstruct_5grasp_7scoring_9extractor_FMap *__pyx_vtabptr_5g
  */
 
 struct __pyx_vtabstruct_5grasp_7scoring_9extractor_Extractor {
-  struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *(*weights)(struct __pyx_obj_5grasp_7scoring_9extractor_Extractor *, PyObject *, int __pyx_skip_dispatch);
-  __pyx_t_5grasp_6ptypes_weight_t (*dot)(struct __pyx_obj_5grasp_7scoring_9extractor_Extractor *, struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *, struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *(*weights)(struct __pyx_obj_5grasp_7scoring_9extractor_Extractor *, PyObject *, int __pyx_skip_dispatch);
+  __pyx_t_5grasp_6ptypes_weight_t (*dot)(struct __pyx_obj_5grasp_7scoring_9extractor_Extractor *, struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *, struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *, int __pyx_skip_dispatch);
+  struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *(*constant)(struct __pyx_obj_5grasp_7scoring_9extractor_Extractor *, __pyx_t_5grasp_6ptypes_weight_t, int __pyx_skip_dispatch);
 };
 static struct __pyx_vtabstruct_5grasp_7scoring_9extractor_Extractor *__pyx_vtabptr_5grasp_7scoring_9extractor_Extractor;
+
+
+/* "grasp/scoring/extractor.pxd":20
+ * 
+ * 
+ * cdef class TableLookup(Extractor):             # <<<<<<<<<<<<<<
+ * 
+ *     cpdef FRepr featurize(self, rule)
+ */
+
+struct __pyx_vtabstruct_5grasp_7scoring_9extractor_TableLookup {
+  struct __pyx_vtabstruct_5grasp_7scoring_9extractor_Extractor __pyx_base;
+  struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *(*featurize)(struct __pyx_obj_5grasp_7scoring_9extractor_TableLookup *, PyObject *, int __pyx_skip_dispatch);
+};
+static struct __pyx_vtabstruct_5grasp_7scoring_9extractor_TableLookup *__pyx_vtabptr_5grasp_7scoring_9extractor_TableLookup;
+
+
+/* "grasp/scoring/extractor.pxd":25
+ * 
+ * 
+ * cdef class Stateless(Extractor):             # <<<<<<<<<<<<<<
+ * 
+ *     cpdef FRepr featurize(self, edge)
+ */
+
+struct __pyx_vtabstruct_5grasp_7scoring_9extractor_Stateless {
+  struct __pyx_vtabstruct_5grasp_7scoring_9extractor_Extractor __pyx_base;
+  struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *(*featurize)(struct __pyx_obj_5grasp_7scoring_9extractor_Stateless *, PyObject *, int __pyx_skip_dispatch);
+};
+static struct __pyx_vtabstruct_5grasp_7scoring_9extractor_Stateless *__pyx_vtabptr_5grasp_7scoring_9extractor_Stateless;
+
+
+/* "grasp/scoring/extractor.pxd":36
+ * 
+ * 
+ * cdef class Stateful(Extractor):             # <<<<<<<<<<<<<<
+ * 
+ *     cpdef object initial(self)
+ */
+
+struct __pyx_vtabstruct_5grasp_7scoring_9extractor_Stateful {
+  struct __pyx_vtabstruct_5grasp_7scoring_9extractor_Extractor __pyx_base;
+  PyObject *(*initial)(struct __pyx_obj_5grasp_7scoring_9extractor_Stateful *, int __pyx_skip_dispatch);
+  PyObject *(*final)(struct __pyx_obj_5grasp_7scoring_9extractor_Stateful *, int __pyx_skip_dispatch);
+  struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *(*featurize_initial)(struct __pyx_obj_5grasp_7scoring_9extractor_Stateful *, int __pyx_skip_dispatch);
+  struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *(*featurize_final)(struct __pyx_obj_5grasp_7scoring_9extractor_Stateful *, PyObject *, int __pyx_skip_dispatch);
+  struct __pyx_obj_5grasp_7scoring_9extractor_StatefulFRepr *(*featurize)(struct __pyx_obj_5grasp_7scoring_9extractor_Stateful *, PyObject *, PyObject *, int __pyx_skip_dispatch);
+  struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *(*featurize_yield)(struct __pyx_obj_5grasp_7scoring_9extractor_Stateful *, PyObject *, int __pyx_skip_dispatch);
+};
+static struct __pyx_vtabstruct_5grasp_7scoring_9extractor_Stateful *__pyx_vtabptr_5grasp_7scoring_9extractor_Stateful;
 
 
 /* "grasp/cfg/symbol.pxd":42
@@ -1223,42 +1717,27 @@ static struct __pyx_vtabstruct_5grasp_3cfg_6symbol_SymbolFactory *__pyx_vtabptr_
 /* "grasp/scoring/stateless.pyx":12
  * 
  * 
- * cdef class Stateless(Extractor):             # <<<<<<<<<<<<<<
- * 
- *     def __init__(self, int uid, str name):
- */
-
-struct __pyx_vtabstruct_5grasp_7scoring_9stateless_Stateless {
-  struct __pyx_vtabstruct_5grasp_7scoring_9extractor_Extractor __pyx_base;
-  struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *(*featurize)(struct __pyx_obj_5grasp_7scoring_9stateless_Stateless *, PyObject *, int __pyx_skip_dispatch);
-};
-static struct __pyx_vtabstruct_5grasp_7scoring_9stateless_Stateless *__pyx_vtabptr_5grasp_7scoring_9stateless_Stateless;
-
-
-/* "grasp/scoring/stateless.pyx":20
- * 
- * 
  * cdef class WordPenalty(Stateless):             # <<<<<<<<<<<<<<
- * 
- *     def __init__(self, int uid, str name, weight_t penalty=1.0):
+ *     """
+ *     This counts the number of terminal symbols in a rule.
  */
 
 struct __pyx_vtabstruct_5grasp_7scoring_9stateless_WordPenalty {
-  struct __pyx_vtabstruct_5grasp_7scoring_9stateless_Stateless __pyx_base;
+  struct __pyx_vtabstruct_5grasp_7scoring_9extractor_Stateless __pyx_base;
 };
 static struct __pyx_vtabstruct_5grasp_7scoring_9stateless_WordPenalty *__pyx_vtabptr_5grasp_7scoring_9stateless_WordPenalty;
 
 
-/* "grasp/scoring/stateless.pyx":52
+/* "grasp/scoring/stateless.pyx":51
  * 
  * 
  * cdef class ArityPenalty(Stateless):             # <<<<<<<<<<<<<<
- * 
- *     def __init__(self, int uid, str name, weight_t penalty=1.0):
+ *     """
+ *     This counts the number of rules of each arity.
  */
 
 struct __pyx_vtabstruct_5grasp_7scoring_9stateless_ArityPenalty {
-  struct __pyx_vtabstruct_5grasp_7scoring_9stateless_Stateless __pyx_base;
+  struct __pyx_vtabstruct_5grasp_7scoring_9extractor_Stateless __pyx_base;
 };
 static struct __pyx_vtabstruct_5grasp_7scoring_9stateless_ArityPenalty *__pyx_vtabptr_5grasp_7scoring_9stateless_ArityPenalty;
 
@@ -1779,11 +2258,12 @@ static PyTypeObject *__Pyx_ImportType(const char *module_name, const char *class
 
 static int __Pyx_InitStrings(__Pyx_StringTabEntry *t);
 
-static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scoring_9stateless_9Stateless_featurize(CYTHON_UNUSED struct __pyx_obj_5grasp_7scoring_9stateless_Stateless *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v_edge, int __pyx_skip_dispatch); /* proto*/
-static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scoring_9stateless_11WordPenalty_weights(struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty *__pyx_v_self, PyObject *__pyx_v_wmap, int __pyx_skip_dispatch); /* proto*/
-static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scoring_9stateless_11WordPenalty_featurize(struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty *__pyx_v_self, PyObject *__pyx_v_edge, int __pyx_skip_dispatch); /* proto*/
-static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scoring_9stateless_12ArityPenalty_weights(struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty *__pyx_v_self, PyObject *__pyx_v_wmap, int __pyx_skip_dispatch); /* proto*/
-static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scoring_9stateless_12ArityPenalty_featurize(struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty *__pyx_v_self, PyObject *__pyx_v_edge, int __pyx_skip_dispatch); /* proto*/
+static struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *__pyx_f_5grasp_7scoring_9stateless_11WordPenalty_weights(struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty *__pyx_v_self, PyObject *__pyx_v_wmap, int __pyx_skip_dispatch); /* proto*/
+static struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *__pyx_f_5grasp_7scoring_9stateless_11WordPenalty_featurize(struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty *__pyx_v_self, PyObject *__pyx_v_edge, int __pyx_skip_dispatch); /* proto*/
+static struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *__pyx_f_5grasp_7scoring_9stateless_11WordPenalty_constant(CYTHON_UNUSED struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty *__pyx_v_self, __pyx_t_5grasp_6ptypes_weight_t __pyx_v_value, int __pyx_skip_dispatch); /* proto*/
+static struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *__pyx_f_5grasp_7scoring_9stateless_12ArityPenalty_weights(struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty *__pyx_v_self, PyObject *__pyx_v_wmap, int __pyx_skip_dispatch); /* proto*/
+static struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *__pyx_f_5grasp_7scoring_9stateless_12ArityPenalty_featurize(struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty *__pyx_v_self, PyObject *__pyx_v_edge, int __pyx_skip_dispatch); /* proto*/
+static struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *__pyx_f_5grasp_7scoring_9stateless_12ArityPenalty_constant(CYTHON_UNUSED struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty *__pyx_v_self, CYTHON_UNUSED __pyx_t_5grasp_6ptypes_weight_t __pyx_v_value, int __pyx_skip_dispatch); /* proto*/
 static char *__pyx_memoryview_get_item_pointer(struct __pyx_memoryview_obj *__pyx_v_self, PyObject *__pyx_v_index); /* proto*/
 static PyObject *__pyx_memoryview_is_slice(struct __pyx_memoryview_obj *__pyx_v_self, PyObject *__pyx_v_obj); /* proto*/
 static PyObject *__pyx_memoryview_setitem_slice_assignment(struct __pyx_memoryview_obj *__pyx_v_self, PyObject *__pyx_v_dst, PyObject *__pyx_v_src); /* proto*/
@@ -1823,12 +2303,34 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *, cha
 
 /* Module declarations from 'grasp.ptypes' */
 
+/* Module declarations from 'grasp.semiring._semiring' */
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_Operator = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_Plus = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_Times = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_Semiring = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_ProbTimes = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_LogProbTimes = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_ViterbiTimes = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_ProbPlus = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_LogProbPlus = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_ViterbiPlus = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_Prob = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_LogProb = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_Viterbi = 0;
+
+/* Module declarations from 'grasp.scoring.frepr' */
+static PyTypeObject *__pyx_ptype_5grasp_7scoring_5frepr_FRepr = 0;
+static PyTypeObject *__pyx_ptype_5grasp_7scoring_5frepr_FValue = 0;
+static PyTypeObject *__pyx_ptype_5grasp_7scoring_5frepr_FVec = 0;
+static PyTypeObject *__pyx_ptype_5grasp_7scoring_5frepr_FMap = 0;
+static PyTypeObject *__pyx_ptype_5grasp_7scoring_5frepr_FComponents = 0;
+
 /* Module declarations from 'grasp.scoring.extractor' */
-static PyTypeObject *__pyx_ptype_5grasp_7scoring_9extractor_FRepr = 0;
-static PyTypeObject *__pyx_ptype_5grasp_7scoring_9extractor_FValue = 0;
-static PyTypeObject *__pyx_ptype_5grasp_7scoring_9extractor_FVec = 0;
-static PyTypeObject *__pyx_ptype_5grasp_7scoring_9extractor_FMap = 0;
 static PyTypeObject *__pyx_ptype_5grasp_7scoring_9extractor_Extractor = 0;
+static PyTypeObject *__pyx_ptype_5grasp_7scoring_9extractor_TableLookup = 0;
+static PyTypeObject *__pyx_ptype_5grasp_7scoring_9extractor_Stateless = 0;
+static PyTypeObject *__pyx_ptype_5grasp_7scoring_9extractor_StatefulFRepr = 0;
+static PyTypeObject *__pyx_ptype_5grasp_7scoring_9extractor_Stateful = 0;
 
 /* Module declarations from 'grasp.cfg.symbol' */
 static PyTypeObject *__pyx_ptype_5grasp_3cfg_6symbol_Symbol = 0;
@@ -1838,7 +2340,6 @@ static PyTypeObject *__pyx_ptype_5grasp_3cfg_6symbol_Span = 0;
 static PyTypeObject *__pyx_ptype_5grasp_3cfg_6symbol_SymbolFactory = 0;
 
 /* Module declarations from 'grasp.scoring.stateless' */
-static PyTypeObject *__pyx_ptype_5grasp_7scoring_9stateless_Stateless = 0;
 static PyTypeObject *__pyx_ptype_5grasp_7scoring_9stateless_WordPenalty = 0;
 static PyTypeObject *__pyx_ptype_5grasp_7scoring_9stateless_ArityPenalty = 0;
 static PyTypeObject *__pyx_array_type = 0;
@@ -1897,16 +2398,16 @@ static PyObject *__pyx_builtin_Ellipsis;
 static PyObject *__pyx_builtin_TypeError;
 static PyObject *__pyx_builtin_id;
 static PyObject *__pyx_builtin_IndexError;
-static int __pyx_pf_5grasp_7scoring_9stateless_9Stateless___init__(struct __pyx_obj_5grasp_7scoring_9stateless_Stateless *__pyx_v_self, int __pyx_v_uid, PyObject *__pyx_v_name); /* proto */
-static PyObject *__pyx_pf_5grasp_7scoring_9stateless_9Stateless_2featurize(struct __pyx_obj_5grasp_7scoring_9stateless_Stateless *__pyx_v_self, PyObject *__pyx_v_edge); /* proto */
 static int __pyx_pf_5grasp_7scoring_9stateless_11WordPenalty___init__(struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty *__pyx_v_self, int __pyx_v_uid, PyObject *__pyx_v_name, __pyx_t_5grasp_6ptypes_weight_t __pyx_v_penalty); /* proto */
 static PyObject *__pyx_pf_5grasp_7scoring_9stateless_11WordPenalty_2__repr__(struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_5grasp_7scoring_9stateless_11WordPenalty_4weights(struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty *__pyx_v_self, PyObject *__pyx_v_wmap); /* proto */
 static PyObject *__pyx_pf_5grasp_7scoring_9stateless_11WordPenalty_6featurize(struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty *__pyx_v_self, PyObject *__pyx_v_edge); /* proto */
+static PyObject *__pyx_pf_5grasp_7scoring_9stateless_11WordPenalty_8constant(struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty *__pyx_v_self, __pyx_t_5grasp_6ptypes_weight_t __pyx_v_value); /* proto */
 static int __pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty___init__(struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty *__pyx_v_self, int __pyx_v_uid, PyObject *__pyx_v_name, __pyx_t_5grasp_6ptypes_weight_t __pyx_v_penalty); /* proto */
 static PyObject *__pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty_2__repr__(struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty_4weights(struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty *__pyx_v_self, PyObject *__pyx_v_wmap); /* proto */
 static PyObject *__pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty_6featurize(struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty *__pyx_v_self, PyObject *__pyx_v_edge); /* proto */
+static PyObject *__pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty_8constant(struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty *__pyx_v_self, __pyx_t_5grasp_6ptypes_weight_t __pyx_v_value); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static int __pyx_array___pyx_pf_15View_dot_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
@@ -1941,7 +2442,6 @@ static PyObject *__pyx_memoryview___pyx_pf_15View_dot_MemoryView_10memoryview_20
 static PyObject *__pyx_memoryview___pyx_pf_15View_dot_MemoryView_10memoryview_22copy_fortran(struct __pyx_memoryview_obj *__pyx_v_self); /* proto */
 static void __pyx_memoryviewslice___pyx_pf_15View_dot_MemoryView_16_memoryviewslice___dealloc__(struct __pyx_memoryviewslice_obj *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_15View_dot_MemoryView_16_memoryviewslice_4base___get__(struct __pyx_memoryviewslice_obj *__pyx_v_self); /* proto */
-static PyObject *__pyx_tp_new_5grasp_7scoring_9stateless_Stateless(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_5grasp_7scoring_9stateless_WordPenalty(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_5grasp_7scoring_9stateless_ArityPenalty(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_array(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
@@ -2003,6 +2503,7 @@ static char __pyx_k_weights[] = "weights";
 static char __pyx_k_Ellipsis[] = "Ellipsis";
 static char __pyx_k_GoalRule[] = "GoalRule";
 static char __pyx_k_KeyError[] = "KeyError";
+static char __pyx_k_constant[] = "constant";
 static char __pyx_k_itemsize[] = "itemsize";
 static char __pyx_k_TypeError[] = "TypeError";
 static char __pyx_k_enumerate[] = "enumerate";
@@ -2082,6 +2583,7 @@ static PyObject *__pyx_n_s_base;
 static PyObject *__pyx_n_s_c;
 static PyObject *__pyx_n_u_c;
 static PyObject *__pyx_n_s_class;
+static PyObject *__pyx_n_s_constant;
 static PyObject *__pyx_kp_s_contiguous_and_direct;
 static PyObject *__pyx_kp_s_contiguous_and_indirect;
 static PyObject *__pyx_n_s_dtype_is_object;
@@ -2162,292 +2664,8 @@ static PyObject *__pyx_tuple__23;
 static PyObject *__pyx_tuple__24;
 static PyObject *__pyx_tuple__25;
 
-/* "grasp/scoring/stateless.pyx":14
- * cdef class Stateless(Extractor):
- * 
- *     def __init__(self, int uid, str name):             # <<<<<<<<<<<<<<
- *         super(Stateless, self).__init__(uid, name)
- * 
- */
-
-/* Python wrapper */
-static int __pyx_pw_5grasp_7scoring_9stateless_9Stateless_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static int __pyx_pw_5grasp_7scoring_9stateless_9Stateless_1__init__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
-  int __pyx_v_uid;
-  PyObject *__pyx_v_name = 0;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  int __pyx_r;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("__init__ (wrapper)", 0);
-  {
-    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_uid,&__pyx_n_s_name,0};
-    PyObject* values[2] = {0,0};
-    if (unlikely(__pyx_kwds)) {
-      Py_ssize_t kw_args;
-      const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
-      switch (pos_args) {
-        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
-        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
-        case  0: break;
-        default: goto __pyx_L5_argtuple_error;
-      }
-      kw_args = PyDict_Size(__pyx_kwds);
-      switch (pos_args) {
-        case  0:
-        if (likely((values[0] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_uid)) != 0)) kw_args--;
-        else goto __pyx_L5_argtuple_error;
-        case  1:
-        if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_name)) != 0)) kw_args--;
-        else {
-          __Pyx_RaiseArgtupleInvalid("__init__", 1, 2, 2, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 14; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
-        }
-      }
-      if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 14; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
-      }
-    } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
-      goto __pyx_L5_argtuple_error;
-    } else {
-      values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
-      values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
-    }
-    __pyx_v_uid = __Pyx_PyInt_As_int(values[0]); if (unlikely((__pyx_v_uid == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 14; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
-    __pyx_v_name = ((PyObject*)values[1]);
-  }
-  goto __pyx_L4_argument_unpacking_done;
-  __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__init__", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 14; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
-  __pyx_L3_error:;
-  __Pyx_AddTraceback("grasp.scoring.stateless.Stateless.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __Pyx_RefNannyFinishContext();
-  return -1;
-  __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_name), (&PyString_Type), 1, "name", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 14; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_r = __pyx_pf_5grasp_7scoring_9stateless_9Stateless___init__(((struct __pyx_obj_5grasp_7scoring_9stateless_Stateless *)__pyx_v_self), __pyx_v_uid, __pyx_v_name);
-
-  /* function exit code */
-  goto __pyx_L0;
-  __pyx_L1_error:;
-  __pyx_r = -1;
-  __pyx_L0:;
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static int __pyx_pf_5grasp_7scoring_9stateless_9Stateless___init__(struct __pyx_obj_5grasp_7scoring_9stateless_Stateless *__pyx_v_self, int __pyx_v_uid, PyObject *__pyx_v_name) {
-  int __pyx_r;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  PyObject *__pyx_t_2 = NULL;
-  PyObject *__pyx_t_3 = NULL;
-  PyObject *__pyx_t_4 = NULL;
-  Py_ssize_t __pyx_t_5;
-  PyObject *__pyx_t_6 = NULL;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("__init__", 0);
-
-  /* "grasp/scoring/stateless.pyx":15
- * 
- *     def __init__(self, int uid, str name):
- *         super(Stateless, self).__init__(uid, name)             # <<<<<<<<<<<<<<
- * 
- *     cpdef FRepr featurize(self, edge): pass
- */
-  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_2);
-  __Pyx_INCREF(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_9stateless_Stateless)));
-  __Pyx_GIVEREF(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_9stateless_Stateless)));
-  PyTuple_SET_ITEM(__pyx_t_2, 0, ((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_9stateless_Stateless)));
-  __Pyx_INCREF(((PyObject *)__pyx_v_self));
-  __Pyx_GIVEREF(((PyObject *)__pyx_v_self));
-  PyTuple_SET_ITEM(__pyx_t_2, 1, ((PyObject *)__pyx_v_self));
-  __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_super, __pyx_t_2, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_3);
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_init); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_2);
-  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_uid); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = NULL;
-  __pyx_t_5 = 0;
-  if (CYTHON_COMPILING_IN_CPYTHON && likely(PyMethod_Check(__pyx_t_2))) {
-    __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_2);
-    if (likely(__pyx_t_4)) {
-      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
-      __Pyx_INCREF(__pyx_t_4);
-      __Pyx_INCREF(function);
-      __Pyx_DECREF_SET(__pyx_t_2, function);
-      __pyx_t_5 = 1;
-    }
-  }
-  __pyx_t_6 = PyTuple_New(2+__pyx_t_5); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_6);
-  if (__pyx_t_4) {
-    __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_4); __pyx_t_4 = NULL;
-  }
-  __Pyx_GIVEREF(__pyx_t_3);
-  PyTuple_SET_ITEM(__pyx_t_6, 0+__pyx_t_5, __pyx_t_3);
-  __Pyx_INCREF(__pyx_v_name);
-  __Pyx_GIVEREF(__pyx_v_name);
-  PyTuple_SET_ITEM(__pyx_t_6, 1+__pyx_t_5, __pyx_v_name);
-  __pyx_t_3 = 0;
-  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_6, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-
-  /* "grasp/scoring/stateless.pyx":14
- * cdef class Stateless(Extractor):
- * 
- *     def __init__(self, int uid, str name):             # <<<<<<<<<<<<<<
- *         super(Stateless, self).__init__(uid, name)
- * 
- */
-
-  /* function exit code */
-  __pyx_r = 0;
-  goto __pyx_L0;
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_AddTraceback("grasp.scoring.stateless.Stateless.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = -1;
-  __pyx_L0:;
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* "grasp/scoring/stateless.pyx":17
- *         super(Stateless, self).__init__(uid, name)
- * 
- *     cpdef FRepr featurize(self, edge): pass             # <<<<<<<<<<<<<<
- * 
- * 
- */
-
-static PyObject *__pyx_pw_5grasp_7scoring_9stateless_9Stateless_3featurize(PyObject *__pyx_v_self, PyObject *__pyx_v_edge); /*proto*/
-static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scoring_9stateless_9Stateless_featurize(CYTHON_UNUSED struct __pyx_obj_5grasp_7scoring_9stateless_Stateless *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v_edge, int __pyx_skip_dispatch) {
-  struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  PyObject *__pyx_t_2 = NULL;
-  PyObject *__pyx_t_3 = NULL;
-  PyObject *__pyx_t_4 = NULL;
-  PyObject *__pyx_t_5 = NULL;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("featurize", 0);
-  /* Check if called by wrapper */
-  if (unlikely(__pyx_skip_dispatch)) ;
-  /* Check if overridden in Python */
-  else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_featurize); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 17; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_7scoring_9stateless_9Stateless_3featurize)) {
-      __Pyx_XDECREF(((PyObject *)__pyx_r));
-      __Pyx_INCREF(__pyx_t_1);
-      __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
-      if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_3))) {
-        __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_3);
-        if (likely(__pyx_t_4)) {
-          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
-          __Pyx_INCREF(__pyx_t_4);
-          __Pyx_INCREF(function);
-          __Pyx_DECREF_SET(__pyx_t_3, function);
-        }
-      }
-      if (!__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_edge); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 17; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_GOTREF(__pyx_t_2);
-      } else {
-        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 17; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_GOTREF(__pyx_t_5);
-        __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __pyx_t_4 = NULL;
-        __Pyx_INCREF(__pyx_v_edge);
-        __Pyx_GIVEREF(__pyx_v_edge);
-        PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_v_edge);
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 17; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_GOTREF(__pyx_t_2);
-        __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      }
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5grasp_7scoring_9extractor_FRepr))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 17; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __pyx_r = ((struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *)__pyx_t_2);
-      __pyx_t_2 = 0;
-      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      goto __pyx_L0;
-    }
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  }
-
-  /* function exit code */
-  __pyx_r = ((struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *)Py_None); __Pyx_INCREF(Py_None);
-  goto __pyx_L0;
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_XDECREF(__pyx_t_5);
-  __Pyx_AddTraceback("grasp.scoring.stateless.Stateless.featurize", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = 0;
-  __pyx_L0:;
-  __Pyx_XGIVEREF((PyObject *)__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* Python wrapper */
-static PyObject *__pyx_pw_5grasp_7scoring_9stateless_9Stateless_3featurize(PyObject *__pyx_v_self, PyObject *__pyx_v_edge); /*proto*/
-static PyObject *__pyx_pw_5grasp_7scoring_9stateless_9Stateless_3featurize(PyObject *__pyx_v_self, PyObject *__pyx_v_edge) {
-  PyObject *__pyx_r = 0;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("featurize (wrapper)", 0);
-  __pyx_r = __pyx_pf_5grasp_7scoring_9stateless_9Stateless_2featurize(((struct __pyx_obj_5grasp_7scoring_9stateless_Stateless *)__pyx_v_self), ((PyObject *)__pyx_v_edge));
-
-  /* function exit code */
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static PyObject *__pyx_pf_5grasp_7scoring_9stateless_9Stateless_2featurize(struct __pyx_obj_5grasp_7scoring_9stateless_Stateless *__pyx_v_self, PyObject *__pyx_v_edge) {
-  PyObject *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("featurize", 0);
-  __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = ((PyObject *)__pyx_f_5grasp_7scoring_9stateless_9Stateless_featurize(__pyx_v_self, __pyx_v_edge, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 17; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_r = __pyx_t_1;
-  __pyx_t_1 = 0;
-  goto __pyx_L0;
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("grasp.scoring.stateless.Stateless.featurize", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = NULL;
-  __pyx_L0:;
-  __Pyx_XGIVEREF(__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* "grasp/scoring/stateless.pyx":22
- * cdef class WordPenalty(Stateless):
+/* "grasp/scoring/stateless.pyx":18
+ *     """
  * 
  *     def __init__(self, int uid, str name, weight_t penalty=1.0):             # <<<<<<<<<<<<<<
  *         super(WordPenalty, self).__init__(uid, name)
@@ -2487,7 +2705,7 @@ static int __pyx_pw_5grasp_7scoring_9stateless_11WordPenalty_1__init__(PyObject 
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_name)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("__init__", 0, 2, 3, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+          __Pyx_RaiseArgtupleInvalid("__init__", 0, 2, 3, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 18; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
         }
         case  2:
         if (kw_args > 0) {
@@ -2496,7 +2714,7 @@ static int __pyx_pw_5grasp_7scoring_9stateless_11WordPenalty_1__init__(PyObject 
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 18; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -2507,23 +2725,23 @@ static int __pyx_pw_5grasp_7scoring_9stateless_11WordPenalty_1__init__(PyObject 
         default: goto __pyx_L5_argtuple_error;
       }
     }
-    __pyx_v_uid = __Pyx_PyInt_As_int(values[0]); if (unlikely((__pyx_v_uid == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_uid = __Pyx_PyInt_As_int(values[0]); if (unlikely((__pyx_v_uid == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 18; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
     __pyx_v_name = ((PyObject*)values[1]);
     if (values[2]) {
-      __pyx_v_penalty = __pyx_PyFloat_AsDouble(values[2]); if (unlikely((__pyx_v_penalty == (npy_double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+      __pyx_v_penalty = __pyx_PyFloat_AsDouble(values[2]); if (unlikely((__pyx_v_penalty == (npy_double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 18; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
     } else {
       __pyx_v_penalty = ((__pyx_t_5grasp_6ptypes_weight_t)1.0);
     }
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__init__", 0, 2, 3, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __Pyx_RaiseArgtupleInvalid("__init__", 0, 2, 3, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 18; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
   __Pyx_AddTraceback("grasp.scoring.stateless.WordPenalty.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_name), (&PyString_Type), 1, "name", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_name), (&PyString_Type), 1, "name", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 18; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_r = __pyx_pf_5grasp_7scoring_9stateless_11WordPenalty___init__(((struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty *)__pyx_v_self), __pyx_v_uid, __pyx_v_name, __pyx_v_penalty);
 
   /* function exit code */
@@ -2549,14 +2767,14 @@ static int __pyx_pf_5grasp_7scoring_9stateless_11WordPenalty___init__(struct __p
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__init__", 0);
 
-  /* "grasp/scoring/stateless.pyx":23
+  /* "grasp/scoring/stateless.pyx":19
  * 
  *     def __init__(self, int uid, str name, weight_t penalty=1.0):
  *         super(WordPenalty, self).__init__(uid, name)             # <<<<<<<<<<<<<<
  *         self._penalty = penalty
  * 
  */
-  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 23; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 19; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_INCREF(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_9stateless_WordPenalty)));
   __Pyx_GIVEREF(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_9stateless_WordPenalty)));
@@ -2564,13 +2782,13 @@ static int __pyx_pf_5grasp_7scoring_9stateless_11WordPenalty___init__(struct __p
   __Pyx_INCREF(((PyObject *)__pyx_v_self));
   __Pyx_GIVEREF(((PyObject *)__pyx_v_self));
   PyTuple_SET_ITEM(__pyx_t_2, 1, ((PyObject *)__pyx_v_self));
-  __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_super, __pyx_t_2, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 23; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_super, __pyx_t_2, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 19; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_init); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 23; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_init); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 19; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_uid); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 23; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_uid); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 19; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_4 = NULL;
   __pyx_t_5 = 0;
@@ -2584,7 +2802,7 @@ static int __pyx_pf_5grasp_7scoring_9stateless_11WordPenalty___init__(struct __p
       __pyx_t_5 = 1;
     }
   }
-  __pyx_t_6 = PyTuple_New(2+__pyx_t_5); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 23; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = PyTuple_New(2+__pyx_t_5); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 19; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_6);
   if (__pyx_t_4) {
     __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_4); __pyx_t_4 = NULL;
@@ -2595,13 +2813,13 @@ static int __pyx_pf_5grasp_7scoring_9stateless_11WordPenalty___init__(struct __p
   __Pyx_GIVEREF(__pyx_v_name);
   PyTuple_SET_ITEM(__pyx_t_6, 1+__pyx_t_5, __pyx_v_name);
   __pyx_t_3 = 0;
-  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_6, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 23; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_6, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 19; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "grasp/scoring/stateless.pyx":24
+  /* "grasp/scoring/stateless.pyx":20
  *     def __init__(self, int uid, str name, weight_t penalty=1.0):
  *         super(WordPenalty, self).__init__(uid, name)
  *         self._penalty = penalty             # <<<<<<<<<<<<<<
@@ -2610,8 +2828,8 @@ static int __pyx_pf_5grasp_7scoring_9stateless_11WordPenalty___init__(struct __p
  */
   __pyx_v_self->_penalty = __pyx_v_penalty;
 
-  /* "grasp/scoring/stateless.pyx":22
- * cdef class WordPenalty(Stateless):
+  /* "grasp/scoring/stateless.pyx":18
+ *     """
  * 
  *     def __init__(self, int uid, str name, weight_t penalty=1.0):             # <<<<<<<<<<<<<<
  *         super(WordPenalty, self).__init__(uid, name)
@@ -2634,7 +2852,7 @@ static int __pyx_pf_5grasp_7scoring_9stateless_11WordPenalty___init__(struct __p
   return __pyx_r;
 }
 
-/* "grasp/scoring/stateless.pyx":26
+/* "grasp/scoring/stateless.pyx":22
  *         self._penalty = penalty
  * 
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -2672,7 +2890,7 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_11WordPenalty_2__repr__(str
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__repr__", 0);
 
-  /* "grasp/scoring/stateless.pyx":27
+  /* "grasp/scoring/stateless.pyx":23
  * 
  *     def __repr__(self):
  *         return '{0}(uid={1}, name={2}, penalty={3})'.format(WordPenalty.__name__,             # <<<<<<<<<<<<<<
@@ -2680,47 +2898,47 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_11WordPenalty_2__repr__(str
  *                                                             repr(self.name),
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_0_uid_1_name_2_penalty_3, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_0_uid_1_name_2_penalty_3, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 23; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_9stateless_WordPenalty)), __pyx_n_s_name_2); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_9stateless_WordPenalty)), __pyx_n_s_name_2); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 23; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
 
-  /* "grasp/scoring/stateless.pyx":28
+  /* "grasp/scoring/stateless.pyx":24
  *     def __repr__(self):
  *         return '{0}(uid={1}, name={2}, penalty={3})'.format(WordPenalty.__name__,
  *                                                             repr(self.id),             # <<<<<<<<<<<<<<
  *                                                             repr(self.name),
  *                                                             repr(self._penalty))
  */
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_id); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_id); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 24; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = PyObject_Repr(__pyx_t_4); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = PyObject_Repr(__pyx_t_4); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 24; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "grasp/scoring/stateless.pyx":29
+  /* "grasp/scoring/stateless.pyx":25
  *         return '{0}(uid={1}, name={2}, penalty={3})'.format(WordPenalty.__name__,
  *                                                             repr(self.id),
  *                                                             repr(self.name),             # <<<<<<<<<<<<<<
  *                                                             repr(self._penalty))
  * 
  */
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_name); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_name); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_6 = PyObject_Repr(__pyx_t_4); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 29; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = PyObject_Repr(__pyx_t_4); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "grasp/scoring/stateless.pyx":30
+  /* "grasp/scoring/stateless.pyx":26
  *                                                             repr(self.id),
  *                                                             repr(self.name),
  *                                                             repr(self._penalty))             # <<<<<<<<<<<<<<
  * 
  *     cpdef FRepr weights(self, dict wmap):
  */
-  __pyx_t_4 = PyFloat_FromDouble(__pyx_v_self->_penalty); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = PyFloat_FromDouble(__pyx_v_self->_penalty); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_7 = PyObject_Repr(__pyx_t_4); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_7 = PyObject_Repr(__pyx_t_4); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_t_4 = NULL;
@@ -2735,7 +2953,7 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_11WordPenalty_2__repr__(str
       __pyx_t_8 = 1;
     }
   }
-  __pyx_t_9 = PyTuple_New(4+__pyx_t_8); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_9 = PyTuple_New(4+__pyx_t_8); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 23; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_9);
   if (__pyx_t_4) {
     __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_4); __pyx_t_4 = NULL;
@@ -2752,7 +2970,7 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_11WordPenalty_2__repr__(str
   __pyx_t_5 = 0;
   __pyx_t_6 = 0;
   __pyx_t_7 = 0;
-  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_9, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_9, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 23; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
@@ -2760,7 +2978,7 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_11WordPenalty_2__repr__(str
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "grasp/scoring/stateless.pyx":26
+  /* "grasp/scoring/stateless.pyx":22
  *         self._penalty = penalty
  * 
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -2786,7 +3004,7 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_11WordPenalty_2__repr__(str
   return __pyx_r;
 }
 
-/* "grasp/scoring/stateless.pyx":32
+/* "grasp/scoring/stateless.pyx":28
  *                                                             repr(self._penalty))
  * 
  *     cpdef FRepr weights(self, dict wmap):             # <<<<<<<<<<<<<<
@@ -2795,8 +3013,8 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_11WordPenalty_2__repr__(str
  */
 
 static PyObject *__pyx_pw_5grasp_7scoring_9stateless_11WordPenalty_5weights(PyObject *__pyx_v_self, PyObject *__pyx_v_wmap); /*proto*/
-static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scoring_9stateless_11WordPenalty_weights(struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty *__pyx_v_self, PyObject *__pyx_v_wmap, int __pyx_skip_dispatch) {
-  struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_r = NULL;
+static struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *__pyx_f_5grasp_7scoring_9stateless_11WordPenalty_weights(struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty *__pyx_v_self, PyObject *__pyx_v_wmap, int __pyx_skip_dispatch) {
+  struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   PyObject *__pyx_t_2 = NULL;
@@ -2815,7 +3033,7 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_weights); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_weights); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_7scoring_9stateless_11WordPenalty_5weights)) {
       __Pyx_XDECREF(((PyObject *)__pyx_r));
@@ -2831,22 +3049,22 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
         }
       }
       if (!__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_wmap); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_wmap); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __pyx_t_4 = NULL;
         __Pyx_INCREF(__pyx_v_wmap);
         __Pyx_GIVEREF(__pyx_v_wmap);
         PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_v_wmap);
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       }
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5grasp_7scoring_9extractor_FRepr))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __pyx_r = ((struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *)__pyx_t_2);
+      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5grasp_7scoring_5frepr_FRepr))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_r = ((struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *)__pyx_t_2);
       __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       goto __pyx_L0;
@@ -2854,7 +3072,7 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/scoring/stateless.pyx":33
+  /* "grasp/scoring/stateless.pyx":29
  * 
  *     cpdef FRepr weights(self, dict wmap):
  *         try:             # <<<<<<<<<<<<<<
@@ -2868,7 +3086,7 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
     __Pyx_XGOTREF(__pyx_t_8);
     /*try:*/ {
 
-      /* "grasp/scoring/stateless.pyx":34
+      /* "grasp/scoring/stateless.pyx":30
  *     cpdef FRepr weights(self, dict wmap):
  *         try:
  *             return FValue(wmap[self.name])             # <<<<<<<<<<<<<<
@@ -2878,22 +3096,22 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
       __Pyx_XDECREF(((PyObject *)__pyx_r));
       if (unlikely(__pyx_v_wmap == Py_None)) {
         PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 34; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
-      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_name); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 34; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_name); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_wmap, __pyx_t_1); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 34; __pyx_clineno = __LINE__; goto __pyx_L3_error;};
+      __pyx_t_2 = __Pyx_PyDict_GetItem(__pyx_v_wmap, __pyx_t_1); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L3_error;};
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 34; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+      __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_GIVEREF(__pyx_t_2);
       PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_2);
       __pyx_t_2 = 0;
-      __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_9extractor_FValue)), __pyx_t_1, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 34; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+      __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_5frepr_FValue)), __pyx_t_1, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __pyx_r = ((struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *)__pyx_t_2);
+      __pyx_r = ((struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *)__pyx_t_2);
       __pyx_t_2 = 0;
       goto __pyx_L7_try_return;
     }
@@ -2904,7 +3122,7 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "grasp/scoring/stateless.pyx":35
+    /* "grasp/scoring/stateless.pyx":31
  *         try:
  *             return FValue(wmap[self.name])
  *         except KeyError:             # <<<<<<<<<<<<<<
@@ -2914,23 +3132,23 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
     __pyx_t_9 = PyErr_ExceptionMatches(__pyx_builtin_KeyError);
     if (__pyx_t_9) {
       __Pyx_AddTraceback("grasp.scoring.stateless.WordPenalty.weights", __pyx_clineno, __pyx_lineno, __pyx_filename);
-      if (__Pyx_GetException(&__pyx_t_2, &__pyx_t_1, &__pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 35; __pyx_clineno = __LINE__; goto __pyx_L5_except_error;}
+      if (__Pyx_GetException(&__pyx_t_2, &__pyx_t_1, &__pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L5_except_error;}
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_GOTREF(__pyx_t_3);
 
-      /* "grasp/scoring/stateless.pyx":36
+      /* "grasp/scoring/stateless.pyx":32
  *             return FValue(wmap[self.name])
  *         except KeyError:
  *             raise KeyError('Missing weight for WordPenalty')             # <<<<<<<<<<<<<<
  * 
  *     cpdef FRepr featurize(self, edge):
  */
-      __pyx_t_5 = __Pyx_PyObject_Call(__pyx_builtin_KeyError, __pyx_tuple_, NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L5_except_error;}
+      __pyx_t_5 = __Pyx_PyObject_Call(__pyx_builtin_KeyError, __pyx_tuple_, NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L5_except_error;}
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_Raise(__pyx_t_5, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L5_except_error;}
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L5_except_error;}
     }
     goto __pyx_L5_except_error;
     __pyx_L5_except_error:;
@@ -2947,7 +3165,7 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
     goto __pyx_L0;
   }
 
-  /* "grasp/scoring/stateless.pyx":32
+  /* "grasp/scoring/stateless.pyx":28
  *                                                             repr(self._penalty))
  * 
  *     cpdef FRepr weights(self, dict wmap):             # <<<<<<<<<<<<<<
@@ -2979,7 +3197,7 @@ static PyObject *__pyx_pw_5grasp_7scoring_9stateless_11WordPenalty_5weights(PyOb
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("weights (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_wmap), (&PyDict_Type), 1, "wmap", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_wmap), (&PyDict_Type), 1, "wmap", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_r = __pyx_pf_5grasp_7scoring_9stateless_11WordPenalty_4weights(((struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty *)__pyx_v_self), ((PyObject*)__pyx_v_wmap));
 
   /* function exit code */
@@ -3000,7 +3218,7 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_11WordPenalty_4weights(stru
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("weights", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = ((PyObject *)__pyx_f_5grasp_7scoring_9stateless_11WordPenalty_weights(__pyx_v_self, __pyx_v_wmap, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = ((PyObject *)__pyx_f_5grasp_7scoring_9stateless_11WordPenalty_weights(__pyx_v_self, __pyx_v_wmap, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 28; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -3017,7 +3235,7 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_11WordPenalty_4weights(stru
   return __pyx_r;
 }
 
-/* "grasp/scoring/stateless.pyx":38
+/* "grasp/scoring/stateless.pyx":34
  *             raise KeyError('Missing weight for WordPenalty')
  * 
  *     cpdef FRepr featurize(self, edge):             # <<<<<<<<<<<<<<
@@ -3026,10 +3244,10 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_11WordPenalty_4weights(stru
  */
 
 static PyObject *__pyx_pw_5grasp_7scoring_9stateless_11WordPenalty_7featurize(PyObject *__pyx_v_self, PyObject *__pyx_v_edge); /*proto*/
-static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scoring_9stateless_11WordPenalty_featurize(struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty *__pyx_v_self, PyObject *__pyx_v_edge, int __pyx_skip_dispatch) {
+static struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *__pyx_f_5grasp_7scoring_9stateless_11WordPenalty_featurize(struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty *__pyx_v_self, PyObject *__pyx_v_edge, int __pyx_skip_dispatch) {
   int __pyx_v_n;
   struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_v_sym = 0;
-  struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_r = NULL;
+  struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   PyObject *__pyx_t_2 = NULL;
@@ -3048,7 +3266,7 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_featurize); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_featurize); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 34; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_7scoring_9stateless_11WordPenalty_7featurize)) {
       __Pyx_XDECREF(((PyObject *)__pyx_r));
@@ -3064,22 +3282,22 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
         }
       }
       if (!__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_edge); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_edge); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 34; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 34; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __pyx_t_4 = NULL;
         __Pyx_INCREF(__pyx_v_edge);
         __Pyx_GIVEREF(__pyx_v_edge);
         PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_v_edge);
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 34; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       }
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5grasp_7scoring_9extractor_FRepr))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __pyx_r = ((struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *)__pyx_t_2);
+      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5grasp_7scoring_5frepr_FRepr))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 34; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_r = ((struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *)__pyx_t_2);
       __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       goto __pyx_L0;
@@ -3087,7 +3305,7 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/scoring/stateless.pyx":44
+  /* "grasp/scoring/stateless.pyx":40
  *         :returns: weight
  *         """
  *         cdef int n = 0             # <<<<<<<<<<<<<<
@@ -3096,22 +3314,22 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
  */
   __pyx_v_n = 0;
 
-  /* "grasp/scoring/stateless.pyx":46
+  /* "grasp/scoring/stateless.pyx":42
  *         cdef int n = 0
  *         cdef Symbol sym
  *         for sym in edge.rhs:             # <<<<<<<<<<<<<<
  *             if isinstance(sym, Terminal):
  *                 n += 1
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_edge, __pyx_n_s_rhs); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 46; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_edge, __pyx_n_s_rhs); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   if (likely(PyList_CheckExact(__pyx_t_1)) || PyTuple_CheckExact(__pyx_t_1)) {
     __pyx_t_2 = __pyx_t_1; __Pyx_INCREF(__pyx_t_2); __pyx_t_6 = 0;
     __pyx_t_7 = NULL;
   } else {
-    __pyx_t_6 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 46; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_6 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_7 = Py_TYPE(__pyx_t_2)->tp_iternext; if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 46; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_7 = Py_TYPE(__pyx_t_2)->tp_iternext; if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   for (;;) {
@@ -3119,17 +3337,17 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
       if (likely(PyList_CheckExact(__pyx_t_2))) {
         if (__pyx_t_6 >= PyList_GET_SIZE(__pyx_t_2)) break;
         #if CYTHON_COMPILING_IN_CPYTHON
-        __pyx_t_1 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_6); __Pyx_INCREF(__pyx_t_1); __pyx_t_6++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 46; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_1 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_6); __Pyx_INCREF(__pyx_t_1); __pyx_t_6++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         #else
-        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 46; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_1);
         #endif
       } else {
         if (__pyx_t_6 >= PyTuple_GET_SIZE(__pyx_t_2)) break;
         #if CYTHON_COMPILING_IN_CPYTHON
-        __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_6); __Pyx_INCREF(__pyx_t_1); __pyx_t_6++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 46; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_6); __Pyx_INCREF(__pyx_t_1); __pyx_t_6++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         #else
-        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 46; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_1);
         #endif
       }
@@ -3139,17 +3357,17 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(exc_type == PyExc_StopIteration || PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else {__pyx_filename = __pyx_f[0]; __pyx_lineno = 46; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+          else {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         }
         break;
       }
       __Pyx_GOTREF(__pyx_t_1);
     }
-    if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5grasp_3cfg_6symbol_Symbol))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 46; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5grasp_3cfg_6symbol_Symbol))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_XDECREF_SET(__pyx_v_sym, ((struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *)__pyx_t_1));
     __pyx_t_1 = 0;
 
-    /* "grasp/scoring/stateless.pyx":47
+    /* "grasp/scoring/stateless.pyx":43
  *         cdef Symbol sym
  *         for sym in edge.rhs:
  *             if isinstance(sym, Terminal):             # <<<<<<<<<<<<<<
@@ -3160,7 +3378,7 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
     __pyx_t_9 = (__pyx_t_8 != 0);
     if (__pyx_t_9) {
 
-      /* "grasp/scoring/stateless.pyx":48
+      /* "grasp/scoring/stateless.pyx":44
  *         for sym in edge.rhs:
  *             if isinstance(sym, Terminal):
  *                 n += 1             # <<<<<<<<<<<<<<
@@ -3172,7 +3390,7 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
     }
     __pyx_L5:;
 
-    /* "grasp/scoring/stateless.pyx":46
+    /* "grasp/scoring/stateless.pyx":42
  *         cdef int n = 0
  *         cdef Symbol sym
  *         for sym in edge.rhs:             # <<<<<<<<<<<<<<
@@ -3182,29 +3400,29 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "grasp/scoring/stateless.pyx":49
+  /* "grasp/scoring/stateless.pyx":45
  *             if isinstance(sym, Terminal):
  *                 n += 1
  *         return FValue(self._penalty * n)             # <<<<<<<<<<<<<<
  * 
- * 
+ *     cpdef FRepr constant(self, weight_t value):
  */
   __Pyx_XDECREF(((PyObject *)__pyx_r));
-  __pyx_t_2 = PyFloat_FromDouble((__pyx_v_self->_penalty * __pyx_v_n)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 49; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyFloat_FromDouble((__pyx_v_self->_penalty * __pyx_v_n)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 45; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 49; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 45; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_2);
   PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_2);
   __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_9extractor_FValue)), __pyx_t_1, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 49; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_5frepr_FValue)), __pyx_t_1, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 45; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_r = ((struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *)__pyx_t_2);
+  __pyx_r = ((struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *)__pyx_t_2);
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "grasp/scoring/stateless.pyx":38
+  /* "grasp/scoring/stateless.pyx":34
  *             raise KeyError('Missing weight for WordPenalty')
  * 
  *     cpdef FRepr featurize(self, edge):             # <<<<<<<<<<<<<<
@@ -3251,7 +3469,7 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_11WordPenalty_6featurize(st
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("featurize", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = ((PyObject *)__pyx_f_5grasp_7scoring_9stateless_11WordPenalty_featurize(__pyx_v_self, __pyx_v_edge, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = ((PyObject *)__pyx_f_5grasp_7scoring_9stateless_11WordPenalty_featurize(__pyx_v_self, __pyx_v_edge, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 34; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -3268,8 +3486,174 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_11WordPenalty_6featurize(st
   return __pyx_r;
 }
 
-/* "grasp/scoring/stateless.pyx":54
- * cdef class ArityPenalty(Stateless):
+/* "grasp/scoring/stateless.pyx":47
+ *         return FValue(self._penalty * n)
+ * 
+ *     cpdef FRepr constant(self, weight_t value):             # <<<<<<<<<<<<<<
+ *         return FValue(value)
+ * 
+ */
+
+static PyObject *__pyx_pw_5grasp_7scoring_9stateless_11WordPenalty_9constant(PyObject *__pyx_v_self, PyObject *__pyx_arg_value); /*proto*/
+static struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *__pyx_f_5grasp_7scoring_9stateless_11WordPenalty_constant(CYTHON_UNUSED struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty *__pyx_v_self, __pyx_t_5grasp_6ptypes_weight_t __pyx_v_value, int __pyx_skip_dispatch) {
+  struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_4 = NULL;
+  PyObject *__pyx_t_5 = NULL;
+  PyObject *__pyx_t_6 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("constant", 0);
+  /* Check if called by wrapper */
+  if (unlikely(__pyx_skip_dispatch)) ;
+  /* Check if overridden in Python */
+  else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_constant); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 47; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_7scoring_9stateless_11WordPenalty_9constant)) {
+      __Pyx_XDECREF(((PyObject *)__pyx_r));
+      __pyx_t_3 = PyFloat_FromDouble(__pyx_v_value); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 47; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_INCREF(__pyx_t_1);
+      __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
+      if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_4))) {
+        __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_4);
+        if (likely(__pyx_t_5)) {
+          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
+          __Pyx_INCREF(__pyx_t_5);
+          __Pyx_INCREF(function);
+          __Pyx_DECREF_SET(__pyx_t_4, function);
+        }
+      }
+      if (!__pyx_t_5) {
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 47; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        __Pyx_GOTREF(__pyx_t_2);
+      } else {
+        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 47; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_GOTREF(__pyx_t_6);
+        __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __pyx_t_5 = NULL;
+        __Pyx_GIVEREF(__pyx_t_3);
+        PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
+        __pyx_t_3 = 0;
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 47; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_GOTREF(__pyx_t_2);
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      }
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5grasp_7scoring_5frepr_FRepr))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 47; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_r = ((struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *)__pyx_t_2);
+      __pyx_t_2 = 0;
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      goto __pyx_L0;
+    }
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  }
+
+  /* "grasp/scoring/stateless.pyx":48
+ * 
+ *     cpdef FRepr constant(self, weight_t value):
+ *         return FValue(value)             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+  __Pyx_XDECREF(((PyObject *)__pyx_r));
+  __pyx_t_1 = PyFloat_FromDouble(__pyx_v_value); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 48; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 48; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_GIVEREF(__pyx_t_1);
+  PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_1);
+  __pyx_t_1 = 0;
+  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_5frepr_FValue)), __pyx_t_2, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 48; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_r = ((struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *)__pyx_t_1);
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "grasp/scoring/stateless.pyx":47
+ *         return FValue(self._penalty * n)
+ * 
+ *     cpdef FRepr constant(self, weight_t value):             # <<<<<<<<<<<<<<
+ *         return FValue(value)
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_XDECREF(__pyx_t_6);
+  __Pyx_AddTraceback("grasp.scoring.stateless.WordPenalty.constant", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = 0;
+  __pyx_L0:;
+  __Pyx_XGIVEREF((PyObject *)__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5grasp_7scoring_9stateless_11WordPenalty_9constant(PyObject *__pyx_v_self, PyObject *__pyx_arg_value); /*proto*/
+static PyObject *__pyx_pw_5grasp_7scoring_9stateless_11WordPenalty_9constant(PyObject *__pyx_v_self, PyObject *__pyx_arg_value) {
+  __pyx_t_5grasp_6ptypes_weight_t __pyx_v_value;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("constant (wrapper)", 0);
+  assert(__pyx_arg_value); {
+    __pyx_v_value = __pyx_PyFloat_AsDouble(__pyx_arg_value); if (unlikely((__pyx_v_value == (npy_double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 47; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("grasp.scoring.stateless.WordPenalty.constant", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_5grasp_7scoring_9stateless_11WordPenalty_8constant(((struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_weight_t)__pyx_v_value));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5grasp_7scoring_9stateless_11WordPenalty_8constant(struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty *__pyx_v_self, __pyx_t_5grasp_6ptypes_weight_t __pyx_v_value) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("constant", 0);
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = ((PyObject *)__pyx_f_5grasp_7scoring_9stateless_11WordPenalty_constant(__pyx_v_self, __pyx_v_value, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 47; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("grasp.scoring.stateless.WordPenalty.constant", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "grasp/scoring/stateless.pyx":57
+ *     """
  * 
  *     def __init__(self, int uid, str name, weight_t penalty=1.0):             # <<<<<<<<<<<<<<
  *         super(ArityPenalty, self).__init__(uid, name)
@@ -3309,7 +3693,7 @@ static int __pyx_pw_5grasp_7scoring_9stateless_12ArityPenalty_1__init__(PyObject
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_name)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("__init__", 0, 2, 3, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 54; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+          __Pyx_RaiseArgtupleInvalid("__init__", 0, 2, 3, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
         }
         case  2:
         if (kw_args > 0) {
@@ -3318,7 +3702,7 @@ static int __pyx_pw_5grasp_7scoring_9stateless_12ArityPenalty_1__init__(PyObject
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 54; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -3329,23 +3713,23 @@ static int __pyx_pw_5grasp_7scoring_9stateless_12ArityPenalty_1__init__(PyObject
         default: goto __pyx_L5_argtuple_error;
       }
     }
-    __pyx_v_uid = __Pyx_PyInt_As_int(values[0]); if (unlikely((__pyx_v_uid == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 54; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_uid = __Pyx_PyInt_As_int(values[0]); if (unlikely((__pyx_v_uid == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
     __pyx_v_name = ((PyObject*)values[1]);
     if (values[2]) {
-      __pyx_v_penalty = __pyx_PyFloat_AsDouble(values[2]); if (unlikely((__pyx_v_penalty == (npy_double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 54; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+      __pyx_v_penalty = __pyx_PyFloat_AsDouble(values[2]); if (unlikely((__pyx_v_penalty == (npy_double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
     } else {
       __pyx_v_penalty = ((__pyx_t_5grasp_6ptypes_weight_t)1.0);
     }
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__init__", 0, 2, 3, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 54; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __Pyx_RaiseArgtupleInvalid("__init__", 0, 2, 3, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
   __Pyx_AddTraceback("grasp.scoring.stateless.ArityPenalty.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_name), (&PyString_Type), 1, "name", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 54; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_name), (&PyString_Type), 1, "name", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_r = __pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty___init__(((struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty *)__pyx_v_self), __pyx_v_uid, __pyx_v_name, __pyx_v_penalty);
 
   /* function exit code */
@@ -3371,14 +3755,14 @@ static int __pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty___init__(struct __
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__init__", 0);
 
-  /* "grasp/scoring/stateless.pyx":55
+  /* "grasp/scoring/stateless.pyx":58
  * 
  *     def __init__(self, int uid, str name, weight_t penalty=1.0):
  *         super(ArityPenalty, self).__init__(uid, name)             # <<<<<<<<<<<<<<
  *         self._penalty = penalty
  * 
  */
-  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 55; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_INCREF(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_9stateless_ArityPenalty)));
   __Pyx_GIVEREF(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_9stateless_ArityPenalty)));
@@ -3386,13 +3770,13 @@ static int __pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty___init__(struct __
   __Pyx_INCREF(((PyObject *)__pyx_v_self));
   __Pyx_GIVEREF(((PyObject *)__pyx_v_self));
   PyTuple_SET_ITEM(__pyx_t_2, 1, ((PyObject *)__pyx_v_self));
-  __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_super, __pyx_t_2, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 55; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_super, __pyx_t_2, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_init); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 55; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_init); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_uid); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 55; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_v_uid); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_t_4 = NULL;
   __pyx_t_5 = 0;
@@ -3406,7 +3790,7 @@ static int __pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty___init__(struct __
       __pyx_t_5 = 1;
     }
   }
-  __pyx_t_6 = PyTuple_New(2+__pyx_t_5); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 55; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = PyTuple_New(2+__pyx_t_5); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_6);
   if (__pyx_t_4) {
     __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_4); __pyx_t_4 = NULL;
@@ -3417,13 +3801,13 @@ static int __pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty___init__(struct __
   __Pyx_GIVEREF(__pyx_v_name);
   PyTuple_SET_ITEM(__pyx_t_6, 1+__pyx_t_5, __pyx_v_name);
   __pyx_t_3 = 0;
-  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_6, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 55; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_6, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "grasp/scoring/stateless.pyx":56
+  /* "grasp/scoring/stateless.pyx":59
  *     def __init__(self, int uid, str name, weight_t penalty=1.0):
  *         super(ArityPenalty, self).__init__(uid, name)
  *         self._penalty = penalty             # <<<<<<<<<<<<<<
@@ -3432,8 +3816,8 @@ static int __pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty___init__(struct __
  */
   __pyx_v_self->_penalty = __pyx_v_penalty;
 
-  /* "grasp/scoring/stateless.pyx":54
- * cdef class ArityPenalty(Stateless):
+  /* "grasp/scoring/stateless.pyx":57
+ *     """
  * 
  *     def __init__(self, int uid, str name, weight_t penalty=1.0):             # <<<<<<<<<<<<<<
  *         super(ArityPenalty, self).__init__(uid, name)
@@ -3456,7 +3840,7 @@ static int __pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty___init__(struct __
   return __pyx_r;
 }
 
-/* "grasp/scoring/stateless.pyx":58
+/* "grasp/scoring/stateless.pyx":61
  *         self._penalty = penalty
  * 
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -3494,7 +3878,7 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty_2__repr__(st
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__repr__", 0);
 
-  /* "grasp/scoring/stateless.pyx":59
+  /* "grasp/scoring/stateless.pyx":62
  * 
  *     def __repr__(self):
  *         return '{0}(uid={1}, name={2}, penalty={3})'.format(ArityPenalty.__name__,             # <<<<<<<<<<<<<<
@@ -3502,47 +3886,47 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty_2__repr__(st
  *                                                             repr(self.name),
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_0_uid_1_name_2_penalty_3, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_0_uid_1_name_2_penalty_3, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_9stateless_ArityPenalty)), __pyx_n_s_name_2); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_9stateless_ArityPenalty)), __pyx_n_s_name_2); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
 
-  /* "grasp/scoring/stateless.pyx":60
+  /* "grasp/scoring/stateless.pyx":63
  *     def __repr__(self):
  *         return '{0}(uid={1}, name={2}, penalty={3})'.format(ArityPenalty.__name__,
  *                                                             repr(self.id),             # <<<<<<<<<<<<<<
  *                                                             repr(self.name),
  *                                                             repr(self._penalty))
  */
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_id); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_id); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = PyObject_Repr(__pyx_t_4); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = PyObject_Repr(__pyx_t_4); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "grasp/scoring/stateless.pyx":61
+  /* "grasp/scoring/stateless.pyx":64
  *         return '{0}(uid={1}, name={2}, penalty={3})'.format(ArityPenalty.__name__,
  *                                                             repr(self.id),
  *                                                             repr(self.name),             # <<<<<<<<<<<<<<
  *                                                             repr(self._penalty))
  * 
  */
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_name); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_name); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_6 = PyObject_Repr(__pyx_t_4); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = PyObject_Repr(__pyx_t_4); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "grasp/scoring/stateless.pyx":62
+  /* "grasp/scoring/stateless.pyx":65
  *                                                             repr(self.id),
  *                                                             repr(self.name),
  *                                                             repr(self._penalty))             # <<<<<<<<<<<<<<
  * 
- *     cpdef FRepr weights(self, dict wmap):  # using a sparse representation
+ *     cpdef FRepr weights(self, dict wmap):
  */
-  __pyx_t_4 = PyFloat_FromDouble(__pyx_v_self->_penalty); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = PyFloat_FromDouble(__pyx_v_self->_penalty); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_7 = PyObject_Repr(__pyx_t_4); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_7 = PyObject_Repr(__pyx_t_4); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_t_4 = NULL;
@@ -3557,7 +3941,7 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty_2__repr__(st
       __pyx_t_8 = 1;
     }
   }
-  __pyx_t_9 = PyTuple_New(4+__pyx_t_8); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_9 = PyTuple_New(4+__pyx_t_8); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_9);
   if (__pyx_t_4) {
     __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_4); __pyx_t_4 = NULL;
@@ -3574,7 +3958,7 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty_2__repr__(st
   __pyx_t_5 = 0;
   __pyx_t_6 = 0;
   __pyx_t_7 = 0;
-  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_9, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_9, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
@@ -3582,7 +3966,7 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty_2__repr__(st
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "grasp/scoring/stateless.pyx":58
+  /* "grasp/scoring/stateless.pyx":61
  *         self._penalty = penalty
  * 
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -3608,17 +3992,17 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty_2__repr__(st
   return __pyx_r;
 }
 
-/* "grasp/scoring/stateless.pyx":64
+/* "grasp/scoring/stateless.pyx":67
  *                                                             repr(self._penalty))
  * 
- *     cpdef FRepr weights(self, dict wmap):  # using a sparse representation             # <<<<<<<<<<<<<<
+ *     cpdef FRepr weights(self, dict wmap):             # <<<<<<<<<<<<<<
  *         return FMap({k: v for k, v in wmap.items() if k.startswith(self.name)})
  * 
  */
 
 static PyObject *__pyx_pw_5grasp_7scoring_9stateless_12ArityPenalty_5weights(PyObject *__pyx_v_self, PyObject *__pyx_v_wmap); /*proto*/
-static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scoring_9stateless_12ArityPenalty_weights(struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty *__pyx_v_self, PyObject *__pyx_v_wmap, int __pyx_skip_dispatch) {
-  struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_r = NULL;
+static struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *__pyx_f_5grasp_7scoring_9stateless_12ArityPenalty_weights(struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty *__pyx_v_self, PyObject *__pyx_v_wmap, int __pyx_skip_dispatch) {
+  struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   PyObject *__pyx_t_2 = NULL;
@@ -3639,7 +4023,7 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_weights); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_weights); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_7scoring_9stateless_12ArityPenalty_5weights)) {
       __Pyx_XDECREF(((PyObject *)__pyx_r));
@@ -3655,22 +4039,22 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
         }
       }
       if (!__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_wmap); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_wmap); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __pyx_t_4 = NULL;
         __Pyx_INCREF(__pyx_v_wmap);
         __Pyx_GIVEREF(__pyx_v_wmap);
         PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_v_wmap);
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       }
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5grasp_7scoring_9extractor_FRepr))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __pyx_r = ((struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *)__pyx_t_2);
+      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5grasp_7scoring_5frepr_FRepr))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_r = ((struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *)__pyx_t_2);
       __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       goto __pyx_L0;
@@ -3678,9 +4062,9 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/scoring/stateless.pyx":65
+  /* "grasp/scoring/stateless.pyx":68
  * 
- *     cpdef FRepr weights(self, dict wmap):  # using a sparse representation
+ *     cpdef FRepr weights(self, dict wmap):
  *         return FMap({k: v for k, v in wmap.items() if k.startswith(self.name)})             # <<<<<<<<<<<<<<
  * 
  *     cpdef FRepr featurize(self, edge):
@@ -3689,21 +4073,21 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
   { /* enter inner scope */
     PyObject *__pyx_7genexpr__pyx_v_k = NULL;
     PyObject *__pyx_7genexpr__pyx_v_v = NULL;
-    __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+    __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
     __Pyx_GOTREF(__pyx_t_1);
     if (unlikely(__pyx_v_wmap == Py_None)) {
       PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%s'", "items");
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
     }
-    __pyx_t_2 = __Pyx_PyDict_Items(__pyx_v_wmap); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+    __pyx_t_2 = __Pyx_PyDict_Items(__pyx_v_wmap); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
     __Pyx_GOTREF(__pyx_t_2);
     if (likely(PyList_CheckExact(__pyx_t_2)) || PyTuple_CheckExact(__pyx_t_2)) {
       __pyx_t_3 = __pyx_t_2; __Pyx_INCREF(__pyx_t_3); __pyx_t_6 = 0;
       __pyx_t_7 = NULL;
     } else {
-      __pyx_t_6 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+      __pyx_t_6 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
       __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_7 = Py_TYPE(__pyx_t_3)->tp_iternext; if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+      __pyx_t_7 = Py_TYPE(__pyx_t_3)->tp_iternext; if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
     }
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     for (;;) {
@@ -3711,17 +4095,17 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
         if (likely(PyList_CheckExact(__pyx_t_3))) {
           if (__pyx_t_6 >= PyList_GET_SIZE(__pyx_t_3)) break;
           #if CYTHON_COMPILING_IN_CPYTHON
-          __pyx_t_2 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+          __pyx_t_2 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
           #else
-          __pyx_t_2 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+          __pyx_t_2 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
           __Pyx_GOTREF(__pyx_t_2);
           #endif
         } else {
           if (__pyx_t_6 >= PyTuple_GET_SIZE(__pyx_t_3)) break;
           #if CYTHON_COMPILING_IN_CPYTHON
-          __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+          __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_6); __Pyx_INCREF(__pyx_t_2); __pyx_t_6++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
           #else
-          __pyx_t_2 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+          __pyx_t_2 = PySequence_ITEM(__pyx_t_3, __pyx_t_6); __pyx_t_6++; if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
           __Pyx_GOTREF(__pyx_t_2);
           #endif
         }
@@ -3731,7 +4115,7 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
           PyObject* exc_type = PyErr_Occurred();
           if (exc_type) {
             if (likely(exc_type == PyExc_StopIteration || PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-            else {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+            else {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
           }
           break;
         }
@@ -3747,7 +4131,7 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
         if (unlikely(size != 2)) {
           if (size > 2) __Pyx_RaiseTooManyValuesError(2);
           else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-          {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+          {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
         }
         #if CYTHON_COMPILING_IN_CPYTHON
         if (likely(PyTuple_CheckExact(sequence))) {
@@ -3760,15 +4144,15 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
         __Pyx_INCREF(__pyx_t_5);
         __Pyx_INCREF(__pyx_t_4);
         #else
-        __pyx_t_5 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+        __pyx_t_5 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
         __Pyx_GOTREF(__pyx_t_5);
-        __pyx_t_4 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+        __pyx_t_4 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
         __Pyx_GOTREF(__pyx_t_4);
         #endif
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       } else {
         Py_ssize_t index = -1;
-        __pyx_t_8 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+        __pyx_t_8 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
         __Pyx_GOTREF(__pyx_t_8);
         __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
         __pyx_t_9 = Py_TYPE(__pyx_t_8)->tp_iternext;
@@ -3776,7 +4160,7 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
         __Pyx_GOTREF(__pyx_t_5);
         index = 1; __pyx_t_4 = __pyx_t_9(__pyx_t_8); if (unlikely(!__pyx_t_4)) goto __pyx_L8_unpacking_failed;
         __Pyx_GOTREF(__pyx_t_4);
-        if (__Pyx_IternextUnpackEndCheck(__pyx_t_9(__pyx_t_8), 2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+        if (__Pyx_IternextUnpackEndCheck(__pyx_t_9(__pyx_t_8), 2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
         __pyx_t_9 = NULL;
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
         goto __pyx_L9_unpacking_done;
@@ -3784,16 +4168,16 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
         __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
         __pyx_t_9 = NULL;
         if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
         __pyx_L9_unpacking_done:;
       }
       __Pyx_XDECREF_SET(__pyx_7genexpr__pyx_v_k, __pyx_t_5);
       __pyx_t_5 = 0;
       __Pyx_XDECREF_SET(__pyx_7genexpr__pyx_v_v, __pyx_t_4);
       __pyx_t_4 = 0;
-      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_7genexpr__pyx_v_k, __pyx_n_s_startswith); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+      __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_7genexpr__pyx_v_k, __pyx_n_s_startswith); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
       __Pyx_GOTREF(__pyx_t_4);
-      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_name); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_name); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
       __Pyx_GOTREF(__pyx_t_5);
       __pyx_t_8 = NULL;
       if (CYTHON_COMPILING_IN_CPYTHON && likely(PyMethod_Check(__pyx_t_4))) {
@@ -3806,25 +4190,25 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
         }
       }
       if (!__pyx_t_8) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_5); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_5); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_10 = PyTuple_New(1+1); if (unlikely(!__pyx_t_10)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+        __pyx_t_10 = PyTuple_New(1+1); if (unlikely(!__pyx_t_10)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
         __Pyx_GOTREF(__pyx_t_10);
         __Pyx_GIVEREF(__pyx_t_8); PyTuple_SET_ITEM(__pyx_t_10, 0, __pyx_t_8); __pyx_t_8 = NULL;
         __Pyx_GIVEREF(__pyx_t_5);
         PyTuple_SET_ITEM(__pyx_t_10, 0+1, __pyx_t_5);
         __pyx_t_5 = 0;
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_10, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_10, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
       }
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely(__pyx_t_11 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+      __pyx_t_11 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely(__pyx_t_11 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       if (__pyx_t_11) {
-        if (unlikely(PyDict_SetItem(__pyx_t_1, (PyObject*)__pyx_7genexpr__pyx_v_k, (PyObject*)__pyx_7genexpr__pyx_v_v))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
+        if (unlikely(PyDict_SetItem(__pyx_t_1, (PyObject*)__pyx_7genexpr__pyx_v_k, (PyObject*)__pyx_7genexpr__pyx_v_v))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L5_error;}
         goto __pyx_L10;
       }
       __pyx_L10:;
@@ -3839,22 +4223,22 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
     goto __pyx_L1_error;
     __pyx_L11_exit_scope:;
   } /* exit inner scope */
-  __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_GIVEREF(__pyx_t_1);
   PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_1);
   __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_9extractor_FMap)), __pyx_t_3, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_5frepr_FMap)), __pyx_t_3, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_r = ((struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *)__pyx_t_1);
+  __pyx_r = ((struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *)__pyx_t_1);
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "grasp/scoring/stateless.pyx":64
+  /* "grasp/scoring/stateless.pyx":67
  *                                                             repr(self._penalty))
  * 
- *     cpdef FRepr weights(self, dict wmap):  # using a sparse representation             # <<<<<<<<<<<<<<
+ *     cpdef FRepr weights(self, dict wmap):             # <<<<<<<<<<<<<<
  *         return FMap({k: v for k, v in wmap.items() if k.startswith(self.name)})
  * 
  */
@@ -3885,7 +4269,7 @@ static PyObject *__pyx_pw_5grasp_7scoring_9stateless_12ArityPenalty_5weights(PyO
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("weights (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_wmap), (&PyDict_Type), 1, "wmap", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_wmap), (&PyDict_Type), 1, "wmap", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_r = __pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty_4weights(((struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty *)__pyx_v_self), ((PyObject*)__pyx_v_wmap));
 
   /* function exit code */
@@ -3906,7 +4290,7 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty_4weights(str
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("weights", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = ((PyObject *)__pyx_f_5grasp_7scoring_9stateless_12ArityPenalty_weights(__pyx_v_self, __pyx_v_wmap, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = ((PyObject *)__pyx_f_5grasp_7scoring_9stateless_12ArityPenalty_weights(__pyx_v_self, __pyx_v_wmap, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -3923,7 +4307,7 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty_4weights(str
   return __pyx_r;
 }
 
-/* "grasp/scoring/stateless.pyx":67
+/* "grasp/scoring/stateless.pyx":70
  *         return FMap({k: v for k, v in wmap.items() if k.startswith(self.name)})
  * 
  *     cpdef FRepr featurize(self, edge):             # <<<<<<<<<<<<<<
@@ -3932,10 +4316,10 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty_4weights(str
  */
 
 static PyObject *__pyx_pw_5grasp_7scoring_9stateless_12ArityPenalty_7featurize(PyObject *__pyx_v_self, PyObject *__pyx_v_edge); /*proto*/
-static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scoring_9stateless_12ArityPenalty_featurize(struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty *__pyx_v_self, PyObject *__pyx_v_edge, int __pyx_skip_dispatch) {
+static struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *__pyx_f_5grasp_7scoring_9stateless_12ArityPenalty_featurize(struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty *__pyx_v_self, PyObject *__pyx_v_edge, int __pyx_skip_dispatch) {
   int __pyx_v_arity;
   struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_v_sym = 0;
-  struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_r = NULL;
+  struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
   PyObject *__pyx_t_2 = NULL;
@@ -3956,7 +4340,7 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_featurize); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_featurize); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_7scoring_9stateless_12ArityPenalty_7featurize)) {
       __Pyx_XDECREF(((PyObject *)__pyx_r));
@@ -3972,22 +4356,22 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
         }
       }
       if (!__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_edge); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_edge); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __pyx_t_4 = NULL;
         __Pyx_INCREF(__pyx_v_edge);
         __Pyx_GIVEREF(__pyx_v_edge);
         PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_v_edge);
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       }
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5grasp_7scoring_9extractor_FRepr))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __pyx_r = ((struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *)__pyx_t_2);
+      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5grasp_7scoring_5frepr_FRepr))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_r = ((struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *)__pyx_t_2);
       __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       goto __pyx_L0;
@@ -3995,7 +4379,7 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/scoring/stateless.pyx":72
+  /* "grasp/scoring/stateless.pyx":75
  *         :returns: edge's arity
  *         """
  *         cdef int arity = 0             # <<<<<<<<<<<<<<
@@ -4004,25 +4388,25 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
  */
   __pyx_v_arity = 0;
 
-  /* "grasp/scoring/stateless.pyx":74
+  /* "grasp/scoring/stateless.pyx":77
  *         cdef int arity = 0
  *         cdef Symbol sym
  *         if edge.fvalue('GoalRule') != 0:             # <<<<<<<<<<<<<<
  *             # GoalRules are added after each scoring pass,
  *             # as the number of scoring passes may vary, we better not score such "dummy" rules
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_edge, __pyx_n_s_fvalue); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_edge, __pyx_n_s_fvalue); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 77; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 77; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = PyObject_RichCompare(__pyx_t_2, __pyx_int_0, Py_NE); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyObject_RichCompare(__pyx_t_2, __pyx_int_0, Py_NE); __Pyx_XGOTREF(__pyx_t_1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 77; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_6 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_6 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_6 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 77; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_6) {
 
-    /* "grasp/scoring/stateless.pyx":77
+    /* "grasp/scoring/stateless.pyx":80
  *             # GoalRules are added after each scoring pass,
  *             # as the number of scoring passes may vary, we better not score such "dummy" rules
  *             return FMap({})             # <<<<<<<<<<<<<<
@@ -4030,37 +4414,37 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
  *             if isinstance(sym, Nonterminal):
  */
     __Pyx_XDECREF(((PyObject *)__pyx_r));
-    __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 77; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 80; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 77; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 80; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_GIVEREF(__pyx_t_1);
     PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_1);
     __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_9extractor_FMap)), __pyx_t_2, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 77; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_5frepr_FMap)), __pyx_t_2, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 80; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_r = ((struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *)__pyx_t_1);
+    __pyx_r = ((struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *)__pyx_t_1);
     __pyx_t_1 = 0;
     goto __pyx_L0;
   }
 
-  /* "grasp/scoring/stateless.pyx":78
+  /* "grasp/scoring/stateless.pyx":81
  *             # as the number of scoring passes may vary, we better not score such "dummy" rules
  *             return FMap({})
  *         for sym in edge.rhs:             # <<<<<<<<<<<<<<
  *             if isinstance(sym, Nonterminal):
  *                 arity += 1
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_edge, __pyx_n_s_rhs); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 78; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_edge, __pyx_n_s_rhs); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   if (likely(PyList_CheckExact(__pyx_t_1)) || PyTuple_CheckExact(__pyx_t_1)) {
     __pyx_t_2 = __pyx_t_1; __Pyx_INCREF(__pyx_t_2); __pyx_t_7 = 0;
     __pyx_t_8 = NULL;
   } else {
-    __pyx_t_7 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 78; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_7 = -1; __pyx_t_2 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_8 = Py_TYPE(__pyx_t_2)->tp_iternext; if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 78; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_8 = Py_TYPE(__pyx_t_2)->tp_iternext; if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   for (;;) {
@@ -4068,17 +4452,17 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
       if (likely(PyList_CheckExact(__pyx_t_2))) {
         if (__pyx_t_7 >= PyList_GET_SIZE(__pyx_t_2)) break;
         #if CYTHON_COMPILING_IN_CPYTHON
-        __pyx_t_1 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_7); __Pyx_INCREF(__pyx_t_1); __pyx_t_7++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 78; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_1 = PyList_GET_ITEM(__pyx_t_2, __pyx_t_7); __Pyx_INCREF(__pyx_t_1); __pyx_t_7++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         #else
-        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_7); __pyx_t_7++; if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 78; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_7); __pyx_t_7++; if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_1);
         #endif
       } else {
         if (__pyx_t_7 >= PyTuple_GET_SIZE(__pyx_t_2)) break;
         #if CYTHON_COMPILING_IN_CPYTHON
-        __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_7); __Pyx_INCREF(__pyx_t_1); __pyx_t_7++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 78; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_7); __Pyx_INCREF(__pyx_t_1); __pyx_t_7++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         #else
-        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_7); __pyx_t_7++; if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 78; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_1 = PySequence_ITEM(__pyx_t_2, __pyx_t_7); __pyx_t_7++; if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_1);
         #endif
       }
@@ -4088,17 +4472,17 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(exc_type == PyExc_StopIteration || PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else {__pyx_filename = __pyx_f[0]; __pyx_lineno = 78; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+          else {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         }
         break;
       }
       __Pyx_GOTREF(__pyx_t_1);
     }
-    if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5grasp_3cfg_6symbol_Symbol))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 78; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5grasp_3cfg_6symbol_Symbol))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_XDECREF_SET(__pyx_v_sym, ((struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *)__pyx_t_1));
     __pyx_t_1 = 0;
 
-    /* "grasp/scoring/stateless.pyx":79
+    /* "grasp/scoring/stateless.pyx":82
  *             return FMap({})
  *         for sym in edge.rhs:
  *             if isinstance(sym, Nonterminal):             # <<<<<<<<<<<<<<
@@ -4109,18 +4493,19 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
     __pyx_t_9 = (__pyx_t_6 != 0);
     if (__pyx_t_9) {
 
-      /* "grasp/scoring/stateless.pyx":80
+      /* "grasp/scoring/stateless.pyx":83
  *         for sym in edge.rhs:
  *             if isinstance(sym, Nonterminal):
  *                 arity += 1             # <<<<<<<<<<<<<<
  *         return FMap({'{0}_{1}'.format(self.name, arity): self._penalty})
+ * 
  */
       __pyx_v_arity = (__pyx_v_arity + 1);
       goto __pyx_L6;
     }
     __pyx_L6:;
 
-    /* "grasp/scoring/stateless.pyx":78
+    /* "grasp/scoring/stateless.pyx":81
  *             # as the number of scoring passes may vary, we better not score such "dummy" rules
  *             return FMap({})
  *         for sym in edge.rhs:             # <<<<<<<<<<<<<<
@@ -4130,19 +4515,21 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "grasp/scoring/stateless.pyx":81
+  /* "grasp/scoring/stateless.pyx":84
  *             if isinstance(sym, Nonterminal):
  *                 arity += 1
  *         return FMap({'{0}_{1}'.format(self.name, arity): self._penalty})             # <<<<<<<<<<<<<<
+ * 
+ *     cpdef FRepr constant(self, weight_t value):
  */
   __Pyx_XDECREF(((PyObject *)__pyx_r));
-  __pyx_t_2 = PyDict_New(); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyDict_New(); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 84; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_0___1, __pyx_n_s_format); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_0___1, __pyx_n_s_format); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 84; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_name); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_name); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 84; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_arity); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_arity); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 84; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_t_10 = NULL;
   __pyx_t_7 = 0;
@@ -4156,7 +4543,7 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
       __pyx_t_7 = 1;
     }
   }
-  __pyx_t_11 = PyTuple_New(2+__pyx_t_7); if (unlikely(!__pyx_t_11)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_11 = PyTuple_New(2+__pyx_t_7); if (unlikely(!__pyx_t_11)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 84; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_11);
   if (__pyx_t_10) {
     __Pyx_GIVEREF(__pyx_t_10); PyTuple_SET_ITEM(__pyx_t_11, 0, __pyx_t_10); __pyx_t_10 = NULL;
@@ -4167,28 +4554,28 @@ static struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *__pyx_f_5grasp_7scorin
   PyTuple_SET_ITEM(__pyx_t_11, 1+__pyx_t_7, __pyx_t_4);
   __pyx_t_5 = 0;
   __pyx_t_4 = 0;
-  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_11, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_11, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 84; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = PyFloat_FromDouble(__pyx_v_self->_penalty); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = PyFloat_FromDouble(__pyx_v_self->_penalty); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 84; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
-  if (PyDict_SetItem(__pyx_t_2, __pyx_t_1, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyDict_SetItem(__pyx_t_2, __pyx_t_1, __pyx_t_3) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 84; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 84; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_GIVEREF(__pyx_t_2);
   PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_2);
   __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_9extractor_FMap)), __pyx_t_3, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 81; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_5frepr_FMap)), __pyx_t_3, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 84; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_r = ((struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *)__pyx_t_2);
+  __pyx_r = ((struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *)__pyx_t_2);
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "grasp/scoring/stateless.pyx":67
+  /* "grasp/scoring/stateless.pyx":70
  *         return FMap({k: v for k, v in wmap.items() if k.startswith(self.name)})
  * 
  *     cpdef FRepr featurize(self, edge):             # <<<<<<<<<<<<<<
@@ -4237,7 +4624,7 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty_6featurize(s
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("featurize", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = ((PyObject *)__pyx_f_5grasp_7scoring_9stateless_12ArityPenalty_featurize(__pyx_v_self, __pyx_v_edge, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = ((PyObject *)__pyx_f_5grasp_7scoring_9stateless_12ArityPenalty_featurize(__pyx_v_self, __pyx_v_edge, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -4247,6 +4634,168 @@ static PyObject *__pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty_6featurize(s
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_AddTraceback("grasp.scoring.stateless.ArityPenalty.featurize", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "grasp/scoring/stateless.pyx":86
+ *         return FMap({'{0}_{1}'.format(self.name, arity): self._penalty})
+ * 
+ *     cpdef FRepr constant(self, weight_t value):             # <<<<<<<<<<<<<<
+ *         return FMap([])
+ */
+
+static PyObject *__pyx_pw_5grasp_7scoring_9stateless_12ArityPenalty_9constant(PyObject *__pyx_v_self, PyObject *__pyx_arg_value); /*proto*/
+static struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *__pyx_f_5grasp_7scoring_9stateless_12ArityPenalty_constant(CYTHON_UNUSED struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty *__pyx_v_self, CYTHON_UNUSED __pyx_t_5grasp_6ptypes_weight_t __pyx_v_value, int __pyx_skip_dispatch) {
+  struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_4 = NULL;
+  PyObject *__pyx_t_5 = NULL;
+  PyObject *__pyx_t_6 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("constant", 0);
+  /* Check if called by wrapper */
+  if (unlikely(__pyx_skip_dispatch)) ;
+  /* Check if overridden in Python */
+  else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_constant); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_7scoring_9stateless_12ArityPenalty_9constant)) {
+      __Pyx_XDECREF(((PyObject *)__pyx_r));
+      __pyx_t_3 = PyFloat_FromDouble(__pyx_v_value); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_INCREF(__pyx_t_1);
+      __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
+      if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_4))) {
+        __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_4);
+        if (likely(__pyx_t_5)) {
+          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
+          __Pyx_INCREF(__pyx_t_5);
+          __Pyx_INCREF(function);
+          __Pyx_DECREF_SET(__pyx_t_4, function);
+        }
+      }
+      if (!__pyx_t_5) {
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        __Pyx_GOTREF(__pyx_t_2);
+      } else {
+        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_GOTREF(__pyx_t_6);
+        __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __pyx_t_5 = NULL;
+        __Pyx_GIVEREF(__pyx_t_3);
+        PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
+        __pyx_t_3 = 0;
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_GOTREF(__pyx_t_2);
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      }
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5grasp_7scoring_5frepr_FRepr))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_r = ((struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *)__pyx_t_2);
+      __pyx_t_2 = 0;
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      goto __pyx_L0;
+    }
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  }
+
+  /* "grasp/scoring/stateless.pyx":87
+ * 
+ *     cpdef FRepr constant(self, weight_t value):
+ *         return FMap([])             # <<<<<<<<<<<<<<
+ */
+  __Pyx_XDECREF(((PyObject *)__pyx_r));
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 87; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 87; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_GIVEREF(__pyx_t_1);
+  PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_1);
+  __pyx_t_1 = 0;
+  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_5grasp_7scoring_5frepr_FMap)), __pyx_t_2, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 87; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_r = ((struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *)__pyx_t_1);
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "grasp/scoring/stateless.pyx":86
+ *         return FMap({'{0}_{1}'.format(self.name, arity): self._penalty})
+ * 
+ *     cpdef FRepr constant(self, weight_t value):             # <<<<<<<<<<<<<<
+ *         return FMap([])
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_XDECREF(__pyx_t_6);
+  __Pyx_AddTraceback("grasp.scoring.stateless.ArityPenalty.constant", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = 0;
+  __pyx_L0:;
+  __Pyx_XGIVEREF((PyObject *)__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5grasp_7scoring_9stateless_12ArityPenalty_9constant(PyObject *__pyx_v_self, PyObject *__pyx_arg_value); /*proto*/
+static PyObject *__pyx_pw_5grasp_7scoring_9stateless_12ArityPenalty_9constant(PyObject *__pyx_v_self, PyObject *__pyx_arg_value) {
+  __pyx_t_5grasp_6ptypes_weight_t __pyx_v_value;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("constant (wrapper)", 0);
+  assert(__pyx_arg_value); {
+    __pyx_v_value = __pyx_PyFloat_AsDouble(__pyx_arg_value); if (unlikely((__pyx_v_value == (npy_double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("grasp.scoring.stateless.ArityPenalty.constant", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty_8constant(((struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_weight_t)__pyx_v_value));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5grasp_7scoring_9stateless_12ArityPenalty_8constant(struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty *__pyx_v_self, __pyx_t_5grasp_6ptypes_weight_t __pyx_v_value) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("constant", 0);
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = ((PyObject *)__pyx_f_5grasp_7scoring_9stateless_12ArityPenalty_constant(__pyx_v_self, __pyx_v_value, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("grasp.scoring.stateless.ArityPenalty.constant", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -16894,101 +17443,30 @@ static void __pyx_memoryview__slice_assign_scalar(char *__pyx_v_data, Py_ssize_t
 
   /* function exit code */
 }
-static struct __pyx_vtabstruct_5grasp_7scoring_9stateless_Stateless __pyx_vtable_5grasp_7scoring_9stateless_Stateless;
-
-static PyObject *__pyx_tp_new_5grasp_7scoring_9stateless_Stateless(PyTypeObject *t, PyObject *a, PyObject *k) {
-  struct __pyx_obj_5grasp_7scoring_9stateless_Stateless *p;
-  PyObject *o = __pyx_ptype_5grasp_7scoring_9extractor_Extractor->tp_new(t, a, k);
-  if (unlikely(!o)) return 0;
-  p = ((struct __pyx_obj_5grasp_7scoring_9stateless_Stateless *)o);
-  p->__pyx_base.__pyx_vtab = (struct __pyx_vtabstruct_5grasp_7scoring_9extractor_Extractor*)__pyx_vtabptr_5grasp_7scoring_9stateless_Stateless;
-  return o;
-}
-
-static void __pyx_tp_dealloc_5grasp_7scoring_9stateless_Stateless(PyObject *o) {
-  #if PY_VERSION_HEX >= 0x030400a1
-  if (unlikely(Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !_PyGC_FINALIZED(o))) {
-    if (PyObject_CallFinalizerFromDealloc(o)) return;
-  }
-  #endif
-  if (likely(__pyx_ptype_5grasp_7scoring_9extractor_Extractor)) __pyx_ptype_5grasp_7scoring_9extractor_Extractor->tp_dealloc(o); else __Pyx_call_next_tp_dealloc(o, __pyx_tp_dealloc_5grasp_7scoring_9stateless_Stateless);
-}
-
-static PyMethodDef __pyx_methods_5grasp_7scoring_9stateless_Stateless[] = {
-  {"featurize", (PyCFunction)__pyx_pw_5grasp_7scoring_9stateless_9Stateless_3featurize, METH_O, 0},
-  {0, 0, 0, 0}
-};
-
-static PyTypeObject __pyx_type_5grasp_7scoring_9stateless_Stateless = {
-  PyVarObject_HEAD_INIT(0, 0)
-  "grasp.scoring.stateless.Stateless", /*tp_name*/
-  sizeof(struct __pyx_obj_5grasp_7scoring_9stateless_Stateless), /*tp_basicsize*/
-  0, /*tp_itemsize*/
-  __pyx_tp_dealloc_5grasp_7scoring_9stateless_Stateless, /*tp_dealloc*/
-  0, /*tp_print*/
-  0, /*tp_getattr*/
-  0, /*tp_setattr*/
-  #if PY_MAJOR_VERSION < 3
-  0, /*tp_compare*/
-  #else
-  0, /*reserved*/
-  #endif
-  0, /*tp_repr*/
-  0, /*tp_as_number*/
-  0, /*tp_as_sequence*/
-  0, /*tp_as_mapping*/
-  0, /*tp_hash*/
-  0, /*tp_call*/
-  0, /*tp_str*/
-  0, /*tp_getattro*/
-  0, /*tp_setattro*/
-  0, /*tp_as_buffer*/
-  Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_VERSION_TAG|Py_TPFLAGS_CHECKTYPES|Py_TPFLAGS_HAVE_NEWBUFFER|Py_TPFLAGS_BASETYPE, /*tp_flags*/
-  0, /*tp_doc*/
-  0, /*tp_traverse*/
-  0, /*tp_clear*/
-  0, /*tp_richcompare*/
-  0, /*tp_weaklistoffset*/
-  0, /*tp_iter*/
-  0, /*tp_iternext*/
-  __pyx_methods_5grasp_7scoring_9stateless_Stateless, /*tp_methods*/
-  0, /*tp_members*/
-  0, /*tp_getset*/
-  0, /*tp_base*/
-  0, /*tp_dict*/
-  0, /*tp_descr_get*/
-  0, /*tp_descr_set*/
-  0, /*tp_dictoffset*/
-  __pyx_pw_5grasp_7scoring_9stateless_9Stateless_1__init__, /*tp_init*/
-  0, /*tp_alloc*/
-  __pyx_tp_new_5grasp_7scoring_9stateless_Stateless, /*tp_new*/
-  0, /*tp_free*/
-  0, /*tp_is_gc*/
-  0, /*tp_bases*/
-  0, /*tp_mro*/
-  0, /*tp_cache*/
-  0, /*tp_subclasses*/
-  0, /*tp_weaklist*/
-  0, /*tp_del*/
-  0, /*tp_version_tag*/
-  #if PY_VERSION_HEX >= 0x030400a1
-  0, /*tp_finalize*/
-  #endif
-};
 static struct __pyx_vtabstruct_5grasp_7scoring_9stateless_WordPenalty __pyx_vtable_5grasp_7scoring_9stateless_WordPenalty;
 
 static PyObject *__pyx_tp_new_5grasp_7scoring_9stateless_WordPenalty(PyTypeObject *t, PyObject *a, PyObject *k) {
   struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty *p;
-  PyObject *o = __pyx_tp_new_5grasp_7scoring_9stateless_Stateless(t, a, k);
+  PyObject *o = __pyx_ptype_5grasp_7scoring_9extractor_Stateless->tp_new(t, a, k);
   if (unlikely(!o)) return 0;
   p = ((struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty *)o);
   p->__pyx_base.__pyx_base.__pyx_vtab = (struct __pyx_vtabstruct_5grasp_7scoring_9extractor_Extractor*)__pyx_vtabptr_5grasp_7scoring_9stateless_WordPenalty;
   return o;
 }
 
+static void __pyx_tp_dealloc_5grasp_7scoring_9stateless_WordPenalty(PyObject *o) {
+  #if PY_VERSION_HEX >= 0x030400a1
+  if (unlikely(Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !_PyGC_FINALIZED(o))) {
+    if (PyObject_CallFinalizerFromDealloc(o)) return;
+  }
+  #endif
+  if (likely(__pyx_ptype_5grasp_7scoring_9extractor_Stateless)) __pyx_ptype_5grasp_7scoring_9extractor_Stateless->tp_dealloc(o); else __Pyx_call_next_tp_dealloc(o, __pyx_tp_dealloc_5grasp_7scoring_9stateless_WordPenalty);
+}
+
 static PyMethodDef __pyx_methods_5grasp_7scoring_9stateless_WordPenalty[] = {
   {"weights", (PyCFunction)__pyx_pw_5grasp_7scoring_9stateless_11WordPenalty_5weights, METH_O, 0},
   {"featurize", (PyCFunction)__pyx_pw_5grasp_7scoring_9stateless_11WordPenalty_7featurize, METH_O, __pyx_doc_5grasp_7scoring_9stateless_11WordPenalty_6featurize},
+  {"constant", (PyCFunction)__pyx_pw_5grasp_7scoring_9stateless_11WordPenalty_9constant, METH_O, 0},
   {0, 0, 0, 0}
 };
 
@@ -16997,7 +17475,7 @@ static PyTypeObject __pyx_type_5grasp_7scoring_9stateless_WordPenalty = {
   "grasp.scoring.stateless.WordPenalty", /*tp_name*/
   sizeof(struct __pyx_obj_5grasp_7scoring_9stateless_WordPenalty), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_5grasp_7scoring_9stateless_Stateless, /*tp_dealloc*/
+  __pyx_tp_dealloc_5grasp_7scoring_9stateless_WordPenalty, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -17017,7 +17495,7 @@ static PyTypeObject __pyx_type_5grasp_7scoring_9stateless_WordPenalty = {
   0, /*tp_setattro*/
   0, /*tp_as_buffer*/
   Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_VERSION_TAG|Py_TPFLAGS_CHECKTYPES|Py_TPFLAGS_HAVE_NEWBUFFER|Py_TPFLAGS_BASETYPE, /*tp_flags*/
-  0, /*tp_doc*/
+  "\n    This counts the number of terminal symbols in a rule.\n    It returns a simple FValue.\n    ", /*tp_doc*/
   0, /*tp_traverse*/
   0, /*tp_clear*/
   0, /*tp_richcompare*/
@@ -17052,16 +17530,26 @@ static struct __pyx_vtabstruct_5grasp_7scoring_9stateless_ArityPenalty __pyx_vta
 
 static PyObject *__pyx_tp_new_5grasp_7scoring_9stateless_ArityPenalty(PyTypeObject *t, PyObject *a, PyObject *k) {
   struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty *p;
-  PyObject *o = __pyx_tp_new_5grasp_7scoring_9stateless_Stateless(t, a, k);
+  PyObject *o = __pyx_ptype_5grasp_7scoring_9extractor_Stateless->tp_new(t, a, k);
   if (unlikely(!o)) return 0;
   p = ((struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty *)o);
   p->__pyx_base.__pyx_base.__pyx_vtab = (struct __pyx_vtabstruct_5grasp_7scoring_9extractor_Extractor*)__pyx_vtabptr_5grasp_7scoring_9stateless_ArityPenalty;
   return o;
 }
 
+static void __pyx_tp_dealloc_5grasp_7scoring_9stateless_ArityPenalty(PyObject *o) {
+  #if PY_VERSION_HEX >= 0x030400a1
+  if (unlikely(Py_TYPE(o)->tp_finalize) && (!PyType_IS_GC(Py_TYPE(o)) || !_PyGC_FINALIZED(o))) {
+    if (PyObject_CallFinalizerFromDealloc(o)) return;
+  }
+  #endif
+  if (likely(__pyx_ptype_5grasp_7scoring_9extractor_Stateless)) __pyx_ptype_5grasp_7scoring_9extractor_Stateless->tp_dealloc(o); else __Pyx_call_next_tp_dealloc(o, __pyx_tp_dealloc_5grasp_7scoring_9stateless_ArityPenalty);
+}
+
 static PyMethodDef __pyx_methods_5grasp_7scoring_9stateless_ArityPenalty[] = {
   {"weights", (PyCFunction)__pyx_pw_5grasp_7scoring_9stateless_12ArityPenalty_5weights, METH_O, 0},
   {"featurize", (PyCFunction)__pyx_pw_5grasp_7scoring_9stateless_12ArityPenalty_7featurize, METH_O, __pyx_doc_5grasp_7scoring_9stateless_12ArityPenalty_6featurize},
+  {"constant", (PyCFunction)__pyx_pw_5grasp_7scoring_9stateless_12ArityPenalty_9constant, METH_O, 0},
   {0, 0, 0, 0}
 };
 
@@ -17070,7 +17558,7 @@ static PyTypeObject __pyx_type_5grasp_7scoring_9stateless_ArityPenalty = {
   "grasp.scoring.stateless.ArityPenalty", /*tp_name*/
   sizeof(struct __pyx_obj_5grasp_7scoring_9stateless_ArityPenalty), /*tp_basicsize*/
   0, /*tp_itemsize*/
-  __pyx_tp_dealloc_5grasp_7scoring_9stateless_Stateless, /*tp_dealloc*/
+  __pyx_tp_dealloc_5grasp_7scoring_9stateless_ArityPenalty, /*tp_dealloc*/
   0, /*tp_print*/
   0, /*tp_getattr*/
   0, /*tp_setattr*/
@@ -17090,7 +17578,7 @@ static PyTypeObject __pyx_type_5grasp_7scoring_9stateless_ArityPenalty = {
   0, /*tp_setattro*/
   0, /*tp_as_buffer*/
   Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HAVE_VERSION_TAG|Py_TPFLAGS_CHECKTYPES|Py_TPFLAGS_HAVE_NEWBUFFER|Py_TPFLAGS_BASETYPE, /*tp_flags*/
-  0, /*tp_doc*/
+  "\n    This counts the number of rules of each arity.\n    It returns an FMap.\n    ", /*tp_doc*/
   0, /*tp_traverse*/
   0, /*tp_clear*/
   0, /*tp_richcompare*/
@@ -17831,6 +18319,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_c, __pyx_k_c, sizeof(__pyx_k_c), 0, 0, 1, 1},
   {&__pyx_n_u_c, __pyx_k_c, sizeof(__pyx_k_c), 0, 1, 0, 1},
   {&__pyx_n_s_class, __pyx_k_class, sizeof(__pyx_k_class), 0, 0, 1, 1},
+  {&__pyx_n_s_constant, __pyx_k_constant, sizeof(__pyx_k_constant), 0, 0, 1, 1},
   {&__pyx_kp_s_contiguous_and_direct, __pyx_k_contiguous_and_direct, sizeof(__pyx_k_contiguous_and_direct), 0, 0, 1, 0},
   {&__pyx_kp_s_contiguous_and_indirect, __pyx_k_contiguous_and_indirect, sizeof(__pyx_k_contiguous_and_indirect), 0, 0, 1, 0},
   {&__pyx_n_s_dtype_is_object, __pyx_k_dtype_is_object, sizeof(__pyx_k_dtype_is_object), 0, 0, 1, 1},
@@ -17885,8 +18374,8 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {0, 0, 0, 0, 0, 0, 0}
 };
 static int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_super = __Pyx_GetBuiltinName(__pyx_n_s_super); if (!__pyx_builtin_super) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_builtin_KeyError = __Pyx_GetBuiltinName(__pyx_n_s_KeyError); if (!__pyx_builtin_KeyError) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 35; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_builtin_super = __Pyx_GetBuiltinName(__pyx_n_s_super); if (!__pyx_builtin_super) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 19; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_builtin_KeyError = __Pyx_GetBuiltinName(__pyx_n_s_KeyError); if (!__pyx_builtin_KeyError) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 218; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_builtin_RuntimeError = __Pyx_GetBuiltinName(__pyx_n_s_RuntimeError); if (!__pyx_builtin_RuntimeError) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 802; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -17905,25 +18394,25 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "grasp/scoring/stateless.pyx":36
+  /* "grasp/scoring/stateless.pyx":32
  *             return FValue(wmap[self.name])
  *         except KeyError:
  *             raise KeyError('Missing weight for WordPenalty')             # <<<<<<<<<<<<<<
  * 
  *     cpdef FRepr featurize(self, edge):
  */
-  __pyx_tuple_ = PyTuple_Pack(1, __pyx_kp_s_Missing_weight_for_WordPenalty); if (unlikely(!__pyx_tuple_)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_tuple_ = PyTuple_Pack(1, __pyx_kp_s_Missing_weight_for_WordPenalty); if (unlikely(!__pyx_tuple_)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple_);
   __Pyx_GIVEREF(__pyx_tuple_);
 
-  /* "grasp/scoring/stateless.pyx":74
+  /* "grasp/scoring/stateless.pyx":77
  *         cdef int arity = 0
  *         cdef Symbol sym
  *         if edge.fvalue('GoalRule') != 0:             # <<<<<<<<<<<<<<
  *             # GoalRules are added after each scoring pass,
  *             # as the number of scoring passes may vary, we better not score such "dummy" rules
  */
-  __pyx_tuple__2 = PyTuple_Pack(1, __pyx_n_s_GoalRule); if (unlikely(!__pyx_tuple__2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_tuple__2 = PyTuple_Pack(1, __pyx_n_s_GoalRule); if (unlikely(!__pyx_tuple__2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 77; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__2);
   __Pyx_GIVEREF(__pyx_tuple__2);
 
@@ -18284,36 +18773,29 @@ PyMODINIT_FUNC PyInit_stateless(void)
   /*--- Variable export code ---*/
   /*--- Function export code ---*/
   /*--- Type init code ---*/
-  __pyx_ptype_5grasp_7scoring_9extractor_Extractor = __Pyx_ImportType("grasp.scoring.extractor", "Extractor", sizeof(struct __pyx_obj_5grasp_7scoring_9extractor_Extractor), 1); if (unlikely(!__pyx_ptype_5grasp_7scoring_9extractor_Extractor)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_7scoring_9extractor_Extractor = (struct __pyx_vtabstruct_5grasp_7scoring_9extractor_Extractor*)__Pyx_GetVtable(__pyx_ptype_5grasp_7scoring_9extractor_Extractor->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_7scoring_9extractor_Extractor)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_7scoring_9stateless_Stateless = &__pyx_vtable_5grasp_7scoring_9stateless_Stateless;
-  __pyx_vtable_5grasp_7scoring_9stateless_Stateless.__pyx_base = *__pyx_vtabptr_5grasp_7scoring_9extractor_Extractor;
-  __pyx_vtable_5grasp_7scoring_9stateless_Stateless.featurize = (struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *(*)(struct __pyx_obj_5grasp_7scoring_9stateless_Stateless *, PyObject *, int __pyx_skip_dispatch))__pyx_f_5grasp_7scoring_9stateless_9Stateless_featurize;
-  __pyx_type_5grasp_7scoring_9stateless_Stateless.tp_base = __pyx_ptype_5grasp_7scoring_9extractor_Extractor;
-  if (PyType_Ready(&__pyx_type_5grasp_7scoring_9stateless_Stateless) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 12; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_type_5grasp_7scoring_9stateless_Stateless.tp_print = 0;
-  if (__Pyx_SetVtable(__pyx_type_5grasp_7scoring_9stateless_Stateless.tp_dict, __pyx_vtabptr_5grasp_7scoring_9stateless_Stateless) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 12; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (PyObject_SetAttrString(__pyx_m, "Stateless", (PyObject *)&__pyx_type_5grasp_7scoring_9stateless_Stateless) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 12; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_7scoring_9stateless_Stateless = &__pyx_type_5grasp_7scoring_9stateless_Stateless;
+  __pyx_ptype_5grasp_7scoring_9extractor_Stateless = __Pyx_ImportType("grasp.scoring.extractor", "Stateless", sizeof(struct __pyx_obj_5grasp_7scoring_9extractor_Stateless), 1); if (unlikely(!__pyx_ptype_5grasp_7scoring_9extractor_Stateless)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_7scoring_9extractor_Stateless = (struct __pyx_vtabstruct_5grasp_7scoring_9extractor_Stateless*)__Pyx_GetVtable(__pyx_ptype_5grasp_7scoring_9extractor_Stateless->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_7scoring_9extractor_Stateless)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_vtabptr_5grasp_7scoring_9stateless_WordPenalty = &__pyx_vtable_5grasp_7scoring_9stateless_WordPenalty;
-  __pyx_vtable_5grasp_7scoring_9stateless_WordPenalty.__pyx_base = *__pyx_vtabptr_5grasp_7scoring_9stateless_Stateless;
-  __pyx_vtable_5grasp_7scoring_9stateless_WordPenalty.__pyx_base.__pyx_base.weights = (struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *(*)(struct __pyx_obj_5grasp_7scoring_9extractor_Extractor *, PyObject *, int __pyx_skip_dispatch))__pyx_f_5grasp_7scoring_9stateless_11WordPenalty_weights;
-  __pyx_vtable_5grasp_7scoring_9stateless_WordPenalty.__pyx_base.featurize = (struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *(*)(struct __pyx_obj_5grasp_7scoring_9stateless_Stateless *, PyObject *, int __pyx_skip_dispatch))__pyx_f_5grasp_7scoring_9stateless_11WordPenalty_featurize;
-  __pyx_type_5grasp_7scoring_9stateless_WordPenalty.tp_base = __pyx_ptype_5grasp_7scoring_9stateless_Stateless;
-  if (PyType_Ready(&__pyx_type_5grasp_7scoring_9stateless_WordPenalty) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 20; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtable_5grasp_7scoring_9stateless_WordPenalty.__pyx_base = *__pyx_vtabptr_5grasp_7scoring_9extractor_Stateless;
+  __pyx_vtable_5grasp_7scoring_9stateless_WordPenalty.__pyx_base.__pyx_base.weights = (struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *(*)(struct __pyx_obj_5grasp_7scoring_9extractor_Extractor *, PyObject *, int __pyx_skip_dispatch))__pyx_f_5grasp_7scoring_9stateless_11WordPenalty_weights;
+  __pyx_vtable_5grasp_7scoring_9stateless_WordPenalty.__pyx_base.__pyx_base.constant = (struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *(*)(struct __pyx_obj_5grasp_7scoring_9extractor_Extractor *, __pyx_t_5grasp_6ptypes_weight_t, int __pyx_skip_dispatch))__pyx_f_5grasp_7scoring_9stateless_11WordPenalty_constant;
+  __pyx_vtable_5grasp_7scoring_9stateless_WordPenalty.__pyx_base.featurize = (struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *(*)(struct __pyx_obj_5grasp_7scoring_9extractor_Stateless *, PyObject *, int __pyx_skip_dispatch))__pyx_f_5grasp_7scoring_9stateless_11WordPenalty_featurize;
+  __pyx_type_5grasp_7scoring_9stateless_WordPenalty.tp_base = __pyx_ptype_5grasp_7scoring_9extractor_Stateless;
+  if (PyType_Ready(&__pyx_type_5grasp_7scoring_9stateless_WordPenalty) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 12; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_type_5grasp_7scoring_9stateless_WordPenalty.tp_print = 0;
-  if (__Pyx_SetVtable(__pyx_type_5grasp_7scoring_9stateless_WordPenalty.tp_dict, __pyx_vtabptr_5grasp_7scoring_9stateless_WordPenalty) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 20; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (PyObject_SetAttrString(__pyx_m, "WordPenalty", (PyObject *)&__pyx_type_5grasp_7scoring_9stateless_WordPenalty) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 20; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (__Pyx_SetVtable(__pyx_type_5grasp_7scoring_9stateless_WordPenalty.tp_dict, __pyx_vtabptr_5grasp_7scoring_9stateless_WordPenalty) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 12; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyObject_SetAttrString(__pyx_m, "WordPenalty", (PyObject *)&__pyx_type_5grasp_7scoring_9stateless_WordPenalty) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 12; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_ptype_5grasp_7scoring_9stateless_WordPenalty = &__pyx_type_5grasp_7scoring_9stateless_WordPenalty;
   __pyx_vtabptr_5grasp_7scoring_9stateless_ArityPenalty = &__pyx_vtable_5grasp_7scoring_9stateless_ArityPenalty;
-  __pyx_vtable_5grasp_7scoring_9stateless_ArityPenalty.__pyx_base = *__pyx_vtabptr_5grasp_7scoring_9stateless_Stateless;
-  __pyx_vtable_5grasp_7scoring_9stateless_ArityPenalty.__pyx_base.__pyx_base.weights = (struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *(*)(struct __pyx_obj_5grasp_7scoring_9extractor_Extractor *, PyObject *, int __pyx_skip_dispatch))__pyx_f_5grasp_7scoring_9stateless_12ArityPenalty_weights;
-  __pyx_vtable_5grasp_7scoring_9stateless_ArityPenalty.__pyx_base.featurize = (struct __pyx_obj_5grasp_7scoring_9extractor_FRepr *(*)(struct __pyx_obj_5grasp_7scoring_9stateless_Stateless *, PyObject *, int __pyx_skip_dispatch))__pyx_f_5grasp_7scoring_9stateless_12ArityPenalty_featurize;
-  __pyx_type_5grasp_7scoring_9stateless_ArityPenalty.tp_base = __pyx_ptype_5grasp_7scoring_9stateless_Stateless;
-  if (PyType_Ready(&__pyx_type_5grasp_7scoring_9stateless_ArityPenalty) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 52; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtable_5grasp_7scoring_9stateless_ArityPenalty.__pyx_base = *__pyx_vtabptr_5grasp_7scoring_9extractor_Stateless;
+  __pyx_vtable_5grasp_7scoring_9stateless_ArityPenalty.__pyx_base.__pyx_base.weights = (struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *(*)(struct __pyx_obj_5grasp_7scoring_9extractor_Extractor *, PyObject *, int __pyx_skip_dispatch))__pyx_f_5grasp_7scoring_9stateless_12ArityPenalty_weights;
+  __pyx_vtable_5grasp_7scoring_9stateless_ArityPenalty.__pyx_base.__pyx_base.constant = (struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *(*)(struct __pyx_obj_5grasp_7scoring_9extractor_Extractor *, __pyx_t_5grasp_6ptypes_weight_t, int __pyx_skip_dispatch))__pyx_f_5grasp_7scoring_9stateless_12ArityPenalty_constant;
+  __pyx_vtable_5grasp_7scoring_9stateless_ArityPenalty.__pyx_base.featurize = (struct __pyx_obj_5grasp_7scoring_5frepr_FRepr *(*)(struct __pyx_obj_5grasp_7scoring_9extractor_Stateless *, PyObject *, int __pyx_skip_dispatch))__pyx_f_5grasp_7scoring_9stateless_12ArityPenalty_featurize;
+  __pyx_type_5grasp_7scoring_9stateless_ArityPenalty.tp_base = __pyx_ptype_5grasp_7scoring_9extractor_Stateless;
+  if (PyType_Ready(&__pyx_type_5grasp_7scoring_9stateless_ArityPenalty) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 51; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_type_5grasp_7scoring_9stateless_ArityPenalty.tp_print = 0;
-  if (__Pyx_SetVtable(__pyx_type_5grasp_7scoring_9stateless_ArityPenalty.tp_dict, __pyx_vtabptr_5grasp_7scoring_9stateless_ArityPenalty) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 52; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (PyObject_SetAttrString(__pyx_m, "ArityPenalty", (PyObject *)&__pyx_type_5grasp_7scoring_9stateless_ArityPenalty) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 52; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (__Pyx_SetVtable(__pyx_type_5grasp_7scoring_9stateless_ArityPenalty.tp_dict, __pyx_vtabptr_5grasp_7scoring_9stateless_ArityPenalty) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 51; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyObject_SetAttrString(__pyx_m, "ArityPenalty", (PyObject *)&__pyx_type_5grasp_7scoring_9stateless_ArityPenalty) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 51; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_ptype_5grasp_7scoring_9stateless_ArityPenalty = &__pyx_type_5grasp_7scoring_9stateless_ArityPenalty;
   if (PyType_Ready(&__pyx_type___pyx_array) < 0) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 99; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_type___pyx_array.tp_print = 0;
@@ -18355,20 +18837,55 @@ PyMODINIT_FUNC PyInit_stateless(void)
   __pyx_ptype_5numpy_broadcast = __Pyx_ImportType("numpy", "broadcast", sizeof(PyArrayMultiIterObject), 0); if (unlikely(!__pyx_ptype_5numpy_broadcast)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_ptype_5numpy_ndarray = __Pyx_ImportType("numpy", "ndarray", sizeof(PyArrayObject), 0); if (unlikely(!__pyx_ptype_5numpy_ndarray)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 181; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_ptype_5numpy_ufunc = __Pyx_ImportType("numpy", "ufunc", sizeof(PyUFuncObject), 0); if (unlikely(!__pyx_ptype_5numpy_ufunc)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 864; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_7scoring_9extractor_FRepr = __Pyx_ImportType("grasp.scoring.extractor", "FRepr", sizeof(struct __pyx_obj_5grasp_7scoring_9extractor_FRepr), 1); if (unlikely(!__pyx_ptype_5grasp_7scoring_9extractor_FRepr)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 7; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_7scoring_9extractor_FRepr = (struct __pyx_vtabstruct_5grasp_7scoring_9extractor_FRepr*)__Pyx_GetVtable(__pyx_ptype_5grasp_7scoring_9extractor_FRepr->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_7scoring_9extractor_FRepr)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 7; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_7scoring_9extractor_FValue = __Pyx_ImportType("grasp.scoring.extractor", "FValue", sizeof(struct __pyx_obj_5grasp_7scoring_9extractor_FValue), 1); if (unlikely(!__pyx_ptype_5grasp_7scoring_9extractor_FValue)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 12; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_7scoring_9extractor_FValue = (struct __pyx_vtabstruct_5grasp_7scoring_9extractor_FValue*)__Pyx_GetVtable(__pyx_ptype_5grasp_7scoring_9extractor_FValue->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_7scoring_9extractor_FValue)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 12; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_7scoring_9extractor_FVec = __Pyx_ImportType("grasp.scoring.extractor", "FVec", sizeof(struct __pyx_obj_5grasp_7scoring_9extractor_FVec), 1); if (unlikely(!__pyx_ptype_5grasp_7scoring_9extractor_FVec)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 17; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_7scoring_9extractor_FVec = (struct __pyx_vtabstruct_5grasp_7scoring_9extractor_FVec*)__Pyx_GetVtable(__pyx_ptype_5grasp_7scoring_9extractor_FVec->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_7scoring_9extractor_FVec)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 17; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_7scoring_9extractor_FMap = __Pyx_ImportType("grasp.scoring.extractor", "FMap", sizeof(struct __pyx_obj_5grasp_7scoring_9extractor_FMap), 1); if (unlikely(!__pyx_ptype_5grasp_7scoring_9extractor_FMap)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_7scoring_9extractor_FMap = (struct __pyx_vtabstruct_5grasp_7scoring_9extractor_FMap*)__Pyx_GetVtable(__pyx_ptype_5grasp_7scoring_9extractor_FMap->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_7scoring_9extractor_FMap)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_3cfg_6symbol_Symbol = __Pyx_ImportType("grasp.cfg.symbol", "Symbol", sizeof(struct __pyx_obj_5grasp_3cfg_6symbol_Symbol), 1); if (unlikely(!__pyx_ptype_5grasp_3cfg_6symbol_Symbol)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 9; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_3cfg_6symbol_Terminal = __Pyx_ImportType("grasp.cfg.symbol", "Terminal", sizeof(struct __pyx_obj_5grasp_3cfg_6symbol_Terminal), 1); if (unlikely(!__pyx_ptype_5grasp_3cfg_6symbol_Terminal)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 18; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_3cfg_6symbol_Nonterminal = __Pyx_ImportType("grasp.cfg.symbol", "Nonterminal", sizeof(struct __pyx_obj_5grasp_3cfg_6symbol_Nonterminal), 1); if (unlikely(!__pyx_ptype_5grasp_3cfg_6symbol_Nonterminal)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_3cfg_6symbol_Span = __Pyx_ImportType("grasp.cfg.symbol", "Span", sizeof(struct __pyx_obj_5grasp_3cfg_6symbol_Span), 1); if (unlikely(!__pyx_ptype_5grasp_3cfg_6symbol_Span)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 34; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_3cfg_6symbol_SymbolFactory = __Pyx_ImportType("grasp.cfg.symbol", "SymbolFactory", sizeof(struct __pyx_obj_5grasp_3cfg_6symbol_SymbolFactory), 1); if (unlikely(!__pyx_ptype_5grasp_3cfg_6symbol_SymbolFactory)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_3cfg_6symbol_SymbolFactory = (struct __pyx_vtabstruct_5grasp_3cfg_6symbol_SymbolFactory*)__Pyx_GetVtable(__pyx_ptype_5grasp_3cfg_6symbol_SymbolFactory->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_3cfg_6symbol_SymbolFactory)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_9_semiring_Operator = __Pyx_ImportType("grasp.semiring._semiring", "Operator", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_Operator), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_Operator)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 4; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_9_semiring_Operator = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Operator*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_Operator->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_Operator)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 4; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_9_semiring_Plus = __Pyx_ImportType("grasp.semiring._semiring", "Plus", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_Plus), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_Plus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 13; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_9_semiring_Plus = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Plus*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_Plus->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_Plus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 13; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_9_semiring_Times = __Pyx_ImportType("grasp.semiring._semiring", "Times", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_Times), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_Times)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 20; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_9_semiring_Times = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Times*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_Times->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_Times)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 20; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_9_semiring_Semiring = __Pyx_ImportType("grasp.semiring._semiring", "Semiring", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_Semiring)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_9_semiring_Semiring = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Semiring*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_Semiring->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_Semiring)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_9_semiring_ProbTimes = __Pyx_ImportType("grasp.semiring._semiring", "ProbTimes", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_ProbTimes), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_ProbTimes)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 51; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_9_semiring_ProbTimes = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ProbTimes*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_ProbTimes->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_ProbTimes)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 51; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_9_semiring_LogProbTimes = __Pyx_ImportType("grasp.semiring._semiring", "LogProbTimes", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_LogProbTimes), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_LogProbTimes)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 53; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_9_semiring_LogProbTimes = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_LogProbTimes*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_LogProbTimes->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_LogProbTimes)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 53; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_9_semiring_ViterbiTimes = __Pyx_ImportType("grasp.semiring._semiring", "ViterbiTimes", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_ViterbiTimes), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_ViterbiTimes)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 55; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_9_semiring_ViterbiTimes = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ViterbiTimes*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_ViterbiTimes->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_ViterbiTimes)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 55; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_9_semiring_ProbPlus = __Pyx_ImportType("grasp.semiring._semiring", "ProbPlus", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_ProbPlus), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_ProbPlus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_9_semiring_ProbPlus = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ProbPlus*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_ProbPlus->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_ProbPlus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_9_semiring_LogProbPlus = __Pyx_ImportType("grasp.semiring._semiring", "LogProbPlus", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_LogProbPlus), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_LogProbPlus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_9_semiring_LogProbPlus = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_LogProbPlus*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_LogProbPlus->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_LogProbPlus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_9_semiring_ViterbiPlus = __Pyx_ImportType("grasp.semiring._semiring", "ViterbiPlus", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_ViterbiPlus), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_ViterbiPlus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_9_semiring_ViterbiPlus = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ViterbiPlus*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_ViterbiPlus->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_ViterbiPlus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_9_semiring_Prob = __Pyx_ImportType("grasp.semiring._semiring", "Prob", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_Prob), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_Prob)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_9_semiring_Prob = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Prob*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_Prob->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_Prob)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_9_semiring_LogProb = __Pyx_ImportType("grasp.semiring._semiring", "LogProb", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_LogProb), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_LogProb)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_9_semiring_LogProb = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_LogProb*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_LogProb->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_LogProb)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_9_semiring_Viterbi = __Pyx_ImportType("grasp.semiring._semiring", "Viterbi", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_Viterbi), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_Viterbi)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_9_semiring_Viterbi = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Viterbi*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_Viterbi->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_Viterbi)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_7scoring_5frepr_FRepr = __Pyx_ImportType("grasp.scoring.frepr", "FRepr", sizeof(struct __pyx_obj_5grasp_7scoring_5frepr_FRepr), 1); if (unlikely(!__pyx_ptype_5grasp_7scoring_5frepr_FRepr)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 8; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_7scoring_5frepr_FRepr = (struct __pyx_vtabstruct_5grasp_7scoring_5frepr_FRepr*)__Pyx_GetVtable(__pyx_ptype_5grasp_7scoring_5frepr_FRepr->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_7scoring_5frepr_FRepr)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 8; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_7scoring_5frepr_FValue = __Pyx_ImportType("grasp.scoring.frepr", "FValue", sizeof(struct __pyx_obj_5grasp_7scoring_5frepr_FValue), 1); if (unlikely(!__pyx_ptype_5grasp_7scoring_5frepr_FValue)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 17; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_7scoring_5frepr_FValue = (struct __pyx_vtabstruct_5grasp_7scoring_5frepr_FValue*)__Pyx_GetVtable(__pyx_ptype_5grasp_7scoring_5frepr_FValue->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_7scoring_5frepr_FValue)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 17; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_7scoring_5frepr_FVec = __Pyx_ImportType("grasp.scoring.frepr", "FVec", sizeof(struct __pyx_obj_5grasp_7scoring_5frepr_FVec), 1); if (unlikely(!__pyx_ptype_5grasp_7scoring_5frepr_FVec)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_7scoring_5frepr_FVec = (struct __pyx_vtabstruct_5grasp_7scoring_5frepr_FVec*)__Pyx_GetVtable(__pyx_ptype_5grasp_7scoring_5frepr_FVec->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_7scoring_5frepr_FVec)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 22; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_7scoring_5frepr_FMap = __Pyx_ImportType("grasp.scoring.frepr", "FMap", sizeof(struct __pyx_obj_5grasp_7scoring_5frepr_FMap), 1); if (unlikely(!__pyx_ptype_5grasp_7scoring_5frepr_FMap)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_7scoring_5frepr_FMap = (struct __pyx_vtabstruct_5grasp_7scoring_5frepr_FMap*)__Pyx_GetVtable(__pyx_ptype_5grasp_7scoring_5frepr_FMap->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_7scoring_5frepr_FMap)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_7scoring_5frepr_FComponents = __Pyx_ImportType("grasp.scoring.frepr", "FComponents", sizeof(struct __pyx_obj_5grasp_7scoring_5frepr_FComponents), 1); if (unlikely(!__pyx_ptype_5grasp_7scoring_5frepr_FComponents)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_7scoring_5frepr_FComponents = (struct __pyx_vtabstruct_5grasp_7scoring_5frepr_FComponents*)__Pyx_GetVtable(__pyx_ptype_5grasp_7scoring_5frepr_FComponents->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_7scoring_5frepr_FComponents)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_7scoring_9extractor_Extractor = __Pyx_ImportType("grasp.scoring.extractor", "Extractor", sizeof(struct __pyx_obj_5grasp_7scoring_9extractor_Extractor), 1); if (unlikely(!__pyx_ptype_5grasp_7scoring_9extractor_Extractor)) {__pyx_filename = __pyx_f[6]; __pyx_lineno = 8; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_7scoring_9extractor_Extractor = (struct __pyx_vtabstruct_5grasp_7scoring_9extractor_Extractor*)__Pyx_GetVtable(__pyx_ptype_5grasp_7scoring_9extractor_Extractor->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_7scoring_9extractor_Extractor)) {__pyx_filename = __pyx_f[6]; __pyx_lineno = 8; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_7scoring_9extractor_TableLookup = __Pyx_ImportType("grasp.scoring.extractor", "TableLookup", sizeof(struct __pyx_obj_5grasp_7scoring_9extractor_TableLookup), 1); if (unlikely(!__pyx_ptype_5grasp_7scoring_9extractor_TableLookup)) {__pyx_filename = __pyx_f[6]; __pyx_lineno = 20; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_7scoring_9extractor_TableLookup = (struct __pyx_vtabstruct_5grasp_7scoring_9extractor_TableLookup*)__Pyx_GetVtable(__pyx_ptype_5grasp_7scoring_9extractor_TableLookup->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_7scoring_9extractor_TableLookup)) {__pyx_filename = __pyx_f[6]; __pyx_lineno = 20; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_7scoring_9extractor_StatefulFRepr = __Pyx_ImportType("grasp.scoring.extractor", "StatefulFRepr", sizeof(struct __pyx_obj_5grasp_7scoring_9extractor_StatefulFRepr), 1); if (unlikely(!__pyx_ptype_5grasp_7scoring_9extractor_StatefulFRepr)) {__pyx_filename = __pyx_f[6]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_7scoring_9extractor_Stateful = __Pyx_ImportType("grasp.scoring.extractor", "Stateful", sizeof(struct __pyx_obj_5grasp_7scoring_9extractor_Stateful), 1); if (unlikely(!__pyx_ptype_5grasp_7scoring_9extractor_Stateful)) {__pyx_filename = __pyx_f[6]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_7scoring_9extractor_Stateful = (struct __pyx_vtabstruct_5grasp_7scoring_9extractor_Stateful*)__Pyx_GetVtable(__pyx_ptype_5grasp_7scoring_9extractor_Stateful->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_7scoring_9extractor_Stateful)) {__pyx_filename = __pyx_f[6]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_3cfg_6symbol_Symbol = __Pyx_ImportType("grasp.cfg.symbol", "Symbol", sizeof(struct __pyx_obj_5grasp_3cfg_6symbol_Symbol), 1); if (unlikely(!__pyx_ptype_5grasp_3cfg_6symbol_Symbol)) {__pyx_filename = __pyx_f[7]; __pyx_lineno = 9; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_3cfg_6symbol_Terminal = __Pyx_ImportType("grasp.cfg.symbol", "Terminal", sizeof(struct __pyx_obj_5grasp_3cfg_6symbol_Terminal), 1); if (unlikely(!__pyx_ptype_5grasp_3cfg_6symbol_Terminal)) {__pyx_filename = __pyx_f[7]; __pyx_lineno = 18; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_3cfg_6symbol_Nonterminal = __Pyx_ImportType("grasp.cfg.symbol", "Nonterminal", sizeof(struct __pyx_obj_5grasp_3cfg_6symbol_Nonterminal), 1); if (unlikely(!__pyx_ptype_5grasp_3cfg_6symbol_Nonterminal)) {__pyx_filename = __pyx_f[7]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_3cfg_6symbol_Span = __Pyx_ImportType("grasp.cfg.symbol", "Span", sizeof(struct __pyx_obj_5grasp_3cfg_6symbol_Span), 1); if (unlikely(!__pyx_ptype_5grasp_3cfg_6symbol_Span)) {__pyx_filename = __pyx_f[7]; __pyx_lineno = 34; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_3cfg_6symbol_SymbolFactory = __Pyx_ImportType("grasp.cfg.symbol", "SymbolFactory", sizeof(struct __pyx_obj_5grasp_3cfg_6symbol_SymbolFactory), 1); if (unlikely(!__pyx_ptype_5grasp_3cfg_6symbol_SymbolFactory)) {__pyx_filename = __pyx_f[7]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_3cfg_6symbol_SymbolFactory = (struct __pyx_vtabstruct_5grasp_3cfg_6symbol_SymbolFactory*)__Pyx_GetVtable(__pyx_ptype_5grasp_3cfg_6symbol_SymbolFactory->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_3cfg_6symbol_SymbolFactory)) {__pyx_filename = __pyx_f[7]; __pyx_lineno = 42; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   /*--- Variable import code ---*/
   /*--- Function import code ---*/
   /*--- Execution code ---*/

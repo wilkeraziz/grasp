@@ -11,6 +11,12 @@ cdef class Node:
     def __init__(self, Symbol label):
         self.label = label
 
+    def __getstate__(self):
+        return {'label': self.label}
+
+    def __setstate__(self, d):
+        self.label = d['label']
+
     def __str__(self):
         return 'label={0}'.format(repr(self.label))
 
@@ -36,6 +42,14 @@ cdef class Edge:
     def __repr__(self):
         return 'Edge(%r, %r, %r)' % (self.head, self.tail, self.weight)
 
+    def __getstate__(self):
+        return {'head': self.head, 'tail': self.tail, 'weight': self.weight}
+
+    def __setstate__(self, d):
+        self.head = d['head']
+        self.tail = d['tail']
+        self.weight = d['weight']
+
 
 cdef class Hypergraph:
     """
@@ -52,6 +66,28 @@ cdef class Hypergraph:
         self._symbols = []
         self._rules = []
         self._glue = set()
+
+    def __getstate__(self):
+        return {'nodes': self._nodes,
+                'edges': self._edges,
+                'bs': self._bs,
+                'fs': self._fs,
+                'deps': self._deps,
+                'symbol_map': self._symbol_map,
+                'symbols': self._symbols,
+                'rules': self._rules,
+                'glue': self._glue}
+
+    def __setstate__(self, d):
+        self._nodes = list(d['nodes'])
+        self._edges = list(d['edges'])
+        self._bs = list(d['bs'])
+        self._fs = list(d['fs'])
+        self._deps = list(d['deps'])
+        self._symbol_map = dict(d['symbol_map'])
+        self._symbols = list(d['symbols'])
+        self._rules = list(d['rules'])
+        self._glue = set(d['glue'])
 
     def __str__(self):
         return 'nodes={0}\n{1}\nedges={2}\n{3}'.format(len(self._nodes),
@@ -224,6 +260,22 @@ cdef class Derivation:
         self._hg = derivation
         self._rules = None
         self._weights = None
+
+    def __getstate__(self):
+        return {'hg': self._hg,
+                'rules': self._rules,
+                'weights': self._weights}
+
+    def __setstate__(self, d):
+        self._hg = d['hg']
+        self._rules = d['rules']
+        self._weights = d['weights']
+
+    cpdef Hypergraph hg(self):
+        return self._hg
+
+    cpdef tuple edges(self):
+        return tuple(range(self._hg.n_edges()))
 
     cpdef tuple weights(self):
         cdef id_t e

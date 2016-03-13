@@ -13,10 +13,16 @@ cdef class Operator:
 
     cpdef weight_t reduce(self, iterable) except *: pass
 
+    def __repr__(self):
+        return '%s(identity=%s)' % (self.__class__.__name__, self.identity)
+
 
 cdef class Plus(Operator):
 
     cpdef int choice(self, weight_t[::1] values) except -1: pass
+
+    def __repr__(self):
+        return '%s(identity=%r, idempotent=%r)' % (self.__class__.__name__, self.identity, self.idempotent)
 
 
 cdef class Times(Operator):
@@ -55,6 +61,9 @@ cdef class Semiring:
         cdef weight_t v
         cdef weight_t total = self.plus.reduce(values)
         return np.array([self.divide(v, total) for v in values], dtype=ptypes.weight)
+
+    def __repr__(self):
+        return '%s(plus=%r, times=%r, LOG=%r)' % (self.__class__.__name__, self.plus, self.times, self.LOG)
 
 
 cdef class ProbTimes(Times):

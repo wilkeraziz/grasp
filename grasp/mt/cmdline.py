@@ -143,27 +143,34 @@ def cmd_sampling(group):
 
 
 def cmd_slice(group):
+    group.add_argument('--chains',
+            type=int, default=1, metavar='K',
+            help='number of random restarts')
     group.add_argument('--lag',
                        type=int, default=1, metavar='I',
                        help='lag between samples')
     group.add_argument('--burn',
                        type=int, default=0, metavar='N',
                        help='number of initial samples to be discarded (applies after lag)')
-    group.add_argument('--batch',
-            type=int, default=1, metavar='K',
-            help='number of samples per slice')
-    group.add_argument('--chains',
-            type=int, default=1, metavar='K',
-            help='number of random restarts')
+    #group.add_argument('--resample',
+    #                   type=int, default=0,
+    #                   help='resample with replacement (use more than 0 to enable resampling)')
     group.add_argument('--within',
-                       type=str, default='ancestral', choices=['ancestral', 'importance', 'uniform'],
+                       type=str, default='importance', choices=['exact', 'importance', 'uniform', 'cimportance'],
                        help='how to sample within the slice')
+    group.add_argument('--batch',
+            type=int, default=100, metavar='K',
+            help='number of samples per slice (for importance and uniform sampling)')
+    group.add_argument('--initial',
+                       type=str, default='uniform', choices=['uniform', 'local'],
+                       help='how to sample the initial state of the Markov chain')
+    group.add_argument('--temperature0',
+                       type=float, default=1.0,
+                       help='flattens the distribution from where we obtain the initial derivation (for local initialisation only)')
     group.add_argument('--save-chain',
                        action='store_true',
                        help='Save the actual Markov chain on disk.')
-    group.add_argument('--temperature0',
-                       type=float, default=1.0,
-                       help='flattens the distribution from where we obtain the initial derivation')
+
     group.add_argument('--prior', nargs=2,
                        default=['asym', 'mean'],
                        help="We have a slice variable for each node in the forest. "
@@ -178,7 +185,7 @@ def cmd_slice(group):
                             "The symmetric Gamma takes a single scale parameter (>0). "
                             "The asymmetric Gamma takes either the keyword 'mean' or "
                             "a percentile expressed as a real value between 0-100. "
-                            "These are computed based on the distribution over incoming edges.")
+                            "The later are computed based on the local distribution over incoming edges.")
 
 
 if __name__ == '__main__':

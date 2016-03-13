@@ -4,48 +4,41 @@
 
 from grasp.ptypes cimport weight_t, id_t
 from grasp.scoring.state cimport StateMapper
+from grasp.scoring.frepr cimport FComponents
+from grasp.scoring.model cimport Model
 
 
-cdef class LogLinearModel:
+cdef class Scorer:
 
-    cdef dict _wmap
-    cdef tuple _extractors
-    cdef tuple _lookup
-    cdef tuple _stateless
-    cdef tuple _stateful
-    cdef tuple _lookup_weights
-    cdef tuple _stateless_weights
-    cdef tuple _stateful_weights
+    cdef Model _model
 
-    cpdef weight_t lookup_score(self, list freprs)
+    cpdef tuple extractors(self)
 
-    cpdef weight_t stateless_score(self, list freprs)
+    cpdef Model model(self)
 
-    cpdef weight_t stateful_score(self, list freprs)
-
-
-cdef class Scorer: pass
+    cpdef FComponents constant(self, weight_t value)
 
 
 cdef class TableLookupScorer(Scorer):
 
-    cdef LogLinearModel _model
+    cpdef FComponents featurize(self, rule)
 
     cpdef weight_t score(self, rule)
+
+    cpdef tuple featurize_and_score(self, rule)
 
 
 cdef class StatelessScorer(Scorer):
 
-    cdef LogLinearModel _model
-    cdef tuple _extractors
+    cpdef FComponents featurize(self, edge)
 
     cpdef weight_t score(self, edge)
+
+    cpdef tuple featurize_and_score(self, edge)
 
 
 cdef class StatefulScorer(Scorer):
 
-    cdef LogLinearModel _model
-    cdef tuple _extractors
     cdef StateMapper _mapper
     cdef id_t _initial
     cdef id_t _final
@@ -54,10 +47,20 @@ cdef class StatefulScorer(Scorer):
 
     cpdef id_t final(self)
 
+    cpdef FComponents featurize_initial(self)
+
+    cpdef FComponents featurize_final(self, context)
+
+    cpdef tuple featurize(self, word, context)
+
+    cpdef FComponents featurize_yield(self, derivation_yield)
+
+    cpdef tuple featurize_and_score(self, word, context)
+
     cpdef weight_t initial_score(self)
 
     cpdef weight_t final_score(self, context)
 
     cpdef tuple score(self, word, context)
 
-    cpdef weight_t score_derivation(self, derivation)
+    cpdef weight_t score_yield(self, derivation)

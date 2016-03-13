@@ -8,10 +8,23 @@ import tempfile
 import datetime
 import gzip
 import warnings
+import pickle
 from io import TextIOWrapper
 from functools import wraps
 from glob import glob
 from os.path import basename, splitext
+
+
+def pickle_it(path, obj):
+    """Dump a pickled representation of the object to disk"""
+    with open(path, 'wb') as fo:
+        pickle.dump(obj, fo)
+
+
+def unpickle_it(path):
+    """Load an object from a pickled representation stored on disk"""
+    with open(path, 'rb') as fo:
+        return pickle.load(fo)
 
 
 def smart_ropen(path):

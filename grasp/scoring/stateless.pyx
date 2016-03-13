@@ -4,20 +4,16 @@ Stateless extractors.
 :Authors: - Wilker Aziz
 """
 
-from grasp.scoring.extractor cimport FValue, FMap
+from grasp.scoring.frepr cimport FRepr, FValue, FMap
 from grasp.ptypes cimport weight_t
 from grasp.cfg.symbol cimport Symbol, Terminal, Nonterminal
 
 
-cdef class Stateless(Extractor):
-
-    def __init__(self, int uid, str name):
-        super(Stateless, self).__init__(uid, name)
-
-    cpdef FRepr featurize(self, edge): pass
-
-
 cdef class WordPenalty(Stateless):
+    """
+    This counts the number of terminal symbols in a rule.
+    It returns a simple FValue.
+    """
 
     def __init__(self, int uid, str name, weight_t penalty=1.0):
         super(WordPenalty, self).__init__(uid, name)
@@ -48,8 +44,15 @@ cdef class WordPenalty(Stateless):
                 n += 1
         return FValue(self._penalty * n)
 
+    cpdef FRepr constant(self, weight_t value):
+        return FValue(value)
+
 
 cdef class ArityPenalty(Stateless):
+    """
+    This counts the number of rules of each arity.
+    It returns an FMap.
+    """
 
     def __init__(self, int uid, str name, weight_t penalty=1.0):
         super(ArityPenalty, self).__init__(uid, name)
@@ -61,7 +64,7 @@ cdef class ArityPenalty(Stateless):
                                                             repr(self.name),
                                                             repr(self._penalty))
 
-    cpdef FRepr weights(self, dict wmap):  # using a sparse representation
+    cpdef FRepr weights(self, dict wmap):
         return FMap({k: v for k, v in wmap.items() if k.startswith(self.name)})
 
     cpdef FRepr featurize(self, edge):
@@ -79,3 +82,6 @@ cdef class ArityPenalty(Stateless):
             if isinstance(sym, Nonterminal):
                 arity += 1
         return FMap({'{0}_{1}'.format(self.name, arity): self._penalty})
+
+    cpdef FRepr constant(self, weight_t value):
+        return FMap([])

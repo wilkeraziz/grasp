@@ -1017,7 +1017,7 @@ struct __pyx_obj_5grasp_6formal_2hg_Derivation {
 };
 
 
-/* "grasp/formal/hg.pyx":31
+/* "grasp/formal/hg.pyx":37
  *         self.weight = weight
  * 
  *     def __str__(self):             # <<<<<<<<<<<<<<
@@ -1030,7 +1030,7 @@ struct __pyx_obj_5grasp_6formal_2hg___pyx_scope_struct____str__ {
 };
 
 
-/* "grasp/formal/hg.pyx":33
+/* "grasp/formal/hg.pyx":39
  *     def __str__(self):
  *         return 'head={0} tail=({1}) weight={2}'.format(self.head,
  *                                                        ' '.join(str(x) for x in self.tail),             # <<<<<<<<<<<<<<
@@ -1046,8 +1046,8 @@ struct __pyx_obj_5grasp_6formal_2hg___pyx_scope_struct_1_genexpr {
 };
 
 
-/* "grasp/formal/hg.pyx":56
- *         self._glue = set()
+/* "grasp/formal/hg.pyx":92
+ *         self._glue = set(d['glue'])
  * 
  *     def __str__(self):             # <<<<<<<<<<<<<<
  *         return 'nodes={0}\n{1}\nedges={2}\n{3}'.format(len(self._nodes),
@@ -1059,7 +1059,7 @@ struct __pyx_obj_5grasp_6formal_2hg___pyx_scope_struct_2___str__ {
 };
 
 
-/* "grasp/formal/hg.pyx":58
+/* "grasp/formal/hg.pyx":94
  *     def __str__(self):
  *         return 'nodes={0}\n{1}\nedges={2}\n{3}'.format(len(self._nodes),
  *                                                        '\n'.join(repr(n) for n in self._nodes),             # <<<<<<<<<<<<<<
@@ -1075,7 +1075,7 @@ struct __pyx_obj_5grasp_6formal_2hg___pyx_scope_struct_3_genexpr {
 };
 
 
-/* "grasp/formal/hg.pyx":60
+/* "grasp/formal/hg.pyx":96
  *                                                        '\n'.join(repr(n) for n in self._nodes),
  *                                                        len(self._edges),
  *                                                        '\n'.join('{0} rule={1}'.format(e, r)             # <<<<<<<<<<<<<<
@@ -1152,7 +1152,7 @@ struct __pyx_vtabstruct_5grasp_3cfg_4rule__CFGProduction {
 static struct __pyx_vtabstruct_5grasp_3cfg_4rule__CFGProduction *__pyx_vtabptr_5grasp_3cfg_4rule__CFGProduction;
 
 
-/* "grasp/formal/hg.pyx":40
+/* "grasp/formal/hg.pyx":54
  * 
  * 
  * cdef class Hypergraph:             # <<<<<<<<<<<<<<
@@ -1190,7 +1190,7 @@ struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph {
 static struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *__pyx_vtabptr_5grasp_6formal_2hg_Hypergraph;
 
 
-/* "grasp/formal/hg.pyx":221
+/* "grasp/formal/hg.pyx":257
  * 
  * 
  * cdef class Derivation:             # <<<<<<<<<<<<<<
@@ -1199,6 +1199,8 @@ static struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *__pyx_vtabptr_5gra
  */
 
 struct __pyx_vtabstruct_5grasp_6formal_2hg_Derivation {
+  struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *(*hg)(struct __pyx_obj_5grasp_6formal_2hg_Derivation *, int __pyx_skip_dispatch);
+  PyObject *(*edges)(struct __pyx_obj_5grasp_6formal_2hg_Derivation *, int __pyx_skip_dispatch);
   PyObject *(*weights)(struct __pyx_obj_5grasp_6formal_2hg_Derivation *, int __pyx_skip_dispatch);
   PyObject *(*rules)(struct __pyx_obj_5grasp_6formal_2hg_Derivation *, int __pyx_skip_dispatch);
   PyObject *(*iteritems)(struct __pyx_obj_5grasp_6formal_2hg_Derivation *, int __pyx_skip_dispatch);
@@ -1296,6 +1298,8 @@ static void __Pyx_RaiseArgtupleInvalid(const char* func_name, int exact,
 
 static CYTHON_INLINE int __Pyx_ArgTypeTest(PyObject *obj, PyTypeObject *type, int none_allowed,
     const char *name, int exact);
+
+static CYTHON_INLINE int __Pyx_TypeTest(PyObject *obj, PyTypeObject *type);
 
 #if CYTHON_COMPILING_IN_CPYTHON
 static CYTHON_INLINE PyObject* __Pyx_PyObject_Call(PyObject *func, PyObject *arg, PyObject *kw);
@@ -1403,8 +1407,6 @@ static CYTHON_INLINE int __Pyx_ListComp_Append(PyObject* list, PyObject* x) {
 #else
 #define __Pyx_ListComp_Append(L,x) PyList_Append(L,x)
 #endif
-
-static CYTHON_INLINE int __Pyx_TypeTest(PyObject *obj, PyTypeObject *type);
 
 static CYTHON_INLINE int __Pyx_PySequence_Contains(PyObject* item, PyObject* seq, int eq) {
     int result = PySequence_Contains(seq, item);
@@ -1648,6 +1650,8 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_bs_i(
 static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterfs(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_node, int __pyx_skip_dispatch); /* proto*/
 static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterdeps(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_node, int __pyx_skip_dispatch); /* proto*/
 static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_self_depends(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_node, int __pyx_skip_dispatch); /* proto*/
+static struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_f_5grasp_6formal_2hg_10Derivation_hg(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
+static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_edges(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
 static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_weights(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
 static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_rules(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
 static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_iteritems(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self, int __pyx_skip_dispatch); /* proto*/
@@ -1713,50 +1717,60 @@ static PyObject *__pyx_builtin_range;
 static PyObject *__pyx_builtin_ValueError;
 static PyObject *__pyx_builtin_RuntimeError;
 static int __pyx_pf_5grasp_6formal_2hg_4Node___init__(struct __pyx_obj_5grasp_6formal_2hg_Node *__pyx_v_self, struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_v_label); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_2__str__(struct __pyx_obj_5grasp_6formal_2hg_Node *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_4__repr__(struct __pyx_obj_5grasp_6formal_2hg_Node *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_2__getstate__(struct __pyx_obj_5grasp_6formal_2hg_Node *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_4__setstate__(struct __pyx_obj_5grasp_6formal_2hg_Node *__pyx_v_self, PyObject *__pyx_v_d); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_6__str__(struct __pyx_obj_5grasp_6formal_2hg_Node *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_8__repr__(struct __pyx_obj_5grasp_6formal_2hg_Node *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_5label___get__(struct __pyx_obj_5grasp_6formal_2hg_Node *__pyx_v_self); /* proto */
 static int __pyx_pf_5grasp_6formal_2hg_4Edge___init__(struct __pyx_obj_5grasp_6formal_2hg_Edge *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_head, __pyx_t_5grasp_6formal_2hg_tail_t __pyx_v_tail, __pyx_t_5grasp_6ptypes_weight_t __pyx_v_weight); /* proto */
 static PyObject *__pyx_pf_5grasp_6formal_2hg_4Edge_7__str___genexpr(PyObject *__pyx_self); /* proto */
 static PyObject *__pyx_pf_5grasp_6formal_2hg_4Edge_2__str__(struct __pyx_obj_5grasp_6formal_2hg_Edge *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_5grasp_6formal_2hg_4Edge_4__repr__(struct __pyx_obj_5grasp_6formal_2hg_Edge *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_4Edge_6__getstate__(struct __pyx_obj_5grasp_6formal_2hg_Edge *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_4Edge_8__setstate__(struct __pyx_obj_5grasp_6formal_2hg_Edge *__pyx_v_self, PyObject *__pyx_v_d); /* proto */
 static PyObject *__pyx_pf_5grasp_6formal_2hg_4Edge_4head___get__(struct __pyx_obj_5grasp_6formal_2hg_Edge *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_5grasp_6formal_2hg_4Edge_4tail___get__(struct __pyx_obj_5grasp_6formal_2hg_Edge *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_5grasp_6formal_2hg_4Edge_6weight___get__(struct __pyx_obj_5grasp_6formal_2hg_Edge *__pyx_v_self); /* proto */
 static int __pyx_pf_5grasp_6formal_2hg_10Hypergraph___init__(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_2__getstate__(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_4__setstate__(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, PyObject *__pyx_v_d); /* proto */
 static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_7__str___genexpr(PyObject *__pyx_self); /* proto */
 static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_7__str___3genexpr(PyObject *__pyx_self); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_2__str__(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self); /* proto */
-static Py_ssize_t __pyx_pf_5grasp_6formal_2hg_10Hypergraph_4__len__(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_6add_node(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_v_label); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_8add_xedge(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_v_lhs, PyObject *__pyx_v_rhs, __pyx_t_5grasp_6ptypes_weight_t __pyx_v_weight, struct __pyx_obj_5grasp_3cfg_4rule_Rule *__pyx_v_rule, int __pyx_v_glue); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_10fetch(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_v_sym, __pyx_t_5grasp_6ptypes_id_t __pyx_v_default); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_12head(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_14tail(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_16weight(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_18arity(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_20child(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e, __pyx_t_5grasp_6ptypes_id_t __pyx_v_i); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_22is_terminal(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_24is_nonterminal(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_26is_source(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_head); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_28is_glue(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_30label(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_32rule(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_34n_nodes(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_36n_edges(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_38n_incoming(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_40iterglue(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_42iterbs(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_head); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_44bs_i(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_head, size_t __pyx_v_i); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_46iterfs(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_node); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_48iterdeps(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_node); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_50self_depends(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_node); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_6__str__(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self); /* proto */
+static Py_ssize_t __pyx_pf_5grasp_6formal_2hg_10Hypergraph_8__len__(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_10add_node(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_v_label); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_12add_xedge(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_v_lhs, PyObject *__pyx_v_rhs, __pyx_t_5grasp_6ptypes_weight_t __pyx_v_weight, struct __pyx_obj_5grasp_3cfg_4rule_Rule *__pyx_v_rule, int __pyx_v_glue); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_14fetch(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_v_sym, __pyx_t_5grasp_6ptypes_id_t __pyx_v_default); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_16head(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_18tail(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_20weight(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_22arity(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_24child(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e, __pyx_t_5grasp_6ptypes_id_t __pyx_v_i); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_26is_terminal(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_28is_nonterminal(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_30is_source(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_head); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_32is_glue(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_34label(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_36rule(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_38n_nodes(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_40n_edges(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_42n_incoming(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_44iterglue(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_46iterbs(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_head); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_48bs_i(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_head, size_t __pyx_v_i); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_50iterfs(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_node); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_52iterdeps(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_node); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_54self_depends(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_node); /* proto */
 static int __pyx_pf_5grasp_6formal_2hg_10Derivation___init__(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self, struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_derivation); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_2weights(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_4rules(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_6iteritems(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self); /* proto */
-static Py_hash_t __pyx_pf_5grasp_6formal_2hg_10Derivation_8__hash__(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self); /* proto */
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_10__richcmp__(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_x, struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_y, int __pyx_v_opt); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_2__getstate__(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_4__setstate__(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self, PyObject *__pyx_v_d); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_6hg(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_8edges(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_10weights(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_12rules(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_14iteritems(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self); /* proto */
+static Py_hash_t __pyx_pf_5grasp_6formal_2hg_10Derivation_16__hash__(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self); /* proto */
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_18__richcmp__(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_x, struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_y, int __pyx_v_opt); /* proto */
 static PyObject *__pyx_pf_5grasp_6formal_2hg_make_derivation(CYTHON_UNUSED PyObject *__pyx_self, struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_forest, PyObject *__pyx_v_edges); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
@@ -1789,6 +1803,9 @@ static char __pyx_k_Zd[] = "Zd";
 static char __pyx_k_Zf[] = "Zf";
 static char __pyx_k_Zg[] = "Zg";
 static char __pyx_k__2[] = "\n";
+static char __pyx_k_bs[] = "bs";
+static char __pyx_k_fs[] = "fs";
+static char __pyx_k_hg[] = "hg";
 static char __pyx_k_get[] = "get";
 static char __pyx_k_lhs[] = "lhs";
 static char __pyx_k_rhs[] = "rhs";
@@ -1796,6 +1813,7 @@ static char __pyx_k_sym[] = "sym";
 static char __pyx_k_zip[] = "zip";
 static char __pyx_k_args[] = "args";
 static char __pyx_k_bs_i[] = "bs_i";
+static char __pyx_k_deps[] = "deps";
 static char __pyx_k_glue[] = "glue";
 static char __pyx_k_head[] = "head";
 static char __pyx_k_join[] = "join";
@@ -1810,6 +1828,7 @@ static char __pyx_k_close[] = "close";
 static char __pyx_k_edges[] = "edges";
 static char __pyx_k_fetch[] = "fetch";
 static char __pyx_k_label[] = "label";
+static char __pyx_k_nodes[] = "nodes";
 static char __pyx_k_range[] = "range";
 static char __pyx_k_rules[] = "rules";
 static char __pyx_k_throw[] = "throw";
@@ -1825,6 +1844,7 @@ static char __pyx_k_is_glue[] = "is_glue";
 static char __pyx_k_label_0[] = "label={0}";
 static char __pyx_k_n_edges[] = "n_edges";
 static char __pyx_k_n_nodes[] = "n_nodes";
+static char __pyx_k_symbols[] = "symbols";
 static char __pyx_k_weights[] = "weights";
 static char __pyx_k_0_rule_1[] = "{0} rule={1}";
 static char __pyx_k_add_node[] = "add_node";
@@ -1838,6 +1858,7 @@ static char __pyx_k_ValueError[] = "ValueError";
 static char __pyx_k_derivation[] = "derivation";
 static char __pyx_k_n_incoming[] = "n_incoming";
 static char __pyx_k_pyx_vtable[] = "__pyx_vtable__";
+static char __pyx_k_symbol_map[] = "symbol_map";
 static char __pyx_k_is_terminal[] = "is_terminal";
 static char __pyx_k_RuntimeError[] = "RuntimeError";
 static char __pyx_k_self_depends[] = "self_depends";
@@ -1867,21 +1888,25 @@ static PyObject *__pyx_n_s_add_xedge;
 static PyObject *__pyx_n_s_append;
 static PyObject *__pyx_n_s_args;
 static PyObject *__pyx_n_s_arity;
+static PyObject *__pyx_n_s_bs;
 static PyObject *__pyx_n_s_bs_i;
 static PyObject *__pyx_n_s_child;
 static PyObject *__pyx_n_s_close;
 static PyObject *__pyx_n_s_default;
+static PyObject *__pyx_n_s_deps;
 static PyObject *__pyx_n_s_derivation;
 static PyObject *__pyx_n_s_e;
 static PyObject *__pyx_n_s_edges;
 static PyObject *__pyx_n_s_fetch;
 static PyObject *__pyx_n_s_forest;
 static PyObject *__pyx_n_s_format;
+static PyObject *__pyx_n_s_fs;
 static PyObject *__pyx_n_s_genexpr;
 static PyObject *__pyx_n_s_get;
 static PyObject *__pyx_n_s_glue;
 static PyObject *__pyx_n_s_head;
 static PyObject *__pyx_kp_s_head_0_tail_1_weight_2;
+static PyObject *__pyx_n_s_hg;
 static PyObject *__pyx_n_s_i;
 static PyObject *__pyx_n_s_is_glue;
 static PyObject *__pyx_n_s_is_nonterminal;
@@ -1902,6 +1927,7 @@ static PyObject *__pyx_n_s_n_incoming;
 static PyObject *__pyx_n_s_n_nodes;
 static PyObject *__pyx_kp_u_ndarray_is_not_C_contiguous;
 static PyObject *__pyx_kp_u_ndarray_is_not_Fortran_contiguou;
+static PyObject *__pyx_n_s_nodes;
 static PyObject *__pyx_kp_s_nodes_0_1_edges_2_3;
 static PyObject *__pyx_n_s_pyx_vtable;
 static PyObject *__pyx_n_s_range;
@@ -1912,6 +1938,8 @@ static PyObject *__pyx_n_s_self_depends;
 static PyObject *__pyx_n_s_send;
 static PyObject *__pyx_n_s_str___locals_genexpr;
 static PyObject *__pyx_n_s_sym;
+static PyObject *__pyx_n_s_symbol_map;
+static PyObject *__pyx_n_s_symbols;
 static PyObject *__pyx_n_s_tail;
 static PyObject *__pyx_n_s_test;
 static PyObject *__pyx_n_s_throw;
@@ -2002,7 +2030,7 @@ static int __pyx_pf_5grasp_6formal_2hg_4Node___init__(struct __pyx_obj_5grasp_6f
  *     def __init__(self, Symbol label):
  *         self.label = label             # <<<<<<<<<<<<<<
  * 
- *     def __str__(self):
+ *     def __getstate__(self):
  */
   __Pyx_INCREF(((PyObject *)__pyx_v_label));
   __Pyx_GIVEREF(((PyObject *)__pyx_v_label));
@@ -2027,25 +2055,156 @@ static int __pyx_pf_5grasp_6formal_2hg_4Node___init__(struct __pyx_obj_5grasp_6f
 /* "grasp/formal/hg.pyx":14
  *         self.label = label
  * 
- *     def __str__(self):             # <<<<<<<<<<<<<<
- *         return 'label={0}'.format(repr(self.label))
+ *     def __getstate__(self):             # <<<<<<<<<<<<<<
+ *         return {'label': self.label}
  * 
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_4Node_3__str__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_5grasp_6formal_2hg_4Node_3__str__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_4Node_3__getstate__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_4Node_3__getstate__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("__str__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_4Node_2__str__(((struct __pyx_obj_5grasp_6formal_2hg_Node *)__pyx_v_self));
+  __Pyx_RefNannySetupContext("__getstate__ (wrapper)", 0);
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_4Node_2__getstate__(((struct __pyx_obj_5grasp_6formal_2hg_Node *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_2__str__(struct __pyx_obj_5grasp_6formal_2hg_Node *__pyx_v_self) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_2__getstate__(struct __pyx_obj_5grasp_6formal_2hg_Node *__pyx_v_self) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("__getstate__", 0);
+
+  /* "grasp/formal/hg.pyx":15
+ * 
+ *     def __getstate__(self):
+ *         return {'label': self.label}             # <<<<<<<<<<<<<<
+ * 
+ *     def __setstate__(self, d):
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_label, ((PyObject *)__pyx_v_self->label)) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "grasp/formal/hg.pyx":14
+ *         self.label = label
+ * 
+ *     def __getstate__(self):             # <<<<<<<<<<<<<<
+ *         return {'label': self.label}
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("grasp.formal.hg.Node.__getstate__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "grasp/formal/hg.pyx":17
+ *         return {'label': self.label}
+ * 
+ *     def __setstate__(self, d):             # <<<<<<<<<<<<<<
+ *         self.label = d['label']
+ * 
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5grasp_6formal_2hg_4Node_5__setstate__(PyObject *__pyx_v_self, PyObject *__pyx_v_d); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_4Node_5__setstate__(PyObject *__pyx_v_self, PyObject *__pyx_v_d) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__setstate__ (wrapper)", 0);
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_4Node_4__setstate__(((struct __pyx_obj_5grasp_6formal_2hg_Node *)__pyx_v_self), ((PyObject *)__pyx_v_d));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_4__setstate__(struct __pyx_obj_5grasp_6formal_2hg_Node *__pyx_v_self, PyObject *__pyx_v_d) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("__setstate__", 0);
+
+  /* "grasp/formal/hg.pyx":18
+ * 
+ *     def __setstate__(self, d):
+ *         self.label = d['label']             # <<<<<<<<<<<<<<
+ * 
+ *     def __str__(self):
+ */
+  __pyx_t_1 = PyObject_GetItem(__pyx_v_d, __pyx_n_s_label); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 18; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __Pyx_GOTREF(__pyx_t_1);
+  if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5grasp_3cfg_6symbol_Symbol))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 18; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GIVEREF(__pyx_t_1);
+  __Pyx_GOTREF(__pyx_v_self->label);
+  __Pyx_DECREF(((PyObject *)__pyx_v_self->label));
+  __pyx_v_self->label = ((struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *)__pyx_t_1);
+  __pyx_t_1 = 0;
+
+  /* "grasp/formal/hg.pyx":17
+ *         return {'label': self.label}
+ * 
+ *     def __setstate__(self, d):             # <<<<<<<<<<<<<<
+ *         self.label = d['label']
+ * 
+ */
+
+  /* function exit code */
+  __pyx_r = Py_None; __Pyx_INCREF(Py_None);
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("grasp.formal.hg.Node.__setstate__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "grasp/formal/hg.pyx":20
+ *         self.label = d['label']
+ * 
+ *     def __str__(self):             # <<<<<<<<<<<<<<
+ *         return 'label={0}'.format(repr(self.label))
+ * 
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5grasp_6formal_2hg_4Node_7__str__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_4Node_7__str__(PyObject *__pyx_v_self) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__str__ (wrapper)", 0);
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_4Node_6__str__(((struct __pyx_obj_5grasp_6formal_2hg_Node *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_6__str__(struct __pyx_obj_5grasp_6formal_2hg_Node *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -2058,7 +2217,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_2__str__(struct __pyx_obj_5gr
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__str__", 0);
 
-  /* "grasp/formal/hg.pyx":15
+  /* "grasp/formal/hg.pyx":21
  * 
  *     def __str__(self):
  *         return 'label={0}'.format(repr(self.label))             # <<<<<<<<<<<<<<
@@ -2066,11 +2225,11 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_2__str__(struct __pyx_obj_5gr
  *     def __repr__(self):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_label_0, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_label_0, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = ((PyObject *)__pyx_v_self->label);
   __Pyx_INCREF(__pyx_t_3);
-  __pyx_t_4 = PyObject_Repr(__pyx_t_3); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = PyObject_Repr(__pyx_t_3); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_t_3 = NULL;
@@ -2084,17 +2243,17 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_2__str__(struct __pyx_obj_5gr
     }
   }
   if (!__pyx_t_3) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_4); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_4); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_GOTREF(__pyx_t_1);
   } else {
-    __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_GIVEREF(__pyx_t_3); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_3); __pyx_t_3 = NULL;
     __Pyx_GIVEREF(__pyx_t_4);
     PyTuple_SET_ITEM(__pyx_t_5, 0+1, __pyx_t_4);
     __pyx_t_4 = 0;
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 15; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   }
@@ -2103,8 +2262,8 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_2__str__(struct __pyx_obj_5gr
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":14
- *         self.label = label
+  /* "grasp/formal/hg.pyx":20
+ *         self.label = d['label']
  * 
  *     def __str__(self):             # <<<<<<<<<<<<<<
  *         return 'label={0}'.format(repr(self.label))
@@ -2126,7 +2285,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_2__str__(struct __pyx_obj_5gr
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":17
+/* "grasp/formal/hg.pyx":23
  *         return 'label={0}'.format(repr(self.label))
  * 
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -2135,19 +2294,19 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_2__str__(struct __pyx_obj_5gr
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_4Node_5__repr__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_5grasp_6formal_2hg_4Node_5__repr__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_4Node_9__repr__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_4Node_9__repr__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__repr__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_4Node_4__repr__(((struct __pyx_obj_5grasp_6formal_2hg_Node *)__pyx_v_self));
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_4Node_8__repr__(((struct __pyx_obj_5grasp_6formal_2hg_Node *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_4__repr__(struct __pyx_obj_5grasp_6formal_2hg_Node *__pyx_v_self) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_8__repr__(struct __pyx_obj_5grasp_6formal_2hg_Node *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -2157,7 +2316,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_4__repr__(struct __pyx_obj_5g
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__repr__", 0);
 
-  /* "grasp/formal/hg.pyx":18
+  /* "grasp/formal/hg.pyx":24
  * 
  *     def __repr__(self):
  *         return repr(self.label)             # <<<<<<<<<<<<<<
@@ -2167,14 +2326,14 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_4__repr__(struct __pyx_obj_5g
   __Pyx_XDECREF(__pyx_r);
   __pyx_t_1 = ((PyObject *)__pyx_v_self->label);
   __Pyx_INCREF(__pyx_t_1);
-  __pyx_t_2 = PyObject_Repr(__pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 18; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyObject_Repr(__pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 24; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":17
+  /* "grasp/formal/hg.pyx":23
  *         return 'label={0}'.format(repr(self.label))
  * 
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -2231,7 +2390,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_4Node_5label___get__(struct __pyx_o
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":26
+/* "grasp/formal/hg.pyx":32
  *     """
  * 
  *     def __init__(self, id_t head, tail_t tail, weight_t weight):             # <<<<<<<<<<<<<<
@@ -2272,16 +2431,16 @@ static int __pyx_pw_5grasp_6formal_2hg_4Edge_1__init__(PyObject *__pyx_v_self, P
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_tail)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("__init__", 1, 3, 3, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+          __Pyx_RaiseArgtupleInvalid("__init__", 1, 3, 3, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
         }
         case  2:
         if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_weight)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("__init__", 1, 3, 3, 2); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+          __Pyx_RaiseArgtupleInvalid("__init__", 1, 3, 3, 2); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 3) {
       goto __pyx_L5_argtuple_error;
@@ -2290,19 +2449,19 @@ static int __pyx_pw_5grasp_6formal_2hg_4Edge_1__init__(PyObject *__pyx_v_self, P
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
       values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
     }
-    __pyx_v_head = __Pyx_PyInt_As_long(values[0]); if (unlikely((__pyx_v_head == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_head = __Pyx_PyInt_As_long(values[0]); if (unlikely((__pyx_v_head == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
     __pyx_v_tail = ((__pyx_t_5grasp_6formal_2hg_tail_t)values[1]);
-    __pyx_v_weight = __pyx_PyFloat_AsDouble(values[2]); if (unlikely((__pyx_v_weight == (npy_double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_weight = __pyx_PyFloat_AsDouble(values[2]); if (unlikely((__pyx_v_weight == (npy_double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__init__", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __Pyx_RaiseArgtupleInvalid("__init__", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
   __Pyx_AddTraceback("grasp.formal.hg.Edge.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_tail), (&PyTuple_Type), 1, "tail", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 26; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_tail), (&PyTuple_Type), 1, "tail", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_r = __pyx_pf_5grasp_6formal_2hg_4Edge___init__(((struct __pyx_obj_5grasp_6formal_2hg_Edge *)__pyx_v_self), __pyx_v_head, __pyx_v_tail, __pyx_v_weight);
 
   /* function exit code */
@@ -2319,7 +2478,7 @@ static int __pyx_pf_5grasp_6formal_2hg_4Edge___init__(struct __pyx_obj_5grasp_6f
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__init__", 0);
 
-  /* "grasp/formal/hg.pyx":27
+  /* "grasp/formal/hg.pyx":33
  * 
  *     def __init__(self, id_t head, tail_t tail, weight_t weight):
  *         self.head = head             # <<<<<<<<<<<<<<
@@ -2328,7 +2487,7 @@ static int __pyx_pf_5grasp_6formal_2hg_4Edge___init__(struct __pyx_obj_5grasp_6f
  */
   __pyx_v_self->head = __pyx_v_head;
 
-  /* "grasp/formal/hg.pyx":28
+  /* "grasp/formal/hg.pyx":34
  *     def __init__(self, id_t head, tail_t tail, weight_t weight):
  *         self.head = head
  *         self.tail = tail             # <<<<<<<<<<<<<<
@@ -2341,7 +2500,7 @@ static int __pyx_pf_5grasp_6formal_2hg_4Edge___init__(struct __pyx_obj_5grasp_6f
   __Pyx_DECREF(__pyx_v_self->tail);
   __pyx_v_self->tail = __pyx_v_tail;
 
-  /* "grasp/formal/hg.pyx":29
+  /* "grasp/formal/hg.pyx":35
  *         self.head = head
  *         self.tail = tail
  *         self.weight = weight             # <<<<<<<<<<<<<<
@@ -2350,7 +2509,7 @@ static int __pyx_pf_5grasp_6formal_2hg_4Edge___init__(struct __pyx_obj_5grasp_6f
  */
   __pyx_v_self->weight = __pyx_v_weight;
 
-  /* "grasp/formal/hg.pyx":26
+  /* "grasp/formal/hg.pyx":32
  *     """
  * 
  *     def __init__(self, id_t head, tail_t tail, weight_t weight):             # <<<<<<<<<<<<<<
@@ -2364,7 +2523,7 @@ static int __pyx_pf_5grasp_6formal_2hg_4Edge___init__(struct __pyx_obj_5grasp_6f
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":31
+/* "grasp/formal/hg.pyx":37
  *         self.weight = weight
  * 
  *     def __str__(self):             # <<<<<<<<<<<<<<
@@ -2386,7 +2545,7 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_4Edge_3__str__(PyObject *__pyx_v_se
 }
 static PyObject *__pyx_gb_5grasp_6formal_2hg_4Edge_7__str___2generator(__pyx_GeneratorObject *__pyx_generator, PyObject *__pyx_sent_value); /* proto */
 
-/* "grasp/formal/hg.pyx":33
+/* "grasp/formal/hg.pyx":39
  *     def __str__(self):
  *         return 'head={0} tail=({1}) weight={2}'.format(self.head,
  *                                                        ' '.join(str(x) for x in self.tail),             # <<<<<<<<<<<<<<
@@ -2412,7 +2571,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_4Edge_7__str___genexpr(PyObject *__
   __Pyx_INCREF(((PyObject *)__pyx_cur_scope->__pyx_outer_scope));
   __Pyx_GIVEREF(__pyx_cur_scope->__pyx_outer_scope);
   {
-    __pyx_GeneratorObject *gen = __Pyx_Generator_New((__pyx_generator_body_t) __pyx_gb_5grasp_6formal_2hg_4Edge_7__str___2generator, (PyObject *) __pyx_cur_scope, __pyx_n_s_genexpr, __pyx_n_s_str___locals_genexpr); if (unlikely(!gen)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_GeneratorObject *gen = __Pyx_Generator_New((__pyx_generator_body_t) __pyx_gb_5grasp_6formal_2hg_4Edge_7__str___2generator, (PyObject *) __pyx_cur_scope, __pyx_n_s_genexpr, __pyx_n_s_str___locals_genexpr); if (unlikely(!gen)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_cur_scope);
     __Pyx_RefNannyFinishContext();
     return (PyObject *) gen;
@@ -2449,11 +2608,11 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_4Edge_7__str___2generator(__pyx_Gen
     return NULL;
   }
   __pyx_L3_first_run:;
-  if (unlikely(!__pyx_sent_value)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_self)) { __Pyx_RaiseClosureNameError("self"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;} }
-  __pyx_t_1 = PyObject_GetIter(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_self->tail); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__pyx_sent_value)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_self)) { __Pyx_RaiseClosureNameError("self"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;} }
+  __pyx_t_1 = PyObject_GetIter(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_self->tail); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   for (;;) {
     {
       __pyx_t_3 = __pyx_t_2(__pyx_t_1);
@@ -2461,7 +2620,7 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_4Edge_7__str___2generator(__pyx_Gen
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(exc_type == PyExc_StopIteration || PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+          else {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         }
         break;
       }
@@ -2471,12 +2630,12 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_4Edge_7__str___2generator(__pyx_Gen
     __Pyx_XDECREF_SET(__pyx_cur_scope->__pyx_v_x, __pyx_t_3);
     __Pyx_GIVEREF(__pyx_t_3);
     __pyx_t_3 = 0;
-    __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PyTuple_New(1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_INCREF(__pyx_cur_scope->__pyx_v_x);
     __Pyx_GIVEREF(__pyx_cur_scope->__pyx_v_x);
     PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_cur_scope->__pyx_v_x);
-    __pyx_t_4 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)(&PyString_Type))), __pyx_t_3, NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)(&PyString_Type))), __pyx_t_3, NULL); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_r = __pyx_t_4;
@@ -2494,7 +2653,7 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_4Edge_7__str___2generator(__pyx_Gen
     __pyx_cur_scope->__pyx_t_0 = 0;
     __Pyx_XGOTREF(__pyx_t_1);
     __pyx_t_2 = __pyx_cur_scope->__pyx_t_1;
-    if (unlikely(!__pyx_sent_value)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(!__pyx_sent_value)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
@@ -2514,7 +2673,7 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_4Edge_7__str___2generator(__pyx_Gen
   return NULL;
 }
 
-/* "grasp/formal/hg.pyx":31
+/* "grasp/formal/hg.pyx":37
  *         self.weight = weight
  * 
  *     def __str__(self):             # <<<<<<<<<<<<<<
@@ -2548,7 +2707,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_4Edge_2__str__(struct __pyx_obj_5gr
   __Pyx_INCREF((PyObject *)__pyx_cur_scope->__pyx_v_self);
   __Pyx_GIVEREF((PyObject *)__pyx_cur_scope->__pyx_v_self);
 
-  /* "grasp/formal/hg.pyx":32
+  /* "grasp/formal/hg.pyx":38
  * 
  *     def __str__(self):
  *         return 'head={0} tail=({1}) weight={2}'.format(self.head,             # <<<<<<<<<<<<<<
@@ -2556,32 +2715,32 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_4Edge_2__str__(struct __pyx_obj_5gr
  *                                                        self.weight)
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_head_0_tail_1_weight_2, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_head_0_tail_1_weight_2, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_cur_scope->__pyx_v_self->head); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_cur_scope->__pyx_v_self->head); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
 
-  /* "grasp/formal/hg.pyx":33
+  /* "grasp/formal/hg.pyx":39
  *     def __str__(self):
  *         return 'head={0} tail=({1}) weight={2}'.format(self.head,
  *                                                        ' '.join(str(x) for x in self.tail),             # <<<<<<<<<<<<<<
  *                                                        self.weight)
  * 
  */
-  __pyx_t_4 = __pyx_pf_5grasp_6formal_2hg_4Edge_7__str___genexpr(((PyObject*)__pyx_cur_scope)); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __pyx_pf_5grasp_6formal_2hg_4Edge_7__str___genexpr(((PyObject*)__pyx_cur_scope)); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = __Pyx_PyString_Join(__pyx_kp_s_, __pyx_t_4); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = __Pyx_PyString_Join(__pyx_kp_s_, __pyx_t_4); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "grasp/formal/hg.pyx":34
+  /* "grasp/formal/hg.pyx":40
  *         return 'head={0} tail=({1}) weight={2}'.format(self.head,
  *                                                        ' '.join(str(x) for x in self.tail),
  *                                                        self.weight)             # <<<<<<<<<<<<<<
  * 
  *     def __repr__(self):
  */
-  __pyx_t_4 = PyFloat_FromDouble(__pyx_cur_scope->__pyx_v_self->weight); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 34; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = PyFloat_FromDouble(__pyx_cur_scope->__pyx_v_self->weight); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_t_6 = NULL;
   __pyx_t_7 = 0;
@@ -2595,7 +2754,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_4Edge_2__str__(struct __pyx_obj_5gr
       __pyx_t_7 = 1;
     }
   }
-  __pyx_t_8 = PyTuple_New(3+__pyx_t_7); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_8 = PyTuple_New(3+__pyx_t_7); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_8);
   if (__pyx_t_6) {
     __Pyx_GIVEREF(__pyx_t_6); PyTuple_SET_ITEM(__pyx_t_8, 0, __pyx_t_6); __pyx_t_6 = NULL;
@@ -2609,7 +2768,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_4Edge_2__str__(struct __pyx_obj_5gr
   __pyx_t_3 = 0;
   __pyx_t_5 = 0;
   __pyx_t_4 = 0;
-  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_8, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 32; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_8, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 38; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
@@ -2617,7 +2776,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_4Edge_2__str__(struct __pyx_obj_5gr
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":31
+  /* "grasp/formal/hg.pyx":37
  *         self.weight = weight
  * 
  *     def __str__(self):             # <<<<<<<<<<<<<<
@@ -2643,7 +2802,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_4Edge_2__str__(struct __pyx_obj_5gr
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":36
+/* "grasp/formal/hg.pyx":42
  *                                                        self.weight)
  * 
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -2675,19 +2834,19 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_4Edge_4__repr__(struct __pyx_obj_5g
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__repr__", 0);
 
-  /* "grasp/formal/hg.pyx":37
+  /* "grasp/formal/hg.pyx":43
  * 
  *     def __repr__(self):
  *         return 'Edge(%r, %r, %r)' % (self.head, self.tail, self.weight)             # <<<<<<<<<<<<<<
  * 
- * 
+ *     def __getstate__(self):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_v_self->head); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_v_self->head); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 43; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = PyFloat_FromDouble(__pyx_v_self->weight); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyFloat_FromDouble(__pyx_v_self->weight); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 43; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_3 = PyTuple_New(3); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = PyTuple_New(3); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 43; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_GIVEREF(__pyx_t_1);
   PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_1);
@@ -2698,14 +2857,14 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_4Edge_4__repr__(struct __pyx_obj_5g
   PyTuple_SET_ITEM(__pyx_t_3, 2, __pyx_t_2);
   __pyx_t_1 = 0;
   __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyString_Format(__pyx_kp_s_Edge_r_r_r, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyString_Format(__pyx_kp_s_Edge_r_r_r, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 43; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":36
+  /* "grasp/formal/hg.pyx":42
  *                                                        self.weight)
  * 
  *     def __repr__(self):             # <<<<<<<<<<<<<<
@@ -2719,6 +2878,175 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_4Edge_4__repr__(struct __pyx_obj_5g
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_3);
   __Pyx_AddTraceback("grasp.formal.hg.Edge.__repr__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "grasp/formal/hg.pyx":45
+ *         return 'Edge(%r, %r, %r)' % (self.head, self.tail, self.weight)
+ * 
+ *     def __getstate__(self):             # <<<<<<<<<<<<<<
+ *         return {'head': self.head, 'tail': self.tail, 'weight': self.weight}
+ * 
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5grasp_6formal_2hg_4Edge_7__getstate__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_4Edge_7__getstate__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__getstate__ (wrapper)", 0);
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_4Edge_6__getstate__(((struct __pyx_obj_5grasp_6formal_2hg_Edge *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5grasp_6formal_2hg_4Edge_6__getstate__(struct __pyx_obj_5grasp_6formal_2hg_Edge *__pyx_v_self) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("__getstate__", 0);
+
+  /* "grasp/formal/hg.pyx":46
+ * 
+ *     def __getstate__(self):
+ *         return {'head': self.head, 'tail': self.tail, 'weight': self.weight}             # <<<<<<<<<<<<<<
+ * 
+ *     def __setstate__(self, d):
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 46; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = __Pyx_PyInt_From_long(__pyx_v_self->head); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 46; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_head, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 46; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_tail, __pyx_v_self->tail) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 46; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyFloat_FromDouble(__pyx_v_self->weight); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 46; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_weight, __pyx_t_2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 46; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "grasp/formal/hg.pyx":45
+ *         return 'Edge(%r, %r, %r)' % (self.head, self.tail, self.weight)
+ * 
+ *     def __getstate__(self):             # <<<<<<<<<<<<<<
+ *         return {'head': self.head, 'tail': self.tail, 'weight': self.weight}
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_AddTraceback("grasp.formal.hg.Edge.__getstate__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "grasp/formal/hg.pyx":48
+ *         return {'head': self.head, 'tail': self.tail, 'weight': self.weight}
+ * 
+ *     def __setstate__(self, d):             # <<<<<<<<<<<<<<
+ *         self.head = d['head']
+ *         self.tail = d['tail']
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5grasp_6formal_2hg_4Edge_9__setstate__(PyObject *__pyx_v_self, PyObject *__pyx_v_d); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_4Edge_9__setstate__(PyObject *__pyx_v_self, PyObject *__pyx_v_d) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__setstate__ (wrapper)", 0);
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_4Edge_8__setstate__(((struct __pyx_obj_5grasp_6formal_2hg_Edge *)__pyx_v_self), ((PyObject *)__pyx_v_d));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5grasp_6formal_2hg_4Edge_8__setstate__(struct __pyx_obj_5grasp_6formal_2hg_Edge *__pyx_v_self, PyObject *__pyx_v_d) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  __pyx_t_5grasp_6ptypes_id_t __pyx_t_2;
+  __pyx_t_5grasp_6ptypes_weight_t __pyx_t_3;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("__setstate__", 0);
+
+  /* "grasp/formal/hg.pyx":49
+ * 
+ *     def __setstate__(self, d):
+ *         self.head = d['head']             # <<<<<<<<<<<<<<
+ *         self.tail = d['tail']
+ *         self.weight = d['weight']
+ */
+  __pyx_t_1 = PyObject_GetItem(__pyx_v_d, __pyx_n_s_head); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 49; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = __Pyx_PyInt_As_long(__pyx_t_1); if (unlikely((__pyx_t_2 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 49; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_v_self->head = __pyx_t_2;
+
+  /* "grasp/formal/hg.pyx":50
+ *     def __setstate__(self, d):
+ *         self.head = d['head']
+ *         self.tail = d['tail']             # <<<<<<<<<<<<<<
+ *         self.weight = d['weight']
+ * 
+ */
+  __pyx_t_1 = PyObject_GetItem(__pyx_v_d, __pyx_n_s_tail); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __Pyx_GOTREF(__pyx_t_1);
+  if (!(likely(PyTuple_CheckExact(__pyx_t_1))||((__pyx_t_1) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_t_1)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GIVEREF(__pyx_t_1);
+  __Pyx_GOTREF(__pyx_v_self->tail);
+  __Pyx_DECREF(__pyx_v_self->tail);
+  __pyx_v_self->tail = ((__pyx_t_5grasp_6formal_2hg_tail_t)__pyx_t_1);
+  __pyx_t_1 = 0;
+
+  /* "grasp/formal/hg.pyx":51
+ *         self.head = d['head']
+ *         self.tail = d['tail']
+ *         self.weight = d['weight']             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+  __pyx_t_1 = PyObject_GetItem(__pyx_v_d, __pyx_n_s_weight); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 51; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_3 = __pyx_PyFloat_AsDouble(__pyx_t_1); if (unlikely((__pyx_t_3 == (npy_double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 51; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_v_self->weight = __pyx_t_3;
+
+  /* "grasp/formal/hg.pyx":48
+ *         return {'head': self.head, 'tail': self.tail, 'weight': self.weight}
+ * 
+ *     def __setstate__(self, d):             # <<<<<<<<<<<<<<
+ *         self.head = d['head']
+ *         self.tail = d['tail']
+ */
+
+  /* function exit code */
+  __pyx_r = Py_None; __Pyx_INCREF(Py_None);
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("grasp.formal.hg.Edge.__setstate__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -2857,7 +3185,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_4Edge_6weight___get__(struct __pyx_
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":45
+/* "grasp/formal/hg.pyx":59
  *     """
  * 
  *     def __init__(self):             # <<<<<<<<<<<<<<
@@ -2890,14 +3218,14 @@ static int __pyx_pf_5grasp_6formal_2hg_10Hypergraph___init__(struct __pyx_obj_5g
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__init__", 0);
 
-  /* "grasp/formal/hg.pyx":46
+  /* "grasp/formal/hg.pyx":60
  * 
  *     def __init__(self):
  *         self._nodes = []             # <<<<<<<<<<<<<<
  *         self._edges = []
  *         self._bs = []
  */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 46; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_1);
   __Pyx_GOTREF(__pyx_v_self->_nodes);
@@ -2905,14 +3233,14 @@ static int __pyx_pf_5grasp_6formal_2hg_10Hypergraph___init__(struct __pyx_obj_5g
   __pyx_v_self->_nodes = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "grasp/formal/hg.pyx":47
+  /* "grasp/formal/hg.pyx":61
  *     def __init__(self):
  *         self._nodes = []
  *         self._edges = []             # <<<<<<<<<<<<<<
  *         self._bs = []
  *         self._fs = []
  */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 47; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_1);
   __Pyx_GOTREF(__pyx_v_self->_edges);
@@ -2920,14 +3248,14 @@ static int __pyx_pf_5grasp_6formal_2hg_10Hypergraph___init__(struct __pyx_obj_5g
   __pyx_v_self->_edges = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "grasp/formal/hg.pyx":48
+  /* "grasp/formal/hg.pyx":62
  *         self._nodes = []
  *         self._edges = []
  *         self._bs = []             # <<<<<<<<<<<<<<
  *         self._fs = []
  *         self._deps = []
  */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 48; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 62; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_1);
   __Pyx_GOTREF(__pyx_v_self->_bs);
@@ -2935,14 +3263,14 @@ static int __pyx_pf_5grasp_6formal_2hg_10Hypergraph___init__(struct __pyx_obj_5g
   __pyx_v_self->_bs = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "grasp/formal/hg.pyx":49
+  /* "grasp/formal/hg.pyx":63
  *         self._edges = []
  *         self._bs = []
  *         self._fs = []             # <<<<<<<<<<<<<<
  *         self._deps = []
  *         self._symbol_map = {}
  */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 49; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_1);
   __Pyx_GOTREF(__pyx_v_self->_fs);
@@ -2950,14 +3278,14 @@ static int __pyx_pf_5grasp_6formal_2hg_10Hypergraph___init__(struct __pyx_obj_5g
   __pyx_v_self->_fs = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "grasp/formal/hg.pyx":50
+  /* "grasp/formal/hg.pyx":64
  *         self._bs = []
  *         self._fs = []
  *         self._deps = []             # <<<<<<<<<<<<<<
  *         self._symbol_map = {}
  *         self._symbols = []
  */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 50; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_1);
   __Pyx_GOTREF(__pyx_v_self->_deps);
@@ -2965,14 +3293,14 @@ static int __pyx_pf_5grasp_6formal_2hg_10Hypergraph___init__(struct __pyx_obj_5g
   __pyx_v_self->_deps = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "grasp/formal/hg.pyx":51
+  /* "grasp/formal/hg.pyx":65
  *         self._fs = []
  *         self._deps = []
  *         self._symbol_map = {}             # <<<<<<<<<<<<<<
  *         self._symbols = []
  *         self._rules = []
  */
-  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 51; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_1);
   __Pyx_GOTREF(__pyx_v_self->_symbol_map);
@@ -2980,14 +3308,14 @@ static int __pyx_pf_5grasp_6formal_2hg_10Hypergraph___init__(struct __pyx_obj_5g
   __pyx_v_self->_symbol_map = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "grasp/formal/hg.pyx":52
+  /* "grasp/formal/hg.pyx":66
  *         self._deps = []
  *         self._symbol_map = {}
  *         self._symbols = []             # <<<<<<<<<<<<<<
  *         self._rules = []
  *         self._glue = set()
  */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 52; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 66; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_1);
   __Pyx_GOTREF(__pyx_v_self->_symbols);
@@ -2995,14 +3323,14 @@ static int __pyx_pf_5grasp_6formal_2hg_10Hypergraph___init__(struct __pyx_obj_5g
   __pyx_v_self->_symbols = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "grasp/formal/hg.pyx":53
+  /* "grasp/formal/hg.pyx":67
  *         self._symbol_map = {}
  *         self._symbols = []
  *         self._rules = []             # <<<<<<<<<<<<<<
  *         self._glue = set()
  * 
  */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 53; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_1);
   __Pyx_GOTREF(__pyx_v_self->_rules);
@@ -3010,14 +3338,14 @@ static int __pyx_pf_5grasp_6formal_2hg_10Hypergraph___init__(struct __pyx_obj_5g
   __pyx_v_self->_rules = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "grasp/formal/hg.pyx":54
+  /* "grasp/formal/hg.pyx":68
  *         self._symbols = []
  *         self._rules = []
  *         self._glue = set()             # <<<<<<<<<<<<<<
  * 
- *     def __str__(self):
+ *     def __getstate__(self):
  */
-  __pyx_t_1 = PySet_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 54; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PySet_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 68; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_1);
   __Pyx_GOTREF(__pyx_v_self->_glue);
@@ -3025,7 +3353,7 @@ static int __pyx_pf_5grasp_6formal_2hg_10Hypergraph___init__(struct __pyx_obj_5g
   __pyx_v_self->_glue = ((PyObject*)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "grasp/formal/hg.pyx":45
+  /* "grasp/formal/hg.pyx":59
  *     """
  * 
  *     def __init__(self):             # <<<<<<<<<<<<<<
@@ -3045,8 +3373,364 @@ static int __pyx_pf_5grasp_6formal_2hg_10Hypergraph___init__(struct __pyx_obj_5g
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":56
+/* "grasp/formal/hg.pyx":70
  *         self._glue = set()
+ * 
+ *     def __getstate__(self):             # <<<<<<<<<<<<<<
+ *         return {'nodes': self._nodes,
+ *                 'edges': self._edges,
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_3__getstate__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_3__getstate__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__getstate__ (wrapper)", 0);
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_2__getstate__(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_2__getstate__(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("__getstate__", 0);
+
+  /* "grasp/formal/hg.pyx":71
+ * 
+ *     def __getstate__(self):
+ *         return {'nodes': self._nodes,             # <<<<<<<<<<<<<<
+ *                 'edges': self._edges,
+ *                 'bs': self._bs,
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_nodes, __pyx_v_self->_nodes) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "grasp/formal/hg.pyx":72
+ *     def __getstate__(self):
+ *         return {'nodes': self._nodes,
+ *                 'edges': self._edges,             # <<<<<<<<<<<<<<
+ *                 'bs': self._bs,
+ *                 'fs': self._fs,
+ */
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_edges, __pyx_v_self->_edges) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "grasp/formal/hg.pyx":73
+ *         return {'nodes': self._nodes,
+ *                 'edges': self._edges,
+ *                 'bs': self._bs,             # <<<<<<<<<<<<<<
+ *                 'fs': self._fs,
+ *                 'deps': self._deps,
+ */
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_bs, __pyx_v_self->_bs) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "grasp/formal/hg.pyx":74
+ *                 'edges': self._edges,
+ *                 'bs': self._bs,
+ *                 'fs': self._fs,             # <<<<<<<<<<<<<<
+ *                 'deps': self._deps,
+ *                 'symbol_map': self._symbol_map,
+ */
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_fs, __pyx_v_self->_fs) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "grasp/formal/hg.pyx":75
+ *                 'bs': self._bs,
+ *                 'fs': self._fs,
+ *                 'deps': self._deps,             # <<<<<<<<<<<<<<
+ *                 'symbol_map': self._symbol_map,
+ *                 'symbols': self._symbols,
+ */
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_deps, __pyx_v_self->_deps) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "grasp/formal/hg.pyx":76
+ *                 'fs': self._fs,
+ *                 'deps': self._deps,
+ *                 'symbol_map': self._symbol_map,             # <<<<<<<<<<<<<<
+ *                 'symbols': self._symbols,
+ *                 'rules': self._rules,
+ */
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_symbol_map, __pyx_v_self->_symbol_map) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "grasp/formal/hg.pyx":77
+ *                 'deps': self._deps,
+ *                 'symbol_map': self._symbol_map,
+ *                 'symbols': self._symbols,             # <<<<<<<<<<<<<<
+ *                 'rules': self._rules,
+ *                 'glue': self._glue}
+ */
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_symbols, __pyx_v_self->_symbols) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "grasp/formal/hg.pyx":78
+ *                 'symbol_map': self._symbol_map,
+ *                 'symbols': self._symbols,
+ *                 'rules': self._rules,             # <<<<<<<<<<<<<<
+ *                 'glue': self._glue}
+ * 
+ */
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_rules, __pyx_v_self->_rules) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "grasp/formal/hg.pyx":79
+ *                 'symbols': self._symbols,
+ *                 'rules': self._rules,
+ *                 'glue': self._glue}             # <<<<<<<<<<<<<<
+ * 
+ *     def __setstate__(self, d):
+ */
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_glue, __pyx_v_self->_glue) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 71; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "grasp/formal/hg.pyx":70
+ *         self._glue = set()
+ * 
+ *     def __getstate__(self):             # <<<<<<<<<<<<<<
+ *         return {'nodes': self._nodes,
+ *                 'edges': self._edges,
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.__getstate__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "grasp/formal/hg.pyx":81
+ *                 'glue': self._glue}
+ * 
+ *     def __setstate__(self, d):             # <<<<<<<<<<<<<<
+ *         self._nodes = list(d['nodes'])
+ *         self._edges = list(d['edges'])
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_5__setstate__(PyObject *__pyx_v_self, PyObject *__pyx_v_d); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_5__setstate__(PyObject *__pyx_v_self, PyObject *__pyx_v_d) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__setstate__ (wrapper)", 0);
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_4__setstate__(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((PyObject *)__pyx_v_d));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_4__setstate__(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, PyObject *__pyx_v_d) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("__setstate__", 0);
+
+  /* "grasp/formal/hg.pyx":82
+ * 
+ *     def __setstate__(self, d):
+ *         self._nodes = list(d['nodes'])             # <<<<<<<<<<<<<<
+ *         self._edges = list(d['edges'])
+ *         self._bs = list(d['bs'])
+ */
+  __pyx_t_1 = PyObject_GetItem(__pyx_v_d, __pyx_n_s_nodes); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 82; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = PySequence_List(__pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 82; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __Pyx_GIVEREF(__pyx_t_2);
+  __Pyx_GOTREF(__pyx_v_self->_nodes);
+  __Pyx_DECREF(__pyx_v_self->_nodes);
+  __pyx_v_self->_nodes = ((PyObject*)__pyx_t_2);
+  __pyx_t_2 = 0;
+
+  /* "grasp/formal/hg.pyx":83
+ *     def __setstate__(self, d):
+ *         self._nodes = list(d['nodes'])
+ *         self._edges = list(d['edges'])             # <<<<<<<<<<<<<<
+ *         self._bs = list(d['bs'])
+ *         self._fs = list(d['fs'])
+ */
+  __pyx_t_2 = PyObject_GetItem(__pyx_v_d, __pyx_n_s_edges); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 83; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_1 = PySequence_List(__pyx_t_2); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 83; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_GIVEREF(__pyx_t_1);
+  __Pyx_GOTREF(__pyx_v_self->_edges);
+  __Pyx_DECREF(__pyx_v_self->_edges);
+  __pyx_v_self->_edges = ((PyObject*)__pyx_t_1);
+  __pyx_t_1 = 0;
+
+  /* "grasp/formal/hg.pyx":84
+ *         self._nodes = list(d['nodes'])
+ *         self._edges = list(d['edges'])
+ *         self._bs = list(d['bs'])             # <<<<<<<<<<<<<<
+ *         self._fs = list(d['fs'])
+ *         self._deps = list(d['deps'])
+ */
+  __pyx_t_1 = PyObject_GetItem(__pyx_v_d, __pyx_n_s_bs); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 84; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = PySequence_List(__pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 84; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __Pyx_GIVEREF(__pyx_t_2);
+  __Pyx_GOTREF(__pyx_v_self->_bs);
+  __Pyx_DECREF(__pyx_v_self->_bs);
+  __pyx_v_self->_bs = ((PyObject*)__pyx_t_2);
+  __pyx_t_2 = 0;
+
+  /* "grasp/formal/hg.pyx":85
+ *         self._edges = list(d['edges'])
+ *         self._bs = list(d['bs'])
+ *         self._fs = list(d['fs'])             # <<<<<<<<<<<<<<
+ *         self._deps = list(d['deps'])
+ *         self._symbol_map = dict(d['symbol_map'])
+ */
+  __pyx_t_2 = PyObject_GetItem(__pyx_v_d, __pyx_n_s_fs); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 85; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_1 = PySequence_List(__pyx_t_2); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 85; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_GIVEREF(__pyx_t_1);
+  __Pyx_GOTREF(__pyx_v_self->_fs);
+  __Pyx_DECREF(__pyx_v_self->_fs);
+  __pyx_v_self->_fs = ((PyObject*)__pyx_t_1);
+  __pyx_t_1 = 0;
+
+  /* "grasp/formal/hg.pyx":86
+ *         self._bs = list(d['bs'])
+ *         self._fs = list(d['fs'])
+ *         self._deps = list(d['deps'])             # <<<<<<<<<<<<<<
+ *         self._symbol_map = dict(d['symbol_map'])
+ *         self._symbols = list(d['symbols'])
+ */
+  __pyx_t_1 = PyObject_GetItem(__pyx_v_d, __pyx_n_s_deps); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = PySequence_List(__pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __Pyx_GIVEREF(__pyx_t_2);
+  __Pyx_GOTREF(__pyx_v_self->_deps);
+  __Pyx_DECREF(__pyx_v_self->_deps);
+  __pyx_v_self->_deps = ((PyObject*)__pyx_t_2);
+  __pyx_t_2 = 0;
+
+  /* "grasp/formal/hg.pyx":87
+ *         self._fs = list(d['fs'])
+ *         self._deps = list(d['deps'])
+ *         self._symbol_map = dict(d['symbol_map'])             # <<<<<<<<<<<<<<
+ *         self._symbols = list(d['symbols'])
+ *         self._rules = list(d['rules'])
+ */
+  __pyx_t_2 = PyObject_GetItem(__pyx_v_d, __pyx_n_s_symbol_map); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 87; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 87; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_GIVEREF(__pyx_t_2);
+  PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_2);
+  __pyx_t_2 = 0;
+  __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)(&PyDict_Type))), __pyx_t_1, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 87; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __Pyx_GIVEREF(__pyx_t_2);
+  __Pyx_GOTREF(__pyx_v_self->_symbol_map);
+  __Pyx_DECREF(__pyx_v_self->_symbol_map);
+  __pyx_v_self->_symbol_map = ((PyObject*)__pyx_t_2);
+  __pyx_t_2 = 0;
+
+  /* "grasp/formal/hg.pyx":88
+ *         self._deps = list(d['deps'])
+ *         self._symbol_map = dict(d['symbol_map'])
+ *         self._symbols = list(d['symbols'])             # <<<<<<<<<<<<<<
+ *         self._rules = list(d['rules'])
+ *         self._glue = set(d['glue'])
+ */
+  __pyx_t_2 = PyObject_GetItem(__pyx_v_d, __pyx_n_s_symbols); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 88; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_1 = PySequence_List(__pyx_t_2); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 88; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_GIVEREF(__pyx_t_1);
+  __Pyx_GOTREF(__pyx_v_self->_symbols);
+  __Pyx_DECREF(__pyx_v_self->_symbols);
+  __pyx_v_self->_symbols = ((PyObject*)__pyx_t_1);
+  __pyx_t_1 = 0;
+
+  /* "grasp/formal/hg.pyx":89
+ *         self._symbol_map = dict(d['symbol_map'])
+ *         self._symbols = list(d['symbols'])
+ *         self._rules = list(d['rules'])             # <<<<<<<<<<<<<<
+ *         self._glue = set(d['glue'])
+ * 
+ */
+  __pyx_t_1 = PyObject_GetItem(__pyx_v_d, __pyx_n_s_rules); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 89; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = PySequence_List(__pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 89; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __Pyx_GIVEREF(__pyx_t_2);
+  __Pyx_GOTREF(__pyx_v_self->_rules);
+  __Pyx_DECREF(__pyx_v_self->_rules);
+  __pyx_v_self->_rules = ((PyObject*)__pyx_t_2);
+  __pyx_t_2 = 0;
+
+  /* "grasp/formal/hg.pyx":90
+ *         self._symbols = list(d['symbols'])
+ *         self._rules = list(d['rules'])
+ *         self._glue = set(d['glue'])             # <<<<<<<<<<<<<<
+ * 
+ *     def __str__(self):
+ */
+  __pyx_t_2 = PyObject_GetItem(__pyx_v_d, __pyx_n_s_glue); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 90; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_1 = PySet_New(__pyx_t_2); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 90; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __Pyx_GIVEREF(__pyx_t_1);
+  __Pyx_GOTREF(__pyx_v_self->_glue);
+  __Pyx_DECREF(__pyx_v_self->_glue);
+  __pyx_v_self->_glue = ((PyObject*)__pyx_t_1);
+  __pyx_t_1 = 0;
+
+  /* "grasp/formal/hg.pyx":81
+ *                 'glue': self._glue}
+ * 
+ *     def __setstate__(self, d):             # <<<<<<<<<<<<<<
+ *         self._nodes = list(d['nodes'])
+ *         self._edges = list(d['edges'])
+ */
+
+  /* function exit code */
+  __pyx_r = Py_None; __Pyx_INCREF(Py_None);
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.__setstate__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "grasp/formal/hg.pyx":92
+ *         self._glue = set(d['glue'])
  * 
  *     def __str__(self):             # <<<<<<<<<<<<<<
  *         return 'nodes={0}\n{1}\nedges={2}\n{3}'.format(len(self._nodes),
@@ -3054,12 +3738,12 @@ static int __pyx_pf_5grasp_6formal_2hg_10Hypergraph___init__(struct __pyx_obj_5g
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_3__str__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_3__str__(PyObject *__pyx_v_self) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_7__str__(PyObject *__pyx_v_self); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_7__str__(PyObject *__pyx_v_self) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__str__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_2__str__(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self));
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_6__str__(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
@@ -3067,7 +3751,7 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_3__str__(PyObject *__p
 }
 static PyObject *__pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___2generator1(__pyx_GeneratorObject *__pyx_generator, PyObject *__pyx_sent_value); /* proto */
 
-/* "grasp/formal/hg.pyx":58
+/* "grasp/formal/hg.pyx":94
  *     def __str__(self):
  *         return 'nodes={0}\n{1}\nedges={2}\n{3}'.format(len(self._nodes),
  *                                                        '\n'.join(repr(n) for n in self._nodes),             # <<<<<<<<<<<<<<
@@ -3093,7 +3777,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_7__str___genexpr(PyObj
   __Pyx_INCREF(((PyObject *)__pyx_cur_scope->__pyx_outer_scope));
   __Pyx_GIVEREF(__pyx_cur_scope->__pyx_outer_scope);
   {
-    __pyx_GeneratorObject *gen = __Pyx_Generator_New((__pyx_generator_body_t) __pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___2generator1, (PyObject *) __pyx_cur_scope, __pyx_n_s_genexpr, __pyx_n_s_str___locals_genexpr); if (unlikely(!gen)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_GeneratorObject *gen = __Pyx_Generator_New((__pyx_generator_body_t) __pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___2generator1, (PyObject *) __pyx_cur_scope, __pyx_n_s_genexpr, __pyx_n_s_str___locals_genexpr); if (unlikely(!gen)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_cur_scope);
     __Pyx_RefNannyFinishContext();
     return (PyObject *) gen;
@@ -3129,26 +3813,26 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___2generator1(_
     return NULL;
   }
   __pyx_L3_first_run:;
-  if (unlikely(!__pyx_sent_value)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_self)) { __Pyx_RaiseClosureNameError("self"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;} }
+  if (unlikely(!__pyx_sent_value)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_self)) { __Pyx_RaiseClosureNameError("self"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;} }
   if (unlikely(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_self->_nodes == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __pyx_t_1 = __pyx_cur_scope->__pyx_outer_scope->__pyx_v_self->_nodes; __Pyx_INCREF(__pyx_t_1); __pyx_t_2 = 0;
   for (;;) {
     if (__pyx_t_2 >= PyList_GET_SIZE(__pyx_t_1)) break;
     #if CYTHON_COMPILING_IN_CPYTHON
-    __pyx_t_3 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_3); __pyx_t_2++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_3); __pyx_t_2++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     #else
-    __pyx_t_3 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     #endif
     __Pyx_XGOTREF(__pyx_cur_scope->__pyx_v_n);
     __Pyx_XDECREF_SET(__pyx_cur_scope->__pyx_v_n, __pyx_t_3);
     __Pyx_GIVEREF(__pyx_t_3);
     __pyx_t_3 = 0;
-    __pyx_t_3 = PyObject_Repr(__pyx_cur_scope->__pyx_v_n); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PyObject_Repr(__pyx_cur_scope->__pyx_v_n); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_r = __pyx_t_3;
     __pyx_t_3 = 0;
@@ -3165,7 +3849,7 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___2generator1(_
     __pyx_cur_scope->__pyx_t_0 = 0;
     __Pyx_XGOTREF(__pyx_t_1);
     __pyx_t_2 = __pyx_cur_scope->__pyx_t_1;
-    if (unlikely(!__pyx_sent_value)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(!__pyx_sent_value)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
@@ -3185,7 +3869,7 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___2generator1(_
 }
 static PyObject *__pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___5generator2(__pyx_GeneratorObject *__pyx_generator, PyObject *__pyx_sent_value); /* proto */
 
-/* "grasp/formal/hg.pyx":60
+/* "grasp/formal/hg.pyx":96
  *                                                        '\n'.join(repr(n) for n in self._nodes),
  *                                                        len(self._edges),
  *                                                        '\n'.join('{0} rule={1}'.format(e, r)             # <<<<<<<<<<<<<<
@@ -3211,7 +3895,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_7__str___3genexpr(PyOb
   __Pyx_INCREF(((PyObject *)__pyx_cur_scope->__pyx_outer_scope));
   __Pyx_GIVEREF(__pyx_cur_scope->__pyx_outer_scope);
   {
-    __pyx_GeneratorObject *gen = __Pyx_Generator_New((__pyx_generator_body_t) __pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___5generator2, (PyObject *) __pyx_cur_scope, __pyx_n_s_genexpr, __pyx_n_s_str___locals_genexpr); if (unlikely(!gen)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_GeneratorObject *gen = __Pyx_Generator_New((__pyx_generator_body_t) __pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___5generator2, (PyObject *) __pyx_cur_scope, __pyx_n_s_genexpr, __pyx_n_s_str___locals_genexpr); if (unlikely(!gen)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 96; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_cur_scope);
     __Pyx_RefNannyFinishContext();
     return (PyObject *) gen;
@@ -3253,18 +3937,18 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___5generator2(_
     return NULL;
   }
   __pyx_L3_first_run:;
-  if (unlikely(!__pyx_sent_value)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__pyx_sent_value)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 96; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "grasp/formal/hg.pyx":61
+  /* "grasp/formal/hg.pyx":97
  *                                                        len(self._edges),
  *                                                        '\n'.join('{0} rule={1}'.format(e, r)
  *                                                                  for e, r in zip(self._edges, self._rules)))             # <<<<<<<<<<<<<<
  * 
  *     def __len__(self):
  */
-  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_self)) { __Pyx_RaiseClosureNameError("self"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;} }
-  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_self)) { __Pyx_RaiseClosureNameError("self"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;} }
-  __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_self)) { __Pyx_RaiseClosureNameError("self"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;} }
+  if (unlikely(!__pyx_cur_scope->__pyx_outer_scope->__pyx_v_self)) { __Pyx_RaiseClosureNameError("self"); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;} }
+  __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_self->_edges);
   __Pyx_GIVEREF(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_self->_edges);
@@ -3272,16 +3956,16 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___5generator2(_
   __Pyx_INCREF(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_self->_rules);
   __Pyx_GIVEREF(__pyx_cur_scope->__pyx_outer_scope->__pyx_v_self->_rules);
   PyTuple_SET_ITEM(__pyx_t_1, 1, __pyx_cur_scope->__pyx_outer_scope->__pyx_v_self->_rules);
-  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_zip, __pyx_t_1, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_zip, __pyx_t_1, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (likely(PyList_CheckExact(__pyx_t_2)) || PyTuple_CheckExact(__pyx_t_2)) {
     __pyx_t_1 = __pyx_t_2; __Pyx_INCREF(__pyx_t_1); __pyx_t_3 = 0;
     __pyx_t_4 = NULL;
   } else {
-    __pyx_t_3 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_4 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   for (;;) {
@@ -3289,17 +3973,17 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___5generator2(_
       if (likely(PyList_CheckExact(__pyx_t_1))) {
         if (__pyx_t_3 >= PyList_GET_SIZE(__pyx_t_1)) break;
         #if CYTHON_COMPILING_IN_CPYTHON
-        __pyx_t_2 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_3); __Pyx_INCREF(__pyx_t_2); __pyx_t_3++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_3); __Pyx_INCREF(__pyx_t_2); __pyx_t_3++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         #else
-        __pyx_t_2 = PySequence_ITEM(__pyx_t_1, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = PySequence_ITEM(__pyx_t_1, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
         #endif
       } else {
         if (__pyx_t_3 >= PyTuple_GET_SIZE(__pyx_t_1)) break;
         #if CYTHON_COMPILING_IN_CPYTHON
-        __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_3); __Pyx_INCREF(__pyx_t_2); __pyx_t_3++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_3); __Pyx_INCREF(__pyx_t_2); __pyx_t_3++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         #else
-        __pyx_t_2 = PySequence_ITEM(__pyx_t_1, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = PySequence_ITEM(__pyx_t_1, __pyx_t_3); __pyx_t_3++; if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
         #endif
       }
@@ -3309,7 +3993,7 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___5generator2(_
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(exc_type == PyExc_StopIteration || PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+          else {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         }
         break;
       }
@@ -3325,7 +4009,7 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___5generator2(_
       if (unlikely(size != 2)) {
         if (size > 2) __Pyx_RaiseTooManyValuesError(2);
         else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
       #if CYTHON_COMPILING_IN_CPYTHON
       if (likely(PyTuple_CheckExact(sequence))) {
@@ -3338,15 +4022,15 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___5generator2(_
       __Pyx_INCREF(__pyx_t_5);
       __Pyx_INCREF(__pyx_t_6);
       #else
-      __pyx_t_5 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_5 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_6 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_6 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_6);
       #endif
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     } else {
       Py_ssize_t index = -1;
-      __pyx_t_7 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_7 = PyObject_GetIter(__pyx_t_2); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_7);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __pyx_t_8 = Py_TYPE(__pyx_t_7)->tp_iternext;
@@ -3354,7 +4038,7 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___5generator2(_
       __Pyx_GOTREF(__pyx_t_5);
       index = 1; __pyx_t_6 = __pyx_t_8(__pyx_t_7); if (unlikely(!__pyx_t_6)) goto __pyx_L6_unpacking_failed;
       __Pyx_GOTREF(__pyx_t_6);
-      if (__Pyx_IternextUnpackEndCheck(__pyx_t_8(__pyx_t_7), 2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      if (__Pyx_IternextUnpackEndCheck(__pyx_t_8(__pyx_t_7), 2) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __pyx_t_8 = NULL;
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
       goto __pyx_L7_unpacking_done;
@@ -3362,7 +4046,7 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___5generator2(_
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
       __pyx_t_8 = NULL;
       if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __pyx_L7_unpacking_done:;
     }
     __Pyx_XGOTREF(__pyx_cur_scope->__pyx_v_e);
@@ -3374,14 +4058,14 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___5generator2(_
     __Pyx_GIVEREF(__pyx_t_6);
     __pyx_t_6 = 0;
 
-    /* "grasp/formal/hg.pyx":60
+    /* "grasp/formal/hg.pyx":96
  *                                                        '\n'.join(repr(n) for n in self._nodes),
  *                                                        len(self._edges),
  *                                                        '\n'.join('{0} rule={1}'.format(e, r)             # <<<<<<<<<<<<<<
  *                                                                  for e, r in zip(self._edges, self._rules)))
  * 
  */
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_0_rule_1, __pyx_n_s_format); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_0_rule_1, __pyx_n_s_format); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 96; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_6);
     __pyx_t_5 = NULL;
     __pyx_t_9 = 0;
@@ -3395,7 +4079,7 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___5generator2(_
         __pyx_t_9 = 1;
       }
     }
-    __pyx_t_7 = PyTuple_New(2+__pyx_t_9); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_7 = PyTuple_New(2+__pyx_t_9); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 96; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_7);
     if (__pyx_t_5) {
       __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_5); __pyx_t_5 = NULL;
@@ -3406,7 +4090,7 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___5generator2(_
     __Pyx_INCREF(__pyx_cur_scope->__pyx_v_r);
     __Pyx_GIVEREF(__pyx_cur_scope->__pyx_v_r);
     PyTuple_SET_ITEM(__pyx_t_7, 1+__pyx_t_9, __pyx_cur_scope->__pyx_v_r);
-    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_7, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_7, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 96; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
@@ -3427,9 +4111,9 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___5generator2(_
     __Pyx_XGOTREF(__pyx_t_1);
     __pyx_t_3 = __pyx_cur_scope->__pyx_t_1;
     __pyx_t_4 = __pyx_cur_scope->__pyx_t_2;
-    if (unlikely(!__pyx_sent_value)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(!__pyx_sent_value)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 96; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-    /* "grasp/formal/hg.pyx":61
+    /* "grasp/formal/hg.pyx":97
  *                                                        len(self._edges),
  *                                                        '\n'.join('{0} rule={1}'.format(e, r)
  *                                                                  for e, r in zip(self._edges, self._rules)))             # <<<<<<<<<<<<<<
@@ -3439,7 +4123,7 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___5generator2(_
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "grasp/formal/hg.pyx":60
+  /* "grasp/formal/hg.pyx":96
  *                                                        '\n'.join(repr(n) for n in self._nodes),
  *                                                        len(self._edges),
  *                                                        '\n'.join('{0} rule={1}'.format(e, r)             # <<<<<<<<<<<<<<
@@ -3465,15 +4149,15 @@ static PyObject *__pyx_gb_5grasp_6formal_2hg_10Hypergraph_7__str___5generator2(_
   return NULL;
 }
 
-/* "grasp/formal/hg.pyx":56
- *         self._glue = set()
+/* "grasp/formal/hg.pyx":92
+ *         self._glue = set(d['glue'])
  * 
  *     def __str__(self):             # <<<<<<<<<<<<<<
  *         return 'nodes={0}\n{1}\nedges={2}\n{3}'.format(len(self._nodes),
  *                                                        '\n'.join(repr(n) for n in self._nodes),
  */
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_2__str__(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_6__str__(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self) {
   struct __pyx_obj_5grasp_6formal_2hg___pyx_scope_struct_2___str__ *__pyx_cur_scope;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
@@ -3500,7 +4184,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_2__str__(struct __pyx_
   __Pyx_INCREF((PyObject *)__pyx_cur_scope->__pyx_v_self);
   __Pyx_GIVEREF((PyObject *)__pyx_cur_scope->__pyx_v_self);
 
-  /* "grasp/formal/hg.pyx":57
+  /* "grasp/formal/hg.pyx":93
  * 
  *     def __str__(self):
  *         return 'nodes={0}\n{1}\nedges={2}\n{3}'.format(len(self._nodes),             # <<<<<<<<<<<<<<
@@ -3508,33 +4192,33 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_2__str__(struct __pyx_
  *                                                        len(self._edges),
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_nodes_0_1_edges_2_3, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_nodes_0_1_edges_2_3, __pyx_n_s_format); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 93; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = __pyx_cur_scope->__pyx_v_self->_nodes;
   __Pyx_INCREF(__pyx_t_3);
   if (unlikely(__pyx_t_3 == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "object of type 'NoneType' has no len()");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 93; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_4 = PyList_GET_SIZE(__pyx_t_3); if (unlikely(__pyx_t_4 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = PyList_GET_SIZE(__pyx_t_3); if (unlikely(__pyx_t_4 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 93; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = PyInt_FromSsize_t(__pyx_t_4); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = PyInt_FromSsize_t(__pyx_t_4); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 93; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
 
-  /* "grasp/formal/hg.pyx":58
+  /* "grasp/formal/hg.pyx":94
  *     def __str__(self):
  *         return 'nodes={0}\n{1}\nedges={2}\n{3}'.format(len(self._nodes),
  *                                                        '\n'.join(repr(n) for n in self._nodes),             # <<<<<<<<<<<<<<
  *                                                        len(self._edges),
  *                                                        '\n'.join('{0} rule={1}'.format(e, r)
  */
-  __pyx_t_5 = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_7__str___genexpr(((PyObject*)__pyx_cur_scope)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_7__str___genexpr(((PyObject*)__pyx_cur_scope)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_6 = __Pyx_PyString_Join(__pyx_kp_s__2, __pyx_t_5); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = __Pyx_PyString_Join(__pyx_kp_s__2, __pyx_t_5); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-  /* "grasp/formal/hg.pyx":59
+  /* "grasp/formal/hg.pyx":95
  *         return 'nodes={0}\n{1}\nedges={2}\n{3}'.format(len(self._nodes),
  *                                                        '\n'.join(repr(n) for n in self._nodes),
  *                                                        len(self._edges),             # <<<<<<<<<<<<<<
@@ -3545,23 +4229,23 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_2__str__(struct __pyx_
   __Pyx_INCREF(__pyx_t_5);
   if (unlikely(__pyx_t_5 == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "object of type 'NoneType' has no len()");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_4 = PyList_GET_SIZE(__pyx_t_5); if (unlikely(__pyx_t_4 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = PyList_GET_SIZE(__pyx_t_5); if (unlikely(__pyx_t_4 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_5 = PyInt_FromSsize_t(__pyx_t_4); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = PyInt_FromSsize_t(__pyx_t_4); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 95; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
 
-  /* "grasp/formal/hg.pyx":60
+  /* "grasp/formal/hg.pyx":96
  *                                                        '\n'.join(repr(n) for n in self._nodes),
  *                                                        len(self._edges),
  *                                                        '\n'.join('{0} rule={1}'.format(e, r)             # <<<<<<<<<<<<<<
  *                                                                  for e, r in zip(self._edges, self._rules)))
  * 
  */
-  __pyx_t_7 = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_7__str___3genexpr(((PyObject*)__pyx_cur_scope)); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_7 = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_7__str___3genexpr(((PyObject*)__pyx_cur_scope)); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 96; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_7);
-  __pyx_t_8 = __Pyx_PyString_Join(__pyx_kp_s__2, __pyx_t_7); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_8 = __Pyx_PyString_Join(__pyx_kp_s__2, __pyx_t_7); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 96; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_8);
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   __pyx_t_7 = NULL;
@@ -3576,7 +4260,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_2__str__(struct __pyx_
       __pyx_t_4 = 1;
     }
   }
-  __pyx_t_9 = PyTuple_New(4+__pyx_t_4); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_9 = PyTuple_New(4+__pyx_t_4); if (unlikely(!__pyx_t_9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 93; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_9);
   if (__pyx_t_7) {
     __Pyx_GIVEREF(__pyx_t_7); PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_7); __pyx_t_7 = NULL;
@@ -3593,7 +4277,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_2__str__(struct __pyx_
   __pyx_t_6 = 0;
   __pyx_t_5 = 0;
   __pyx_t_8 = 0;
-  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_9, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_9, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 93; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
@@ -3601,8 +4285,8 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_2__str__(struct __pyx_
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":56
- *         self._glue = set()
+  /* "grasp/formal/hg.pyx":92
+ *         self._glue = set(d['glue'])
  * 
  *     def __str__(self):             # <<<<<<<<<<<<<<
  *         return 'nodes={0}\n{1}\nedges={2}\n{3}'.format(len(self._nodes),
@@ -3628,7 +4312,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_2__str__(struct __pyx_
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":63
+/* "grasp/formal/hg.pyx":99
  *                                                                  for e, r in zip(self._edges, self._rules)))
  * 
  *     def __len__(self):             # <<<<<<<<<<<<<<
@@ -3637,24 +4321,24 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_2__str__(struct __pyx_
  */
 
 /* Python wrapper */
-static Py_ssize_t __pyx_pw_5grasp_6formal_2hg_10Hypergraph_5__len__(PyObject *__pyx_v_self); /*proto*/
-static Py_ssize_t __pyx_pw_5grasp_6formal_2hg_10Hypergraph_5__len__(PyObject *__pyx_v_self) {
+static Py_ssize_t __pyx_pw_5grasp_6formal_2hg_10Hypergraph_9__len__(PyObject *__pyx_v_self); /*proto*/
+static Py_ssize_t __pyx_pw_5grasp_6formal_2hg_10Hypergraph_9__len__(PyObject *__pyx_v_self) {
   Py_ssize_t __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__len__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_4__len__(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self));
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_8__len__(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static Py_ssize_t __pyx_pf_5grasp_6formal_2hg_10Hypergraph_4__len__(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self) {
+static Py_ssize_t __pyx_pf_5grasp_6formal_2hg_10Hypergraph_8__len__(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self) {
   Py_ssize_t __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__len__", 0);
 
-  /* "grasp/formal/hg.pyx":64
+  /* "grasp/formal/hg.pyx":100
  * 
  *     def __len__(self):
  *         return self.n_edges()             # <<<<<<<<<<<<<<
@@ -3664,7 +4348,7 @@ static Py_ssize_t __pyx_pf_5grasp_6formal_2hg_10Hypergraph_4__len__(struct __pyx
   __pyx_r = ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self->__pyx_vtab)->n_edges(__pyx_v_self, 0);
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":63
+  /* "grasp/formal/hg.pyx":99
  *                                                                  for e, r in zip(self._edges, self._rules)))
  * 
  *     def __len__(self):             # <<<<<<<<<<<<<<
@@ -3678,7 +4362,7 @@ static Py_ssize_t __pyx_pf_5grasp_6formal_2hg_10Hypergraph_4__len__(struct __pyx
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":66
+/* "grasp/formal/hg.pyx":102
  *         return self.n_edges()
  * 
  *     cdef _add_node(self, Node node):             # <<<<<<<<<<<<<<
@@ -3698,7 +4382,7 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph__add_node(struct __pyx_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("_add_node", 0);
 
-  /* "grasp/formal/hg.pyx":72
+  /* "grasp/formal/hg.pyx":108
  *         :return: index of the node
  *         """
  *         cdef id_t n = len(self._nodes)             # <<<<<<<<<<<<<<
@@ -3709,13 +4393,13 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph__add_node(struct __pyx_
   __Pyx_INCREF(__pyx_t_1);
   if (unlikely(__pyx_t_1 == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "object of type 'NoneType' has no len()");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 108; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_2 = PyList_GET_SIZE(__pyx_t_1); if (unlikely(__pyx_t_2 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 72; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyList_GET_SIZE(__pyx_t_1); if (unlikely(__pyx_t_2 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 108; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_n = __pyx_t_2;
 
-  /* "grasp/formal/hg.pyx":73
+  /* "grasp/formal/hg.pyx":109
  *         """
  *         cdef id_t n = len(self._nodes)
  *         self._nodes.append(node)             # <<<<<<<<<<<<<<
@@ -3724,11 +4408,11 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph__add_node(struct __pyx_
  */
   if (unlikely(__pyx_v_self->_nodes == Py_None)) {
     PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%s'", "append");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 73; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 109; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_3 = __Pyx_PyList_Append(__pyx_v_self->_nodes, ((PyObject *)__pyx_v_node)); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 73; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyList_Append(__pyx_v_self->_nodes, ((PyObject *)__pyx_v_node)); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 109; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "grasp/formal/hg.pyx":74
+  /* "grasp/formal/hg.pyx":110
  *         cdef id_t n = len(self._nodes)
  *         self._nodes.append(node)
  *         self._bs.append([])             # <<<<<<<<<<<<<<
@@ -3737,14 +4421,14 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph__add_node(struct __pyx_
  */
   if (unlikely(__pyx_v_self->_bs == Py_None)) {
     PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%s'", "append");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 110; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 110; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = __Pyx_PyList_Append(__pyx_v_self->_bs, __pyx_t_1); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 74; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyList_Append(__pyx_v_self->_bs, __pyx_t_1); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 110; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "grasp/formal/hg.pyx":75
+  /* "grasp/formal/hg.pyx":111
  *         self._nodes.append(node)
  *         self._bs.append([])
  *         self._fs.append(set())             # <<<<<<<<<<<<<<
@@ -3753,14 +4437,14 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph__add_node(struct __pyx_
  */
   if (unlikely(__pyx_v_self->_fs == Py_None)) {
     PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%s'", "append");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 75; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 111; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_1 = PySet_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 75; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PySet_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 111; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = __Pyx_PyList_Append(__pyx_v_self->_fs, __pyx_t_1); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 75; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyList_Append(__pyx_v_self->_fs, __pyx_t_1); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 111; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "grasp/formal/hg.pyx":76
+  /* "grasp/formal/hg.pyx":112
  *         self._bs.append([])
  *         self._fs.append(set())
  *         self._deps.append(set())             # <<<<<<<<<<<<<<
@@ -3769,14 +4453,14 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph__add_node(struct __pyx_
  */
   if (unlikely(__pyx_v_self->_deps == Py_None)) {
     PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%s'", "append");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 76; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 112; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_1 = PySet_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 76; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PySet_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 112; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_3 = __Pyx_PyList_Append(__pyx_v_self->_deps, __pyx_t_1); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 76; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyList_Append(__pyx_v_self->_deps, __pyx_t_1); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 112; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "grasp/formal/hg.pyx":77
+  /* "grasp/formal/hg.pyx":113
  *         self._fs.append(set())
  *         self._deps.append(set())
  *         return n             # <<<<<<<<<<<<<<
@@ -3784,13 +4468,13 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph__add_node(struct __pyx_
  *     cdef _add_edge(self, Edge edge):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_v_n); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 77; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_v_n); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 113; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":66
+  /* "grasp/formal/hg.pyx":102
  *         return self.n_edges()
  * 
  *     cdef _add_node(self, Node node):             # <<<<<<<<<<<<<<
@@ -3809,7 +4493,7 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph__add_node(struct __pyx_
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":79
+/* "grasp/formal/hg.pyx":115
  *         return n
  * 
  *     cdef _add_edge(self, Edge edge):             # <<<<<<<<<<<<<<
@@ -3834,7 +4518,7 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph__add_edge(struct __pyx_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("_add_edge", 0);
 
-  /* "grasp/formal/hg.pyx":85
+  /* "grasp/formal/hg.pyx":121
  *         :return: index of the edge
  *         """
  *         cdef id_t e = len(self._edges)             # <<<<<<<<<<<<<<
@@ -3845,13 +4529,13 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph__add_edge(struct __pyx_
   __Pyx_INCREF(__pyx_t_1);
   if (unlikely(__pyx_t_1 == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "object of type 'NoneType' has no len()");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 85; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 121; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_2 = PyList_GET_SIZE(__pyx_t_1); if (unlikely(__pyx_t_2 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 85; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyList_GET_SIZE(__pyx_t_1); if (unlikely(__pyx_t_2 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 121; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_e = __pyx_t_2;
 
-  /* "grasp/formal/hg.pyx":86
+  /* "grasp/formal/hg.pyx":122
  *         """
  *         cdef id_t e = len(self._edges)
  *         self._edges.append(edge)             # <<<<<<<<<<<<<<
@@ -3860,11 +4544,11 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph__add_edge(struct __pyx_
  */
   if (unlikely(__pyx_v_self->_edges == Py_None)) {
     PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%s'", "append");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 122; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_3 = __Pyx_PyList_Append(__pyx_v_self->_edges, ((PyObject *)__pyx_v_edge)); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 86; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyList_Append(__pyx_v_self->_edges, ((PyObject *)__pyx_v_edge)); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 122; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "grasp/formal/hg.pyx":87
+  /* "grasp/formal/hg.pyx":123
  *         cdef id_t e = len(self._edges)
  *         self._edges.append(edge)
  *         self._bs[edge.head].append(e)             # <<<<<<<<<<<<<<
@@ -3873,26 +4557,26 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph__add_edge(struct __pyx_
  */
   if (unlikely(__pyx_v_self->_bs == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 87; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 123; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_bs, __pyx_v_edge->head, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 87; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_bs, __pyx_v_edge->head, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 123; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_4 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 87; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 123; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_3 = __Pyx_PyObject_Append(__pyx_t_1, __pyx_t_4); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 87; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyObject_Append(__pyx_t_1, __pyx_t_4); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 123; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "grasp/formal/hg.pyx":89
+  /* "grasp/formal/hg.pyx":125
  *         self._bs[edge.head].append(e)
  *         cdef id_t n
  *         for n in edge.tail:             # <<<<<<<<<<<<<<
  *             (<set>self._fs[n]).add(e)
  *             (<set>self._deps[edge.head]).add(n)
  */
-  __pyx_t_4 = PyObject_GetIter(__pyx_v_edge->tail); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 89; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = PyObject_GetIter(__pyx_v_edge->tail); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 125; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = Py_TYPE(__pyx_t_4)->tp_iternext; if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 89; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = Py_TYPE(__pyx_t_4)->tp_iternext; if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 125; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   for (;;) {
     {
       __pyx_t_1 = __pyx_t_5(__pyx_t_4);
@@ -3900,17 +4584,17 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph__add_edge(struct __pyx_
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(exc_type == PyExc_StopIteration || PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else {__pyx_filename = __pyx_f[0]; __pyx_lineno = 89; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+          else {__pyx_filename = __pyx_f[0]; __pyx_lineno = 125; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         }
         break;
       }
       __Pyx_GOTREF(__pyx_t_1);
     }
-    __pyx_t_6 = __Pyx_PyInt_As_long(__pyx_t_1); if (unlikely((__pyx_t_6 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 89; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_6 = __Pyx_PyInt_As_long(__pyx_t_1); if (unlikely((__pyx_t_6 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 125; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_v_n = __pyx_t_6;
 
-    /* "grasp/formal/hg.pyx":90
+    /* "grasp/formal/hg.pyx":126
  *         cdef id_t n
  *         for n in edge.tail:
  *             (<set>self._fs[n]).add(e)             # <<<<<<<<<<<<<<
@@ -3919,21 +4603,21 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph__add_edge(struct __pyx_
  */
     if (unlikely(__pyx_v_self->_fs == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 90; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 126; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
-    __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_fs, __pyx_v_n, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 90; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+    __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_fs, __pyx_v_n, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 126; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
     __Pyx_GOTREF(__pyx_t_1);
     if (unlikely(__pyx_t_1 == Py_None)) {
       PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%s'", "add");
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 90; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 126; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
-    __pyx_t_7 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 90; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_7 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 126; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_3 = PySet_Add(((PyObject*)__pyx_t_1), __pyx_t_7); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 90; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PySet_Add(((PyObject*)__pyx_t_1), __pyx_t_7); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 126; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-    /* "grasp/formal/hg.pyx":91
+    /* "grasp/formal/hg.pyx":127
  *         for n in edge.tail:
  *             (<set>self._fs[n]).add(e)
  *             (<set>self._deps[edge.head]).add(n)             # <<<<<<<<<<<<<<
@@ -3942,21 +4626,21 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph__add_edge(struct __pyx_
  */
     if (unlikely(__pyx_v_self->_deps == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 91; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
-    __pyx_t_7 = __Pyx_GetItemInt_List(__pyx_v_self->_deps, __pyx_v_edge->head, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_7 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 91; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+    __pyx_t_7 = __Pyx_GetItemInt_List(__pyx_v_self->_deps, __pyx_v_edge->head, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_7 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
     __Pyx_GOTREF(__pyx_t_7);
     if (unlikely(__pyx_t_7 == Py_None)) {
       PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%s'", "add");
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 91; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
-    __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_v_n); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 91; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_v_n); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = PySet_Add(((PyObject*)__pyx_t_7), __pyx_t_1); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 91; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PySet_Add(((PyObject*)__pyx_t_7), __pyx_t_1); if (unlikely(__pyx_t_3 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 127; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "grasp/formal/hg.pyx":89
+    /* "grasp/formal/hg.pyx":125
  *         self._bs[edge.head].append(e)
  *         cdef id_t n
  *         for n in edge.tail:             # <<<<<<<<<<<<<<
@@ -3966,7 +4650,7 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph__add_edge(struct __pyx_
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
-  /* "grasp/formal/hg.pyx":92
+  /* "grasp/formal/hg.pyx":128
  *             (<set>self._fs[n]).add(e)
  *             (<set>self._deps[edge.head]).add(n)
  *         return e             # <<<<<<<<<<<<<<
@@ -3974,13 +4658,13 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph__add_edge(struct __pyx_
  *     cpdef id_t add_node(self, Symbol label):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_4 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 92; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_4 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 128; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_4);
   __pyx_r = __pyx_t_4;
   __pyx_t_4 = 0;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":79
+  /* "grasp/formal/hg.pyx":115
  *         return n
  * 
  *     cdef _add_edge(self, Edge edge):             # <<<<<<<<<<<<<<
@@ -4001,7 +4685,7 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph__add_edge(struct __pyx_
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":94
+/* "grasp/formal/hg.pyx":130
  *         return e
  * 
  *     cpdef id_t add_node(self, Symbol label):             # <<<<<<<<<<<<<<
@@ -4009,7 +4693,7 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph__add_edge(struct __pyx_
  *         Map a symbol to a node (constructing the node only if necessary).
  */
 
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_7add_node(PyObject *__pyx_v_self, PyObject *__pyx_v_label); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_11add_node(PyObject *__pyx_v_self, PyObject *__pyx_v_label); /*proto*/
 static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_add_node(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_v_label, int __pyx_skip_dispatch) {
   __pyx_t_5grasp_6ptypes_id_t __pyx_v_n;
   __pyx_t_5grasp_6ptypes_id_t __pyx_r;
@@ -4029,9 +4713,9 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_add_n
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_add_node); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_add_node); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_7add_node)) {
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_11add_node)) {
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
       if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_3))) {
@@ -4044,21 +4728,21 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_add_n
         }
       }
       if (!__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, ((PyObject *)__pyx_v_label)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, ((PyObject *)__pyx_v_label)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_5 = PyTuple_New(1+1); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_5);
         __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_4); __pyx_t_4 = NULL;
         __Pyx_INCREF(((PyObject *)__pyx_v_label));
         __Pyx_GIVEREF(((PyObject *)__pyx_v_label));
         PyTuple_SET_ITEM(__pyx_t_5, 0+1, ((PyObject *)__pyx_v_label));
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       }
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      __pyx_t_6 = __Pyx_PyInt_As_long(__pyx_t_2); if (unlikely((__pyx_t_6 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_6 = __Pyx_PyInt_As_long(__pyx_t_2); if (unlikely((__pyx_t_6 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __pyx_r = __pyx_t_6;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -4067,7 +4751,7 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_add_n
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/formal/hg.pyx":100
+  /* "grasp/formal/hg.pyx":136
  *         :return: index of the corresponding node
  *         """
  *         cdef id_t n = self._symbol_map.get(label, -1)             # <<<<<<<<<<<<<<
@@ -4076,15 +4760,15 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_add_n
  */
   if (unlikely(__pyx_v_self->_symbol_map == Py_None)) {
     PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%s'", "get");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 100; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 136; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_1 = __Pyx_PyDict_GetItemDefault(__pyx_v_self->_symbol_map, ((PyObject *)__pyx_v_label), __pyx_int_neg_1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 100; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyDict_GetItemDefault(__pyx_v_self->_symbol_map, ((PyObject *)__pyx_v_label), __pyx_int_neg_1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 136; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_6 = __Pyx_PyInt_As_long(__pyx_t_1); if (unlikely((__pyx_t_6 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 100; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_6 = __Pyx_PyInt_As_long(__pyx_t_1); if (unlikely((__pyx_t_6 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 136; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_n = __pyx_t_6;
 
-  /* "grasp/formal/hg.pyx":101
+  /* "grasp/formal/hg.pyx":137
  *         """
  *         cdef id_t n = self._symbol_map.get(label, -1)
  *         if n == -1:             # <<<<<<<<<<<<<<
@@ -4094,48 +4778,48 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_add_n
   __pyx_t_7 = ((__pyx_v_n == -1) != 0);
   if (__pyx_t_7) {
 
-    /* "grasp/formal/hg.pyx":102
+    /* "grasp/formal/hg.pyx":138
  *         cdef id_t n = self._symbol_map.get(label, -1)
  *         if n == -1:
  *             n = self._add_node(Node(label))             # <<<<<<<<<<<<<<
  *             self._symbol_map[label] = n
  *         return n
  */
-    __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 138; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_INCREF(((PyObject *)__pyx_v_label));
     __Pyx_GIVEREF(((PyObject *)__pyx_v_label));
     PyTuple_SET_ITEM(__pyx_t_1, 0, ((PyObject *)__pyx_v_label));
-    __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_5grasp_6formal_2hg_Node)), __pyx_t_1, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_5grasp_6formal_2hg_Node)), __pyx_t_1, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 138; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self->__pyx_vtab)->_add_node(__pyx_v_self, ((struct __pyx_obj_5grasp_6formal_2hg_Node *)__pyx_t_2)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self->__pyx_vtab)->_add_node(__pyx_v_self, ((struct __pyx_obj_5grasp_6formal_2hg_Node *)__pyx_t_2)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 138; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_6 = __Pyx_PyInt_As_long(__pyx_t_1); if (unlikely((__pyx_t_6 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 102; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_6 = __Pyx_PyInt_As_long(__pyx_t_1); if (unlikely((__pyx_t_6 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 138; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_v_n = __pyx_t_6;
 
-    /* "grasp/formal/hg.pyx":103
+    /* "grasp/formal/hg.pyx":139
  *         if n == -1:
  *             n = self._add_node(Node(label))
  *             self._symbol_map[label] = n             # <<<<<<<<<<<<<<
  *         return n
  * 
  */
-    __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_v_n); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 103; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_v_n); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 139; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     if (unlikely(__pyx_v_self->_symbol_map == Py_None)) {
       PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 103; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 139; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
-    if (unlikely(PyDict_SetItem(__pyx_v_self->_symbol_map, ((PyObject *)__pyx_v_label), __pyx_t_1) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 103; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(PyDict_SetItem(__pyx_v_self->_symbol_map, ((PyObject *)__pyx_v_label), __pyx_t_1) < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 139; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     goto __pyx_L3;
   }
   __pyx_L3:;
 
-  /* "grasp/formal/hg.pyx":104
+  /* "grasp/formal/hg.pyx":140
  *             n = self._add_node(Node(label))
  *             self._symbol_map[label] = n
  *         return n             # <<<<<<<<<<<<<<
@@ -4145,7 +4829,7 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_add_n
   __pyx_r = __pyx_v_n;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":94
+  /* "grasp/formal/hg.pyx":130
  *         return e
  * 
  *     cpdef id_t add_node(self, Symbol label):             # <<<<<<<<<<<<<<
@@ -4168,17 +4852,17 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_add_n
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_7add_node(PyObject *__pyx_v_self, PyObject *__pyx_v_label); /*proto*/
-static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_6add_node[] = "\n        Map a symbol to a node (constructing the node only if necessary).\n        :param label: a Symbol\n        :return: index of the corresponding node\n        ";
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_7add_node(PyObject *__pyx_v_self, PyObject *__pyx_v_label) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_11add_node(PyObject *__pyx_v_self, PyObject *__pyx_v_label); /*proto*/
+static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_10add_node[] = "\n        Map a symbol to a node (constructing the node only if necessary).\n        :param label: a Symbol\n        :return: index of the corresponding node\n        ";
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_11add_node(PyObject *__pyx_v_self, PyObject *__pyx_v_label) {
   CYTHON_UNUSED int __pyx_lineno = 0;
   CYTHON_UNUSED const char *__pyx_filename = NULL;
   CYTHON_UNUSED int __pyx_clineno = 0;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("add_node (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_label), __pyx_ptype_5grasp_3cfg_6symbol_Symbol, 1, "label", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_6add_node(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *)__pyx_v_label));
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_label), __pyx_ptype_5grasp_3cfg_6symbol_Symbol, 1, "label", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_10add_node(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *)__pyx_v_label));
 
   /* function exit code */
   goto __pyx_L0;
@@ -4189,7 +4873,7 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_7add_node(PyObject *__
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_6add_node(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_v_label) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_10add_node(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_v_label) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -4198,7 +4882,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_6add_node(struct __pyx
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("add_node", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_f_5grasp_6formal_2hg_10Hypergraph_add_node(__pyx_v_self, __pyx_v_label, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_f_5grasp_6formal_2hg_10Hypergraph_add_node(__pyx_v_self, __pyx_v_label, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -4215,7 +4899,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_6add_node(struct __pyx
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":106
+/* "grasp/formal/hg.pyx":142
  *         return n
  * 
  *     cpdef id_t add_xedge(self, Symbol lhs, tuple rhs, weight_t weight, Rule rule, bint glue=False):             # <<<<<<<<<<<<<<
@@ -4223,7 +4907,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_6add_node(struct __pyx
  *         cdef tuple tail = tuple([self.add_node(sym) for sym in rhs])
  */
 
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_9add_xedge(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_13add_xedge(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
 static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_add_xedge(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_v_lhs, PyObject *__pyx_v_rhs, __pyx_t_5grasp_6ptypes_weight_t __pyx_v_weight, struct __pyx_obj_5grasp_3cfg_4rule_Rule *__pyx_v_rule, int __pyx_skip_dispatch, struct __pyx_opt_args_5grasp_6formal_2hg_10Hypergraph_add_xedge *__pyx_optional_args) {
   int __pyx_v_glue = ((int)0);
   __pyx_t_5grasp_6ptypes_id_t __pyx_v_head;
@@ -4256,12 +4940,12 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_add_x
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_add_xedge); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_add_xedge); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_9add_xedge)) {
-      __pyx_t_3 = PyFloat_FromDouble(__pyx_v_weight); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_13add_xedge)) {
+      __pyx_t_3 = PyFloat_FromDouble(__pyx_v_weight); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_4 = __Pyx_PyBool_FromLong(__pyx_v_glue); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = __Pyx_PyBool_FromLong(__pyx_v_glue); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_5 = __pyx_t_1; __pyx_t_6 = NULL;
@@ -4276,7 +4960,7 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_add_x
           __pyx_t_7 = 1;
         }
       }
-      __pyx_t_8 = PyTuple_New(5+__pyx_t_7); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_8 = PyTuple_New(5+__pyx_t_7); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_8);
       if (__pyx_t_6) {
         __Pyx_GIVEREF(__pyx_t_6); PyTuple_SET_ITEM(__pyx_t_8, 0, __pyx_t_6); __pyx_t_6 = NULL;
@@ -4296,11 +4980,11 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_add_x
       PyTuple_SET_ITEM(__pyx_t_8, 4+__pyx_t_7, __pyx_t_4);
       __pyx_t_3 = 0;
       __pyx_t_4 = 0;
-      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_8, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_8, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_t_9 = __Pyx_PyInt_As_long(__pyx_t_2); if (unlikely((__pyx_t_9 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_9 = __Pyx_PyInt_As_long(__pyx_t_2); if (unlikely((__pyx_t_9 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __pyx_r = __pyx_t_9;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -4309,7 +4993,7 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_add_x
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/formal/hg.pyx":107
+  /* "grasp/formal/hg.pyx":143
  * 
  *     cpdef id_t add_xedge(self, Symbol lhs, tuple rhs, weight_t weight, Rule rule, bint glue=False):
  *         cdef id_t head = self.add_node(lhs)             # <<<<<<<<<<<<<<
@@ -4318,55 +5002,55 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_add_x
  */
   __pyx_v_head = ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self->__pyx_vtab)->add_node(__pyx_v_self, __pyx_v_lhs, 0);
 
-  /* "grasp/formal/hg.pyx":108
+  /* "grasp/formal/hg.pyx":144
  *     cpdef id_t add_xedge(self, Symbol lhs, tuple rhs, weight_t weight, Rule rule, bint glue=False):
  *         cdef id_t head = self.add_node(lhs)
  *         cdef tuple tail = tuple([self.add_node(sym) for sym in rhs])             # <<<<<<<<<<<<<<
  *         cdef id_t e = self._add_edge(Edge(head, tail, weight))
  *         self._rules.append(rule)
  */
-  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 108; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   if (unlikely(__pyx_v_rhs == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 108; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __pyx_t_2 = __pyx_v_rhs; __Pyx_INCREF(__pyx_t_2); __pyx_t_7 = 0;
   for (;;) {
     if (__pyx_t_7 >= PyTuple_GET_SIZE(__pyx_t_2)) break;
     #if CYTHON_COMPILING_IN_CPYTHON
-    __pyx_t_5 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_7); __Pyx_INCREF(__pyx_t_5); __pyx_t_7++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 108; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = PyTuple_GET_ITEM(__pyx_t_2, __pyx_t_7); __Pyx_INCREF(__pyx_t_5); __pyx_t_7++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     #else
-    __pyx_t_5 = PySequence_ITEM(__pyx_t_2, __pyx_t_7); __pyx_t_7++; if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 108; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = PySequence_ITEM(__pyx_t_2, __pyx_t_7); __pyx_t_7++; if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
     #endif
     __Pyx_XDECREF_SET(__pyx_v_sym, __pyx_t_5);
     __pyx_t_5 = 0;
-    if (!(likely(((__pyx_v_sym) == Py_None) || likely(__Pyx_TypeTest(__pyx_v_sym, __pyx_ptype_5grasp_3cfg_6symbol_Symbol))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 108; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __pyx_t_5 = __Pyx_PyInt_From_long(((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self->__pyx_vtab)->add_node(__pyx_v_self, ((struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *)__pyx_v_sym), 0)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 108; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!(likely(((__pyx_v_sym) == Py_None) || likely(__Pyx_TypeTest(__pyx_v_sym, __pyx_ptype_5grasp_3cfg_6symbol_Symbol))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = __Pyx_PyInt_From_long(((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self->__pyx_vtab)->add_node(__pyx_v_self, ((struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *)__pyx_v_sym), 0)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
-    if (unlikely(__Pyx_ListComp_Append(__pyx_t_1, (PyObject*)__pyx_t_5))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 108; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (unlikely(__Pyx_ListComp_Append(__pyx_t_1, (PyObject*)__pyx_t_5))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   }
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = PyList_AsTuple(((PyObject*)__pyx_t_1)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 108; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyList_AsTuple(((PyObject*)__pyx_t_1)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_tail = ((PyObject*)__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "grasp/formal/hg.pyx":109
+  /* "grasp/formal/hg.pyx":145
  *         cdef id_t head = self.add_node(lhs)
  *         cdef tuple tail = tuple([self.add_node(sym) for sym in rhs])
  *         cdef id_t e = self._add_edge(Edge(head, tail, weight))             # <<<<<<<<<<<<<<
  *         self._rules.append(rule)
  *         if glue:
  */
-  __pyx_t_2 = __Pyx_PyInt_From_long(__pyx_v_head); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 109; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyInt_From_long(__pyx_v_head); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_1 = PyFloat_FromDouble(__pyx_v_weight); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 109; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyFloat_FromDouble(__pyx_v_weight); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_5 = PyTuple_New(3); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 109; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = PyTuple_New(3); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_GIVEREF(__pyx_t_2);
   PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_2);
@@ -4377,17 +5061,17 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_add_x
   PyTuple_SET_ITEM(__pyx_t_5, 2, __pyx_t_1);
   __pyx_t_2 = 0;
   __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_5grasp_6formal_2hg_Edge)), __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 109; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_5grasp_6formal_2hg_Edge)), __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_5 = ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self->__pyx_vtab)->_add_edge(__pyx_v_self, ((struct __pyx_obj_5grasp_6formal_2hg_Edge *)__pyx_t_1)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 109; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self->__pyx_vtab)->_add_edge(__pyx_v_self, ((struct __pyx_obj_5grasp_6formal_2hg_Edge *)__pyx_t_1)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_9 = __Pyx_PyInt_As_long(__pyx_t_5); if (unlikely((__pyx_t_9 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 109; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_9 = __Pyx_PyInt_As_long(__pyx_t_5); if (unlikely((__pyx_t_9 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 145; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __pyx_v_e = __pyx_t_9;
 
-  /* "grasp/formal/hg.pyx":110
+  /* "grasp/formal/hg.pyx":146
  *         cdef tuple tail = tuple([self.add_node(sym) for sym in rhs])
  *         cdef id_t e = self._add_edge(Edge(head, tail, weight))
  *         self._rules.append(rule)             # <<<<<<<<<<<<<<
@@ -4396,11 +5080,11 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_add_x
  */
   if (unlikely(__pyx_v_self->_rules == Py_None)) {
     PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%s'", "append");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 110; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 146; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_10 = __Pyx_PyList_Append(__pyx_v_self->_rules, ((PyObject *)__pyx_v_rule)); if (unlikely(__pyx_t_10 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 110; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_10 = __Pyx_PyList_Append(__pyx_v_self->_rules, ((PyObject *)__pyx_v_rule)); if (unlikely(__pyx_t_10 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 146; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
 
-  /* "grasp/formal/hg.pyx":111
+  /* "grasp/formal/hg.pyx":147
  *         cdef id_t e = self._add_edge(Edge(head, tail, weight))
  *         self._rules.append(rule)
  *         if glue:             # <<<<<<<<<<<<<<
@@ -4410,7 +5094,7 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_add_x
   __pyx_t_11 = (__pyx_v_glue != 0);
   if (__pyx_t_11) {
 
-    /* "grasp/formal/hg.pyx":112
+    /* "grasp/formal/hg.pyx":148
  *         self._rules.append(rule)
  *         if glue:
  *             self._glue.add(e)             # <<<<<<<<<<<<<<
@@ -4419,17 +5103,17 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_add_x
  */
     if (unlikely(__pyx_v_self->_glue == Py_None)) {
       PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%s'", "add");
-      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 112; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      {__pyx_filename = __pyx_f[0]; __pyx_lineno = 148; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     }
-    __pyx_t_5 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 112; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 148; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_10 = PySet_Add(__pyx_v_self->_glue, __pyx_t_5); if (unlikely(__pyx_t_10 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 112; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_10 = PySet_Add(__pyx_v_self->_glue, __pyx_t_5); if (unlikely(__pyx_t_10 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 148; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     goto __pyx_L5;
   }
   __pyx_L5:;
 
-  /* "grasp/formal/hg.pyx":113
+  /* "grasp/formal/hg.pyx":149
  *         if glue:
  *             self._glue.add(e)
  *         return e             # <<<<<<<<<<<<<<
@@ -4439,7 +5123,7 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_add_x
   __pyx_r = __pyx_v_e;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":106
+  /* "grasp/formal/hg.pyx":142
  *         return n
  * 
  *     cpdef id_t add_xedge(self, Symbol lhs, tuple rhs, weight_t weight, Rule rule, bint glue=False):             # <<<<<<<<<<<<<<
@@ -4466,8 +5150,8 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_add_x
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_9add_xedge(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_9add_xedge(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_13add_xedge(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_13add_xedge(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_v_lhs = 0;
   PyObject *__pyx_v_rhs = 0;
   __pyx_t_5grasp_6ptypes_weight_t __pyx_v_weight;
@@ -4502,17 +5186,17 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_9add_xedge(PyObject *_
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_rhs)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("add_xedge", 0, 4, 5, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+          __Pyx_RaiseArgtupleInvalid("add_xedge", 0, 4, 5, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
         }
         case  2:
         if (likely((values[2] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_weight)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("add_xedge", 0, 4, 5, 2); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+          __Pyx_RaiseArgtupleInvalid("add_xedge", 0, 4, 5, 2); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
         }
         case  3:
         if (likely((values[3] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_rule)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("add_xedge", 0, 4, 5, 3); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+          __Pyx_RaiseArgtupleInvalid("add_xedge", 0, 4, 5, 3); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
         }
         case  4:
         if (kw_args > 0) {
@@ -4521,7 +5205,7 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_9add_xedge(PyObject *_
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "add_xedge") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "add_xedge") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -4536,26 +5220,26 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_9add_xedge(PyObject *_
     }
     __pyx_v_lhs = ((struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *)values[0]);
     __pyx_v_rhs = ((PyObject*)values[1]);
-    __pyx_v_weight = __pyx_PyFloat_AsDouble(values[2]); if (unlikely((__pyx_v_weight == (npy_double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_weight = __pyx_PyFloat_AsDouble(values[2]); if (unlikely((__pyx_v_weight == (npy_double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
     __pyx_v_rule = ((struct __pyx_obj_5grasp_3cfg_4rule_Rule *)values[3]);
     if (values[4]) {
-      __pyx_v_glue = __Pyx_PyObject_IsTrue(values[4]); if (unlikely((__pyx_v_glue == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+      __pyx_v_glue = __Pyx_PyObject_IsTrue(values[4]); if (unlikely((__pyx_v_glue == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
     } else {
       __pyx_v_glue = ((int)0);
     }
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("add_xedge", 0, 4, 5, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __Pyx_RaiseArgtupleInvalid("add_xedge", 0, 4, 5, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
   __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.add_xedge", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_lhs), __pyx_ptype_5grasp_3cfg_6symbol_Symbol, 1, "lhs", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_rhs), (&PyTuple_Type), 1, "rhs", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_rule), __pyx_ptype_5grasp_3cfg_4rule_Rule, 1, "rule", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_8add_xedge(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), __pyx_v_lhs, __pyx_v_rhs, __pyx_v_weight, __pyx_v_rule, __pyx_v_glue);
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_lhs), __pyx_ptype_5grasp_3cfg_6symbol_Symbol, 1, "lhs", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_rhs), (&PyTuple_Type), 1, "rhs", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_rule), __pyx_ptype_5grasp_3cfg_4rule_Rule, 1, "rule", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_12add_xedge(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), __pyx_v_lhs, __pyx_v_rhs, __pyx_v_weight, __pyx_v_rule, __pyx_v_glue);
 
   /* function exit code */
   goto __pyx_L0;
@@ -4566,7 +5250,7 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_9add_xedge(PyObject *_
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_8add_xedge(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_v_lhs, PyObject *__pyx_v_rhs, __pyx_t_5grasp_6ptypes_weight_t __pyx_v_weight, struct __pyx_obj_5grasp_3cfg_4rule_Rule *__pyx_v_rule, int __pyx_v_glue) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_12add_xedge(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_v_lhs, PyObject *__pyx_v_rhs, __pyx_t_5grasp_6ptypes_weight_t __pyx_v_weight, struct __pyx_obj_5grasp_3cfg_4rule_Rule *__pyx_v_rule, int __pyx_v_glue) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __pyx_t_5grasp_6ptypes_id_t __pyx_t_1;
@@ -4580,7 +5264,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_8add_xedge(struct __py
   __pyx_t_2.__pyx_n = 1;
   __pyx_t_2.glue = __pyx_v_glue;
   __pyx_t_1 = __pyx_vtabptr_5grasp_6formal_2hg_Hypergraph->add_xedge(__pyx_v_self, __pyx_v_lhs, __pyx_v_rhs, __pyx_v_weight, __pyx_v_rule, 1, &__pyx_t_2); 
-  __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_t_1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 106; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_t_1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_r = __pyx_t_3;
   __pyx_t_3 = 0;
@@ -4597,7 +5281,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_8add_xedge(struct __py
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":130
+/* "grasp/formal/hg.pyx":166
  *     #    return e
  * 
  *     cpdef id_t fetch(self, Symbol sym, id_t default=-1):             # <<<<<<<<<<<<<<
@@ -4605,7 +5289,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_8add_xedge(struct __py
  *         return self._symbol_map.get(sym, default)
  */
 
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_11fetch(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_15fetch(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
 static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_fetch(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_v_sym, int __pyx_skip_dispatch, struct __pyx_opt_args_5grasp_6formal_2hg_10Hypergraph_fetch *__pyx_optional_args) {
   __pyx_t_5grasp_6ptypes_id_t __pyx_v_default = ((__pyx_t_5grasp_6ptypes_id_t)-1);
   __pyx_t_5grasp_6ptypes_id_t __pyx_r;
@@ -4631,10 +5315,10 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_fetch
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_fetch); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_fetch); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_11fetch)) {
-      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_default); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_15fetch)) {
+      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_default); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
@@ -4649,7 +5333,7 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_fetch
           __pyx_t_6 = 1;
         }
       }
-      __pyx_t_7 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_7 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_7);
       if (__pyx_t_5) {
         __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_5); __pyx_t_5 = NULL;
@@ -4660,11 +5344,11 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_fetch
       __Pyx_GIVEREF(__pyx_t_3);
       PyTuple_SET_ITEM(__pyx_t_7, 1+__pyx_t_6, __pyx_t_3);
       __pyx_t_3 = 0;
-      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_7, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_7, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_8 = __Pyx_PyInt_As_long(__pyx_t_2); if (unlikely((__pyx_t_8 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_8 = __Pyx_PyInt_As_long(__pyx_t_2); if (unlikely((__pyx_t_8 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __pyx_r = __pyx_t_8;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -4673,7 +5357,7 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_fetch
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/formal/hg.pyx":132
+  /* "grasp/formal/hg.pyx":168
  *     cpdef id_t fetch(self, Symbol sym, id_t default=-1):
  *         """Return the node associated with a given symbol or a default value."""
  *         return self._symbol_map.get(sym, default)             # <<<<<<<<<<<<<<
@@ -4682,19 +5366,19 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_fetch
  */
   if (unlikely(__pyx_v_self->_symbol_map == Py_None)) {
     PyErr_Format(PyExc_AttributeError, "'NoneType' object has no attribute '%s'", "get");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 132; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_v_default); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 132; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_v_default); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyDict_GetItemDefault(__pyx_v_self->_symbol_map, ((PyObject *)__pyx_v_sym), __pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 132; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyDict_GetItemDefault(__pyx_v_self->_symbol_map, ((PyObject *)__pyx_v_sym), __pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_8 = __Pyx_PyInt_As_long(__pyx_t_2); if (unlikely((__pyx_t_8 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 132; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_8 = __Pyx_PyInt_As_long(__pyx_t_2); if (unlikely((__pyx_t_8 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_r = __pyx_t_8;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":130
+  /* "grasp/formal/hg.pyx":166
  *     #    return e
  * 
  *     cpdef id_t fetch(self, Symbol sym, id_t default=-1):             # <<<<<<<<<<<<<<
@@ -4718,9 +5402,9 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_fetch
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_11fetch(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_10fetch[] = "Return the node associated with a given symbol or a default value.";
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_11fetch(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_15fetch(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_14fetch[] = "Return the node associated with a given symbol or a default value.";
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_15fetch(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_v_sym = 0;
   __pyx_t_5grasp_6ptypes_id_t __pyx_v_default;
   int __pyx_lineno = 0;
@@ -4753,7 +5437,7 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_11fetch(PyObject *__py
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "fetch") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "fetch") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -4765,21 +5449,21 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_11fetch(PyObject *__py
     }
     __pyx_v_sym = ((struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *)values[0]);
     if (values[1]) {
-      __pyx_v_default = __Pyx_PyInt_As_long(values[1]); if (unlikely((__pyx_v_default == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+      __pyx_v_default = __Pyx_PyInt_As_long(values[1]); if (unlikely((__pyx_v_default == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
     } else {
       __pyx_v_default = ((__pyx_t_5grasp_6ptypes_id_t)-1);
     }
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("fetch", 0, 1, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __Pyx_RaiseArgtupleInvalid("fetch", 0, 1, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
   __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.fetch", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_sym), __pyx_ptype_5grasp_3cfg_6symbol_Symbol, 1, "sym", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_10fetch(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), __pyx_v_sym, __pyx_v_default);
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_sym), __pyx_ptype_5grasp_3cfg_6symbol_Symbol, 1, "sym", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_14fetch(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), __pyx_v_sym, __pyx_v_default);
 
   /* function exit code */
   goto __pyx_L0;
@@ -4790,7 +5474,7 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_11fetch(PyObject *__py
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_10fetch(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_v_sym, __pyx_t_5grasp_6ptypes_id_t __pyx_v_default) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_14fetch(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_v_sym, __pyx_t_5grasp_6ptypes_id_t __pyx_v_default) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   __pyx_t_5grasp_6ptypes_id_t __pyx_t_1;
@@ -4804,7 +5488,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_10fetch(struct __pyx_o
   __pyx_t_2.__pyx_n = 1;
   __pyx_t_2.__pyx_default = __pyx_v_default;
   __pyx_t_1 = __pyx_vtabptr_5grasp_6formal_2hg_Hypergraph->fetch(__pyx_v_self, __pyx_v_sym, 1, &__pyx_t_2); 
-  __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_t_1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 130; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_t_1); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_r = __pyx_t_3;
   __pyx_t_3 = 0;
@@ -4821,7 +5505,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_10fetch(struct __pyx_o
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":134
+/* "grasp/formal/hg.pyx":170
  *         return self._symbol_map.get(sym, default)
  * 
  *     cpdef id_t head(self, id_t e):             # <<<<<<<<<<<<<<
@@ -4829,7 +5513,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_10fetch(struct __pyx_o
  *         return self._edges[e].head
  */
 
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_13head(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_17head(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
 static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_head(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e, int __pyx_skip_dispatch) {
   __pyx_t_5grasp_6ptypes_id_t __pyx_r;
   __Pyx_RefNannyDeclarations
@@ -4848,10 +5532,10 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_head(
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_head); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 134; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_head); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_13head)) {
-      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 134; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_17head)) {
+      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
@@ -4865,22 +5549,22 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_head(
         }
       }
       if (!__pyx_t_5) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 134; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 134; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_6);
         __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __pyx_t_5 = NULL;
         __Pyx_GIVEREF(__pyx_t_3);
         PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
         __pyx_t_3 = 0;
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 134; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       }
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_7 = __Pyx_PyInt_As_long(__pyx_t_2); if (unlikely((__pyx_t_7 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 134; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_7 = __Pyx_PyInt_As_long(__pyx_t_2); if (unlikely((__pyx_t_7 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __pyx_r = __pyx_t_7;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -4889,7 +5573,7 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_head(
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/formal/hg.pyx":136
+  /* "grasp/formal/hg.pyx":172
  *     cpdef id_t head(self, id_t e):
  *         """Return the id of the edge's head node"""
  *         return self._edges[e].head             # <<<<<<<<<<<<<<
@@ -4898,19 +5582,19 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_head(
  */
   if (unlikely(__pyx_v_self->_edges == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 136; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_edges, __pyx_v_e, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 136; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_edges, __pyx_v_e, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_head); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 136; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_head); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_7 = __Pyx_PyInt_As_long(__pyx_t_2); if (unlikely((__pyx_t_7 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 136; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_7 = __Pyx_PyInt_As_long(__pyx_t_2); if (unlikely((__pyx_t_7 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_r = __pyx_t_7;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":134
+  /* "grasp/formal/hg.pyx":170
  *         return self._symbol_map.get(sym, default)
  * 
  *     cpdef id_t head(self, id_t e):             # <<<<<<<<<<<<<<
@@ -4934,9 +5618,9 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_head(
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_13head(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
-static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_12head[] = "Return the id of the edge's head node";
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_13head(PyObject *__pyx_v_self, PyObject *__pyx_arg_e) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_17head(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
+static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_16head[] = "Return the id of the edge's head node";
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_17head(PyObject *__pyx_v_self, PyObject *__pyx_arg_e) {
   __pyx_t_5grasp_6ptypes_id_t __pyx_v_e;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
@@ -4945,7 +5629,7 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_13head(PyObject *__pyx
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("head (wrapper)", 0);
   assert(__pyx_arg_e); {
-    __pyx_v_e = __Pyx_PyInt_As_long(__pyx_arg_e); if (unlikely((__pyx_v_e == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 134; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_e = __Pyx_PyInt_As_long(__pyx_arg_e); if (unlikely((__pyx_v_e == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -4953,14 +5637,14 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_13head(PyObject *__pyx
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_12head(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_e));
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_16head(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_e));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_12head(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_16head(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -4969,7 +5653,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_12head(struct __pyx_ob
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("head", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_f_5grasp_6formal_2hg_10Hypergraph_head(__pyx_v_self, __pyx_v_e, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 134; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_f_5grasp_6formal_2hg_10Hypergraph_head(__pyx_v_self, __pyx_v_e, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -4986,7 +5670,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_12head(struct __pyx_ob
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":138
+/* "grasp/formal/hg.pyx":174
  *         return self._edges[e].head
  * 
  *     cpdef tail_t tail(self, id_t e):             # <<<<<<<<<<<<<<
@@ -4994,7 +5678,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_12head(struct __pyx_ob
  *         return self._edges[e].tail
  */
 
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_15tail(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_19tail(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
 static __pyx_t_5grasp_6formal_2hg_tail_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_tail(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e, int __pyx_skip_dispatch) {
   __pyx_t_5grasp_6formal_2hg_tail_t __pyx_r = NULL;
   __Pyx_RefNannyDeclarations
@@ -5012,11 +5696,11 @@ static __pyx_t_5grasp_6formal_2hg_tail_t __pyx_f_5grasp_6formal_2hg_10Hypergraph
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_tail); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 138; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_tail); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 174; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_15tail)) {
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_19tail)) {
       __Pyx_XDECREF(__pyx_r);
-      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 138; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 174; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
@@ -5030,22 +5714,22 @@ static __pyx_t_5grasp_6formal_2hg_tail_t __pyx_f_5grasp_6formal_2hg_10Hypergraph
         }
       }
       if (!__pyx_t_5) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 138; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 174; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 138; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 174; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_6);
         __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __pyx_t_5 = NULL;
         __Pyx_GIVEREF(__pyx_t_3);
         PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
         __pyx_t_3 = 0;
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 138; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 174; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       }
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      if (!(likely(PyTuple_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_t_2)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 138; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      if (!(likely(PyTuple_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_t_2)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 174; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __pyx_r = ((__pyx_t_5grasp_6formal_2hg_tail_t)__pyx_t_2);
       __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -5054,7 +5738,7 @@ static __pyx_t_5grasp_6formal_2hg_tail_t __pyx_f_5grasp_6formal_2hg_10Hypergraph
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/formal/hg.pyx":140
+  /* "grasp/formal/hg.pyx":176
  *     cpdef tail_t tail(self, id_t e):
  *         """Return the edge's tail nodes"""
  *         return self._edges[e].tail             # <<<<<<<<<<<<<<
@@ -5064,19 +5748,19 @@ static __pyx_t_5grasp_6formal_2hg_tail_t __pyx_f_5grasp_6formal_2hg_10Hypergraph
   __Pyx_XDECREF(__pyx_r);
   if (unlikely(__pyx_v_self->_edges == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 176; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_edges, __pyx_v_e, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_edges, __pyx_v_e, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 176; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_tail); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_tail); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 176; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  if (!(likely(PyTuple_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_t_2)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 140; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (!(likely(PyTuple_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_t_2)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 176; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_r = ((__pyx_t_5grasp_6formal_2hg_tail_t)__pyx_t_2);
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":138
+  /* "grasp/formal/hg.pyx":174
  *         return self._edges[e].head
  * 
  *     cpdef tail_t tail(self, id_t e):             # <<<<<<<<<<<<<<
@@ -5101,9 +5785,9 @@ static __pyx_t_5grasp_6formal_2hg_tail_t __pyx_f_5grasp_6formal_2hg_10Hypergraph
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_15tail(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
-static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_14tail[] = "Return the edge's tail nodes";
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_15tail(PyObject *__pyx_v_self, PyObject *__pyx_arg_e) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_19tail(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
+static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_18tail[] = "Return the edge's tail nodes";
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_19tail(PyObject *__pyx_v_self, PyObject *__pyx_arg_e) {
   __pyx_t_5grasp_6ptypes_id_t __pyx_v_e;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
@@ -5112,7 +5796,7 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_15tail(PyObject *__pyx
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("tail (wrapper)", 0);
   assert(__pyx_arg_e); {
-    __pyx_v_e = __Pyx_PyInt_As_long(__pyx_arg_e); if (unlikely((__pyx_v_e == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 138; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_e = __Pyx_PyInt_As_long(__pyx_arg_e); if (unlikely((__pyx_v_e == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 174; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -5120,14 +5804,14 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_15tail(PyObject *__pyx
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_14tail(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_e));
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_18tail(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_e));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_14tail(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_18tail(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5136,7 +5820,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_14tail(struct __pyx_ob
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("tail", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_5grasp_6formal_2hg_10Hypergraph_tail(__pyx_v_self, __pyx_v_e, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 138; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __pyx_f_5grasp_6formal_2hg_10Hypergraph_tail(__pyx_v_self, __pyx_v_e, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 174; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -5153,7 +5837,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_14tail(struct __pyx_ob
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":142
+/* "grasp/formal/hg.pyx":178
  *         return self._edges[e].tail
  * 
  *     cpdef weight_t weight(self, id_t e):             # <<<<<<<<<<<<<<
@@ -5161,7 +5845,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_14tail(struct __pyx_ob
  *         return self._edges[e].weight
  */
 
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_17weight(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_21weight(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
 static __pyx_t_5grasp_6ptypes_weight_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_weight(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e, int __pyx_skip_dispatch) {
   __pyx_t_5grasp_6ptypes_weight_t __pyx_r;
   __Pyx_RefNannyDeclarations
@@ -5180,10 +5864,10 @@ static __pyx_t_5grasp_6ptypes_weight_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_w
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_weight); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_weight); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 178; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_17weight)) {
-      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_21weight)) {
+      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 178; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
@@ -5197,22 +5881,22 @@ static __pyx_t_5grasp_6ptypes_weight_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_w
         }
       }
       if (!__pyx_t_5) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 178; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 178; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_6);
         __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __pyx_t_5 = NULL;
         __Pyx_GIVEREF(__pyx_t_3);
         PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
         __pyx_t_3 = 0;
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 178; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       }
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_7 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_7 == (npy_double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_7 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_7 == (npy_double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 178; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __pyx_r = __pyx_t_7;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -5221,7 +5905,7 @@ static __pyx_t_5grasp_6ptypes_weight_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_w
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/formal/hg.pyx":144
+  /* "grasp/formal/hg.pyx":180
  *     cpdef weight_t weight(self, id_t e):
  *         """Return the edge's weight"""
  *         return self._edges[e].weight             # <<<<<<<<<<<<<<
@@ -5230,19 +5914,19 @@ static __pyx_t_5grasp_6ptypes_weight_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_w
  */
   if (unlikely(__pyx_v_self->_edges == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 180; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_edges, __pyx_v_e, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_edges, __pyx_v_e, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 180; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_weight); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_weight); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 180; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_7 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_7 == (npy_double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 144; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_7 = __pyx_PyFloat_AsDouble(__pyx_t_2); if (unlikely((__pyx_t_7 == (npy_double)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 180; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_r = __pyx_t_7;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":142
+  /* "grasp/formal/hg.pyx":178
  *         return self._edges[e].tail
  * 
  *     cpdef weight_t weight(self, id_t e):             # <<<<<<<<<<<<<<
@@ -5266,9 +5950,9 @@ static __pyx_t_5grasp_6ptypes_weight_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_w
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_17weight(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
-static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_16weight[] = "Return the edge's weight";
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_17weight(PyObject *__pyx_v_self, PyObject *__pyx_arg_e) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_21weight(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
+static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_20weight[] = "Return the edge's weight";
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_21weight(PyObject *__pyx_v_self, PyObject *__pyx_arg_e) {
   __pyx_t_5grasp_6ptypes_id_t __pyx_v_e;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
@@ -5277,7 +5961,7 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_17weight(PyObject *__p
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("weight (wrapper)", 0);
   assert(__pyx_arg_e); {
-    __pyx_v_e = __Pyx_PyInt_As_long(__pyx_arg_e); if (unlikely((__pyx_v_e == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_e = __Pyx_PyInt_As_long(__pyx_arg_e); if (unlikely((__pyx_v_e == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 178; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -5285,14 +5969,14 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_17weight(PyObject *__p
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_16weight(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_e));
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_20weight(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_e));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_16weight(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_20weight(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5301,7 +5985,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_16weight(struct __pyx_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("weight", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_5grasp_6formal_2hg_10Hypergraph_weight(__pyx_v_self, __pyx_v_e, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 142; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyFloat_FromDouble(__pyx_f_5grasp_6formal_2hg_10Hypergraph_weight(__pyx_v_self, __pyx_v_e, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 178; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -5318,7 +6002,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_16weight(struct __pyx_
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":146
+/* "grasp/formal/hg.pyx":182
  *         return self._edges[e].weight
  * 
  *     cpdef size_t arity(self, id_t e):             # <<<<<<<<<<<<<<
@@ -5326,7 +6010,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_16weight(struct __pyx_
  *         return len(self._edges[e].tail)
  */
 
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_19arity(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_23arity(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
 static size_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_arity(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e, int __pyx_skip_dispatch) {
   size_t __pyx_r;
   __Pyx_RefNannyDeclarations
@@ -5346,10 +6030,10 @@ static size_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_arity(struct __pyx_obj_5gr
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_arity); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 146; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_arity); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_19arity)) {
-      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 146; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_23arity)) {
+      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
@@ -5363,22 +6047,22 @@ static size_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_arity(struct __pyx_obj_5gr
         }
       }
       if (!__pyx_t_5) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 146; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 146; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_6);
         __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __pyx_t_5 = NULL;
         __Pyx_GIVEREF(__pyx_t_3);
         PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
         __pyx_t_3 = 0;
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 146; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       }
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_7 = __Pyx_PyInt_As_size_t(__pyx_t_2); if (unlikely((__pyx_t_7 == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 146; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_7 = __Pyx_PyInt_As_size_t(__pyx_t_2); if (unlikely((__pyx_t_7 == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __pyx_r = __pyx_t_7;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -5387,7 +6071,7 @@ static size_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_arity(struct __pyx_obj_5gr
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/formal/hg.pyx":148
+  /* "grasp/formal/hg.pyx":184
  *     cpdef size_t arity(self, id_t e):
  *         """Return the edge's arity"""
  *         return len(self._edges[e].tail)             # <<<<<<<<<<<<<<
@@ -5396,19 +6080,19 @@ static size_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_arity(struct __pyx_obj_5gr
  */
   if (unlikely(__pyx_v_self->_edges == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 148; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 184; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_edges, __pyx_v_e, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 148; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_edges, __pyx_v_e, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 184; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_tail); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 148; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_tail); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 184; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_8 = PyObject_Length(__pyx_t_2); if (unlikely(__pyx_t_8 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 148; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_8 = PyObject_Length(__pyx_t_2); if (unlikely(__pyx_t_8 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 184; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_r = __pyx_t_8;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":146
+  /* "grasp/formal/hg.pyx":182
  *         return self._edges[e].weight
  * 
  *     cpdef size_t arity(self, id_t e):             # <<<<<<<<<<<<<<
@@ -5432,9 +6116,9 @@ static size_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_arity(struct __pyx_obj_5gr
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_19arity(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
-static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_18arity[] = "Return the edge's arity";
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_19arity(PyObject *__pyx_v_self, PyObject *__pyx_arg_e) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_23arity(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
+static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_22arity[] = "Return the edge's arity";
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_23arity(PyObject *__pyx_v_self, PyObject *__pyx_arg_e) {
   __pyx_t_5grasp_6ptypes_id_t __pyx_v_e;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
@@ -5443,7 +6127,7 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_19arity(PyObject *__py
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("arity (wrapper)", 0);
   assert(__pyx_arg_e); {
-    __pyx_v_e = __Pyx_PyInt_As_long(__pyx_arg_e); if (unlikely((__pyx_v_e == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 146; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_e = __Pyx_PyInt_As_long(__pyx_arg_e); if (unlikely((__pyx_v_e == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -5451,14 +6135,14 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_19arity(PyObject *__py
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_18arity(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_e));
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_22arity(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_e));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_18arity(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_22arity(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5467,7 +6151,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_18arity(struct __pyx_o
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("arity", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_FromSize_t(__pyx_f_5grasp_6formal_2hg_10Hypergraph_arity(__pyx_v_self, __pyx_v_e, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 146; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_FromSize_t(__pyx_f_5grasp_6formal_2hg_10Hypergraph_arity(__pyx_v_self, __pyx_v_e, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 182; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -5484,7 +6168,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_18arity(struct __pyx_o
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":150
+/* "grasp/formal/hg.pyx":186
  *         return len(self._edges[e].tail)
  * 
  *     cpdef id_t child(self, id_t e, id_t i):             # <<<<<<<<<<<<<<
@@ -5492,7 +6176,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_18arity(struct __pyx_o
  * 
  */
 
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_21child(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_25child(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
 static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_child(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e, __pyx_t_5grasp_6ptypes_id_t __pyx_v_i, int __pyx_skip_dispatch) {
   __pyx_t_5grasp_6ptypes_id_t __pyx_r;
   __Pyx_RefNannyDeclarations
@@ -5513,12 +6197,12 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_child
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_child); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_child); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_21child)) {
-      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_25child)) {
+      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_4 = __Pyx_PyInt_From_long(__pyx_v_i); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = __Pyx_PyInt_From_long(__pyx_v_i); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_5 = __pyx_t_1; __pyx_t_6 = NULL;
@@ -5533,7 +6217,7 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_child
           __pyx_t_7 = 1;
         }
       }
-      __pyx_t_8 = PyTuple_New(2+__pyx_t_7); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_8 = PyTuple_New(2+__pyx_t_7); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_8);
       if (__pyx_t_6) {
         __Pyx_GIVEREF(__pyx_t_6); PyTuple_SET_ITEM(__pyx_t_8, 0, __pyx_t_6); __pyx_t_6 = NULL;
@@ -5544,11 +6228,11 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_child
       PyTuple_SET_ITEM(__pyx_t_8, 1+__pyx_t_7, __pyx_t_4);
       __pyx_t_3 = 0;
       __pyx_t_4 = 0;
-      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_8, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_8, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_t_9 = __Pyx_PyInt_As_long(__pyx_t_2); if (unlikely((__pyx_t_9 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_9 = __Pyx_PyInt_As_long(__pyx_t_2); if (unlikely((__pyx_t_9 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __pyx_r = __pyx_t_9;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -5557,7 +6241,7 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_child
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/formal/hg.pyx":151
+  /* "grasp/formal/hg.pyx":187
  * 
  *     cpdef id_t child(self, id_t e, id_t i):
  *         return self._edges[e].tail[i]             # <<<<<<<<<<<<<<
@@ -5566,22 +6250,22 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_child
  */
   if (unlikely(__pyx_v_self->_edges == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 187; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_edges, __pyx_v_e, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_edges, __pyx_v_e, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 187; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_tail); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_tail); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 187; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_2, __pyx_v_i, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __pyx_t_1 = __Pyx_GetItemInt(__pyx_t_2, __pyx_v_i, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 0, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 187; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_9 = __Pyx_PyInt_As_long(__pyx_t_1); if (unlikely((__pyx_t_9 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 151; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_9 = __Pyx_PyInt_As_long(__pyx_t_1); if (unlikely((__pyx_t_9 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 187; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = __pyx_t_9;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":150
+  /* "grasp/formal/hg.pyx":186
  *         return len(self._edges[e].tail)
  * 
  *     cpdef id_t child(self, id_t e, id_t i):             # <<<<<<<<<<<<<<
@@ -5606,8 +6290,8 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_child
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_21child(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_21child(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_25child(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_25child(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   __pyx_t_5grasp_6ptypes_id_t __pyx_v_e;
   __pyx_t_5grasp_6ptypes_id_t __pyx_v_i;
   int __pyx_lineno = 0;
@@ -5636,11 +6320,11 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_21child(PyObject *__py
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_i)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("child", 1, 2, 2, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+          __Pyx_RaiseArgtupleInvalid("child", 1, 2, 2, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "child") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "child") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -5648,25 +6332,25 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_21child(PyObject *__py
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
     }
-    __pyx_v_e = __Pyx_PyInt_As_long(values[0]); if (unlikely((__pyx_v_e == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
-    __pyx_v_i = __Pyx_PyInt_As_long(values[1]); if (unlikely((__pyx_v_i == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_e = __Pyx_PyInt_As_long(values[0]); if (unlikely((__pyx_v_e == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_i = __Pyx_PyInt_As_long(values[1]); if (unlikely((__pyx_v_i == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("child", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __Pyx_RaiseArgtupleInvalid("child", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
   __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.child", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_20child(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), __pyx_v_e, __pyx_v_i);
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_24child(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), __pyx_v_e, __pyx_v_i);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_20child(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e, __pyx_t_5grasp_6ptypes_id_t __pyx_v_i) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_24child(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e, __pyx_t_5grasp_6ptypes_id_t __pyx_v_i) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5675,7 +6359,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_20child(struct __pyx_o
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("child", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_f_5grasp_6formal_2hg_10Hypergraph_child(__pyx_v_self, __pyx_v_e, __pyx_v_i, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 150; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_f_5grasp_6formal_2hg_10Hypergraph_child(__pyx_v_self, __pyx_v_e, __pyx_v_i, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -5692,7 +6376,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_20child(struct __pyx_o
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":153
+/* "grasp/formal/hg.pyx":189
  *         return self._edges[e].tail[i]
  * 
  *     cpdef bint is_terminal(self, id_t n):             # <<<<<<<<<<<<<<
@@ -5700,7 +6384,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_20child(struct __pyx_o
  *         return isinstance(self._nodes[n].label, Terminal)
  */
 
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_23is_terminal(PyObject *__pyx_v_self, PyObject *__pyx_arg_n); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_27is_terminal(PyObject *__pyx_v_self, PyObject *__pyx_arg_n); /*proto*/
 static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_is_terminal(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n, int __pyx_skip_dispatch) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
@@ -5719,10 +6403,10 @@ static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_is_terminal(struct __pyx_obj_
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_is_terminal); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_is_terminal); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 189; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_23is_terminal)) {
-      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_n); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_27is_terminal)) {
+      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_n); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 189; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
@@ -5736,22 +6420,22 @@ static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_is_terminal(struct __pyx_obj_
         }
       }
       if (!__pyx_t_5) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 189; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 189; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_6);
         __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __pyx_t_5 = NULL;
         __Pyx_GIVEREF(__pyx_t_3);
         PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
         __pyx_t_3 = 0;
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 189; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       }
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 189; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __pyx_r = __pyx_t_7;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -5760,7 +6444,7 @@ static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_is_terminal(struct __pyx_obj_
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/formal/hg.pyx":155
+  /* "grasp/formal/hg.pyx":191
  *     cpdef bint is_terminal(self, id_t n):
  *         """Whether the node is labelled with a terminal symbol"""
  *         return isinstance(self._nodes[n].label, Terminal)             # <<<<<<<<<<<<<<
@@ -5769,11 +6453,11 @@ static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_is_terminal(struct __pyx_obj_
  */
   if (unlikely(__pyx_v_self->_nodes == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 155; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 191; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_nodes, __pyx_v_n, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 155; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_nodes, __pyx_v_n, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 191; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_label); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 155; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_label); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 191; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_7 = __Pyx_TypeCheck(__pyx_t_2, ((PyObject*)__pyx_ptype_5grasp_3cfg_6symbol_Terminal)); 
@@ -5781,7 +6465,7 @@ static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_is_terminal(struct __pyx_obj_
   __pyx_r = __pyx_t_7;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":153
+  /* "grasp/formal/hg.pyx":189
  *         return self._edges[e].tail[i]
  * 
  *     cpdef bint is_terminal(self, id_t n):             # <<<<<<<<<<<<<<
@@ -5805,9 +6489,9 @@ static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_is_terminal(struct __pyx_obj_
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_23is_terminal(PyObject *__pyx_v_self, PyObject *__pyx_arg_n); /*proto*/
-static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_22is_terminal[] = "Whether the node is labelled with a terminal symbol";
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_23is_terminal(PyObject *__pyx_v_self, PyObject *__pyx_arg_n) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_27is_terminal(PyObject *__pyx_v_self, PyObject *__pyx_arg_n); /*proto*/
+static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_26is_terminal[] = "Whether the node is labelled with a terminal symbol";
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_27is_terminal(PyObject *__pyx_v_self, PyObject *__pyx_arg_n) {
   __pyx_t_5grasp_6ptypes_id_t __pyx_v_n;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
@@ -5816,7 +6500,7 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_23is_terminal(PyObject
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("is_terminal (wrapper)", 0);
   assert(__pyx_arg_n); {
-    __pyx_v_n = __Pyx_PyInt_As_long(__pyx_arg_n); if (unlikely((__pyx_v_n == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_n = __Pyx_PyInt_As_long(__pyx_arg_n); if (unlikely((__pyx_v_n == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 189; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -5824,14 +6508,14 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_23is_terminal(PyObject
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_22is_terminal(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_n));
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_26is_terminal(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_n));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_22is_terminal(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_26is_terminal(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5840,7 +6524,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_22is_terminal(struct _
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("is_terminal", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_f_5grasp_6formal_2hg_10Hypergraph_is_terminal(__pyx_v_self, __pyx_v_n, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 153; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_f_5grasp_6formal_2hg_10Hypergraph_is_terminal(__pyx_v_self, __pyx_v_n, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 189; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -5857,7 +6541,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_22is_terminal(struct _
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":157
+/* "grasp/formal/hg.pyx":193
  *         return isinstance(self._nodes[n].label, Terminal)
  * 
  *     cpdef bint is_nonterminal(self, id_t n):             # <<<<<<<<<<<<<<
@@ -5865,7 +6549,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_22is_terminal(struct _
  *         return not self.is_terminal(n)
  */
 
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_25is_nonterminal(PyObject *__pyx_v_self, PyObject *__pyx_arg_n); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_29is_nonterminal(PyObject *__pyx_v_self, PyObject *__pyx_arg_n); /*proto*/
 static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_is_nonterminal(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n, int __pyx_skip_dispatch) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
@@ -5884,10 +6568,10 @@ static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_is_nonterminal(struct __pyx_o
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_is_nonterminal); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 157; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_is_nonterminal); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_25is_nonterminal)) {
-      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_n); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 157; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_29is_nonterminal)) {
+      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_n); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
@@ -5901,22 +6585,22 @@ static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_is_nonterminal(struct __pyx_o
         }
       }
       if (!__pyx_t_5) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 157; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 157; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_6);
         __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __pyx_t_5 = NULL;
         __Pyx_GIVEREF(__pyx_t_3);
         PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
         __pyx_t_3 = 0;
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 157; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       }
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 157; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __pyx_r = __pyx_t_7;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -5925,7 +6609,7 @@ static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_is_nonterminal(struct __pyx_o
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/formal/hg.pyx":159
+  /* "grasp/formal/hg.pyx":195
  *     cpdef bint is_nonterminal(self, id_t n):
  *         """Whether the node is labelled with a nonterminal symbol"""
  *         return not self.is_terminal(n)             # <<<<<<<<<<<<<<
@@ -5935,7 +6619,7 @@ static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_is_nonterminal(struct __pyx_o
   __pyx_r = (!(((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self->__pyx_vtab)->is_terminal(__pyx_v_self, __pyx_v_n, 0) != 0));
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":157
+  /* "grasp/formal/hg.pyx":193
  *         return isinstance(self._nodes[n].label, Terminal)
  * 
  *     cpdef bint is_nonterminal(self, id_t n):             # <<<<<<<<<<<<<<
@@ -5959,9 +6643,9 @@ static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_is_nonterminal(struct __pyx_o
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_25is_nonterminal(PyObject *__pyx_v_self, PyObject *__pyx_arg_n); /*proto*/
-static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_24is_nonterminal[] = "Whether the node is labelled with a nonterminal symbol";
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_25is_nonterminal(PyObject *__pyx_v_self, PyObject *__pyx_arg_n) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_29is_nonterminal(PyObject *__pyx_v_self, PyObject *__pyx_arg_n); /*proto*/
+static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_28is_nonterminal[] = "Whether the node is labelled with a nonterminal symbol";
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_29is_nonterminal(PyObject *__pyx_v_self, PyObject *__pyx_arg_n) {
   __pyx_t_5grasp_6ptypes_id_t __pyx_v_n;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
@@ -5970,7 +6654,7 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_25is_nonterminal(PyObj
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("is_nonterminal (wrapper)", 0);
   assert(__pyx_arg_n); {
-    __pyx_v_n = __Pyx_PyInt_As_long(__pyx_arg_n); if (unlikely((__pyx_v_n == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 157; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_n = __Pyx_PyInt_As_long(__pyx_arg_n); if (unlikely((__pyx_v_n == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -5978,14 +6662,14 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_25is_nonterminal(PyObj
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_24is_nonterminal(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_n));
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_28is_nonterminal(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_n));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_24is_nonterminal(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_28is_nonterminal(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -5994,7 +6678,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_24is_nonterminal(struc
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("is_nonterminal", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_f_5grasp_6formal_2hg_10Hypergraph_is_nonterminal(__pyx_v_self, __pyx_v_n, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 157; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_f_5grasp_6formal_2hg_10Hypergraph_is_nonterminal(__pyx_v_self, __pyx_v_n, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 193; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -6011,7 +6695,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_24is_nonterminal(struc
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":161
+/* "grasp/formal/hg.pyx":197
  *         return not self.is_terminal(n)
  * 
  *     cpdef bint is_source(self, id_t head):             # <<<<<<<<<<<<<<
@@ -6019,7 +6703,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_24is_nonterminal(struc
  *         return len(self._bs[head]) == 0
  */
 
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_27is_source(PyObject *__pyx_v_self, PyObject *__pyx_arg_head); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_31is_source(PyObject *__pyx_v_self, PyObject *__pyx_arg_head); /*proto*/
 static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_is_source(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_head, int __pyx_skip_dispatch) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
@@ -6039,10 +6723,10 @@ static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_is_source(struct __pyx_obj_5g
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_is_source); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 161; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_is_source); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_27is_source)) {
-      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_head); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 161; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_31is_source)) {
+      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_head); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
@@ -6056,22 +6740,22 @@ static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_is_source(struct __pyx_obj_5g
         }
       }
       if (!__pyx_t_5) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 161; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 161; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_6);
         __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __pyx_t_5 = NULL;
         __Pyx_GIVEREF(__pyx_t_3);
         PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
         __pyx_t_3 = 0;
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 161; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       }
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 161; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __pyx_r = __pyx_t_7;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -6080,7 +6764,7 @@ static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_is_source(struct __pyx_obj_5g
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/formal/hg.pyx":163
+  /* "grasp/formal/hg.pyx":199
  *     cpdef bint is_source(self, id_t head):
  *         """Whether the node has an empty backward-star (no incoming edges)"""
  *         return len(self._bs[head]) == 0             # <<<<<<<<<<<<<<
@@ -6089,16 +6773,16 @@ static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_is_source(struct __pyx_obj_5g
  */
   if (unlikely(__pyx_v_self->_bs == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 163; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 199; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_bs, __pyx_v_head, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 163; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_bs, __pyx_v_head, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 199; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_8 = PyObject_Length(__pyx_t_1); if (unlikely(__pyx_t_8 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 163; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_8 = PyObject_Length(__pyx_t_1); if (unlikely(__pyx_t_8 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 199; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = (__pyx_t_8 == 0);
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":161
+  /* "grasp/formal/hg.pyx":197
  *         return not self.is_terminal(n)
  * 
  *     cpdef bint is_source(self, id_t head):             # <<<<<<<<<<<<<<
@@ -6122,9 +6806,9 @@ static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_is_source(struct __pyx_obj_5g
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_27is_source(PyObject *__pyx_v_self, PyObject *__pyx_arg_head); /*proto*/
-static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_26is_source[] = "Whether the node has an empty backward-star (no incoming edges)";
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_27is_source(PyObject *__pyx_v_self, PyObject *__pyx_arg_head) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_31is_source(PyObject *__pyx_v_self, PyObject *__pyx_arg_head); /*proto*/
+static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_30is_source[] = "Whether the node has an empty backward-star (no incoming edges)";
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_31is_source(PyObject *__pyx_v_self, PyObject *__pyx_arg_head) {
   __pyx_t_5grasp_6ptypes_id_t __pyx_v_head;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
@@ -6133,7 +6817,7 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_27is_source(PyObject *
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("is_source (wrapper)", 0);
   assert(__pyx_arg_head); {
-    __pyx_v_head = __Pyx_PyInt_As_long(__pyx_arg_head); if (unlikely((__pyx_v_head == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 161; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_head = __Pyx_PyInt_As_long(__pyx_arg_head); if (unlikely((__pyx_v_head == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -6141,14 +6825,14 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_27is_source(PyObject *
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_26is_source(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_head));
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_30is_source(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_head));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_26is_source(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_head) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_30is_source(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_head) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -6157,7 +6841,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_26is_source(struct __p
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("is_source", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_f_5grasp_6formal_2hg_10Hypergraph_is_source(__pyx_v_self, __pyx_v_head, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 161; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_f_5grasp_6formal_2hg_10Hypergraph_is_source(__pyx_v_self, __pyx_v_head, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -6174,7 +6858,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_26is_source(struct __p
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":165
+/* "grasp/formal/hg.pyx":201
  *         return len(self._bs[head]) == 0
  * 
  *     cpdef bint is_glue(self, id_t e):             # <<<<<<<<<<<<<<
@@ -6182,7 +6866,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_26is_source(struct __p
  * 
  */
 
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_29is_glue(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_33is_glue(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
 static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_is_glue(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e, int __pyx_skip_dispatch) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
@@ -6201,1066 +6885,10 @@ static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_is_glue(struct __pyx_obj_5gra
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_is_glue); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_is_glue); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 201; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_29is_glue)) {
-      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_GOTREF(__pyx_t_3);
-      __Pyx_INCREF(__pyx_t_1);
-      __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
-      if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_4))) {
-        __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_4);
-        if (likely(__pyx_t_5)) {
-          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
-          __Pyx_INCREF(__pyx_t_5);
-          __Pyx_INCREF(function);
-          __Pyx_DECREF_SET(__pyx_t_4, function);
-        }
-      }
-      if (!__pyx_t_5) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-        __Pyx_GOTREF(__pyx_t_2);
-      } else {
-        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_GOTREF(__pyx_t_6);
-        __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __pyx_t_5 = NULL;
-        __Pyx_GIVEREF(__pyx_t_3);
-        PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
-        __pyx_t_3 = 0;
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_GOTREF(__pyx_t_2);
-        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      }
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __pyx_r = __pyx_t_7;
-      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      goto __pyx_L0;
-    }
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  }
-
-  /* "grasp/formal/hg.pyx":166
- * 
- *     cpdef bint is_glue(self, id_t e):
- *         return e in self._glue             # <<<<<<<<<<<<<<
- * 
- *     cpdef Symbol label(self, id_t n):
- */
-  __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_7 = (__Pyx_PySequence_Contains(__pyx_t_1, __pyx_v_self->_glue, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 166; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_r = __pyx_t_7;
-  goto __pyx_L0;
-
-  /* "grasp/formal/hg.pyx":165
- *         return len(self._bs[head]) == 0
- * 
- *     cpdef bint is_glue(self, id_t e):             # <<<<<<<<<<<<<<
- *         return e in self._glue
- * 
- */
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_XDECREF(__pyx_t_5);
-  __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_WriteUnraisable("grasp.formal.hg.Hypergraph.is_glue", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
-  __pyx_r = 0;
-  __pyx_L0:;
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_29is_glue(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_29is_glue(PyObject *__pyx_v_self, PyObject *__pyx_arg_e) {
-  __pyx_t_5grasp_6ptypes_id_t __pyx_v_e;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  PyObject *__pyx_r = 0;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("is_glue (wrapper)", 0);
-  assert(__pyx_arg_e); {
-    __pyx_v_e = __Pyx_PyInt_As_long(__pyx_arg_e); if (unlikely((__pyx_v_e == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
-  }
-  goto __pyx_L4_argument_unpacking_done;
-  __pyx_L3_error:;
-  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.is_glue", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __Pyx_RefNannyFinishContext();
-  return NULL;
-  __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_28is_glue(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_e));
-
-  /* function exit code */
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_28is_glue(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e) {
-  PyObject *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("is_glue", 0);
-  __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_f_5grasp_6formal_2hg_10Hypergraph_is_glue(__pyx_v_self, __pyx_v_e, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 165; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_r = __pyx_t_1;
-  __pyx_t_1 = 0;
-  goto __pyx_L0;
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.is_glue", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = NULL;
-  __pyx_L0:;
-  __Pyx_XGIVEREF(__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* "grasp/formal/hg.pyx":168
- *         return e in self._glue
- * 
- *     cpdef Symbol label(self, id_t n):             # <<<<<<<<<<<<<<
- *         """The label associated with a node"""
- *         return self._nodes[n].label
- */
-
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_31label(PyObject *__pyx_v_self, PyObject *__pyx_arg_n); /*proto*/
-static struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_f_5grasp_6formal_2hg_10Hypergraph_label(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n, int __pyx_skip_dispatch) {
-  struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  PyObject *__pyx_t_2 = NULL;
-  PyObject *__pyx_t_3 = NULL;
-  PyObject *__pyx_t_4 = NULL;
-  PyObject *__pyx_t_5 = NULL;
-  PyObject *__pyx_t_6 = NULL;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("label", 0);
-  /* Check if called by wrapper */
-  if (unlikely(__pyx_skip_dispatch)) ;
-  /* Check if overridden in Python */
-  else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_label); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_31label)) {
-      __Pyx_XDECREF(((PyObject *)__pyx_r));
-      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_n); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_GOTREF(__pyx_t_3);
-      __Pyx_INCREF(__pyx_t_1);
-      __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
-      if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_4))) {
-        __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_4);
-        if (likely(__pyx_t_5)) {
-          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
-          __Pyx_INCREF(__pyx_t_5);
-          __Pyx_INCREF(function);
-          __Pyx_DECREF_SET(__pyx_t_4, function);
-        }
-      }
-      if (!__pyx_t_5) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-        __Pyx_GOTREF(__pyx_t_2);
-      } else {
-        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_GOTREF(__pyx_t_6);
-        __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __pyx_t_5 = NULL;
-        __Pyx_GIVEREF(__pyx_t_3);
-        PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
-        __pyx_t_3 = 0;
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_GOTREF(__pyx_t_2);
-        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      }
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5grasp_3cfg_6symbol_Symbol))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __pyx_r = ((struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *)__pyx_t_2);
-      __pyx_t_2 = 0;
-      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      goto __pyx_L0;
-    }
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  }
-
-  /* "grasp/formal/hg.pyx":170
- *     cpdef Symbol label(self, id_t n):
- *         """The label associated with a node"""
- *         return self._nodes[n].label             # <<<<<<<<<<<<<<
- * 
- *     cpdef Rule rule(self, id_t e):
- */
-  __Pyx_XDECREF(((PyObject *)__pyx_r));
-  if (unlikely(__pyx_v_self->_nodes == Py_None)) {
-    PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  }
-  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_nodes, __pyx_v_n, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_label); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_2);
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5grasp_3cfg_6symbol_Symbol))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 170; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_r = ((struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *)__pyx_t_2);
-  __pyx_t_2 = 0;
-  goto __pyx_L0;
-
-  /* "grasp/formal/hg.pyx":168
- *         return e in self._glue
- * 
- *     cpdef Symbol label(self, id_t n):             # <<<<<<<<<<<<<<
- *         """The label associated with a node"""
- *         return self._nodes[n].label
- */
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_XDECREF(__pyx_t_5);
-  __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.label", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = 0;
-  __pyx_L0:;
-  __Pyx_XGIVEREF((PyObject *)__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_31label(PyObject *__pyx_v_self, PyObject *__pyx_arg_n); /*proto*/
-static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_30label[] = "The label associated with a node";
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_31label(PyObject *__pyx_v_self, PyObject *__pyx_arg_n) {
-  __pyx_t_5grasp_6ptypes_id_t __pyx_v_n;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  PyObject *__pyx_r = 0;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("label (wrapper)", 0);
-  assert(__pyx_arg_n); {
-    __pyx_v_n = __Pyx_PyInt_As_long(__pyx_arg_n); if (unlikely((__pyx_v_n == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
-  }
-  goto __pyx_L4_argument_unpacking_done;
-  __pyx_L3_error:;
-  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.label", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __Pyx_RefNannyFinishContext();
-  return NULL;
-  __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_30label(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_n));
-
-  /* function exit code */
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_30label(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n) {
-  PyObject *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("label", 0);
-  __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = ((PyObject *)__pyx_f_5grasp_6formal_2hg_10Hypergraph_label(__pyx_v_self, __pyx_v_n, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 168; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_r = __pyx_t_1;
-  __pyx_t_1 = 0;
-  goto __pyx_L0;
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.label", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = NULL;
-  __pyx_L0:;
-  __Pyx_XGIVEREF(__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* "grasp/formal/hg.pyx":172
- *         return self._nodes[n].label
- * 
- *     cpdef Rule rule(self, id_t e):             # <<<<<<<<<<<<<<
- *         """The rule associated with an edge"""
- *         return self._rules[e]
- */
-
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_33rule(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
-static struct __pyx_obj_5grasp_3cfg_4rule_Rule *__pyx_f_5grasp_6formal_2hg_10Hypergraph_rule(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e, int __pyx_skip_dispatch) {
-  struct __pyx_obj_5grasp_3cfg_4rule_Rule *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  PyObject *__pyx_t_2 = NULL;
-  PyObject *__pyx_t_3 = NULL;
-  PyObject *__pyx_t_4 = NULL;
-  PyObject *__pyx_t_5 = NULL;
-  PyObject *__pyx_t_6 = NULL;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("rule", 0);
-  /* Check if called by wrapper */
-  if (unlikely(__pyx_skip_dispatch)) ;
-  /* Check if overridden in Python */
-  else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_rule); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_33rule)) {
-      __Pyx_XDECREF(((PyObject *)__pyx_r));
-      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_GOTREF(__pyx_t_3);
-      __Pyx_INCREF(__pyx_t_1);
-      __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
-      if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_4))) {
-        __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_4);
-        if (likely(__pyx_t_5)) {
-          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
-          __Pyx_INCREF(__pyx_t_5);
-          __Pyx_INCREF(function);
-          __Pyx_DECREF_SET(__pyx_t_4, function);
-        }
-      }
-      if (!__pyx_t_5) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-        __Pyx_GOTREF(__pyx_t_2);
-      } else {
-        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_GOTREF(__pyx_t_6);
-        __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __pyx_t_5 = NULL;
-        __Pyx_GIVEREF(__pyx_t_3);
-        PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
-        __pyx_t_3 = 0;
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_GOTREF(__pyx_t_2);
-        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      }
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5grasp_3cfg_4rule_Rule))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __pyx_r = ((struct __pyx_obj_5grasp_3cfg_4rule_Rule *)__pyx_t_2);
-      __pyx_t_2 = 0;
-      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      goto __pyx_L0;
-    }
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  }
-
-  /* "grasp/formal/hg.pyx":174
- *     cpdef Rule rule(self, id_t e):
- *         """The rule associated with an edge"""
- *         return self._rules[e]             # <<<<<<<<<<<<<<
- * 
- *     #cpdef update(self, rules, bint glue=False):
- */
-  __Pyx_XDECREF(((PyObject *)__pyx_r));
-  if (unlikely(__pyx_v_self->_rules == Py_None)) {
-    PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 174; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  }
-  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_rules, __pyx_v_e, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 174; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
-  __Pyx_GOTREF(__pyx_t_1);
-  if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5grasp_3cfg_4rule_Rule))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 174; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_r = ((struct __pyx_obj_5grasp_3cfg_4rule_Rule *)__pyx_t_1);
-  __pyx_t_1 = 0;
-  goto __pyx_L0;
-
-  /* "grasp/formal/hg.pyx":172
- *         return self._nodes[n].label
- * 
- *     cpdef Rule rule(self, id_t e):             # <<<<<<<<<<<<<<
- *         """The rule associated with an edge"""
- *         return self._rules[e]
- */
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_XDECREF(__pyx_t_5);
-  __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.rule", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = 0;
-  __pyx_L0:;
-  __Pyx_XGIVEREF((PyObject *)__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_33rule(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
-static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_32rule[] = "The rule associated with an edge";
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_33rule(PyObject *__pyx_v_self, PyObject *__pyx_arg_e) {
-  __pyx_t_5grasp_6ptypes_id_t __pyx_v_e;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  PyObject *__pyx_r = 0;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("rule (wrapper)", 0);
-  assert(__pyx_arg_e); {
-    __pyx_v_e = __Pyx_PyInt_As_long(__pyx_arg_e); if (unlikely((__pyx_v_e == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
-  }
-  goto __pyx_L4_argument_unpacking_done;
-  __pyx_L3_error:;
-  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.rule", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __Pyx_RefNannyFinishContext();
-  return NULL;
-  __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_32rule(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_e));
-
-  /* function exit code */
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_32rule(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e) {
-  PyObject *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("rule", 0);
-  __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = ((PyObject *)__pyx_f_5grasp_6formal_2hg_10Hypergraph_rule(__pyx_v_self, __pyx_v_e, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_r = __pyx_t_1;
-  __pyx_t_1 = 0;
-  goto __pyx_L0;
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.rule", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = NULL;
-  __pyx_L0:;
-  __Pyx_XGIVEREF(__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* "grasp/formal/hg.pyx":186
- *     #        self.add_edge(rule, glue=glue)
- * 
- *     cpdef size_t n_nodes(self):             # <<<<<<<<<<<<<<
- *         """Number of nodes"""
- *         return len(self._nodes)
- */
-
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_35n_nodes(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static size_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_n_nodes(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, int __pyx_skip_dispatch) {
-  size_t __pyx_r;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  PyObject *__pyx_t_2 = NULL;
-  PyObject *__pyx_t_3 = NULL;
-  PyObject *__pyx_t_4 = NULL;
-  size_t __pyx_t_5;
-  Py_ssize_t __pyx_t_6;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("n_nodes", 0);
-  /* Check if called by wrapper */
-  if (unlikely(__pyx_skip_dispatch)) ;
-  /* Check if overridden in Python */
-  else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_n_nodes); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_35n_nodes)) {
-      __Pyx_INCREF(__pyx_t_1);
-      __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
-      if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_3))) {
-        __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_3);
-        if (likely(__pyx_t_4)) {
-          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
-          __Pyx_INCREF(__pyx_t_4);
-          __Pyx_INCREF(function);
-          __Pyx_DECREF_SET(__pyx_t_3, function);
-        }
-      }
-      if (__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      } else {
-        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      }
-      __Pyx_GOTREF(__pyx_t_2);
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      __pyx_t_5 = __Pyx_PyInt_As_size_t(__pyx_t_2); if (unlikely((__pyx_t_5 == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __pyx_r = __pyx_t_5;
-      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      goto __pyx_L0;
-    }
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  }
-
-  /* "grasp/formal/hg.pyx":188
- *     cpdef size_t n_nodes(self):
- *         """Number of nodes"""
- *         return len(self._nodes)             # <<<<<<<<<<<<<<
- * 
- *     cpdef size_t n_edges(self):
- */
-  __pyx_t_1 = __pyx_v_self->_nodes;
-  __Pyx_INCREF(__pyx_t_1);
-  if (unlikely(__pyx_t_1 == Py_None)) {
-    PyErr_SetString(PyExc_TypeError, "object of type 'NoneType' has no len()");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 188; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  }
-  __pyx_t_6 = PyList_GET_SIZE(__pyx_t_1); if (unlikely(__pyx_t_6 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 188; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_r = __pyx_t_6;
-  goto __pyx_L0;
-
-  /* "grasp/formal/hg.pyx":186
- *     #        self.add_edge(rule, glue=glue)
- * 
- *     cpdef size_t n_nodes(self):             # <<<<<<<<<<<<<<
- *         """Number of nodes"""
- *         return len(self._nodes)
- */
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_WriteUnraisable("grasp.formal.hg.Hypergraph.n_nodes", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
-  __pyx_r = 0;
-  __pyx_L0:;
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_35n_nodes(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_34n_nodes[] = "Number of nodes";
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_35n_nodes(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
-  PyObject *__pyx_r = 0;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("n_nodes (wrapper)", 0);
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_34n_nodes(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self));
-
-  /* function exit code */
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_34n_nodes(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self) {
-  PyObject *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("n_nodes", 0);
-  __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_FromSize_t(__pyx_f_5grasp_6formal_2hg_10Hypergraph_n_nodes(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 186; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_r = __pyx_t_1;
-  __pyx_t_1 = 0;
-  goto __pyx_L0;
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.n_nodes", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = NULL;
-  __pyx_L0:;
-  __Pyx_XGIVEREF(__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* "grasp/formal/hg.pyx":190
- *         return len(self._nodes)
- * 
- *     cpdef size_t n_edges(self):             # <<<<<<<<<<<<<<
- *         """Number of edges"""
- *         return len(self._edges)
- */
-
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_37n_edges(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static size_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_n_edges(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, int __pyx_skip_dispatch) {
-  size_t __pyx_r;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  PyObject *__pyx_t_2 = NULL;
-  PyObject *__pyx_t_3 = NULL;
-  PyObject *__pyx_t_4 = NULL;
-  size_t __pyx_t_5;
-  Py_ssize_t __pyx_t_6;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("n_edges", 0);
-  /* Check if called by wrapper */
-  if (unlikely(__pyx_skip_dispatch)) ;
-  /* Check if overridden in Python */
-  else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_n_edges); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 190; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_37n_edges)) {
-      __Pyx_INCREF(__pyx_t_1);
-      __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
-      if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_3))) {
-        __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_3);
-        if (likely(__pyx_t_4)) {
-          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
-          __Pyx_INCREF(__pyx_t_4);
-          __Pyx_INCREF(function);
-          __Pyx_DECREF_SET(__pyx_t_3, function);
-        }
-      }
-      if (__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 190; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      } else {
-        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 190; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      }
-      __Pyx_GOTREF(__pyx_t_2);
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      __pyx_t_5 = __Pyx_PyInt_As_size_t(__pyx_t_2); if (unlikely((__pyx_t_5 == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 190; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __pyx_r = __pyx_t_5;
-      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      goto __pyx_L0;
-    }
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  }
-
-  /* "grasp/formal/hg.pyx":192
- *     cpdef size_t n_edges(self):
- *         """Number of edges"""
- *         return len(self._edges)             # <<<<<<<<<<<<<<
- * 
- *     cpdef size_t n_incoming(self, id_t n):
- */
-  __pyx_t_1 = __pyx_v_self->_edges;
-  __Pyx_INCREF(__pyx_t_1);
-  if (unlikely(__pyx_t_1 == Py_None)) {
-    PyErr_SetString(PyExc_TypeError, "object of type 'NoneType' has no len()");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 192; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  }
-  __pyx_t_6 = PyList_GET_SIZE(__pyx_t_1); if (unlikely(__pyx_t_6 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 192; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_r = __pyx_t_6;
-  goto __pyx_L0;
-
-  /* "grasp/formal/hg.pyx":190
- *         return len(self._nodes)
- * 
- *     cpdef size_t n_edges(self):             # <<<<<<<<<<<<<<
- *         """Number of edges"""
- *         return len(self._edges)
- */
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_WriteUnraisable("grasp.formal.hg.Hypergraph.n_edges", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
-  __pyx_r = 0;
-  __pyx_L0:;
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_37n_edges(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_36n_edges[] = "Number of edges";
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_37n_edges(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
-  PyObject *__pyx_r = 0;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("n_edges (wrapper)", 0);
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_36n_edges(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self));
-
-  /* function exit code */
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_36n_edges(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self) {
-  PyObject *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("n_edges", 0);
-  __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_FromSize_t(__pyx_f_5grasp_6formal_2hg_10Hypergraph_n_edges(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 190; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_r = __pyx_t_1;
-  __pyx_t_1 = 0;
-  goto __pyx_L0;
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.n_edges", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = NULL;
-  __pyx_L0:;
-  __Pyx_XGIVEREF(__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* "grasp/formal/hg.pyx":194
- *         return len(self._edges)
- * 
- *     cpdef size_t n_incoming(self, id_t n):             # <<<<<<<<<<<<<<
- *         return len(self._bs[n])
- * 
- */
-
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_39n_incoming(PyObject *__pyx_v_self, PyObject *__pyx_arg_n); /*proto*/
-static size_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_n_incoming(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n, int __pyx_skip_dispatch) {
-  size_t __pyx_r;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  PyObject *__pyx_t_2 = NULL;
-  PyObject *__pyx_t_3 = NULL;
-  PyObject *__pyx_t_4 = NULL;
-  PyObject *__pyx_t_5 = NULL;
-  PyObject *__pyx_t_6 = NULL;
-  size_t __pyx_t_7;
-  Py_ssize_t __pyx_t_8;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("n_incoming", 0);
-  /* Check if called by wrapper */
-  if (unlikely(__pyx_skip_dispatch)) ;
-  /* Check if overridden in Python */
-  else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_n_incoming); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 194; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_39n_incoming)) {
-      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_n); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 194; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_GOTREF(__pyx_t_3);
-      __Pyx_INCREF(__pyx_t_1);
-      __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
-      if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_4))) {
-        __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_4);
-        if (likely(__pyx_t_5)) {
-          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
-          __Pyx_INCREF(__pyx_t_5);
-          __Pyx_INCREF(function);
-          __Pyx_DECREF_SET(__pyx_t_4, function);
-        }
-      }
-      if (!__pyx_t_5) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 194; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-        __Pyx_GOTREF(__pyx_t_2);
-      } else {
-        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 194; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_GOTREF(__pyx_t_6);
-        __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __pyx_t_5 = NULL;
-        __Pyx_GIVEREF(__pyx_t_3);
-        PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
-        __pyx_t_3 = 0;
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 194; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_GOTREF(__pyx_t_2);
-        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      }
-      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_7 = __Pyx_PyInt_As_size_t(__pyx_t_2); if (unlikely((__pyx_t_7 == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 194; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-      __pyx_r = __pyx_t_7;
-      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      goto __pyx_L0;
-    }
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  }
-
-  /* "grasp/formal/hg.pyx":195
- * 
- *     cpdef size_t n_incoming(self, id_t n):
- *         return len(self._bs[n])             # <<<<<<<<<<<<<<
- * 
- *     cpdef iterglue(self):
- */
-  if (unlikely(__pyx_v_self->_bs == Py_None)) {
-    PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 195; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  }
-  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_bs, __pyx_v_n, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 195; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_8 = PyObject_Length(__pyx_t_1); if (unlikely(__pyx_t_8 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 195; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_r = __pyx_t_8;
-  goto __pyx_L0;
-
-  /* "grasp/formal/hg.pyx":194
- *         return len(self._edges)
- * 
- *     cpdef size_t n_incoming(self, id_t n):             # <<<<<<<<<<<<<<
- *         return len(self._bs[n])
- * 
- */
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_XDECREF(__pyx_t_5);
-  __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_WriteUnraisable("grasp.formal.hg.Hypergraph.n_incoming", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
-  __pyx_r = 0;
-  __pyx_L0:;
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_39n_incoming(PyObject *__pyx_v_self, PyObject *__pyx_arg_n); /*proto*/
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_39n_incoming(PyObject *__pyx_v_self, PyObject *__pyx_arg_n) {
-  __pyx_t_5grasp_6ptypes_id_t __pyx_v_n;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  PyObject *__pyx_r = 0;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("n_incoming (wrapper)", 0);
-  assert(__pyx_arg_n); {
-    __pyx_v_n = __Pyx_PyInt_As_long(__pyx_arg_n); if (unlikely((__pyx_v_n == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 194; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
-  }
-  goto __pyx_L4_argument_unpacking_done;
-  __pyx_L3_error:;
-  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.n_incoming", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __Pyx_RefNannyFinishContext();
-  return NULL;
-  __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_38n_incoming(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_n));
-
-  /* function exit code */
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_38n_incoming(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n) {
-  PyObject *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("n_incoming", 0);
-  __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_FromSize_t(__pyx_f_5grasp_6formal_2hg_10Hypergraph_n_incoming(__pyx_v_self, __pyx_v_n, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 194; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_r = __pyx_t_1;
-  __pyx_t_1 = 0;
-  goto __pyx_L0;
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.n_incoming", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = NULL;
-  __pyx_L0:;
-  __Pyx_XGIVEREF(__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* "grasp/formal/hg.pyx":197
- *         return len(self._bs[n])
- * 
- *     cpdef iterglue(self):             # <<<<<<<<<<<<<<
- *         """Iterator over indices of glue edges (in no particular order)."""
- *         return iter(self._glue)
- */
-
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_41iterglue(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterglue(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, int __pyx_skip_dispatch) {
-  PyObject *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  PyObject *__pyx_t_2 = NULL;
-  PyObject *__pyx_t_3 = NULL;
-  PyObject *__pyx_t_4 = NULL;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("iterglue", 0);
-  /* Check if called by wrapper */
-  if (unlikely(__pyx_skip_dispatch)) ;
-  /* Check if overridden in Python */
-  else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_iterglue); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_41iterglue)) {
-      __Pyx_XDECREF(__pyx_r);
-      __Pyx_INCREF(__pyx_t_1);
-      __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
-      if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_3))) {
-        __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_3);
-        if (likely(__pyx_t_4)) {
-          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
-          __Pyx_INCREF(__pyx_t_4);
-          __Pyx_INCREF(function);
-          __Pyx_DECREF_SET(__pyx_t_3, function);
-        }
-      }
-      if (__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      } else {
-        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-      }
-      __Pyx_GOTREF(__pyx_t_2);
-      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      __pyx_r = __pyx_t_2;
-      __pyx_t_2 = 0;
-      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      goto __pyx_L0;
-    }
-    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  }
-
-  /* "grasp/formal/hg.pyx":199
- *     cpdef iterglue(self):
- *         """Iterator over indices of glue edges (in no particular order)."""
- *         return iter(self._glue)             # <<<<<<<<<<<<<<
- * 
- *     cpdef iterbs(self, id_t head):
- */
-  __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_v_self->_glue;
-  __Pyx_INCREF(__pyx_t_1);
-  __pyx_t_2 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 199; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_2);
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_r = __pyx_t_2;
-  __pyx_t_2 = 0;
-  goto __pyx_L0;
-
-  /* "grasp/formal/hg.pyx":197
- *         return len(self._bs[n])
- * 
- *     cpdef iterglue(self):             # <<<<<<<<<<<<<<
- *         """Iterator over indices of glue edges (in no particular order)."""
- *         return iter(self._glue)
- */
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_XDECREF(__pyx_t_2);
-  __Pyx_XDECREF(__pyx_t_3);
-  __Pyx_XDECREF(__pyx_t_4);
-  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.iterglue", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = 0;
-  __pyx_L0:;
-  __Pyx_XGIVEREF(__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_41iterglue(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_40iterglue[] = "Iterator over indices of glue edges (in no particular order).";
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_41iterglue(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
-  PyObject *__pyx_r = 0;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("iterglue (wrapper)", 0);
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_40iterglue(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self));
-
-  /* function exit code */
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_40iterglue(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self) {
-  PyObject *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("iterglue", 0);
-  __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_5grasp_6formal_2hg_10Hypergraph_iterglue(__pyx_v_self, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 197; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_r = __pyx_t_1;
-  __pyx_t_1 = 0;
-  goto __pyx_L0;
-
-  /* function exit code */
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.iterglue", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = NULL;
-  __pyx_L0:;
-  __Pyx_XGIVEREF(__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* "grasp/formal/hg.pyx":201
- *         return iter(self._glue)
- * 
- *     cpdef iterbs(self, id_t head):             # <<<<<<<<<<<<<<
- *         """An iterator over the node's incoming edges"""
- *         return iter(self._bs[head])
- */
-
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_43iterbs(PyObject *__pyx_v_self, PyObject *__pyx_arg_head); /*proto*/
-static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterbs(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_head, int __pyx_skip_dispatch) {
-  PyObject *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  PyObject *__pyx_t_2 = NULL;
-  PyObject *__pyx_t_3 = NULL;
-  PyObject *__pyx_t_4 = NULL;
-  PyObject *__pyx_t_5 = NULL;
-  PyObject *__pyx_t_6 = NULL;
-  int __pyx_lineno = 0;
-  const char *__pyx_filename = NULL;
-  int __pyx_clineno = 0;
-  __Pyx_RefNannySetupContext("iterbs", 0);
-  /* Check if called by wrapper */
-  if (unlikely(__pyx_skip_dispatch)) ;
-  /* Check if overridden in Python */
-  else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_iterbs); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 201; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-    __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_43iterbs)) {
-      __Pyx_XDECREF(__pyx_r);
-      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_head); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 201; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_33is_glue)) {
+      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 201; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
@@ -7289,6 +6917,916 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterbs(struct __pyx_obj
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       }
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 201; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __pyx_r = __pyx_t_7;
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      goto __pyx_L0;
+    }
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  }
+
+  /* "grasp/formal/hg.pyx":202
+ * 
+ *     cpdef bint is_glue(self, id_t e):
+ *         return e in self._glue             # <<<<<<<<<<<<<<
+ * 
+ *     cpdef Symbol label(self, id_t n):
+ */
+  __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 202; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_7 = (__Pyx_PySequence_Contains(__pyx_t_1, __pyx_v_self->_glue, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 202; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_r = __pyx_t_7;
+  goto __pyx_L0;
+
+  /* "grasp/formal/hg.pyx":201
+ *         return len(self._bs[head]) == 0
+ * 
+ *     cpdef bint is_glue(self, id_t e):             # <<<<<<<<<<<<<<
+ *         return e in self._glue
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_XDECREF(__pyx_t_6);
+  __Pyx_WriteUnraisable("grasp.formal.hg.Hypergraph.is_glue", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
+  __pyx_r = 0;
+  __pyx_L0:;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_33is_glue(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_33is_glue(PyObject *__pyx_v_self, PyObject *__pyx_arg_e) {
+  __pyx_t_5grasp_6ptypes_id_t __pyx_v_e;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("is_glue (wrapper)", 0);
+  assert(__pyx_arg_e); {
+    __pyx_v_e = __Pyx_PyInt_As_long(__pyx_arg_e); if (unlikely((__pyx_v_e == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 201; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.is_glue", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_32is_glue(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_e));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_32is_glue(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("is_glue", 0);
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_f_5grasp_6formal_2hg_10Hypergraph_is_glue(__pyx_v_self, __pyx_v_e, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 201; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.is_glue", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "grasp/formal/hg.pyx":204
+ *         return e in self._glue
+ * 
+ *     cpdef Symbol label(self, id_t n):             # <<<<<<<<<<<<<<
+ *         """The label associated with a node"""
+ *         return self._nodes[n].label
+ */
+
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_35label(PyObject *__pyx_v_self, PyObject *__pyx_arg_n); /*proto*/
+static struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_f_5grasp_6formal_2hg_10Hypergraph_label(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n, int __pyx_skip_dispatch) {
+  struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_4 = NULL;
+  PyObject *__pyx_t_5 = NULL;
+  PyObject *__pyx_t_6 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("label", 0);
+  /* Check if called by wrapper */
+  if (unlikely(__pyx_skip_dispatch)) ;
+  /* Check if overridden in Python */
+  else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_label); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 204; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_35label)) {
+      __Pyx_XDECREF(((PyObject *)__pyx_r));
+      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_n); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 204; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_INCREF(__pyx_t_1);
+      __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
+      if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_4))) {
+        __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_4);
+        if (likely(__pyx_t_5)) {
+          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
+          __Pyx_INCREF(__pyx_t_5);
+          __Pyx_INCREF(function);
+          __Pyx_DECREF_SET(__pyx_t_4, function);
+        }
+      }
+      if (!__pyx_t_5) {
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 204; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        __Pyx_GOTREF(__pyx_t_2);
+      } else {
+        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 204; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_GOTREF(__pyx_t_6);
+        __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __pyx_t_5 = NULL;
+        __Pyx_GIVEREF(__pyx_t_3);
+        PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
+        __pyx_t_3 = 0;
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 204; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_GOTREF(__pyx_t_2);
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      }
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5grasp_3cfg_6symbol_Symbol))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 204; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_r = ((struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *)__pyx_t_2);
+      __pyx_t_2 = 0;
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      goto __pyx_L0;
+    }
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  }
+
+  /* "grasp/formal/hg.pyx":206
+ *     cpdef Symbol label(self, id_t n):
+ *         """The label associated with a node"""
+ *         return self._nodes[n].label             # <<<<<<<<<<<<<<
+ * 
+ *     cpdef Rule rule(self, id_t e):
+ */
+  __Pyx_XDECREF(((PyObject *)__pyx_r));
+  if (unlikely(__pyx_v_self->_nodes == Py_None)) {
+    PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 206; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  }
+  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_nodes, __pyx_v_n, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 206; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_label); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 206; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5grasp_3cfg_6symbol_Symbol))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 206; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_r = ((struct __pyx_obj_5grasp_3cfg_6symbol_Symbol *)__pyx_t_2);
+  __pyx_t_2 = 0;
+  goto __pyx_L0;
+
+  /* "grasp/formal/hg.pyx":204
+ *         return e in self._glue
+ * 
+ *     cpdef Symbol label(self, id_t n):             # <<<<<<<<<<<<<<
+ *         """The label associated with a node"""
+ *         return self._nodes[n].label
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_XDECREF(__pyx_t_6);
+  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.label", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = 0;
+  __pyx_L0:;
+  __Pyx_XGIVEREF((PyObject *)__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_35label(PyObject *__pyx_v_self, PyObject *__pyx_arg_n); /*proto*/
+static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_34label[] = "The label associated with a node";
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_35label(PyObject *__pyx_v_self, PyObject *__pyx_arg_n) {
+  __pyx_t_5grasp_6ptypes_id_t __pyx_v_n;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("label (wrapper)", 0);
+  assert(__pyx_arg_n); {
+    __pyx_v_n = __Pyx_PyInt_As_long(__pyx_arg_n); if (unlikely((__pyx_v_n == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 204; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.label", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_34label(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_n));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_34label(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("label", 0);
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = ((PyObject *)__pyx_f_5grasp_6formal_2hg_10Hypergraph_label(__pyx_v_self, __pyx_v_n, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 204; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.label", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "grasp/formal/hg.pyx":208
+ *         return self._nodes[n].label
+ * 
+ *     cpdef Rule rule(self, id_t e):             # <<<<<<<<<<<<<<
+ *         """The rule associated with an edge"""
+ *         return self._rules[e]
+ */
+
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_37rule(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
+static struct __pyx_obj_5grasp_3cfg_4rule_Rule *__pyx_f_5grasp_6formal_2hg_10Hypergraph_rule(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e, int __pyx_skip_dispatch) {
+  struct __pyx_obj_5grasp_3cfg_4rule_Rule *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_4 = NULL;
+  PyObject *__pyx_t_5 = NULL;
+  PyObject *__pyx_t_6 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("rule", 0);
+  /* Check if called by wrapper */
+  if (unlikely(__pyx_skip_dispatch)) ;
+  /* Check if overridden in Python */
+  else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_rule); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 208; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_37rule)) {
+      __Pyx_XDECREF(((PyObject *)__pyx_r));
+      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_e); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 208; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_INCREF(__pyx_t_1);
+      __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
+      if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_4))) {
+        __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_4);
+        if (likely(__pyx_t_5)) {
+          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
+          __Pyx_INCREF(__pyx_t_5);
+          __Pyx_INCREF(function);
+          __Pyx_DECREF_SET(__pyx_t_4, function);
+        }
+      }
+      if (!__pyx_t_5) {
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 208; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        __Pyx_GOTREF(__pyx_t_2);
+      } else {
+        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 208; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_GOTREF(__pyx_t_6);
+        __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __pyx_t_5 = NULL;
+        __Pyx_GIVEREF(__pyx_t_3);
+        PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
+        __pyx_t_3 = 0;
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 208; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_GOTREF(__pyx_t_2);
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      }
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5grasp_3cfg_4rule_Rule))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 208; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_r = ((struct __pyx_obj_5grasp_3cfg_4rule_Rule *)__pyx_t_2);
+      __pyx_t_2 = 0;
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      goto __pyx_L0;
+    }
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  }
+
+  /* "grasp/formal/hg.pyx":210
+ *     cpdef Rule rule(self, id_t e):
+ *         """The rule associated with an edge"""
+ *         return self._rules[e]             # <<<<<<<<<<<<<<
+ * 
+ *     #cpdef update(self, rules, bint glue=False):
+ */
+  __Pyx_XDECREF(((PyObject *)__pyx_r));
+  if (unlikely(__pyx_v_self->_rules == Py_None)) {
+    PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 210; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  }
+  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_rules, __pyx_v_e, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 210; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __Pyx_GOTREF(__pyx_t_1);
+  if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5grasp_3cfg_4rule_Rule))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 210; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_r = ((struct __pyx_obj_5grasp_3cfg_4rule_Rule *)__pyx_t_1);
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "grasp/formal/hg.pyx":208
+ *         return self._nodes[n].label
+ * 
+ *     cpdef Rule rule(self, id_t e):             # <<<<<<<<<<<<<<
+ *         """The rule associated with an edge"""
+ *         return self._rules[e]
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_XDECREF(__pyx_t_6);
+  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.rule", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = 0;
+  __pyx_L0:;
+  __Pyx_XGIVEREF((PyObject *)__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_37rule(PyObject *__pyx_v_self, PyObject *__pyx_arg_e); /*proto*/
+static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_36rule[] = "The rule associated with an edge";
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_37rule(PyObject *__pyx_v_self, PyObject *__pyx_arg_e) {
+  __pyx_t_5grasp_6ptypes_id_t __pyx_v_e;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("rule (wrapper)", 0);
+  assert(__pyx_arg_e); {
+    __pyx_v_e = __Pyx_PyInt_As_long(__pyx_arg_e); if (unlikely((__pyx_v_e == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 208; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.rule", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_36rule(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_e));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_36rule(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_e) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("rule", 0);
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = ((PyObject *)__pyx_f_5grasp_6formal_2hg_10Hypergraph_rule(__pyx_v_self, __pyx_v_e, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 208; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.rule", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "grasp/formal/hg.pyx":222
+ *     #        self.add_edge(rule, glue=glue)
+ * 
+ *     cpdef size_t n_nodes(self):             # <<<<<<<<<<<<<<
+ *         """Number of nodes"""
+ *         return len(self._nodes)
+ */
+
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_39n_nodes(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static size_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_n_nodes(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, int __pyx_skip_dispatch) {
+  size_t __pyx_r;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_4 = NULL;
+  size_t __pyx_t_5;
+  Py_ssize_t __pyx_t_6;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("n_nodes", 0);
+  /* Check if called by wrapper */
+  if (unlikely(__pyx_skip_dispatch)) ;
+  /* Check if overridden in Python */
+  else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_n_nodes); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 222; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_39n_nodes)) {
+      __Pyx_INCREF(__pyx_t_1);
+      __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
+      if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_3))) {
+        __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_3);
+        if (likely(__pyx_t_4)) {
+          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+          __Pyx_INCREF(__pyx_t_4);
+          __Pyx_INCREF(function);
+          __Pyx_DECREF_SET(__pyx_t_3, function);
+        }
+      }
+      if (__pyx_t_4) {
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 222; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      } else {
+        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 222; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      }
+      __Pyx_GOTREF(__pyx_t_2);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_t_5 = __Pyx_PyInt_As_size_t(__pyx_t_2); if (unlikely((__pyx_t_5 == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 222; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __pyx_r = __pyx_t_5;
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      goto __pyx_L0;
+    }
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  }
+
+  /* "grasp/formal/hg.pyx":224
+ *     cpdef size_t n_nodes(self):
+ *         """Number of nodes"""
+ *         return len(self._nodes)             # <<<<<<<<<<<<<<
+ * 
+ *     cpdef size_t n_edges(self):
+ */
+  __pyx_t_1 = __pyx_v_self->_nodes;
+  __Pyx_INCREF(__pyx_t_1);
+  if (unlikely(__pyx_t_1 == Py_None)) {
+    PyErr_SetString(PyExc_TypeError, "object of type 'NoneType' has no len()");
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 224; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  }
+  __pyx_t_6 = PyList_GET_SIZE(__pyx_t_1); if (unlikely(__pyx_t_6 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 224; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_r = __pyx_t_6;
+  goto __pyx_L0;
+
+  /* "grasp/formal/hg.pyx":222
+ *     #        self.add_edge(rule, glue=glue)
+ * 
+ *     cpdef size_t n_nodes(self):             # <<<<<<<<<<<<<<
+ *         """Number of nodes"""
+ *         return len(self._nodes)
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_WriteUnraisable("grasp.formal.hg.Hypergraph.n_nodes", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
+  __pyx_r = 0;
+  __pyx_L0:;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_39n_nodes(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_38n_nodes[] = "Number of nodes";
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_39n_nodes(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("n_nodes (wrapper)", 0);
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_38n_nodes(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_38n_nodes(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("n_nodes", 0);
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __Pyx_PyInt_FromSize_t(__pyx_f_5grasp_6formal_2hg_10Hypergraph_n_nodes(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 222; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.n_nodes", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "grasp/formal/hg.pyx":226
+ *         return len(self._nodes)
+ * 
+ *     cpdef size_t n_edges(self):             # <<<<<<<<<<<<<<
+ *         """Number of edges"""
+ *         return len(self._edges)
+ */
+
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_41n_edges(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static size_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_n_edges(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, int __pyx_skip_dispatch) {
+  size_t __pyx_r;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_4 = NULL;
+  size_t __pyx_t_5;
+  Py_ssize_t __pyx_t_6;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("n_edges", 0);
+  /* Check if called by wrapper */
+  if (unlikely(__pyx_skip_dispatch)) ;
+  /* Check if overridden in Python */
+  else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_n_edges); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_41n_edges)) {
+      __Pyx_INCREF(__pyx_t_1);
+      __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
+      if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_3))) {
+        __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_3);
+        if (likely(__pyx_t_4)) {
+          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+          __Pyx_INCREF(__pyx_t_4);
+          __Pyx_INCREF(function);
+          __Pyx_DECREF_SET(__pyx_t_3, function);
+        }
+      }
+      if (__pyx_t_4) {
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      } else {
+        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      }
+      __Pyx_GOTREF(__pyx_t_2);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __pyx_t_5 = __Pyx_PyInt_As_size_t(__pyx_t_2); if (unlikely((__pyx_t_5 == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __pyx_r = __pyx_t_5;
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      goto __pyx_L0;
+    }
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  }
+
+  /* "grasp/formal/hg.pyx":228
+ *     cpdef size_t n_edges(self):
+ *         """Number of edges"""
+ *         return len(self._edges)             # <<<<<<<<<<<<<<
+ * 
+ *     cpdef size_t n_incoming(self, id_t n):
+ */
+  __pyx_t_1 = __pyx_v_self->_edges;
+  __Pyx_INCREF(__pyx_t_1);
+  if (unlikely(__pyx_t_1 == Py_None)) {
+    PyErr_SetString(PyExc_TypeError, "object of type 'NoneType' has no len()");
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  }
+  __pyx_t_6 = PyList_GET_SIZE(__pyx_t_1); if (unlikely(__pyx_t_6 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_r = __pyx_t_6;
+  goto __pyx_L0;
+
+  /* "grasp/formal/hg.pyx":226
+ *         return len(self._nodes)
+ * 
+ *     cpdef size_t n_edges(self):             # <<<<<<<<<<<<<<
+ *         """Number of edges"""
+ *         return len(self._edges)
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_WriteUnraisable("grasp.formal.hg.Hypergraph.n_edges", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
+  __pyx_r = 0;
+  __pyx_L0:;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_41n_edges(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_40n_edges[] = "Number of edges";
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_41n_edges(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("n_edges (wrapper)", 0);
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_40n_edges(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_40n_edges(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("n_edges", 0);
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __Pyx_PyInt_FromSize_t(__pyx_f_5grasp_6formal_2hg_10Hypergraph_n_edges(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 226; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.n_edges", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "grasp/formal/hg.pyx":230
+ *         return len(self._edges)
+ * 
+ *     cpdef size_t n_incoming(self, id_t n):             # <<<<<<<<<<<<<<
+ *         return len(self._bs[n])
+ * 
+ */
+
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_43n_incoming(PyObject *__pyx_v_self, PyObject *__pyx_arg_n); /*proto*/
+static size_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_n_incoming(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n, int __pyx_skip_dispatch) {
+  size_t __pyx_r;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_4 = NULL;
+  PyObject *__pyx_t_5 = NULL;
+  PyObject *__pyx_t_6 = NULL;
+  size_t __pyx_t_7;
+  Py_ssize_t __pyx_t_8;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("n_incoming", 0);
+  /* Check if called by wrapper */
+  if (unlikely(__pyx_skip_dispatch)) ;
+  /* Check if overridden in Python */
+  else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_n_incoming); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 230; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_43n_incoming)) {
+      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_n); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 230; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_INCREF(__pyx_t_1);
+      __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
+      if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_4))) {
+        __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_4);
+        if (likely(__pyx_t_5)) {
+          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
+          __Pyx_INCREF(__pyx_t_5);
+          __Pyx_INCREF(function);
+          __Pyx_DECREF_SET(__pyx_t_4, function);
+        }
+      }
+      if (!__pyx_t_5) {
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 230; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        __Pyx_GOTREF(__pyx_t_2);
+      } else {
+        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 230; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_GOTREF(__pyx_t_6);
+        __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __pyx_t_5 = NULL;
+        __Pyx_GIVEREF(__pyx_t_3);
+        PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
+        __pyx_t_3 = 0;
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 230; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_GOTREF(__pyx_t_2);
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      }
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __pyx_t_7 = __Pyx_PyInt_As_size_t(__pyx_t_2); if (unlikely((__pyx_t_7 == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 230; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __pyx_r = __pyx_t_7;
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      goto __pyx_L0;
+    }
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  }
+
+  /* "grasp/formal/hg.pyx":231
+ * 
+ *     cpdef size_t n_incoming(self, id_t n):
+ *         return len(self._bs[n])             # <<<<<<<<<<<<<<
+ * 
+ *     cpdef iterglue(self):
+ */
+  if (unlikely(__pyx_v_self->_bs == Py_None)) {
+    PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  }
+  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_bs, __pyx_v_n, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_8 = PyObject_Length(__pyx_t_1); if (unlikely(__pyx_t_8 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_r = __pyx_t_8;
+  goto __pyx_L0;
+
+  /* "grasp/formal/hg.pyx":230
+ *         return len(self._edges)
+ * 
+ *     cpdef size_t n_incoming(self, id_t n):             # <<<<<<<<<<<<<<
+ *         return len(self._bs[n])
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_XDECREF(__pyx_t_5);
+  __Pyx_XDECREF(__pyx_t_6);
+  __Pyx_WriteUnraisable("grasp.formal.hg.Hypergraph.n_incoming", __pyx_clineno, __pyx_lineno, __pyx_filename, 0, 0);
+  __pyx_r = 0;
+  __pyx_L0:;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_43n_incoming(PyObject *__pyx_v_self, PyObject *__pyx_arg_n); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_43n_incoming(PyObject *__pyx_v_self, PyObject *__pyx_arg_n) {
+  __pyx_t_5grasp_6ptypes_id_t __pyx_v_n;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("n_incoming (wrapper)", 0);
+  assert(__pyx_arg_n); {
+    __pyx_v_n = __Pyx_PyInt_As_long(__pyx_arg_n); if (unlikely((__pyx_v_n == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 230; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.n_incoming", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_42n_incoming(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_n));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_42n_incoming(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_n) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("n_incoming", 0);
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __Pyx_PyInt_FromSize_t(__pyx_f_5grasp_6formal_2hg_10Hypergraph_n_incoming(__pyx_v_self, __pyx_v_n, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 230; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.n_incoming", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "grasp/formal/hg.pyx":233
+ *         return len(self._bs[n])
+ * 
+ *     cpdef iterglue(self):             # <<<<<<<<<<<<<<
+ *         """Iterator over indices of glue edges (in no particular order)."""
+ *         return iter(self._glue)
+ */
+
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_45iterglue(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterglue(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, int __pyx_skip_dispatch) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_4 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("iterglue", 0);
+  /* Check if called by wrapper */
+  if (unlikely(__pyx_skip_dispatch)) ;
+  /* Check if overridden in Python */
+  else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_iterglue); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 233; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_45iterglue)) {
+      __Pyx_XDECREF(__pyx_r);
+      __Pyx_INCREF(__pyx_t_1);
+      __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
+      if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_3))) {
+        __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_3);
+        if (likely(__pyx_t_4)) {
+          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+          __Pyx_INCREF(__pyx_t_4);
+          __Pyx_INCREF(function);
+          __Pyx_DECREF_SET(__pyx_t_3, function);
+        }
+      }
+      if (__pyx_t_4) {
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 233; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      } else {
+        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 233; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      }
+      __Pyx_GOTREF(__pyx_t_2);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __pyx_r = __pyx_t_2;
       __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -7297,7 +7835,153 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterbs(struct __pyx_obj
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/formal/hg.pyx":203
+  /* "grasp/formal/hg.pyx":235
+ *     cpdef iterglue(self):
+ *         """Iterator over indices of glue edges (in no particular order)."""
+ *         return iter(self._glue)             # <<<<<<<<<<<<<<
+ * 
+ *     cpdef iterbs(self, id_t head):
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __pyx_v_self->_glue;
+  __Pyx_INCREF(__pyx_t_1);
+  __pyx_t_2 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 235; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_r = __pyx_t_2;
+  __pyx_t_2 = 0;
+  goto __pyx_L0;
+
+  /* "grasp/formal/hg.pyx":233
+ *         return len(self._bs[n])
+ * 
+ *     cpdef iterglue(self):             # <<<<<<<<<<<<<<
+ *         """Iterator over indices of glue edges (in no particular order)."""
+ *         return iter(self._glue)
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.iterglue", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = 0;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_45iterglue(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_44iterglue[] = "Iterator over indices of glue edges (in no particular order).";
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_45iterglue(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("iterglue (wrapper)", 0);
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_44iterglue(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_44iterglue(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("iterglue", 0);
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __pyx_f_5grasp_6formal_2hg_10Hypergraph_iterglue(__pyx_v_self, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 233; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.iterglue", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "grasp/formal/hg.pyx":237
+ *         return iter(self._glue)
+ * 
+ *     cpdef iterbs(self, id_t head):             # <<<<<<<<<<<<<<
+ *         """An iterator over the node's incoming edges"""
+ *         return iter(self._bs[head])
+ */
+
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_47iterbs(PyObject *__pyx_v_self, PyObject *__pyx_arg_head); /*proto*/
+static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterbs(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_head, int __pyx_skip_dispatch) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_4 = NULL;
+  PyObject *__pyx_t_5 = NULL;
+  PyObject *__pyx_t_6 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("iterbs", 0);
+  /* Check if called by wrapper */
+  if (unlikely(__pyx_skip_dispatch)) ;
+  /* Check if overridden in Python */
+  else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_iterbs); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_47iterbs)) {
+      __Pyx_XDECREF(__pyx_r);
+      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_head); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_INCREF(__pyx_t_1);
+      __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
+      if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_4))) {
+        __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_4);
+        if (likely(__pyx_t_5)) {
+          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_4);
+          __Pyx_INCREF(__pyx_t_5);
+          __Pyx_INCREF(function);
+          __Pyx_DECREF_SET(__pyx_t_4, function);
+        }
+      }
+      if (!__pyx_t_5) {
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+        __Pyx_GOTREF(__pyx_t_2);
+      } else {
+        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_GOTREF(__pyx_t_6);
+        __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __pyx_t_5 = NULL;
+        __Pyx_GIVEREF(__pyx_t_3);
+        PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
+        __pyx_t_3 = 0;
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_GOTREF(__pyx_t_2);
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+      }
+      __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __pyx_r = __pyx_t_2;
+      __pyx_t_2 = 0;
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      goto __pyx_L0;
+    }
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  }
+
+  /* "grasp/formal/hg.pyx":239
  *     cpdef iterbs(self, id_t head):
  *         """An iterator over the node's incoming edges"""
  *         return iter(self._bs[head])             # <<<<<<<<<<<<<<
@@ -7307,18 +7991,18 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterbs(struct __pyx_obj
   __Pyx_XDECREF(__pyx_r);
   if (unlikely(__pyx_v_self->_bs == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 203; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 239; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_bs, __pyx_v_head, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 203; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_bs, __pyx_v_head, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 239; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 203; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 239; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":201
+  /* "grasp/formal/hg.pyx":237
  *         return iter(self._glue)
  * 
  *     cpdef iterbs(self, id_t head):             # <<<<<<<<<<<<<<
@@ -7343,9 +8027,9 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterbs(struct __pyx_obj
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_43iterbs(PyObject *__pyx_v_self, PyObject *__pyx_arg_head); /*proto*/
-static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_42iterbs[] = "An iterator over the node's incoming edges";
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_43iterbs(PyObject *__pyx_v_self, PyObject *__pyx_arg_head) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_47iterbs(PyObject *__pyx_v_self, PyObject *__pyx_arg_head); /*proto*/
+static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_46iterbs[] = "An iterator over the node's incoming edges";
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_47iterbs(PyObject *__pyx_v_self, PyObject *__pyx_arg_head) {
   __pyx_t_5grasp_6ptypes_id_t __pyx_v_head;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
@@ -7354,7 +8038,7 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_43iterbs(PyObject *__p
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("iterbs (wrapper)", 0);
   assert(__pyx_arg_head); {
-    __pyx_v_head = __Pyx_PyInt_As_long(__pyx_arg_head); if (unlikely((__pyx_v_head == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 201; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_head = __Pyx_PyInt_As_long(__pyx_arg_head); if (unlikely((__pyx_v_head == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -7362,14 +8046,14 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_43iterbs(PyObject *__p
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_42iterbs(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_head));
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_46iterbs(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_head));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_42iterbs(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_head) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_46iterbs(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_head) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -7378,7 +8062,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_42iterbs(struct __pyx_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("iterbs", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_5grasp_6formal_2hg_10Hypergraph_iterbs(__pyx_v_self, __pyx_v_head, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 201; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __pyx_f_5grasp_6formal_2hg_10Hypergraph_iterbs(__pyx_v_self, __pyx_v_head, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -7395,7 +8079,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_42iterbs(struct __pyx_
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":205
+/* "grasp/formal/hg.pyx":241
  *         return iter(self._bs[head])
  * 
  *     cpdef id_t bs_i(self, id_t head, size_t i):             # <<<<<<<<<<<<<<
@@ -7403,7 +8087,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_42iterbs(struct __pyx_
  *         return self._bs[head][i]
  */
 
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_45bs_i(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_49bs_i(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
 static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_bs_i(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_head, size_t __pyx_v_i, int __pyx_skip_dispatch) {
   __pyx_t_5grasp_6ptypes_id_t __pyx_r;
   __Pyx_RefNannyDeclarations
@@ -7424,12 +8108,12 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_bs_i(
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_bs_i); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 205; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_bs_i); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_45bs_i)) {
-      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_head); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 205; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_49bs_i)) {
+      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_head); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_4 = __Pyx_PyInt_FromSize_t(__pyx_v_i); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 205; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = __Pyx_PyInt_FromSize_t(__pyx_v_i); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_5 = __pyx_t_1; __pyx_t_6 = NULL;
@@ -7444,7 +8128,7 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_bs_i(
           __pyx_t_7 = 1;
         }
       }
-      __pyx_t_8 = PyTuple_New(2+__pyx_t_7); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 205; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_8 = PyTuple_New(2+__pyx_t_7); if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_8);
       if (__pyx_t_6) {
         __Pyx_GIVEREF(__pyx_t_6); PyTuple_SET_ITEM(__pyx_t_8, 0, __pyx_t_6); __pyx_t_6 = NULL;
@@ -7455,11 +8139,11 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_bs_i(
       PyTuple_SET_ITEM(__pyx_t_8, 1+__pyx_t_7, __pyx_t_4);
       __pyx_t_3 = 0;
       __pyx_t_4 = 0;
-      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_8, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 205; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_8, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __pyx_t_9 = __Pyx_PyInt_As_long(__pyx_t_2); if (unlikely((__pyx_t_9 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 205; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_9 = __Pyx_PyInt_As_long(__pyx_t_2); if (unlikely((__pyx_t_9 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __pyx_r = __pyx_t_9;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -7468,7 +8152,7 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_bs_i(
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/formal/hg.pyx":207
+  /* "grasp/formal/hg.pyx":243
  *     cpdef id_t bs_i(self, id_t head, size_t i):
  *         """Return the ith edge in BS(head)"""
  *         return self._bs[head][i]             # <<<<<<<<<<<<<<
@@ -7477,19 +8161,19 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_bs_i(
  */
   if (unlikely(__pyx_v_self->_bs == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 207; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_bs, __pyx_v_head, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 207; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_bs, __pyx_v_head, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_GetItemInt(__pyx_t_1, __pyx_v_i, size_t, 0, __Pyx_PyInt_FromSize_t, 0, 0, 1); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 207; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __pyx_t_2 = __Pyx_GetItemInt(__pyx_t_1, __pyx_v_i, size_t, 0, __Pyx_PyInt_FromSize_t, 0, 0, 1); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_9 = __Pyx_PyInt_As_long(__pyx_t_2); if (unlikely((__pyx_t_9 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 207; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_9 = __Pyx_PyInt_As_long(__pyx_t_2); if (unlikely((__pyx_t_9 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 243; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_r = __pyx_t_9;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":205
+  /* "grasp/formal/hg.pyx":241
  *         return iter(self._bs[head])
  * 
  *     cpdef id_t bs_i(self, id_t head, size_t i):             # <<<<<<<<<<<<<<
@@ -7514,9 +8198,9 @@ static __pyx_t_5grasp_6ptypes_id_t __pyx_f_5grasp_6formal_2hg_10Hypergraph_bs_i(
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_45bs_i(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_44bs_i[] = "Return the ith edge in BS(head)";
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_45bs_i(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_49bs_i(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_48bs_i[] = "Return the ith edge in BS(head)";
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_49bs_i(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   __pyx_t_5grasp_6ptypes_id_t __pyx_v_head;
   size_t __pyx_v_i;
   int __pyx_lineno = 0;
@@ -7545,11 +8229,11 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_45bs_i(PyObject *__pyx
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_i)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("bs_i", 1, 2, 2, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 205; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+          __Pyx_RaiseArgtupleInvalid("bs_i", 1, 2, 2, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "bs_i") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 205; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "bs_i") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -7557,25 +8241,25 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_45bs_i(PyObject *__pyx
       values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
     }
-    __pyx_v_head = __Pyx_PyInt_As_long(values[0]); if (unlikely((__pyx_v_head == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 205; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
-    __pyx_v_i = __Pyx_PyInt_As_size_t(values[1]); if (unlikely((__pyx_v_i == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 205; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_head = __Pyx_PyInt_As_long(values[0]); if (unlikely((__pyx_v_head == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_i = __Pyx_PyInt_As_size_t(values[1]); if (unlikely((__pyx_v_i == (size_t)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("bs_i", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 205; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __Pyx_RaiseArgtupleInvalid("bs_i", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
   __Pyx_AddTraceback("grasp.formal.hg.Hypergraph.bs_i", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_44bs_i(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), __pyx_v_head, __pyx_v_i);
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_48bs_i(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), __pyx_v_head, __pyx_v_i);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_44bs_i(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_head, size_t __pyx_v_i) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_48bs_i(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_head, size_t __pyx_v_i) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -7584,7 +8268,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_44bs_i(struct __pyx_ob
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("bs_i", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_f_5grasp_6formal_2hg_10Hypergraph_bs_i(__pyx_v_self, __pyx_v_head, __pyx_v_i, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 205; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_f_5grasp_6formal_2hg_10Hypergraph_bs_i(__pyx_v_self, __pyx_v_head, __pyx_v_i, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -7601,7 +8285,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_44bs_i(struct __pyx_ob
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":209
+/* "grasp/formal/hg.pyx":245
  *         return self._bs[head][i]
  * 
  *     cpdef iterfs(self, id_t node):             # <<<<<<<<<<<<<<
@@ -7609,7 +8293,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_44bs_i(struct __pyx_ob
  *         return iter(self._fs[node])
  */
 
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_47iterfs(PyObject *__pyx_v_self, PyObject *__pyx_arg_node); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_51iterfs(PyObject *__pyx_v_self, PyObject *__pyx_arg_node); /*proto*/
 static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterfs(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_node, int __pyx_skip_dispatch) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
@@ -7627,11 +8311,11 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterfs(struct __pyx_obj
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_iterfs); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 209; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_iterfs); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_47iterfs)) {
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_51iterfs)) {
       __Pyx_XDECREF(__pyx_r);
-      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_node); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 209; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_node); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
@@ -7645,17 +8329,17 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterfs(struct __pyx_obj
         }
       }
       if (!__pyx_t_5) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 209; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 209; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_6);
         __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __pyx_t_5 = NULL;
         __Pyx_GIVEREF(__pyx_t_3);
         PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
         __pyx_t_3 = 0;
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 209; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       }
@@ -7668,7 +8352,7 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterfs(struct __pyx_obj
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/formal/hg.pyx":211
+  /* "grasp/formal/hg.pyx":247
  *     cpdef iterfs(self, id_t node):
  *         """An iterator over the node's outgoing edges (in arbitrary order)."""
  *         return iter(self._fs[node])             # <<<<<<<<<<<<<<
@@ -7678,18 +8362,18 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterfs(struct __pyx_obj
   __Pyx_XDECREF(__pyx_r);
   if (unlikely(__pyx_v_self->_fs == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 211; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 247; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_fs, __pyx_v_node, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 211; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_fs, __pyx_v_node, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 247; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 211; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 247; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":209
+  /* "grasp/formal/hg.pyx":245
  *         return self._bs[head][i]
  * 
  *     cpdef iterfs(self, id_t node):             # <<<<<<<<<<<<<<
@@ -7714,9 +8398,9 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterfs(struct __pyx_obj
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_47iterfs(PyObject *__pyx_v_self, PyObject *__pyx_arg_node); /*proto*/
-static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_46iterfs[] = "An iterator over the node's outgoing edges (in arbitrary order).";
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_47iterfs(PyObject *__pyx_v_self, PyObject *__pyx_arg_node) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_51iterfs(PyObject *__pyx_v_self, PyObject *__pyx_arg_node); /*proto*/
+static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_50iterfs[] = "An iterator over the node's outgoing edges (in arbitrary order).";
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_51iterfs(PyObject *__pyx_v_self, PyObject *__pyx_arg_node) {
   __pyx_t_5grasp_6ptypes_id_t __pyx_v_node;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
@@ -7725,7 +8409,7 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_47iterfs(PyObject *__p
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("iterfs (wrapper)", 0);
   assert(__pyx_arg_node); {
-    __pyx_v_node = __Pyx_PyInt_As_long(__pyx_arg_node); if (unlikely((__pyx_v_node == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 209; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_node = __Pyx_PyInt_As_long(__pyx_arg_node); if (unlikely((__pyx_v_node == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -7733,14 +8417,14 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_47iterfs(PyObject *__p
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_46iterfs(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_node));
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_50iterfs(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_node));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_46iterfs(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_node) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_50iterfs(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_node) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -7749,7 +8433,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_46iterfs(struct __pyx_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("iterfs", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_5grasp_6formal_2hg_10Hypergraph_iterfs(__pyx_v_self, __pyx_v_node, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 209; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __pyx_f_5grasp_6formal_2hg_10Hypergraph_iterfs(__pyx_v_self, __pyx_v_node, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 245; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -7766,7 +8450,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_46iterfs(struct __pyx_
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":213
+/* "grasp/formal/hg.pyx":249
  *         return iter(self._fs[node])
  * 
  *     cpdef iterdeps(self, id_t node):             # <<<<<<<<<<<<<<
@@ -7774,7 +8458,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_46iterfs(struct __pyx_
  *         return iter(self._deps[node])
  */
 
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_49iterdeps(PyObject *__pyx_v_self, PyObject *__pyx_arg_node); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_53iterdeps(PyObject *__pyx_v_self, PyObject *__pyx_arg_node); /*proto*/
 static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterdeps(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_node, int __pyx_skip_dispatch) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
@@ -7792,11 +8476,11 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterdeps(struct __pyx_o
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_iterdeps); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 213; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_iterdeps); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 249; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_49iterdeps)) {
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_53iterdeps)) {
       __Pyx_XDECREF(__pyx_r);
-      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_node); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 213; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_node); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 249; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
@@ -7810,17 +8494,17 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterdeps(struct __pyx_o
         }
       }
       if (!__pyx_t_5) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 213; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 249; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 213; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 249; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_6);
         __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __pyx_t_5 = NULL;
         __Pyx_GIVEREF(__pyx_t_3);
         PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
         __pyx_t_3 = 0;
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 213; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 249; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       }
@@ -7833,7 +8517,7 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterdeps(struct __pyx_o
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/formal/hg.pyx":215
+  /* "grasp/formal/hg.pyx":251
  *     cpdef iterdeps(self, id_t node):
  *         """An iterator over the node's outgoing edges (in arbitrary order)."""
  *         return iter(self._deps[node])             # <<<<<<<<<<<<<<
@@ -7843,18 +8527,18 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterdeps(struct __pyx_o
   __Pyx_XDECREF(__pyx_r);
   if (unlikely(__pyx_v_self->_deps == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 251; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_deps, __pyx_v_node, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __pyx_t_1 = __Pyx_GetItemInt_List(__pyx_v_self->_deps, __pyx_v_node, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 251; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 215; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 251; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":213
+  /* "grasp/formal/hg.pyx":249
  *         return iter(self._fs[node])
  * 
  *     cpdef iterdeps(self, id_t node):             # <<<<<<<<<<<<<<
@@ -7879,9 +8563,9 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterdeps(struct __pyx_o
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_49iterdeps(PyObject *__pyx_v_self, PyObject *__pyx_arg_node); /*proto*/
-static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_48iterdeps[] = "An iterator over the node's outgoing edges (in arbitrary order).";
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_49iterdeps(PyObject *__pyx_v_self, PyObject *__pyx_arg_node) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_53iterdeps(PyObject *__pyx_v_self, PyObject *__pyx_arg_node); /*proto*/
+static char __pyx_doc_5grasp_6formal_2hg_10Hypergraph_52iterdeps[] = "An iterator over the node's outgoing edges (in arbitrary order).";
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_53iterdeps(PyObject *__pyx_v_self, PyObject *__pyx_arg_node) {
   __pyx_t_5grasp_6ptypes_id_t __pyx_v_node;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
@@ -7890,7 +8574,7 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_49iterdeps(PyObject *_
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("iterdeps (wrapper)", 0);
   assert(__pyx_arg_node); {
-    __pyx_v_node = __Pyx_PyInt_As_long(__pyx_arg_node); if (unlikely((__pyx_v_node == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 213; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_node = __Pyx_PyInt_As_long(__pyx_arg_node); if (unlikely((__pyx_v_node == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 249; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -7898,14 +8582,14 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_49iterdeps(PyObject *_
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_48iterdeps(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_node));
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_52iterdeps(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_node));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_48iterdeps(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_node) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_52iterdeps(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_node) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -7914,7 +8598,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_48iterdeps(struct __py
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("iterdeps", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_5grasp_6formal_2hg_10Hypergraph_iterdeps(__pyx_v_self, __pyx_v_node, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 213; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __pyx_f_5grasp_6formal_2hg_10Hypergraph_iterdeps(__pyx_v_self, __pyx_v_node, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 249; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -7931,7 +8615,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_48iterdeps(struct __py
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":217
+/* "grasp/formal/hg.pyx":253
  *         return iter(self._deps[node])
  * 
  *     cpdef bint self_depends(self, id_t node):             # <<<<<<<<<<<<<<
@@ -7939,7 +8623,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_48iterdeps(struct __py
  * 
  */
 
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_51self_depends(PyObject *__pyx_v_self, PyObject *__pyx_arg_node); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_55self_depends(PyObject *__pyx_v_self, PyObject *__pyx_arg_node); /*proto*/
 static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_self_depends(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_node, int __pyx_skip_dispatch) {
   int __pyx_r;
   __Pyx_RefNannyDeclarations
@@ -7958,10 +8642,10 @@ static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_self_depends(struct __pyx_obj
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_self_depends); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 217; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_self_depends); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 253; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_51self_depends)) {
-      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_node); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 217; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_55self_depends)) {
+      __pyx_t_3 = __Pyx_PyInt_From_long(__pyx_v_node); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 253; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_4 = __pyx_t_1; __pyx_t_5 = NULL;
@@ -7975,22 +8659,22 @@ static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_self_depends(struct __pyx_obj
         }
       }
       if (!__pyx_t_5) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 217; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 253; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
         __Pyx_GOTREF(__pyx_t_2);
       } else {
-        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 217; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 253; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_6);
         __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_5); __pyx_t_5 = NULL;
         __Pyx_GIVEREF(__pyx_t_3);
         PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_t_3);
         __pyx_t_3 = 0;
-        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 217; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 253; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_GOTREF(__pyx_t_2);
         __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       }
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 217; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_7 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 253; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __pyx_r = __pyx_t_7;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -7999,28 +8683,28 @@ static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_self_depends(struct __pyx_obj
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/formal/hg.pyx":218
+  /* "grasp/formal/hg.pyx":254
  * 
  *     cpdef bint self_depends(self, id_t node):
  *         return node in <set>self._deps[node]             # <<<<<<<<<<<<<<
  * 
  * 
  */
-  __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_v_node); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 218; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyInt_From_long(__pyx_v_node); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 254; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   if (unlikely(__pyx_v_self->_deps == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not subscriptable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 218; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 254; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
-  __pyx_t_2 = __Pyx_GetItemInt_List(__pyx_v_self->_deps, __pyx_v_node, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 218; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __pyx_t_2 = __Pyx_GetItemInt_List(__pyx_v_self->_deps, __pyx_v_node, __pyx_t_5grasp_6ptypes_id_t, 1, __Pyx_PyInt_From_long, 1, 1, 1); if (unlikely(__pyx_t_2 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 254; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_7 = (__Pyx_PySequence_Contains(__pyx_t_1, __pyx_t_2, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 218; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_7 = (__Pyx_PySequence_Contains(__pyx_t_1, __pyx_t_2, Py_EQ)); if (unlikely(__pyx_t_7 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 254; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_r = __pyx_t_7;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":217
+  /* "grasp/formal/hg.pyx":253
  *         return iter(self._deps[node])
  * 
  *     cpdef bint self_depends(self, id_t node):             # <<<<<<<<<<<<<<
@@ -8044,8 +8728,8 @@ static int __pyx_f_5grasp_6formal_2hg_10Hypergraph_self_depends(struct __pyx_obj
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_51self_depends(PyObject *__pyx_v_self, PyObject *__pyx_arg_node); /*proto*/
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_51self_depends(PyObject *__pyx_v_self, PyObject *__pyx_arg_node) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_55self_depends(PyObject *__pyx_v_self, PyObject *__pyx_arg_node); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_55self_depends(PyObject *__pyx_v_self, PyObject *__pyx_arg_node) {
   __pyx_t_5grasp_6ptypes_id_t __pyx_v_node;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
@@ -8054,7 +8738,7 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_51self_depends(PyObjec
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("self_depends (wrapper)", 0);
   assert(__pyx_arg_node); {
-    __pyx_v_node = __Pyx_PyInt_As_long(__pyx_arg_node); if (unlikely((__pyx_v_node == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 217; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+    __pyx_v_node = __Pyx_PyInt_As_long(__pyx_arg_node); if (unlikely((__pyx_v_node == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 253; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -8062,14 +8746,14 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Hypergraph_51self_depends(PyObjec
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_50self_depends(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_node));
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Hypergraph_54self_depends(((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self), ((__pyx_t_5grasp_6ptypes_id_t)__pyx_v_node));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_50self_depends(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_node) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_54self_depends(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_v_self, __pyx_t_5grasp_6ptypes_id_t __pyx_v_node) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -8078,7 +8762,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_50self_depends(struct 
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("self_depends", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_f_5grasp_6formal_2hg_10Hypergraph_self_depends(__pyx_v_self, __pyx_v_node, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 217; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyBool_FromLong(__pyx_f_5grasp_6formal_2hg_10Hypergraph_self_depends(__pyx_v_self, __pyx_v_node, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 253; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -8095,7 +8779,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Hypergraph_50self_depends(struct 
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":223
+/* "grasp/formal/hg.pyx":259
  * cdef class Derivation:
  * 
  *     def __init__(self, Hypergraph derivation):             # <<<<<<<<<<<<<<
@@ -8131,7 +8815,7 @@ static int __pyx_pw_5grasp_6formal_2hg_10Derivation_1__init__(PyObject *__pyx_v_
         else goto __pyx_L5_argtuple_error;
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 223; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "__init__") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 259; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 1) {
       goto __pyx_L5_argtuple_error;
@@ -8142,13 +8826,13 @@ static int __pyx_pw_5grasp_6formal_2hg_10Derivation_1__init__(PyObject *__pyx_v_
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__init__", 1, 1, 1, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 223; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __Pyx_RaiseArgtupleInvalid("__init__", 1, 1, 1, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 259; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
   __Pyx_AddTraceback("grasp.formal.hg.Derivation.__init__", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return -1;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_derivation), __pyx_ptype_5grasp_6formal_2hg_Hypergraph, 1, "derivation", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 223; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_derivation), __pyx_ptype_5grasp_6formal_2hg_Hypergraph, 1, "derivation", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 259; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Derivation___init__(((struct __pyx_obj_5grasp_6formal_2hg_Derivation *)__pyx_v_self), __pyx_v_derivation);
 
   /* function exit code */
@@ -8165,7 +8849,7 @@ static int __pyx_pf_5grasp_6formal_2hg_10Derivation___init__(struct __pyx_obj_5g
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__init__", 0);
 
-  /* "grasp/formal/hg.pyx":224
+  /* "grasp/formal/hg.pyx":260
  * 
  *     def __init__(self, Hypergraph derivation):
  *         self._hg = derivation             # <<<<<<<<<<<<<<
@@ -8178,7 +8862,7 @@ static int __pyx_pf_5grasp_6formal_2hg_10Derivation___init__(struct __pyx_obj_5g
   __Pyx_DECREF(((PyObject *)__pyx_v_self->_hg));
   __pyx_v_self->_hg = __pyx_v_derivation;
 
-  /* "grasp/formal/hg.pyx":225
+  /* "grasp/formal/hg.pyx":261
  *     def __init__(self, Hypergraph derivation):
  *         self._hg = derivation
  *         self._rules = None             # <<<<<<<<<<<<<<
@@ -8191,12 +8875,12 @@ static int __pyx_pf_5grasp_6formal_2hg_10Derivation___init__(struct __pyx_obj_5g
   __Pyx_DECREF(__pyx_v_self->_rules);
   __pyx_v_self->_rules = ((PyObject*)Py_None);
 
-  /* "grasp/formal/hg.pyx":226
+  /* "grasp/formal/hg.pyx":262
  *         self._hg = derivation
  *         self._rules = None
  *         self._weights = None             # <<<<<<<<<<<<<<
  * 
- *     cpdef tuple weights(self):
+ *     def __getstate__(self):
  */
   __Pyx_INCREF(Py_None);
   __Pyx_GIVEREF(Py_None);
@@ -8204,7 +8888,7 @@ static int __pyx_pf_5grasp_6formal_2hg_10Derivation___init__(struct __pyx_obj_5g
   __Pyx_DECREF(__pyx_v_self->_weights);
   __pyx_v_self->_weights = ((PyObject*)Py_None);
 
-  /* "grasp/formal/hg.pyx":223
+  /* "grasp/formal/hg.pyx":259
  * cdef class Derivation:
  * 
  *     def __init__(self, Hypergraph derivation):             # <<<<<<<<<<<<<<
@@ -8218,15 +8902,467 @@ static int __pyx_pf_5grasp_6formal_2hg_10Derivation___init__(struct __pyx_obj_5g
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":228
+/* "grasp/formal/hg.pyx":264
  *         self._weights = None
+ * 
+ *     def __getstate__(self):             # <<<<<<<<<<<<<<
+ *         return {'hg': self._hg,
+ *                 'rules': self._rules,
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_3__getstate__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_3__getstate__(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__getstate__ (wrapper)", 0);
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Derivation_2__getstate__(((struct __pyx_obj_5grasp_6formal_2hg_Derivation *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_2__getstate__(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("__getstate__", 0);
+
+  /* "grasp/formal/hg.pyx":265
+ * 
+ *     def __getstate__(self):
+ *         return {'hg': self._hg,             # <<<<<<<<<<<<<<
+ *                 'rules': self._rules,
+ *                 'weights': self._weights}
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 265; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_hg, ((PyObject *)__pyx_v_self->_hg)) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 265; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "grasp/formal/hg.pyx":266
+ *     def __getstate__(self):
+ *         return {'hg': self._hg,
+ *                 'rules': self._rules,             # <<<<<<<<<<<<<<
+ *                 'weights': self._weights}
+ * 
+ */
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_rules, __pyx_v_self->_rules) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 265; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+
+  /* "grasp/formal/hg.pyx":267
+ *         return {'hg': self._hg,
+ *                 'rules': self._rules,
+ *                 'weights': self._weights}             # <<<<<<<<<<<<<<
+ * 
+ *     def __setstate__(self, d):
+ */
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_weights, __pyx_v_self->_weights) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 265; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* "grasp/formal/hg.pyx":264
+ *         self._weights = None
+ * 
+ *     def __getstate__(self):             # <<<<<<<<<<<<<<
+ *         return {'hg': self._hg,
+ *                 'rules': self._rules,
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("grasp.formal.hg.Derivation.__getstate__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "grasp/formal/hg.pyx":269
+ *                 'weights': self._weights}
+ * 
+ *     def __setstate__(self, d):             # <<<<<<<<<<<<<<
+ *         self._hg = d['hg']
+ *         self._rules = d['rules']
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_5__setstate__(PyObject *__pyx_v_self, PyObject *__pyx_v_d); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_5__setstate__(PyObject *__pyx_v_self, PyObject *__pyx_v_d) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("__setstate__ (wrapper)", 0);
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Derivation_4__setstate__(((struct __pyx_obj_5grasp_6formal_2hg_Derivation *)__pyx_v_self), ((PyObject *)__pyx_v_d));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_4__setstate__(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self, PyObject *__pyx_v_d) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("__setstate__", 0);
+
+  /* "grasp/formal/hg.pyx":270
+ * 
+ *     def __setstate__(self, d):
+ *         self._hg = d['hg']             # <<<<<<<<<<<<<<
+ *         self._rules = d['rules']
+ *         self._weights = d['weights']
+ */
+  __pyx_t_1 = PyObject_GetItem(__pyx_v_d, __pyx_n_s_hg); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 270; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __Pyx_GOTREF(__pyx_t_1);
+  if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5grasp_6formal_2hg_Hypergraph))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 270; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GIVEREF(__pyx_t_1);
+  __Pyx_GOTREF(__pyx_v_self->_hg);
+  __Pyx_DECREF(((PyObject *)__pyx_v_self->_hg));
+  __pyx_v_self->_hg = ((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_t_1);
+  __pyx_t_1 = 0;
+
+  /* "grasp/formal/hg.pyx":271
+ *     def __setstate__(self, d):
+ *         self._hg = d['hg']
+ *         self._rules = d['rules']             # <<<<<<<<<<<<<<
+ *         self._weights = d['weights']
+ * 
+ */
+  __pyx_t_1 = PyObject_GetItem(__pyx_v_d, __pyx_n_s_rules); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 271; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __Pyx_GOTREF(__pyx_t_1);
+  if (!(likely(PyTuple_CheckExact(__pyx_t_1))||((__pyx_t_1) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_t_1)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 271; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GIVEREF(__pyx_t_1);
+  __Pyx_GOTREF(__pyx_v_self->_rules);
+  __Pyx_DECREF(__pyx_v_self->_rules);
+  __pyx_v_self->_rules = ((PyObject*)__pyx_t_1);
+  __pyx_t_1 = 0;
+
+  /* "grasp/formal/hg.pyx":272
+ *         self._hg = d['hg']
+ *         self._rules = d['rules']
+ *         self._weights = d['weights']             # <<<<<<<<<<<<<<
+ * 
+ *     cpdef Hypergraph hg(self):
+ */
+  __pyx_t_1 = PyObject_GetItem(__pyx_v_d, __pyx_n_s_weights); if (unlikely(__pyx_t_1 == NULL)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 272; __pyx_clineno = __LINE__; goto __pyx_L1_error;};
+  __Pyx_GOTREF(__pyx_t_1);
+  if (!(likely(PyTuple_CheckExact(__pyx_t_1))||((__pyx_t_1) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_t_1)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 272; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GIVEREF(__pyx_t_1);
+  __Pyx_GOTREF(__pyx_v_self->_weights);
+  __Pyx_DECREF(__pyx_v_self->_weights);
+  __pyx_v_self->_weights = ((PyObject*)__pyx_t_1);
+  __pyx_t_1 = 0;
+
+  /* "grasp/formal/hg.pyx":269
+ *                 'weights': self._weights}
+ * 
+ *     def __setstate__(self, d):             # <<<<<<<<<<<<<<
+ *         self._hg = d['hg']
+ *         self._rules = d['rules']
+ */
+
+  /* function exit code */
+  __pyx_r = Py_None; __Pyx_INCREF(Py_None);
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("grasp.formal.hg.Derivation.__setstate__", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "grasp/formal/hg.pyx":274
+ *         self._weights = d['weights']
+ * 
+ *     cpdef Hypergraph hg(self):             # <<<<<<<<<<<<<<
+ *         return self._hg
+ * 
+ */
+
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_7hg(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_f_5grasp_6formal_2hg_10Derivation_hg(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self, int __pyx_skip_dispatch) {
+  struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_4 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("hg", 0);
+  /* Check if called by wrapper */
+  if (unlikely(__pyx_skip_dispatch)) ;
+  /* Check if overridden in Python */
+  else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_hg); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 274; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Derivation_7hg)) {
+      __Pyx_XDECREF(((PyObject *)__pyx_r));
+      __Pyx_INCREF(__pyx_t_1);
+      __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
+      if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_3))) {
+        __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_3);
+        if (likely(__pyx_t_4)) {
+          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+          __Pyx_INCREF(__pyx_t_4);
+          __Pyx_INCREF(function);
+          __Pyx_DECREF_SET(__pyx_t_3, function);
+        }
+      }
+      if (__pyx_t_4) {
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 274; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      } else {
+        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 274; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      }
+      __Pyx_GOTREF(__pyx_t_2);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5grasp_6formal_2hg_Hypergraph))))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 274; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_r = ((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_t_2);
+      __pyx_t_2 = 0;
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      goto __pyx_L0;
+    }
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  }
+
+  /* "grasp/formal/hg.pyx":275
+ * 
+ *     cpdef Hypergraph hg(self):
+ *         return self._hg             # <<<<<<<<<<<<<<
+ * 
+ *     cpdef tuple edges(self):
+ */
+  __Pyx_XDECREF(((PyObject *)__pyx_r));
+  __Pyx_INCREF(((PyObject *)__pyx_v_self->_hg));
+  __pyx_r = __pyx_v_self->_hg;
+  goto __pyx_L0;
+
+  /* "grasp/formal/hg.pyx":274
+ *         self._weights = d['weights']
+ * 
+ *     cpdef Hypergraph hg(self):             # <<<<<<<<<<<<<<
+ *         return self._hg
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_AddTraceback("grasp.formal.hg.Derivation.hg", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = 0;
+  __pyx_L0:;
+  __Pyx_XGIVEREF((PyObject *)__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_7hg(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_7hg(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("hg (wrapper)", 0);
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Derivation_6hg(((struct __pyx_obj_5grasp_6formal_2hg_Derivation *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_6hg(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("hg", 0);
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = ((PyObject *)__pyx_f_5grasp_6formal_2hg_10Derivation_hg(__pyx_v_self, 1)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 274; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("grasp.formal.hg.Derivation.hg", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "grasp/formal/hg.pyx":277
+ *         return self._hg
+ * 
+ *     cpdef tuple edges(self):             # <<<<<<<<<<<<<<
+ *         return tuple(range(self._hg.n_edges()))
+ * 
+ */
+
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_9edges(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_edges(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self, int __pyx_skip_dispatch) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  PyObject *__pyx_t_4 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("edges", 0);
+  /* Check if called by wrapper */
+  if (unlikely(__pyx_skip_dispatch)) ;
+  /* Check if overridden in Python */
+  else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_edges); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 277; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __Pyx_GOTREF(__pyx_t_1);
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Derivation_9edges)) {
+      __Pyx_XDECREF(__pyx_r);
+      __Pyx_INCREF(__pyx_t_1);
+      __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
+      if (CYTHON_COMPILING_IN_CPYTHON && unlikely(PyMethod_Check(__pyx_t_3))) {
+        __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_3);
+        if (likely(__pyx_t_4)) {
+          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+          __Pyx_INCREF(__pyx_t_4);
+          __Pyx_INCREF(function);
+          __Pyx_DECREF_SET(__pyx_t_3, function);
+        }
+      }
+      if (__pyx_t_4) {
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 277; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+      } else {
+        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 277; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      }
+      __Pyx_GOTREF(__pyx_t_2);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      if (!(likely(PyTuple_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_t_2)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 277; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_r = ((PyObject*)__pyx_t_2);
+      __pyx_t_2 = 0;
+      __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+      goto __pyx_L0;
+    }
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  }
+
+  /* "grasp/formal/hg.pyx":278
+ * 
+ *     cpdef tuple edges(self):
+ *         return tuple(range(self._hg.n_edges()))             # <<<<<<<<<<<<<<
+ * 
+ *     cpdef tuple weights(self):
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __Pyx_PyInt_FromSize_t(((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self->_hg->__pyx_vtab)->n_edges(__pyx_v_self->_hg, 0)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 278; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 278; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_GIVEREF(__pyx_t_1);
+  PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_1);
+  __pyx_t_1 = 0;
+  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_range, __pyx_t_2, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 278; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_2 = PySequence_Tuple(__pyx_t_1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 278; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  __pyx_r = ((PyObject*)__pyx_t_2);
+  __pyx_t_2 = 0;
+  goto __pyx_L0;
+
+  /* "grasp/formal/hg.pyx":277
+ *         return self._hg
+ * 
+ *     cpdef tuple edges(self):             # <<<<<<<<<<<<<<
+ *         return tuple(range(self._hg.n_edges()))
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_XDECREF(__pyx_t_4);
+  __Pyx_AddTraceback("grasp.formal.hg.Derivation.edges", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = 0;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* Python wrapper */
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_9edges(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_9edges(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("edges (wrapper)", 0);
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Derivation_8edges(((struct __pyx_obj_5grasp_6formal_2hg_Derivation *)__pyx_v_self));
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_8edges(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("edges", 0);
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __pyx_f_5grasp_6formal_2hg_10Derivation_edges(__pyx_v_self, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 277; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("grasp.formal.hg.Derivation.edges", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "grasp/formal/hg.pyx":280
+ *         return tuple(range(self._hg.n_edges()))
  * 
  *     cpdef tuple weights(self):             # <<<<<<<<<<<<<<
  *         cdef id_t e
  *         if self._weights is None:
  */
 
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_3weights(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_11weights(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
 static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_weights(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self, int __pyx_skip_dispatch) {
   __pyx_t_5grasp_6ptypes_id_t __pyx_v_e;
   PyObject *__pyx_r = NULL;
@@ -8247,9 +9383,9 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_weights(struct __pyx_ob
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_weights); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_weights); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 280; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Derivation_3weights)) {
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Derivation_11weights)) {
       __Pyx_XDECREF(__pyx_r);
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
@@ -8263,14 +9399,14 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_weights(struct __pyx_ob
         }
       }
       if (__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 280; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       } else {
-        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 280; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (!(likely(PyTuple_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_t_2)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      if (!(likely(PyTuple_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_t_2)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 280; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __pyx_r = ((PyObject*)__pyx_t_2);
       __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -8279,7 +9415,7 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_weights(struct __pyx_ob
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/formal/hg.pyx":230
+  /* "grasp/formal/hg.pyx":282
  *     cpdef tuple weights(self):
  *         cdef id_t e
  *         if self._weights is None:             # <<<<<<<<<<<<<<
@@ -8290,24 +9426,24 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_weights(struct __pyx_ob
   __pyx_t_6 = (__pyx_t_5 != 0);
   if (__pyx_t_6) {
 
-    /* "grasp/formal/hg.pyx":231
+    /* "grasp/formal/hg.pyx":283
  *         cdef id_t e
  *         if self._weights is None:
  *             self._weights = tuple([self._hg.weight(e) for e in range(self._hg.n_edges())])             # <<<<<<<<<<<<<<
  *         return self._weights
  * 
  */
-    __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 283; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __pyx_t_7 = ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self->_hg->__pyx_vtab)->n_edges(__pyx_v_self->_hg, 0);
     for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_7; __pyx_t_8+=1) {
       __pyx_v_e = __pyx_t_8;
-      __pyx_t_2 = PyFloat_FromDouble(((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self->_hg->__pyx_vtab)->weight(__pyx_v_self->_hg, __pyx_v_e, 0)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_2 = PyFloat_FromDouble(((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self->_hg->__pyx_vtab)->weight(__pyx_v_self->_hg, __pyx_v_e, 0)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 283; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_2);
-      if (unlikely(__Pyx_ListComp_Append(__pyx_t_1, (PyObject*)__pyx_t_2))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      if (unlikely(__Pyx_ListComp_Append(__pyx_t_1, (PyObject*)__pyx_t_2))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 283; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     }
-    __pyx_t_2 = PyList_AsTuple(((PyObject*)__pyx_t_1)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = PyList_AsTuple(((PyObject*)__pyx_t_1)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 283; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_GIVEREF(__pyx_t_2);
@@ -8319,7 +9455,7 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_weights(struct __pyx_ob
   }
   __pyx_L3:;
 
-  /* "grasp/formal/hg.pyx":232
+  /* "grasp/formal/hg.pyx":284
  *         if self._weights is None:
  *             self._weights = tuple([self._hg.weight(e) for e in range(self._hg.n_edges())])
  *         return self._weights             # <<<<<<<<<<<<<<
@@ -8331,8 +9467,8 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_weights(struct __pyx_ob
   __pyx_r = __pyx_v_self->_weights;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":228
- *         self._weights = None
+  /* "grasp/formal/hg.pyx":280
+ *         return tuple(range(self._hg.n_edges()))
  * 
  *     cpdef tuple weights(self):             # <<<<<<<<<<<<<<
  *         cdef id_t e
@@ -8354,19 +9490,19 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_weights(struct __pyx_ob
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_3weights(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_3weights(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_11weights(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_11weights(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("weights (wrapper)", 0);
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Derivation_2weights(((struct __pyx_obj_5grasp_6formal_2hg_Derivation *)__pyx_v_self));
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Derivation_10weights(((struct __pyx_obj_5grasp_6formal_2hg_Derivation *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_2weights(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_10weights(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -8375,7 +9511,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_2weights(struct __pyx_
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("weights", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_5grasp_6formal_2hg_10Derivation_weights(__pyx_v_self, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 228; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __pyx_f_5grasp_6formal_2hg_10Derivation_weights(__pyx_v_self, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 280; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -8392,7 +9528,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_2weights(struct __pyx_
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":234
+/* "grasp/formal/hg.pyx":286
  *         return self._weights
  * 
  *     cpdef tuple rules(self):             # <<<<<<<<<<<<<<
@@ -8400,7 +9536,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_2weights(struct __pyx_
  *         if self._rules is None:
  */
 
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_5rules(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_13rules(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
 static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_rules(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self, int __pyx_skip_dispatch) {
   __pyx_t_5grasp_6ptypes_id_t __pyx_v_e;
   PyObject *__pyx_r = NULL;
@@ -8421,9 +9557,9 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_rules(struct __pyx_obj_
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_rules); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 234; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_rules); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 286; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Derivation_5rules)) {
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Derivation_13rules)) {
       __Pyx_XDECREF(__pyx_r);
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
@@ -8437,14 +9573,14 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_rules(struct __pyx_obj_
         }
       }
       if (__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 234; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 286; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       } else {
-        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 234; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 286; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-      if (!(likely(PyTuple_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_t_2)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 234; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      if (!(likely(PyTuple_CheckExact(__pyx_t_2))||((__pyx_t_2) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "tuple", Py_TYPE(__pyx_t_2)->tp_name), 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 286; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __pyx_r = ((PyObject*)__pyx_t_2);
       __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -8453,7 +9589,7 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_rules(struct __pyx_obj_
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/formal/hg.pyx":236
+  /* "grasp/formal/hg.pyx":288
  *     cpdef tuple rules(self):
  *         cdef id_t e
  *         if self._rules is None:             # <<<<<<<<<<<<<<
@@ -8464,24 +9600,24 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_rules(struct __pyx_obj_
   __pyx_t_6 = (__pyx_t_5 != 0);
   if (__pyx_t_6) {
 
-    /* "grasp/formal/hg.pyx":237
+    /* "grasp/formal/hg.pyx":289
  *         cdef id_t e
  *         if self._rules is None:
  *             self._rules = tuple([self._hg.rule(e) for e in range(self._hg.n_edges())])             # <<<<<<<<<<<<<<
  *         return self._rules
  * 
  */
-    __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = PyList_New(0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 289; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
     __pyx_t_7 = ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self->_hg->__pyx_vtab)->n_edges(__pyx_v_self->_hg, 0);
     for (__pyx_t_8 = 0; __pyx_t_8 < __pyx_t_7; __pyx_t_8+=1) {
       __pyx_v_e = __pyx_t_8;
-      __pyx_t_2 = ((PyObject *)((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self->_hg->__pyx_vtab)->rule(__pyx_v_self->_hg, __pyx_v_e, 0)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_2 = ((PyObject *)((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_self->_hg->__pyx_vtab)->rule(__pyx_v_self->_hg, __pyx_v_e, 0)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 289; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_2);
-      if (unlikely(__Pyx_ListComp_Append(__pyx_t_1, (PyObject*)__pyx_t_2))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      if (unlikely(__Pyx_ListComp_Append(__pyx_t_1, (PyObject*)__pyx_t_2))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 289; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     }
-    __pyx_t_2 = PyList_AsTuple(((PyObject*)__pyx_t_1)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 237; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = PyList_AsTuple(((PyObject*)__pyx_t_1)); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 289; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_GIVEREF(__pyx_t_2);
@@ -8493,7 +9629,7 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_rules(struct __pyx_obj_
   }
   __pyx_L3:;
 
-  /* "grasp/formal/hg.pyx":238
+  /* "grasp/formal/hg.pyx":290
  *         if self._rules is None:
  *             self._rules = tuple([self._hg.rule(e) for e in range(self._hg.n_edges())])
  *         return self._rules             # <<<<<<<<<<<<<<
@@ -8505,7 +9641,7 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_rules(struct __pyx_obj_
   __pyx_r = __pyx_v_self->_rules;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":234
+  /* "grasp/formal/hg.pyx":286
  *         return self._weights
  * 
  *     cpdef tuple rules(self):             # <<<<<<<<<<<<<<
@@ -8528,19 +9664,19 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_rules(struct __pyx_obj_
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_5rules(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_5rules(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_13rules(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_13rules(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("rules (wrapper)", 0);
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Derivation_4rules(((struct __pyx_obj_5grasp_6formal_2hg_Derivation *)__pyx_v_self));
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Derivation_12rules(((struct __pyx_obj_5grasp_6formal_2hg_Derivation *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_4rules(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_12rules(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -8549,7 +9685,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_4rules(struct __pyx_ob
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("rules", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_5grasp_6formal_2hg_10Derivation_rules(__pyx_v_self, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 234; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __pyx_f_5grasp_6formal_2hg_10Derivation_rules(__pyx_v_self, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 286; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -8566,7 +9702,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_4rules(struct __pyx_ob
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":240
+/* "grasp/formal/hg.pyx":292
  *         return self._rules
  * 
  *     cpdef iteritems(self):             # <<<<<<<<<<<<<<
@@ -8574,7 +9710,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_4rules(struct __pyx_ob
  * 
  */
 
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_7iteritems(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_15iteritems(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
 static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_iteritems(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self, int __pyx_skip_dispatch) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
@@ -8590,9 +9726,9 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_iteritems(struct __pyx_
   if (unlikely(__pyx_skip_dispatch)) ;
   /* Check if overridden in Python */
   else if (unlikely(Py_TYPE(((PyObject *)__pyx_v_self))->tp_dictoffset != 0)) {
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_iteritems); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 240; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_self), __pyx_n_s_iteritems); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 292; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_1);
-    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Derivation_7iteritems)) {
+    if (!PyCFunction_Check(__pyx_t_1) || (PyCFunction_GET_FUNCTION(__pyx_t_1) != (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Derivation_15iteritems)) {
       __Pyx_XDECREF(__pyx_r);
       __Pyx_INCREF(__pyx_t_1);
       __pyx_t_3 = __pyx_t_1; __pyx_t_4 = NULL;
@@ -8606,10 +9742,10 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_iteritems(struct __pyx_
         }
       }
       if (__pyx_t_4) {
-        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 240; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_t_4); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 292; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
         __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
       } else {
-        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 240; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+        __pyx_t_2 = __Pyx_PyObject_CallNoArg(__pyx_t_3); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 292; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       }
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -8621,7 +9757,7 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_iteritems(struct __pyx_
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   }
 
-  /* "grasp/formal/hg.pyx":241
+  /* "grasp/formal/hg.pyx":293
  * 
  *     cpdef iteritems(self):
  *         return zip(self._rules, self._weights)             # <<<<<<<<<<<<<<
@@ -8629,7 +9765,7 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_iteritems(struct __pyx_
  *     def __hash__(self):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 293; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__pyx_v_self->_rules);
   __Pyx_GIVEREF(__pyx_v_self->_rules);
@@ -8637,14 +9773,14 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_iteritems(struct __pyx_
   __Pyx_INCREF(__pyx_v_self->_weights);
   __Pyx_GIVEREF(__pyx_v_self->_weights);
   PyTuple_SET_ITEM(__pyx_t_1, 1, __pyx_v_self->_weights);
-  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_zip, __pyx_t_1, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 241; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_zip, __pyx_t_1, NULL); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 293; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = __pyx_t_2;
   __pyx_t_2 = 0;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":240
+  /* "grasp/formal/hg.pyx":292
  *         return self._rules
  * 
  *     cpdef iteritems(self):             # <<<<<<<<<<<<<<
@@ -8667,19 +9803,19 @@ static PyObject *__pyx_f_5grasp_6formal_2hg_10Derivation_iteritems(struct __pyx_
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_7iteritems(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_7iteritems(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_15iteritems(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_15iteritems(PyObject *__pyx_v_self, CYTHON_UNUSED PyObject *unused) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("iteritems (wrapper)", 0);
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Derivation_6iteritems(((struct __pyx_obj_5grasp_6formal_2hg_Derivation *)__pyx_v_self));
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Derivation_14iteritems(((struct __pyx_obj_5grasp_6formal_2hg_Derivation *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_6iteritems(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_14iteritems(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -8688,7 +9824,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_6iteritems(struct __py
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("iteritems", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __pyx_f_5grasp_6formal_2hg_10Derivation_iteritems(__pyx_v_self, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 240; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __pyx_f_5grasp_6formal_2hg_10Derivation_iteritems(__pyx_v_self, 1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 292; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -8705,7 +9841,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_6iteritems(struct __py
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":243
+/* "grasp/formal/hg.pyx":295
  *         return zip(self._rules, self._weights)
  * 
  *     def __hash__(self):             # <<<<<<<<<<<<<<
@@ -8714,19 +9850,19 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_6iteritems(struct __py
  */
 
 /* Python wrapper */
-static Py_hash_t __pyx_pw_5grasp_6formal_2hg_10Derivation_9__hash__(PyObject *__pyx_v_self); /*proto*/
-static Py_hash_t __pyx_pw_5grasp_6formal_2hg_10Derivation_9__hash__(PyObject *__pyx_v_self) {
+static Py_hash_t __pyx_pw_5grasp_6formal_2hg_10Derivation_17__hash__(PyObject *__pyx_v_self); /*proto*/
+static Py_hash_t __pyx_pw_5grasp_6formal_2hg_10Derivation_17__hash__(PyObject *__pyx_v_self) {
   Py_hash_t __pyx_r;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__hash__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Derivation_8__hash__(((struct __pyx_obj_5grasp_6formal_2hg_Derivation *)__pyx_v_self));
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Derivation_16__hash__(((struct __pyx_obj_5grasp_6formal_2hg_Derivation *)__pyx_v_self));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static Py_hash_t __pyx_pf_5grasp_6formal_2hg_10Derivation_8__hash__(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self) {
+static Py_hash_t __pyx_pf_5grasp_6formal_2hg_10Derivation_16__hash__(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_self) {
   Py_hash_t __pyx_r;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -8736,21 +9872,21 @@ static Py_hash_t __pyx_pf_5grasp_6formal_2hg_10Derivation_8__hash__(struct __pyx
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__hash__", 0);
 
-  /* "grasp/formal/hg.pyx":244
+  /* "grasp/formal/hg.pyx":296
  * 
  *     def __hash__(self):
  *         return hash(self.rules())             # <<<<<<<<<<<<<<
  * 
  *     def __richcmp__(Derivation x, Derivation y, int opt):
  */
-  __pyx_t_1 = ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Derivation *)__pyx_v_self->__pyx_vtab)->rules(__pyx_v_self, 0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Derivation *)__pyx_v_self->__pyx_vtab)->rules(__pyx_v_self, 0); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 296; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = PyObject_Hash(__pyx_t_1); if (unlikely(__pyx_t_2 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 244; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyObject_Hash(__pyx_t_1); if (unlikely(__pyx_t_2 == -1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 296; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = __pyx_t_2;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":243
+  /* "grasp/formal/hg.pyx":295
  *         return zip(self._rules, self._weights)
  * 
  *     def __hash__(self):             # <<<<<<<<<<<<<<
@@ -8769,7 +9905,7 @@ static Py_hash_t __pyx_pf_5grasp_6formal_2hg_10Derivation_8__hash__(struct __pyx
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":246
+/* "grasp/formal/hg.pyx":298
  *         return hash(self.rules())
  * 
  *     def __richcmp__(Derivation x, Derivation y, int opt):             # <<<<<<<<<<<<<<
@@ -8778,17 +9914,17 @@ static Py_hash_t __pyx_pf_5grasp_6formal_2hg_10Derivation_8__hash__(struct __pyx
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_11__richcmp__(PyObject *__pyx_v_x, PyObject *__pyx_v_y, int __pyx_v_opt); /*proto*/
-static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_11__richcmp__(PyObject *__pyx_v_x, PyObject *__pyx_v_y, int __pyx_v_opt) {
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_19__richcmp__(PyObject *__pyx_v_x, PyObject *__pyx_v_y, int __pyx_v_opt); /*proto*/
+static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_19__richcmp__(PyObject *__pyx_v_x, PyObject *__pyx_v_y, int __pyx_v_opt) {
   CYTHON_UNUSED int __pyx_lineno = 0;
   CYTHON_UNUSED const char *__pyx_filename = NULL;
   CYTHON_UNUSED int __pyx_clineno = 0;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__richcmp__ (wrapper)", 0);
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_x), __pyx_ptype_5grasp_6formal_2hg_Derivation, 1, "x", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_y), __pyx_ptype_5grasp_6formal_2hg_Derivation, 1, "y", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 246; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Derivation_10__richcmp__(((struct __pyx_obj_5grasp_6formal_2hg_Derivation *)__pyx_v_x), ((struct __pyx_obj_5grasp_6formal_2hg_Derivation *)__pyx_v_y), ((int)__pyx_v_opt));
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_x), __pyx_ptype_5grasp_6formal_2hg_Derivation, 1, "x", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 298; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_y), __pyx_ptype_5grasp_6formal_2hg_Derivation, 1, "y", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 298; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_r = __pyx_pf_5grasp_6formal_2hg_10Derivation_18__richcmp__(((struct __pyx_obj_5grasp_6formal_2hg_Derivation *)__pyx_v_x), ((struct __pyx_obj_5grasp_6formal_2hg_Derivation *)__pyx_v_y), ((int)__pyx_v_opt));
 
   /* function exit code */
   goto __pyx_L0;
@@ -8799,7 +9935,7 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_10Derivation_11__richcmp__(PyObject
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_10__richcmp__(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_x, struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_y, int __pyx_v_opt) {
+static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_18__richcmp__(struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_x, struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_v_y, int __pyx_v_opt) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   int __pyx_t_1;
@@ -8811,7 +9947,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_10__richcmp__(struct _
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("__richcmp__", 0);
 
-  /* "grasp/formal/hg.pyx":247
+  /* "grasp/formal/hg.pyx":299
  * 
  *     def __richcmp__(Derivation x, Derivation y, int opt):
  *         if opt == Py_EQ:             # <<<<<<<<<<<<<<
@@ -8821,7 +9957,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_10__richcmp__(struct _
   __pyx_t_1 = ((__pyx_v_opt == Py_EQ) != 0);
   if (__pyx_t_1) {
 
-    /* "grasp/formal/hg.pyx":248
+    /* "grasp/formal/hg.pyx":300
  *     def __richcmp__(Derivation x, Derivation y, int opt):
  *         if opt == Py_EQ:
  *             return x.rules() == y.rules()             # <<<<<<<<<<<<<<
@@ -8829,11 +9965,11 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_10__richcmp__(struct _
  *             return x.rules() != y.rules()
  */
     __Pyx_XDECREF(__pyx_r);
-    __pyx_t_2 = ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Derivation *)__pyx_v_x->__pyx_vtab)->rules(__pyx_v_x, 0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 248; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Derivation *)__pyx_v_x->__pyx_vtab)->rules(__pyx_v_x, 0); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 300; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_3 = ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Derivation *)__pyx_v_y->__pyx_vtab)->rules(__pyx_v_y, 0); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 248; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Derivation *)__pyx_v_y->__pyx_vtab)->rules(__pyx_v_y, 0); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 300; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_4 = PyObject_RichCompare(__pyx_t_2, __pyx_t_3, Py_EQ); __Pyx_XGOTREF(__pyx_t_4); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 248; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = PyObject_RichCompare(__pyx_t_2, __pyx_t_3, Py_EQ); __Pyx_XGOTREF(__pyx_t_4); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 300; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_r = __pyx_t_4;
@@ -8841,7 +9977,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_10__richcmp__(struct _
     goto __pyx_L0;
   }
 
-  /* "grasp/formal/hg.pyx":249
+  /* "grasp/formal/hg.pyx":301
  *         if opt == Py_EQ:
  *             return x.rules() == y.rules()
  *         elif opt == Py_NE:             # <<<<<<<<<<<<<<
@@ -8851,7 +9987,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_10__richcmp__(struct _
   __pyx_t_1 = ((__pyx_v_opt == Py_NE) != 0);
   if (__pyx_t_1) {
 
-    /* "grasp/formal/hg.pyx":250
+    /* "grasp/formal/hg.pyx":302
  *             return x.rules() == y.rules()
  *         elif opt == Py_NE:
  *             return x.rules() != y.rules()             # <<<<<<<<<<<<<<
@@ -8859,11 +9995,11 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_10__richcmp__(struct _
  *             raise ValueError('Cannot compare derivations with opt=%d' % opt)
  */
     __Pyx_XDECREF(__pyx_r);
-    __pyx_t_4 = ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Derivation *)__pyx_v_x->__pyx_vtab)->rules(__pyx_v_x, 0); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 250; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Derivation *)__pyx_v_x->__pyx_vtab)->rules(__pyx_v_x, 0); if (unlikely(!__pyx_t_4)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 302; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_3 = ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Derivation *)__pyx_v_y->__pyx_vtab)->rules(__pyx_v_y, 0); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 250; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Derivation *)__pyx_v_y->__pyx_vtab)->rules(__pyx_v_y, 0); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 302; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_2 = PyObject_RichCompare(__pyx_t_4, __pyx_t_3, Py_NE); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 250; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = PyObject_RichCompare(__pyx_t_4, __pyx_t_3, Py_NE); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 302; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_r = __pyx_t_2;
@@ -8872,32 +10008,32 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_10__richcmp__(struct _
   }
   /*else*/ {
 
-    /* "grasp/formal/hg.pyx":252
+    /* "grasp/formal/hg.pyx":304
  *             return x.rules() != y.rules()
  *         else:
  *             raise ValueError('Cannot compare derivations with opt=%d' % opt)             # <<<<<<<<<<<<<<
  * 
  *     #cpdef tuple annotated_rules(self):
  */
-    __pyx_t_2 = __Pyx_PyInt_From_int(__pyx_v_opt); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 252; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = __Pyx_PyInt_From_int(__pyx_v_opt); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 304; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_3 = __Pyx_PyString_Format(__pyx_kp_s_Cannot_compare_derivations_with, __pyx_t_2); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 252; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyString_Format(__pyx_kp_s_Cannot_compare_derivations_with, __pyx_t_2); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 304; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 252; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 304; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_GIVEREF(__pyx_t_3);
     PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_3);
     __pyx_t_3 = 0;
-    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_t_2, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 252; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_t_2, NULL); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 304; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_Raise(__pyx_t_3, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 252; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 304; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
 
-  /* "grasp/formal/hg.pyx":246
+  /* "grasp/formal/hg.pyx":298
  *         return hash(self.rules())
  * 
  *     def __richcmp__(Derivation x, Derivation y, int opt):             # <<<<<<<<<<<<<<
@@ -8918,7 +10054,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_10Derivation_10__richcmp__(struct _
   return __pyx_r;
 }
 
-/* "grasp/formal/hg.pyx":261
+/* "grasp/formal/hg.pyx":313
  * 
  * 
  * cpdef Derivation make_derivation(Hypergraph forest, tuple edges):             # <<<<<<<<<<<<<<
@@ -8946,19 +10082,19 @@ static struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_f_5grasp_6formal_2h
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("make_derivation", 0);
 
-  /* "grasp/formal/hg.pyx":263
+  /* "grasp/formal/hg.pyx":315
  * cpdef Derivation make_derivation(Hypergraph forest, tuple edges):
  *     cdef:
  *         Hypergraph hg = Hypergraph()             # <<<<<<<<<<<<<<
  *         id_t e, c
  * 
  */
-  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_5grasp_6formal_2hg_Hypergraph)), __pyx_empty_tuple, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 263; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_5grasp_6formal_2hg_Hypergraph)), __pyx_empty_tuple, NULL); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 315; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_hg = ((struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *)__pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "grasp/formal/hg.pyx":266
+  /* "grasp/formal/hg.pyx":318
  *         id_t e, c
  * 
  *     for e in edges:             # <<<<<<<<<<<<<<
@@ -8967,45 +10103,45 @@ static struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_f_5grasp_6formal_2h
  */
   if (unlikely(__pyx_v_edges == Py_None)) {
     PyErr_SetString(PyExc_TypeError, "'NoneType' object is not iterable");
-    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 266; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    {__pyx_filename = __pyx_f[0]; __pyx_lineno = 318; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   }
   __pyx_t_1 = __pyx_v_edges; __Pyx_INCREF(__pyx_t_1); __pyx_t_2 = 0;
   for (;;) {
     if (__pyx_t_2 >= PyTuple_GET_SIZE(__pyx_t_1)) break;
     #if CYTHON_COMPILING_IN_CPYTHON
-    __pyx_t_3 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_3); __pyx_t_2++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 266; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_2); __Pyx_INCREF(__pyx_t_3); __pyx_t_2++; if (unlikely(0 < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 318; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     #else
-    __pyx_t_3 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 266; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = PySequence_ITEM(__pyx_t_1, __pyx_t_2); __pyx_t_2++; if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 318; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
     #endif
-    __pyx_t_4 = __Pyx_PyInt_As_long(__pyx_t_3); if (unlikely((__pyx_t_4 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 266; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_4 = __Pyx_PyInt_As_long(__pyx_t_3); if (unlikely((__pyx_t_4 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 318; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_v_e = __pyx_t_4;
 
-    /* "grasp/formal/hg.pyx":267
+    /* "grasp/formal/hg.pyx":319
  * 
  *     for e in edges:
  *         hg.add_xedge(forest.label(forest.head(e)),             # <<<<<<<<<<<<<<
  *                      tuple([forest.label(c) for c in forest.tail(e)]),
  *                      forest.weight(e),
  */
-    __pyx_t_3 = ((PyObject *)((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_forest->__pyx_vtab)->label(__pyx_v_forest, ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_forest->__pyx_vtab)->head(__pyx_v_forest, __pyx_v_e, 0), 0)); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 267; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_3 = ((PyObject *)((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_forest->__pyx_vtab)->label(__pyx_v_forest, ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_forest->__pyx_vtab)->head(__pyx_v_forest, __pyx_v_e, 0), 0)); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 319; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_3);
 
-    /* "grasp/formal/hg.pyx":268
+    /* "grasp/formal/hg.pyx":320
  *     for e in edges:
  *         hg.add_xedge(forest.label(forest.head(e)),
  *                      tuple([forest.label(c) for c in forest.tail(e)]),             # <<<<<<<<<<<<<<
  *                      forest.weight(e),
  *                      forest.rule(e))
  */
-    __pyx_t_5 = PyList_New(0); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 268; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = PyList_New(0); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 320; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_6 = ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_forest->__pyx_vtab)->tail(__pyx_v_forest, __pyx_v_e, 0); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 268; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_6 = ((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_forest->__pyx_vtab)->tail(__pyx_v_forest, __pyx_v_e, 0); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 320; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_7 = PyObject_GetIter(__pyx_t_6); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 268; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_7 = PyObject_GetIter(__pyx_t_6); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 320; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_8 = Py_TYPE(__pyx_t_7)->tp_iternext; if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 268; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_8 = Py_TYPE(__pyx_t_7)->tp_iternext; if (unlikely(!__pyx_t_8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 320; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     for (;;) {
       {
@@ -9014,36 +10150,36 @@ static struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_f_5grasp_6formal_2h
           PyObject* exc_type = PyErr_Occurred();
           if (exc_type) {
             if (likely(exc_type == PyExc_StopIteration || PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-            else {__pyx_filename = __pyx_f[0]; __pyx_lineno = 268; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+            else {__pyx_filename = __pyx_f[0]; __pyx_lineno = 320; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
           }
           break;
         }
         __Pyx_GOTREF(__pyx_t_6);
       }
-      __pyx_t_4 = __Pyx_PyInt_As_long(__pyx_t_6); if (unlikely((__pyx_t_4 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 268; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_4 = __Pyx_PyInt_As_long(__pyx_t_6); if (unlikely((__pyx_t_4 == (long)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 320; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       __pyx_v_c = __pyx_t_4;
-      __pyx_t_6 = ((PyObject *)((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_forest->__pyx_vtab)->label(__pyx_v_forest, __pyx_v_c, 0)); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 268; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      __pyx_t_6 = ((PyObject *)((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_forest->__pyx_vtab)->label(__pyx_v_forest, __pyx_v_c, 0)); if (unlikely(!__pyx_t_6)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 320; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_GOTREF(__pyx_t_6);
-      if (unlikely(__Pyx_ListComp_Append(__pyx_t_5, (PyObject*)__pyx_t_6))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 268; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+      if (unlikely(__Pyx_ListComp_Append(__pyx_t_5, (PyObject*)__pyx_t_6))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 320; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     }
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    __pyx_t_7 = PyList_AsTuple(((PyObject*)__pyx_t_5)); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 268; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_7 = PyList_AsTuple(((PyObject*)__pyx_t_5)); if (unlikely(!__pyx_t_7)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 320; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_7);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-    /* "grasp/formal/hg.pyx":270
+    /* "grasp/formal/hg.pyx":322
  *                      tuple([forest.label(c) for c in forest.tail(e)]),
  *                      forest.weight(e),
  *                      forest.rule(e))             # <<<<<<<<<<<<<<
  * 
  *     return Derivation(hg)
  */
-    __pyx_t_5 = ((PyObject *)((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_forest->__pyx_vtab)->rule(__pyx_v_forest, __pyx_v_e, 0)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 270; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+    __pyx_t_5 = ((PyObject *)((struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *)__pyx_v_forest->__pyx_vtab)->rule(__pyx_v_forest, __pyx_v_e, 0)); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 322; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
     __Pyx_GOTREF(__pyx_t_5);
 
-    /* "grasp/formal/hg.pyx":267
+    /* "grasp/formal/hg.pyx":319
  * 
  *     for e in edges:
  *         hg.add_xedge(forest.label(forest.head(e)),             # <<<<<<<<<<<<<<
@@ -9055,7 +10191,7 @@ static struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_f_5grasp_6formal_2h
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-    /* "grasp/formal/hg.pyx":266
+    /* "grasp/formal/hg.pyx":318
  *         id_t e, c
  * 
  *     for e in edges:             # <<<<<<<<<<<<<<
@@ -9065,7 +10201,7 @@ static struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_f_5grasp_6formal_2h
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "grasp/formal/hg.pyx":272
+  /* "grasp/formal/hg.pyx":324
  *                      forest.rule(e))
  * 
  *     return Derivation(hg)             # <<<<<<<<<<<<<<
@@ -9073,19 +10209,19 @@ static struct __pyx_obj_5grasp_6formal_2hg_Derivation *__pyx_f_5grasp_6formal_2h
  * # algorithms
  */
   __Pyx_XDECREF(((PyObject *)__pyx_r));
-  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 272; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 324; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(((PyObject *)__pyx_v_hg));
   __Pyx_GIVEREF(((PyObject *)__pyx_v_hg));
   PyTuple_SET_ITEM(__pyx_t_1, 0, ((PyObject *)__pyx_v_hg));
-  __pyx_t_5 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_5grasp_6formal_2hg_Derivation)), __pyx_t_1, NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 272; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_5 = __Pyx_PyObject_Call(((PyObject *)((PyObject*)__pyx_ptype_5grasp_6formal_2hg_Derivation)), __pyx_t_1, NULL); if (unlikely(!__pyx_t_5)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 324; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_r = ((struct __pyx_obj_5grasp_6formal_2hg_Derivation *)__pyx_t_5);
   __pyx_t_5 = 0;
   goto __pyx_L0;
 
-  /* "grasp/formal/hg.pyx":261
+  /* "grasp/formal/hg.pyx":313
  * 
  * 
  * cpdef Derivation make_derivation(Hypergraph forest, tuple edges):             # <<<<<<<<<<<<<<
@@ -9140,11 +10276,11 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_1make_derivation(PyObject *__pyx_se
         case  1:
         if (likely((values[1] = PyDict_GetItem(__pyx_kwds, __pyx_n_s_edges)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("make_derivation", 1, 2, 2, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 261; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+          __Pyx_RaiseArgtupleInvalid("make_derivation", 1, 2, 2, 1); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 313; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "make_derivation") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 261; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "make_derivation") < 0)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 313; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -9157,14 +10293,14 @@ static PyObject *__pyx_pw_5grasp_6formal_2hg_1make_derivation(PyObject *__pyx_se
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("make_derivation", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 261; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
+  __Pyx_RaiseArgtupleInvalid("make_derivation", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); {__pyx_filename = __pyx_f[0]; __pyx_lineno = 313; __pyx_clineno = __LINE__; goto __pyx_L3_error;}
   __pyx_L3_error:;
   __Pyx_AddTraceback("grasp.formal.hg.make_derivation", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_forest), __pyx_ptype_5grasp_6formal_2hg_Hypergraph, 1, "forest", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 261; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_edges), (&PyTuple_Type), 1, "edges", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 261; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_forest), __pyx_ptype_5grasp_6formal_2hg_Hypergraph, 1, "forest", 0))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 313; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_edges), (&PyTuple_Type), 1, "edges", 1))) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 313; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_r = __pyx_pf_5grasp_6formal_2hg_make_derivation(__pyx_self, __pyx_v_forest, __pyx_v_edges);
 
   /* function exit code */
@@ -9185,7 +10321,7 @@ static PyObject *__pyx_pf_5grasp_6formal_2hg_make_derivation(CYTHON_UNUSED PyObj
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("make_derivation", 0);
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = ((PyObject *)__pyx_f_5grasp_6formal_2hg_make_derivation(__pyx_v_forest, __pyx_v_edges, 0)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 261; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_1 = ((PyObject *)__pyx_f_5grasp_6formal_2hg_make_derivation(__pyx_v_forest, __pyx_v_edges, 0)); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 313; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -11254,6 +12390,8 @@ static PyObject *__pyx_getprop_5grasp_6formal_2hg_4Node_label(PyObject *o, CYTHO
 }
 
 static PyMethodDef __pyx_methods_5grasp_6formal_2hg_Node[] = {
+  {"__getstate__", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_4Node_3__getstate__, METH_NOARGS, 0},
+  {"__setstate__", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_4Node_5__setstate__, METH_O, 0},
   {0, 0, 0, 0}
 };
 
@@ -11276,13 +12414,13 @@ static PyTypeObject __pyx_type_5grasp_6formal_2hg_Node = {
   #else
   0, /*reserved*/
   #endif
-  __pyx_pw_5grasp_6formal_2hg_4Node_5__repr__, /*tp_repr*/
+  __pyx_pw_5grasp_6formal_2hg_4Node_9__repr__, /*tp_repr*/
   0, /*tp_as_number*/
   0, /*tp_as_sequence*/
   0, /*tp_as_mapping*/
   0, /*tp_hash*/
   0, /*tp_call*/
-  __pyx_pw_5grasp_6formal_2hg_4Node_3__str__, /*tp_str*/
+  __pyx_pw_5grasp_6formal_2hg_4Node_7__str__, /*tp_str*/
   0, /*tp_getattro*/
   0, /*tp_setattro*/
   0, /*tp_as_buffer*/
@@ -11376,6 +12514,8 @@ static PyObject *__pyx_getprop_5grasp_6formal_2hg_4Edge_weight(PyObject *o, CYTH
 }
 
 static PyMethodDef __pyx_methods_5grasp_6formal_2hg_Edge[] = {
+  {"__getstate__", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_4Edge_7__getstate__, METH_NOARGS, 0},
+  {"__setstate__", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_4Edge_9__setstate__, METH_O, 0},
   {0, 0, 0, 0}
 };
 
@@ -11554,34 +12694,36 @@ static int __pyx_tp_clear_5grasp_6formal_2hg_Hypergraph(PyObject *o) {
 }
 
 static PyMethodDef __pyx_methods_5grasp_6formal_2hg_Hypergraph[] = {
-  {"add_node", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_7add_node, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_6add_node},
-  {"add_xedge", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_9add_xedge, METH_VARARGS|METH_KEYWORDS, 0},
-  {"fetch", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_11fetch, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_10fetch},
-  {"head", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_13head, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_12head},
-  {"tail", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_15tail, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_14tail},
-  {"weight", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_17weight, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_16weight},
-  {"arity", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_19arity, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_18arity},
-  {"child", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_21child, METH_VARARGS|METH_KEYWORDS, 0},
-  {"is_terminal", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_23is_terminal, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_22is_terminal},
-  {"is_nonterminal", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_25is_nonterminal, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_24is_nonterminal},
-  {"is_source", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_27is_source, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_26is_source},
-  {"is_glue", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_29is_glue, METH_O, 0},
-  {"label", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_31label, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_30label},
-  {"rule", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_33rule, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_32rule},
-  {"n_nodes", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_35n_nodes, METH_NOARGS, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_34n_nodes},
-  {"n_edges", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_37n_edges, METH_NOARGS, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_36n_edges},
-  {"n_incoming", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_39n_incoming, METH_O, 0},
-  {"iterglue", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_41iterglue, METH_NOARGS, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_40iterglue},
-  {"iterbs", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_43iterbs, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_42iterbs},
-  {"bs_i", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_45bs_i, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_44bs_i},
-  {"iterfs", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_47iterfs, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_46iterfs},
-  {"iterdeps", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_49iterdeps, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_48iterdeps},
-  {"self_depends", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_51self_depends, METH_O, 0},
+  {"__getstate__", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_3__getstate__, METH_NOARGS, 0},
+  {"__setstate__", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_5__setstate__, METH_O, 0},
+  {"add_node", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_11add_node, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_10add_node},
+  {"add_xedge", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_13add_xedge, METH_VARARGS|METH_KEYWORDS, 0},
+  {"fetch", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_15fetch, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_14fetch},
+  {"head", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_17head, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_16head},
+  {"tail", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_19tail, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_18tail},
+  {"weight", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_21weight, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_20weight},
+  {"arity", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_23arity, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_22arity},
+  {"child", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_25child, METH_VARARGS|METH_KEYWORDS, 0},
+  {"is_terminal", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_27is_terminal, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_26is_terminal},
+  {"is_nonterminal", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_29is_nonterminal, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_28is_nonterminal},
+  {"is_source", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_31is_source, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_30is_source},
+  {"is_glue", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_33is_glue, METH_O, 0},
+  {"label", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_35label, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_34label},
+  {"rule", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_37rule, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_36rule},
+  {"n_nodes", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_39n_nodes, METH_NOARGS, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_38n_nodes},
+  {"n_edges", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_41n_edges, METH_NOARGS, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_40n_edges},
+  {"n_incoming", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_43n_incoming, METH_O, 0},
+  {"iterglue", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_45iterglue, METH_NOARGS, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_44iterglue},
+  {"iterbs", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_47iterbs, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_46iterbs},
+  {"bs_i", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_49bs_i, METH_VARARGS|METH_KEYWORDS, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_48bs_i},
+  {"iterfs", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_51iterfs, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_50iterfs},
+  {"iterdeps", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_53iterdeps, METH_O, __pyx_doc_5grasp_6formal_2hg_10Hypergraph_52iterdeps},
+  {"self_depends", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Hypergraph_55self_depends, METH_O, 0},
   {0, 0, 0, 0}
 };
 
 static PySequenceMethods __pyx_tp_as_sequence_Hypergraph = {
-  __pyx_pw_5grasp_6formal_2hg_10Hypergraph_5__len__, /*sq_length*/
+  __pyx_pw_5grasp_6formal_2hg_10Hypergraph_9__len__, /*sq_length*/
   0, /*sq_concat*/
   0, /*sq_repeat*/
   0, /*sq_item*/
@@ -11594,7 +12736,7 @@ static PySequenceMethods __pyx_tp_as_sequence_Hypergraph = {
 };
 
 static PyMappingMethods __pyx_tp_as_mapping_Hypergraph = {
-  __pyx_pw_5grasp_6formal_2hg_10Hypergraph_5__len__, /*mp_length*/
+  __pyx_pw_5grasp_6formal_2hg_10Hypergraph_9__len__, /*mp_length*/
   0, /*mp_subscript*/
   0, /*mp_ass_subscript*/
 };
@@ -11619,7 +12761,7 @@ static PyTypeObject __pyx_type_5grasp_6formal_2hg_Hypergraph = {
   &__pyx_tp_as_mapping_Hypergraph, /*tp_as_mapping*/
   0, /*tp_hash*/
   0, /*tp_call*/
-  __pyx_pw_5grasp_6formal_2hg_10Hypergraph_3__str__, /*tp_str*/
+  __pyx_pw_5grasp_6formal_2hg_10Hypergraph_7__str__, /*tp_str*/
   0, /*tp_getattro*/
   0, /*tp_setattro*/
   0, /*tp_as_buffer*/
@@ -11719,9 +12861,13 @@ static int __pyx_tp_clear_5grasp_6formal_2hg_Derivation(PyObject *o) {
 }
 
 static PyMethodDef __pyx_methods_5grasp_6formal_2hg_Derivation[] = {
-  {"weights", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Derivation_3weights, METH_NOARGS, 0},
-  {"rules", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Derivation_5rules, METH_NOARGS, 0},
-  {"iteritems", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Derivation_7iteritems, METH_NOARGS, 0},
+  {"__getstate__", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Derivation_3__getstate__, METH_NOARGS, 0},
+  {"__setstate__", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Derivation_5__setstate__, METH_O, 0},
+  {"hg", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Derivation_7hg, METH_NOARGS, 0},
+  {"edges", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Derivation_9edges, METH_NOARGS, 0},
+  {"weights", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Derivation_11weights, METH_NOARGS, 0},
+  {"rules", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Derivation_13rules, METH_NOARGS, 0},
+  {"iteritems", (PyCFunction)__pyx_pw_5grasp_6formal_2hg_10Derivation_15iteritems, METH_NOARGS, 0},
   {0, 0, 0, 0}
 };
 
@@ -11743,7 +12889,7 @@ static PyTypeObject __pyx_type_5grasp_6formal_2hg_Derivation = {
   0, /*tp_as_number*/
   0, /*tp_as_sequence*/
   0, /*tp_as_mapping*/
-  __pyx_pw_5grasp_6formal_2hg_10Derivation_9__hash__, /*tp_hash*/
+  __pyx_pw_5grasp_6formal_2hg_10Derivation_17__hash__, /*tp_hash*/
   0, /*tp_call*/
   0, /*tp_str*/
   0, /*tp_getattro*/
@@ -11753,7 +12899,7 @@ static PyTypeObject __pyx_type_5grasp_6formal_2hg_Derivation = {
   0, /*tp_doc*/
   __pyx_tp_traverse_5grasp_6formal_2hg_Derivation, /*tp_traverse*/
   __pyx_tp_clear_5grasp_6formal_2hg_Derivation, /*tp_clear*/
-  __pyx_pw_5grasp_6formal_2hg_10Derivation_11__richcmp__, /*tp_richcompare*/
+  __pyx_pw_5grasp_6formal_2hg_10Derivation_19__richcmp__, /*tp_richcompare*/
   0, /*tp_weaklistoffset*/
   0, /*tp_iter*/
   0, /*tp_iternext*/
@@ -12385,21 +13531,25 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_append, __pyx_k_append, sizeof(__pyx_k_append), 0, 0, 1, 1},
   {&__pyx_n_s_args, __pyx_k_args, sizeof(__pyx_k_args), 0, 0, 1, 1},
   {&__pyx_n_s_arity, __pyx_k_arity, sizeof(__pyx_k_arity), 0, 0, 1, 1},
+  {&__pyx_n_s_bs, __pyx_k_bs, sizeof(__pyx_k_bs), 0, 0, 1, 1},
   {&__pyx_n_s_bs_i, __pyx_k_bs_i, sizeof(__pyx_k_bs_i), 0, 0, 1, 1},
   {&__pyx_n_s_child, __pyx_k_child, sizeof(__pyx_k_child), 0, 0, 1, 1},
   {&__pyx_n_s_close, __pyx_k_close, sizeof(__pyx_k_close), 0, 0, 1, 1},
   {&__pyx_n_s_default, __pyx_k_default, sizeof(__pyx_k_default), 0, 0, 1, 1},
+  {&__pyx_n_s_deps, __pyx_k_deps, sizeof(__pyx_k_deps), 0, 0, 1, 1},
   {&__pyx_n_s_derivation, __pyx_k_derivation, sizeof(__pyx_k_derivation), 0, 0, 1, 1},
   {&__pyx_n_s_e, __pyx_k_e, sizeof(__pyx_k_e), 0, 0, 1, 1},
   {&__pyx_n_s_edges, __pyx_k_edges, sizeof(__pyx_k_edges), 0, 0, 1, 1},
   {&__pyx_n_s_fetch, __pyx_k_fetch, sizeof(__pyx_k_fetch), 0, 0, 1, 1},
   {&__pyx_n_s_forest, __pyx_k_forest, sizeof(__pyx_k_forest), 0, 0, 1, 1},
   {&__pyx_n_s_format, __pyx_k_format, sizeof(__pyx_k_format), 0, 0, 1, 1},
+  {&__pyx_n_s_fs, __pyx_k_fs, sizeof(__pyx_k_fs), 0, 0, 1, 1},
   {&__pyx_n_s_genexpr, __pyx_k_genexpr, sizeof(__pyx_k_genexpr), 0, 0, 1, 1},
   {&__pyx_n_s_get, __pyx_k_get, sizeof(__pyx_k_get), 0, 0, 1, 1},
   {&__pyx_n_s_glue, __pyx_k_glue, sizeof(__pyx_k_glue), 0, 0, 1, 1},
   {&__pyx_n_s_head, __pyx_k_head, sizeof(__pyx_k_head), 0, 0, 1, 1},
   {&__pyx_kp_s_head_0_tail_1_weight_2, __pyx_k_head_0_tail_1_weight_2, sizeof(__pyx_k_head_0_tail_1_weight_2), 0, 0, 1, 0},
+  {&__pyx_n_s_hg, __pyx_k_hg, sizeof(__pyx_k_hg), 0, 0, 1, 1},
   {&__pyx_n_s_i, __pyx_k_i, sizeof(__pyx_k_i), 0, 0, 1, 1},
   {&__pyx_n_s_is_glue, __pyx_k_is_glue, sizeof(__pyx_k_is_glue), 0, 0, 1, 1},
   {&__pyx_n_s_is_nonterminal, __pyx_k_is_nonterminal, sizeof(__pyx_k_is_nonterminal), 0, 0, 1, 1},
@@ -12420,6 +13570,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_n_nodes, __pyx_k_n_nodes, sizeof(__pyx_k_n_nodes), 0, 0, 1, 1},
   {&__pyx_kp_u_ndarray_is_not_C_contiguous, __pyx_k_ndarray_is_not_C_contiguous, sizeof(__pyx_k_ndarray_is_not_C_contiguous), 0, 1, 0, 0},
   {&__pyx_kp_u_ndarray_is_not_Fortran_contiguou, __pyx_k_ndarray_is_not_Fortran_contiguou, sizeof(__pyx_k_ndarray_is_not_Fortran_contiguou), 0, 1, 0, 0},
+  {&__pyx_n_s_nodes, __pyx_k_nodes, sizeof(__pyx_k_nodes), 0, 0, 1, 1},
   {&__pyx_kp_s_nodes_0_1_edges_2_3, __pyx_k_nodes_0_1_edges_2_3, sizeof(__pyx_k_nodes_0_1_edges_2_3), 0, 0, 1, 0},
   {&__pyx_n_s_pyx_vtable, __pyx_k_pyx_vtable, sizeof(__pyx_k_pyx_vtable), 0, 0, 1, 1},
   {&__pyx_n_s_range, __pyx_k_range, sizeof(__pyx_k_range), 0, 0, 1, 1},
@@ -12430,6 +13581,8 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_send, __pyx_k_send, sizeof(__pyx_k_send), 0, 0, 1, 1},
   {&__pyx_n_s_str___locals_genexpr, __pyx_k_str___locals_genexpr, sizeof(__pyx_k_str___locals_genexpr), 0, 0, 1, 1},
   {&__pyx_n_s_sym, __pyx_k_sym, sizeof(__pyx_k_sym), 0, 0, 1, 1},
+  {&__pyx_n_s_symbol_map, __pyx_k_symbol_map, sizeof(__pyx_k_symbol_map), 0, 0, 1, 1},
+  {&__pyx_n_s_symbols, __pyx_k_symbols, sizeof(__pyx_k_symbols), 0, 0, 1, 1},
   {&__pyx_n_s_tail, __pyx_k_tail, sizeof(__pyx_k_tail), 0, 0, 1, 1},
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
   {&__pyx_n_s_throw, __pyx_k_throw, sizeof(__pyx_k_throw), 0, 0, 1, 1},
@@ -12440,9 +13593,9 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {0, 0, 0, 0, 0, 0, 0}
 };
 static int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_zip = __Pyx_GetBuiltinName(__pyx_n_s_zip); if (!__pyx_builtin_zip) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 231; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 252; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_builtin_zip = __Pyx_GetBuiltinName(__pyx_n_s_zip); if (!__pyx_builtin_zip) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 97; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 278; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 304; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_builtin_RuntimeError = __Pyx_GetBuiltinName(__pyx_n_s_RuntimeError); if (!__pyx_builtin_RuntimeError) {__pyx_filename = __pyx_f[2]; __pyx_lineno = 802; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   return 0;
   __pyx_L1_error:;
@@ -12618,9 +13771,9 @@ PyMODINIT_FUNC PyInit_hg(void)
   __pyx_type_5grasp_6formal_2hg_Node.tp_print = 0;
   if (PyObject_SetAttrString(__pyx_m, "Node", (PyObject *)&__pyx_type_5grasp_6formal_2hg_Node) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 6; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_ptype_5grasp_6formal_2hg_Node = &__pyx_type_5grasp_6formal_2hg_Node;
-  if (PyType_Ready(&__pyx_type_5grasp_6formal_2hg_Edge) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyType_Ready(&__pyx_type_5grasp_6formal_2hg_Edge) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_type_5grasp_6formal_2hg_Edge.tp_print = 0;
-  if (PyObject_SetAttrString(__pyx_m, "Edge", (PyObject *)&__pyx_type_5grasp_6formal_2hg_Edge) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 21; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyObject_SetAttrString(__pyx_m, "Edge", (PyObject *)&__pyx_type_5grasp_6formal_2hg_Edge) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 27; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_ptype_5grasp_6formal_2hg_Edge = &__pyx_type_5grasp_6formal_2hg_Edge;
   __pyx_vtabptr_5grasp_6formal_2hg_Hypergraph = &__pyx_vtable_5grasp_6formal_2hg_Hypergraph;
   __pyx_vtable_5grasp_6formal_2hg_Hypergraph._add_node = (PyObject *(*)(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *, struct __pyx_obj_5grasp_6formal_2hg_Node *))__pyx_f_5grasp_6formal_2hg_10Hypergraph__add_node;
@@ -12648,33 +13801,35 @@ PyMODINIT_FUNC PyInit_hg(void)
   __pyx_vtable_5grasp_6formal_2hg_Hypergraph.iterfs = (PyObject *(*)(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *, __pyx_t_5grasp_6ptypes_id_t, int __pyx_skip_dispatch))__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterfs;
   __pyx_vtable_5grasp_6formal_2hg_Hypergraph.iterdeps = (PyObject *(*)(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *, __pyx_t_5grasp_6ptypes_id_t, int __pyx_skip_dispatch))__pyx_f_5grasp_6formal_2hg_10Hypergraph_iterdeps;
   __pyx_vtable_5grasp_6formal_2hg_Hypergraph.self_depends = (int (*)(struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *, __pyx_t_5grasp_6ptypes_id_t, int __pyx_skip_dispatch))__pyx_f_5grasp_6formal_2hg_10Hypergraph_self_depends;
-  if (PyType_Ready(&__pyx_type_5grasp_6formal_2hg_Hypergraph) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyType_Ready(&__pyx_type_5grasp_6formal_2hg_Hypergraph) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 54; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_type_5grasp_6formal_2hg_Hypergraph.tp_print = 0;
-  if (__Pyx_SetVtable(__pyx_type_5grasp_6formal_2hg_Hypergraph.tp_dict, __pyx_vtabptr_5grasp_6formal_2hg_Hypergraph) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (PyObject_SetAttrString(__pyx_m, "Hypergraph", (PyObject *)&__pyx_type_5grasp_6formal_2hg_Hypergraph) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (__Pyx_SetVtable(__pyx_type_5grasp_6formal_2hg_Hypergraph.tp_dict, __pyx_vtabptr_5grasp_6formal_2hg_Hypergraph) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 54; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyObject_SetAttrString(__pyx_m, "Hypergraph", (PyObject *)&__pyx_type_5grasp_6formal_2hg_Hypergraph) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 54; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_ptype_5grasp_6formal_2hg_Hypergraph = &__pyx_type_5grasp_6formal_2hg_Hypergraph;
   __pyx_vtabptr_5grasp_6formal_2hg_Derivation = &__pyx_vtable_5grasp_6formal_2hg_Derivation;
+  __pyx_vtable_5grasp_6formal_2hg_Derivation.hg = (struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *(*)(struct __pyx_obj_5grasp_6formal_2hg_Derivation *, int __pyx_skip_dispatch))__pyx_f_5grasp_6formal_2hg_10Derivation_hg;
+  __pyx_vtable_5grasp_6formal_2hg_Derivation.edges = (PyObject *(*)(struct __pyx_obj_5grasp_6formal_2hg_Derivation *, int __pyx_skip_dispatch))__pyx_f_5grasp_6formal_2hg_10Derivation_edges;
   __pyx_vtable_5grasp_6formal_2hg_Derivation.weights = (PyObject *(*)(struct __pyx_obj_5grasp_6formal_2hg_Derivation *, int __pyx_skip_dispatch))__pyx_f_5grasp_6formal_2hg_10Derivation_weights;
   __pyx_vtable_5grasp_6formal_2hg_Derivation.rules = (PyObject *(*)(struct __pyx_obj_5grasp_6formal_2hg_Derivation *, int __pyx_skip_dispatch))__pyx_f_5grasp_6formal_2hg_10Derivation_rules;
   __pyx_vtable_5grasp_6formal_2hg_Derivation.iteritems = (PyObject *(*)(struct __pyx_obj_5grasp_6formal_2hg_Derivation *, int __pyx_skip_dispatch))__pyx_f_5grasp_6formal_2hg_10Derivation_iteritems;
-  if (PyType_Ready(&__pyx_type_5grasp_6formal_2hg_Derivation) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 221; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyType_Ready(&__pyx_type_5grasp_6formal_2hg_Derivation) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 257; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_type_5grasp_6formal_2hg_Derivation.tp_print = 0;
-  if (__Pyx_SetVtable(__pyx_type_5grasp_6formal_2hg_Derivation.tp_dict, __pyx_vtabptr_5grasp_6formal_2hg_Derivation) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 221; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  if (PyObject_SetAttrString(__pyx_m, "Derivation", (PyObject *)&__pyx_type_5grasp_6formal_2hg_Derivation) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 221; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (__Pyx_SetVtable(__pyx_type_5grasp_6formal_2hg_Derivation.tp_dict, __pyx_vtabptr_5grasp_6formal_2hg_Derivation) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 257; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyObject_SetAttrString(__pyx_m, "Derivation", (PyObject *)&__pyx_type_5grasp_6formal_2hg_Derivation) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 257; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_ptype_5grasp_6formal_2hg_Derivation = &__pyx_type_5grasp_6formal_2hg_Derivation;
-  if (PyType_Ready(&__pyx_type_5grasp_6formal_2hg___pyx_scope_struct____str__) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyType_Ready(&__pyx_type_5grasp_6formal_2hg___pyx_scope_struct____str__) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_type_5grasp_6formal_2hg___pyx_scope_struct____str__.tp_print = 0;
   __pyx_ptype_5grasp_6formal_2hg___pyx_scope_struct____str__ = &__pyx_type_5grasp_6formal_2hg___pyx_scope_struct____str__;
-  if (PyType_Ready(&__pyx_type_5grasp_6formal_2hg___pyx_scope_struct_1_genexpr) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyType_Ready(&__pyx_type_5grasp_6formal_2hg___pyx_scope_struct_1_genexpr) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_type_5grasp_6formal_2hg___pyx_scope_struct_1_genexpr.tp_print = 0;
   __pyx_ptype_5grasp_6formal_2hg___pyx_scope_struct_1_genexpr = &__pyx_type_5grasp_6formal_2hg___pyx_scope_struct_1_genexpr;
-  if (PyType_Ready(&__pyx_type_5grasp_6formal_2hg___pyx_scope_struct_2___str__) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 56; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyType_Ready(&__pyx_type_5grasp_6formal_2hg___pyx_scope_struct_2___str__) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 92; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_type_5grasp_6formal_2hg___pyx_scope_struct_2___str__.tp_print = 0;
   __pyx_ptype_5grasp_6formal_2hg___pyx_scope_struct_2___str__ = &__pyx_type_5grasp_6formal_2hg___pyx_scope_struct_2___str__;
-  if (PyType_Ready(&__pyx_type_5grasp_6formal_2hg___pyx_scope_struct_3_genexpr) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyType_Ready(&__pyx_type_5grasp_6formal_2hg___pyx_scope_struct_3_genexpr) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 94; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_type_5grasp_6formal_2hg___pyx_scope_struct_3_genexpr.tp_print = 0;
   __pyx_ptype_5grasp_6formal_2hg___pyx_scope_struct_3_genexpr = &__pyx_type_5grasp_6formal_2hg___pyx_scope_struct_3_genexpr;
-  if (PyType_Ready(&__pyx_type_5grasp_6formal_2hg___pyx_scope_struct_4_genexpr) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  if (PyType_Ready(&__pyx_type_5grasp_6formal_2hg___pyx_scope_struct_4_genexpr) < 0) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 96; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_type_5grasp_6formal_2hg___pyx_scope_struct_4_genexpr.tp_print = 0;
   __pyx_ptype_5grasp_6formal_2hg___pyx_scope_struct_4_genexpr = &__pyx_type_5grasp_6formal_2hg___pyx_scope_struct_4_genexpr;
   /*--- Type import code ---*/
@@ -12938,6 +14093,18 @@ static CYTHON_INLINE int __Pyx_ArgTypeTest(PyObject *obj, PyTypeObject *type, in
         if (likely(PyObject_TypeCheck(obj, type))) return 1;
     }
     __Pyx_RaiseArgumentTypeInvalid(name, obj, type);
+    return 0;
+}
+
+static CYTHON_INLINE int __Pyx_TypeTest(PyObject *obj, PyTypeObject *type) {
+    if (unlikely(!type)) {
+        PyErr_SetString(PyExc_SystemError, "Missing type object");
+        return 0;
+    }
+    if (likely(PyObject_TypeCheck(obj, type)))
+        return 1;
+    PyErr_Format(PyExc_TypeError, "Cannot convert %.200s to %.200s",
+                 Py_TYPE(obj)->tp_name, type->tp_name);
     return 0;
 }
 
@@ -13330,18 +14497,6 @@ static void __Pyx_WriteUnraisable(const char *name, CYTHON_UNUSED int clineno,
     if (nogil)
         PyGILState_Release(state);
 #endif
-}
-
-static CYTHON_INLINE int __Pyx_TypeTest(PyObject *obj, PyTypeObject *type) {
-    if (unlikely(!type)) {
-        PyErr_SetString(PyExc_SystemError, "Missing type object");
-        return 0;
-    }
-    if (likely(PyObject_TypeCheck(obj, type)))
-        return 1;
-    PyErr_Format(PyExc_TypeError, "Cannot convert %.200s to %.200s",
-                 Py_TYPE(obj)->tp_name, type->tp_name);
-    return 0;
 }
 
 #if CYTHON_COMPILING_IN_CPYTHON

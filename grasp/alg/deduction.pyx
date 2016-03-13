@@ -6,6 +6,8 @@ from collections import defaultdict, deque
 cimport numpy as np
 import numpy as np
 import grasp.ptypes as ptypes
+import itertools
+
 
 cdef class Item:
     """
@@ -16,18 +18,20 @@ cdef class Item:
     We do store the weight in order to optimised some operations (such as conditional completions).
     """
     
-    def __init__(self, id_t edge, tuple states, weight_t weight):
+    def __init__(self, id_t edge, tuple states, weight_t weight, tuple frepr=tuple()):
         self.edge = edge
         self.states = states
         self.weight = weight
+        self.frepr = frepr
 
     def __len__(self):
         """The length of an item is the number of states already intersected."""
         return len(self.states)
         
     def __str__(self):
-        return 'edge={0} states=({1})'.format(self.edge, 
-                                              ' '.join(str(s) for s in self.states))
+        return 'edge={0} states=({1}) ffs={2}'.format(self.edge,
+                                              ' '.join(str(s) for s in self.states),
+                                                      ' '.join(str(v) for v in self.frepr))
     
     def __repr__(self):
         return 'Item(%r, %r)' % (self.edge, self.states)
@@ -78,7 +82,7 @@ cdef class ItemFactory:
         """
         return self._items[i]
         
-    cpdef Item get_item(self, id_t edge, tuple states, weight_t weight):
+    cpdef Item get_item(self, id_t edge, tuple states, weight_t weight, tuple frepr):
         """
         Return an item constructing it if necessary.
 
@@ -90,10 +94,10 @@ cdef class ItemFactory:
         if i < 0:
             i = len(self._items)
             self._items_by_key[edge][states] = i
-            self._items.append(Item(edge, states, weight))
+            self._items.append(Item(edge, states, weight, frepr))
         return self._items[i]
 
-    cdef pair[id_t, bint] insert(self, id_t edge, tuple states, weight_t weight):
+    cdef pair[id_t, bint] insert(self, id_t edge, tuple states, weight_t weight, tuple frepr):
         """
         Return an item constructing it if necessary and an insertion flag.
         :param edge:
@@ -105,13 +109,13 @@ cdef class ItemFactory:
         if i < 0:
             i = len(self._items)
             self._items_by_key[edge][states] = i
-            self._items.append(Item(edge, states, weight))
+            self._items.append(Item(edge, states, weight, frepr))
             return pair[id_t, bint](i, True)
         else:
             return pair[id_t, bint](i, False)
 
-    cdef pair[id_t, bint] advance(self, Item item, id_t to, weight_t weight):
-        return self.insert(item.edge, item.states + (to,), weight)
+    cdef pair[id_t, bint] advance(self, Item item, id_t to, weight_t weight, tuple frepr):
+        return self.insert(item.edge, item.states + (to,), weight, frepr)
 
 
 cdef class Agenda:
@@ -175,7 +179,13 @@ cdef class Agenda:
     cdef set destinations(self, id_t node, id_t start):
         return self._generating[node].get(start, set())
 
-    cdef Hypergraph make_output(self, id_t root, Rule goal_rule, set initial, set final, list mapping=None):
+    cdef Hypergraph make_output(self, id_t root,
+                                Rule goal_rule,
+                                set initial,
+                                set final,
+                                list mapping=None,
+                                list components=None,
+                                FComponents comp_one=None):
         """
         :param root: root node of the input hypergraph
         :param goal_rule: a rule that introduces a unique goal symbol
@@ -194,6 +204,7 @@ cdef class Agenda:
             set ends
             set discovered = set()
             Symbol lhs, sym
+            FComponents comp
 
         Q = deque([])  # queue of LHS annotated symbols whose rules are to be created
         # first we create rules for the roots
@@ -212,6 +223,8 @@ cdef class Agenda:
                                  goal_rule)  # CFGProduction(goal, [self._hg.label(root)], 0.0)
                 if mapping is not None:
                     mapping.append(-1)
+                if components is not None:
+                    components.append(comp_one)
 
         # create rules for symbols which are reachable from other generating symbols (starting from the root ones)
         n_discovered = len(discovered)
@@ -235,6 +248,9 @@ cdef class Agenda:
                 aux = output.add_xedge(lhs, tuple(rhs), item.weight, self._hg.rule(e))
                 if mapping is not None:
                     mapping.append(e)
+                if components is not None:
+                    comp = FComponents(item.frepr)  # item.frepr[0].concatenate(item.frepr[1])
+                    components.append(comp)
 
         return output
 
@@ -331,7 +347,7 @@ cdef class DeductiveIntersection:
             id_t start = item.end  # the next node will rewrite from the last state of this item
             id_t end
         for end in self._agenda.destinations(n_i, start):
-            self.push(self._ifactory.advance(item, end, item.weight))
+            self.push(self._ifactory.advance(item, end, item.weight, item.frepr))
         return n_items0 < len(self._ifactory)
 
     cdef bint complete_others(self, Item item):
@@ -350,7 +366,7 @@ cdef class DeductiveIntersection:
             id_t n_items0 = len(self._ifactory)
             Item incomplete
         for incomplete in self._agenda.waiting(self._hg.head(item.edge), item.start):
-            self.push(self._ifactory.advance(incomplete, item.end, incomplete.weight))
+            self.push(self._ifactory.advance(incomplete, item.end, incomplete.weight, item.frepr))
         return n_items0 < len(self._ifactory)
 
     cdef void process(self, Item item):
@@ -452,7 +468,8 @@ cdef class Parser(DeductiveIntersection):
 
         self.push(self._ifactory.advance(item,
                                          arc.destination,
-                                         self._semiring.times(item.weight, arc.weight)))
+                                         self._semiring.times(item.weight, arc.weight),
+                                         item.frepr))
 
         return True
 
@@ -486,7 +503,7 @@ cdef class EarleyParser(Parser):
         cdef id_t e, start
         for start in self._dfa.iterinitial():
             for e in self._hg.iterbs(root):
-                self.push(self._ifactory.insert(e, (start,), self._hg.weight(e)))
+                self.push(self._ifactory.insert(e, (start,), self._hg.weight(e), tuple()))
                 self._predictions.add((root, start))
 
     cdef bint _predict(self, Item item):
@@ -503,12 +520,12 @@ cdef class EarleyParser(Parser):
 
         if self._dfa.is_initial(start):  # for initial states we just add whatever edge matches
             for e_i in self._hg.iterbs(n_i):
-                self.push(self._ifactory.insert(e_i, (start,), self._hg.weight(e_i)))
+                self.push(self._ifactory.insert(e_i, (start,), self._hg.weight(e_i), tuple()))
         else:  # if a state is not initial, we only create items based on edges which are not  *glue*
             for e_i in self._hg.iterbs(n_i):
                 if self.is_glue(e_i):
                     continue
-                self.push(self._ifactory.insert(e_i, (start,), self._hg.weight(e_i)))
+                self.push(self._ifactory.insert(e_i, (start,), self._hg.weight(e_i), tuple()))
 
         return True
 
@@ -579,13 +596,13 @@ cdef class NederhofParser(Parser):
         if self._dfa.is_initial(start):
             for e in self._edges_by_tail0[node]:
                 e_weight = self._semiring.times(self._hg.weight(e), weight)
-                self.push(self._ifactory.insert(e, (start, end), e_weight))
+                self.push(self._ifactory.insert(e, (start, end), e_weight, tuple()))
         else:  # not an initial finite state
             for e in self._edges_by_tail0[node]:
                 if self.is_glue(e):  # skip glue edge
                     continue
                 e_weight = self._semiring.times(self._hg.weight(e), weight)
-                self.push(self._ifactory.insert(e, (start, end), e_weight))
+                self.push(self._ifactory.insert(e, (start, end), e_weight, tuple()))
 
     cdef void process_incomplete(self, Item item):
         self.complete_itself(item)
@@ -611,11 +628,15 @@ cdef class NederhofParser(Parser):
 cdef class Rescorer(DeductiveIntersection):
 
     def __init__(self, Hypergraph hg,
+                 TableLookupScorer lookup,
                  StatelessScorer stateless,
                  StatefulScorer stateful,
                  Semiring semiring,
-                 SliceVariables slicevars):
+                 SliceVariables slicevars,
+                 bint map_edges=True,
+                 bint keep_frepr=False):
         super(Rescorer, self).__init__(hg, semiring, slicevars)
+        self._lookup = lookup
         self._stateless = stateless
         self._stateful = stateful
         if self._stateful:
@@ -624,29 +645,83 @@ cdef class Rescorer(DeductiveIntersection):
         else:
             self._initial = 0
             self._final = 0
-        self._mapping = []
 
-    cdef weight_t score_on_creation(self, id_t e):
-        if self._stateless:
-            return self._semiring.times(self._hg.weight(e), self._stateless.score(self._hg.rule(e)))
+        if map_edges:
+            self._mapping = []
         else:
-            return self._hg.weight(e)
+            self._mapping = None
+
+        # auxiliary stuff for maintaining model components explicitly
+        self._keep_frepr = keep_frepr
+        #self._stateless_one = self._stateless.constant(semiring.one)
+        #self._stateful_one = self._stateful.constant(semiring.one)
+        if keep_frepr:
+            #self._skeleton_frepr = [self._stateless_one, self._stateful_one]
+            self._components = []
+            #self._comp_one = self._stateless_one.concatenate(self._stateful_one)
+            #self._comp_one
+        else:
+            #self._skeleton_frepr = []
+            #self._comp_one = FComponents([])
+            self._components = None
+
+
+    cdef weight_t score_on_creation(self, id_t e, list parts):
+        cdef weight_t score
+        cdef FComponents components
+        cdef weight_t lookup_score = self._semiring.one
+        cdef weight_t stateless_score = self._semiring.one
+        # stateful scorers never have anything to contribute here
+
+        if self._keep_frepr:
+            if self._lookup:
+                components, lookup_score = self._lookup.featurize_and_score(self._hg.rule(e))
+                parts[0] = components
+            if self._stateless:
+                # TODO: pass (head label, tail labels, and rule)
+                components, stateless_score = self._stateless.featurize_and_score(self._hg.rule(e))
+                parts[1] = components
+        else:
+            if self._lookup:
+                lookup_score = self._lookup.score(self._hg.rule(e))
+            if self._stateless:
+                stateless_score = self._stateless.score(self._hg.rule(e))  # TODO: pass (head label, tail labels, and rule)
+
+        return self._semiring.times(self._hg.weight(e), self._semiring.times(lookup_score, stateless_score))
 
     cdef bint scan(self, Item item):
-        cdef weight_t weight
+        cdef FComponents components, combined
+        cdef weight_t partial, weight
         cdef id_t to
+        cdef tuple frepr
+
         if self._stateful:
-            weight, to = self._stateful.score(self.next_symbol(item), context=item.end)
-            # scan the item
-            self.push(self._ifactory.advance(item,
-                                             to,
-                                             self._semiring.times(item.weight, weight)))
-            return True
-        else:
-            self.push(self._ifactory.advance(item,
-                                             0,
-                                             item.weight))
-            return True
+            if self._keep_frepr:
+                # compute stateful components, stateful score, and output state
+                components, partial, to = self._stateful.featurize_and_score(self.next_symbol(item), context=item.end)
+                # update total weight
+                weight = self._semiring.times(item.weight, partial)
+                # update item's stateful components in item.frepr[1]
+                combined = components.hadamard(item.frepr[2], self._semiring.times)
+                # update item's feature representation
+                frepr = tuple([item.frepr[0], item.frepr[1], combined])
+            else:
+                # compute stateful score and output state
+                partial, to = self._stateful.score(self.next_symbol(item), context=item.end)
+                # update item's total weight
+                weight = self._semiring.times(item.weight, partial)
+                # copy item's feature representation
+                frepr = item.frepr
+        else:  # no stateful scorers
+            to = item.end         # copy the item's state
+            weight = item.weight  # copy item's weight
+            frepr = item.frepr    # copy item's feature representation
+        # create the new item and push it into the agenda
+        self.push(self._ifactory.advance(item,
+                                         to,
+                                         weight,
+                                         frepr))
+        return True
 
     cpdef Hypergraph do(self, id_t root, Rule goal_rule):
         self.inference(root)
@@ -656,7 +731,9 @@ cdef class Rescorer(DeductiveIntersection):
                                         goal_rule,
                                         initial=set([self._initial]),
                                         final=None,
-                                        mapping=self._mapping)
+                                        mapping=self._mapping,
+                                        components=self._components,
+                                        comp_one=FComponents(self.skeleton_components()))
 
     cpdef id_t maps_to(self, id_t e):
         """
@@ -665,6 +742,14 @@ cdef class Rescorer(DeductiveIntersection):
         """
         return self._mapping[e]
 
+    cpdef list components(self):
+        return self._components
+
+    cpdef list skeleton_components(self):
+        return [self._lookup.constant(self._semiring.one),
+                self._stateless.constant(self._semiring.one),
+                self._stateful.constant(self._semiring.one)]
+
 
 cdef class EarleyRescorer(Rescorer):
     """
@@ -672,27 +757,37 @@ cdef class EarleyRescorer(Rescorer):
     """
 
     def __init__(self, Hypergraph hg,
+                 TableLookupScorer lookup,
                  StatelessScorer stateless,
                  StatefulScorer stateful,
                  Semiring semiring,
-                 SliceVariables slicevars=None):
+                 SliceVariables slicevars=None,
+                 bint map_edges=True,
+                 bint keep_frepr=False):
         super(EarleyRescorer, self).__init__(hg,
+                                             lookup=lookup,
                                              stateless=stateless,
                                              stateful=stateful,
                                              semiring=semiring,
-                                             slicevars=slicevars)
+                                             slicevars=slicevars,
+                                             map_edges=map_edges,
+                                             keep_frepr=keep_frepr)
         self._predictions = set()
 
     cdef void axioms(self, id_t root):
         cdef id_t start = self._initial
         cdef id_t e
+        cdef weight_t score
+        cdef list parts
         for e in self._hg.iterbs(root):
             # In MT for some reason, in some decoders, people don't score the top rule
             # that is, they would do something like this
             # self.push(self._ifactory.insert(e, (start,), self._hg.weight(e)))
             # I don't see a real good reason for that and I don't want to program bypasses, thus
             # I score top rules normally as follows
-            self.push(self._ifactory.insert(e, (start,), self.score_on_creation(e)))
+            parts = self.skeleton_components()
+            score = self.score_on_creation(e, parts)
+            self.push(self._ifactory.insert(e, (start,), score, tuple(parts)))
             self._predictions.add((root, start))
 
 
@@ -701,26 +796,18 @@ cdef class EarleyRescorer(Rescorer):
             id_t n_i = self._hg.child(item.edge, item.dot)  # id of the next node
             id_t start = item.end  # the next node will rewrite from the last state of this item
             id_t n_preds = len(self._predictions)
+            id_t e_i
+            weight_t score
+            tuple frepr
 
         self._predictions.add((n_i, start))
         if n_preds == len(self._predictions):  # no new candidates
             return False
 
-        cdef id_t e_i
-
         for e_i in self._hg.iterbs(n_i):
-            self.push(self._ifactory.insert(e_i, (start,), self.score_on_creation(e_i)))
-
-        if False:
-
-            if start == self._initial:  # for initial states we just add whatever edge matches
-                for e_i in self._hg.iterbs(n_i):
-                    self.push(self._ifactory.insert(e_i, (start,), self.score_on_creation(e_i)))
-            else:  # if a state is not initial, we only create items based on edges which are not  *glue*
-                for e_i in self._hg.iterbs(n_i):
-                    if self.is_glue(e_i):
-                        continue
-                    self.push(self._ifactory.insert(e_i, (start,), self.score_on_creation(e_i)))
+            parts = self.skeleton_components()
+            score = self.score_on_creation(e_i, parts)
+            self.push(self._ifactory.insert(e_i, (start,), score, tuple(parts)))
 
         return True
 

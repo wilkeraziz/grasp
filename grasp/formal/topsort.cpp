@@ -1434,6 +1434,8 @@ static struct __pyx_vtabstruct_5grasp_6formal_2hg_Hypergraph *__pyx_vtabptr_5gra
  */
 
 struct __pyx_vtabstruct_5grasp_6formal_2hg_Derivation {
+  struct __pyx_obj_5grasp_6formal_2hg_Hypergraph *(*hg)(struct __pyx_obj_5grasp_6formal_2hg_Derivation *, int __pyx_skip_dispatch);
+  PyObject *(*edges)(struct __pyx_obj_5grasp_6formal_2hg_Derivation *, int __pyx_skip_dispatch);
   PyObject *(*weights)(struct __pyx_obj_5grasp_6formal_2hg_Derivation *, int __pyx_skip_dispatch);
   PyObject *(*rules)(struct __pyx_obj_5grasp_6formal_2hg_Derivation *, int __pyx_skip_dispatch);
   PyObject *(*iteritems)(struct __pyx_obj_5grasp_6formal_2hg_Derivation *, int __pyx_skip_dispatch);

@@ -1,10 +1,12 @@
-from grasp.formal.hg cimport Hypergraph
-from grasp.semiring._semiring cimport Semiring
-from grasp.scoring.scorer cimport TableLookupScorer
 from grasp.ptypes cimport id_t
+
+from grasp.scoring.extractor cimport TableLookup, Stateless, Stateful
+
 from grasp.cfg.symbol cimport Symbol, Nonterminal, Terminal
 from grasp.cfg.srule cimport SCFGProduction, OutputView
 from grasp.cfg.rule cimport NewCFGProduction as CFGProduction
+
+from grasp.scoring.frepr cimport FComponents
 
 
 cpdef Hypergraph cfg_to_hg(grammars, glue_grammars, omega):  # TODO: make omega a ValueFunction
@@ -116,3 +118,42 @@ cpdef Hypergraph output_projection(Hypergraph ihg, Semiring semiring, TableLooku
     #e_root = f_root
 
     return ohg
+
+
+cpdef list lookup_components(Hypergraph forest, tuple extractors):
+    """
+    Return the local components of edges in the forest.
+
+    :param forest:
+    :param extractors: lookup table extractors
+    :return: list of FComponents objects
+    """
+    cdef:
+        id_t e
+        list edge_comps = [None] * forest.n_edges()
+        TableLookup extractor
+
+    for e in range(forest.n_edges()):
+        edge_comps[e] = FComponents([extractor.featurize(forest.rule(e)) for extractor in extractors])
+
+    return edge_comps
+
+
+cpdef list stateless_components(Hypergraph forest, tuple extractors):
+    """
+    Return the local components of edges in the forest.
+
+    :param forest:
+    :param extractors: stateless extractors
+    :return: list of FComponents objects
+    """
+    cdef:
+        id_t e
+        list edge_comps = [None] * forest.n_edges()
+        Stateless extractor
+
+    for e in range(forest.n_edges()):
+        edge_comps[e] = FComponents([extractor.featurize(forest.rule(e)) for extractor in extractors])
+
+    return edge_comps
+

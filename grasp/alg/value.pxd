@@ -21,6 +21,17 @@ cdef class ValueFunction:
     cpdef weight_t reduce(self, Operator op, iterable)
 
 
+cdef class ConstantFunction(ValueFunction):
+
+    cdef weight_t constant
+
+
+cdef class CascadeValueFunction(ValueFunction):
+
+    cdef tuple functions
+    cdef Operator op
+
+
 cdef class LookupFunction(ValueFunction):
 
     cdef weight_t[::1] table
@@ -53,7 +64,7 @@ cdef class BinaryEdgeWeight(ValueFunction):
     cdef Semiring output_semiring
 
 
-cpdef weight_t derivation_value(Hypergraph forest, tuple d, Semiring semiring, ValueFunction omega=?)
+cpdef weight_t derivation_value(Hypergraph forest, tuple edges, Semiring semiring, ValueFunction omega=?)
 
 
 cdef weight_t node_value(Hypergraph forest,
@@ -66,6 +77,12 @@ cdef weight_t node_value(Hypergraph forest,
 cpdef weight_t[::1] acyclic_value_recursion(Hypergraph forest,
                                             AcyclicTopSortTable tsort,
                                             Semiring semiring,
+                                            ValueFunction omega=?)
+
+cpdef weight_t[::1] acyclic_reversed_value_recursion(Hypergraph forest,
+                                            AcyclicTopSortTable tsort,
+                                            Semiring semiring,
+                                            weight_t[::1] values,
                                             ValueFunction omega=?)
 
 cpdef weight_t[::1] robust_value_recursion(Hypergraph forest,
@@ -82,6 +99,13 @@ cdef weight_t[::1] approximate_supremum(Hypergraph forest,
 cpdef weight_t[::1] compute_edge_values(Hypergraph forest,
                                         Semiring semiring,
                                         weight_t[::1] node_values,
+                                        ValueFunction omega=?,
+                                        bint normalise=?)
+
+cpdef weight_t[::1] compute_edge_expectation(Hypergraph forest,
+                                        Semiring semiring,
+                                        weight_t[::1] node_values,
+                                        weight_t[::1] node_reversed_values,
                                         ValueFunction omega=?,
                                         bint normalise=?)
 

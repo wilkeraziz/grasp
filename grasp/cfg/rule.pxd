@@ -23,3 +23,7 @@ cdef class _CFGProduction(Rule):
         tuple _rhs
         weight_t _weight
         int _hash
+
+
+# TODO: find a better place for this function
+cpdef tuple get_leaves(tuple derivation)

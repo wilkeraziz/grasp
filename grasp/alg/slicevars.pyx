@@ -322,6 +322,7 @@ cdef class SpanSliceVariables(SliceVariables):
         :param prior: an instance of Prior
         """
         self._conditions = defaultdict(None, conditions)
+        #print('SpanSliceVariable::conditions: %s' % str(self._conditions))
         self._assignments = defaultdict(lambda: SimpleNamespace(u=None, parameter=None))
         self._dist = dist
         self._prior = prior
@@ -420,13 +421,13 @@ cdef class SpanSliceVariables(SliceVariables):
         return 0
 
 
-cdef class ExpSpanSliceVariables(SliceVariables):
+cdef class ExpSpanSliceVariables(SpanSliceVariables):
 
     def __init__(self, conditions, prior):
         super(ExpSpanSliceVariables, self).__init__(conditions, dist=Exponential(), prior=prior)
 
 
-cdef class BetaSpanSliceVariables(SliceVariables):
+cdef class BetaSpanSliceVariables(SpanSliceVariables):
 
     def __init__(self, conditions, prior_a, prior_b):
         super(BetaSpanSliceVariables, self).__init__(conditions,

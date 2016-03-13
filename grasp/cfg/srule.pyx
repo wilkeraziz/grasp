@@ -39,6 +39,20 @@ cdef class SCFGProduction:
         self._nt_alignment = tuple(nt_alignment)
         self._fmap = dict(fmap)
 
+    def __getstate__(self):
+        return {'lhs': self._lhs,
+                'irhs': self._irhs,
+                'orhs': self._orhs,
+                'fmap': self._fmap,
+                'nt_alignment': self._nt_alignment}
+
+    def __setstate__(self, d):
+        self._lhs = d['lhs']
+        self._irhs = d['irhs']
+        self._orhs = d['orhs']
+        self._fmap = dict(d['fmap'])
+        self._nt_alignment = d['nt_alignment']
+
     @staticmethod
     def create(lhs, irhs, orhs, fmap):
         irhs = list(irhs)
@@ -131,6 +145,12 @@ cdef class InputView(Rule):
     def __init__(self, SCFGProduction srule):
         self._srule = srule
 
+    def __getstate__(self):
+        return {'srule': self._srule}
+
+    def __setstate__(self, d):
+        self._srule = d['srule']
+
     property lhs:
         def __get__(self):
             return self._srule.lhs
@@ -154,6 +174,12 @@ cdef class OutputView(Rule):
 
     def __init__(self, SCFGProduction srule):
         self._srule = srule
+
+    def __getstate__(self):
+        return {'srule': self._srule}
+
+    def __setstate__(self, d):
+        self._srule = d['srule']
 
     property lhs:
         def __get__(self):
@@ -180,6 +206,12 @@ cdef class InputGroupView(Rule):
         assert len(srules) > 0, 'A group cannot be empty'
         assert len(frozenset(r.irhs for r in srules)) == 1, 'All synchronous rules in a group must share the same input RHS'
         self._srules = tuple(srules)
+
+    def __getstate__(self):
+        return {'srules': self._srules}
+
+    def __setstate__(self, d):
+        self._srules = d['srules']
 
     property lhs:
         def __get__(self):
@@ -208,6 +240,12 @@ cdef class OutputGroupView(Rule):
         assert len(srules) > 0, 'A group cannot be empty'
         assert len(frozenset(r.irhs for r in srules)) == 1, 'All synchronous rules in a group must share the same output RHS'
         self._srules = tuple(srules)
+
+    def __getstate__(self):
+        return {'srules': self._srules}
+
+    def __setstate__(self, d):
+        self._srules = d['srules']
 
     property lhs:
         def __get__(self):

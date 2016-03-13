@@ -31,6 +31,12 @@ cdef class Symbol:
     def __repr__(self):
         return repr(self._obj)
 
+    def __getstate__(self):
+        return {'obj': self._obj}
+
+    def __setstate__(self, d):
+        self._obj = d['obj']
+
     property underlying:
         def __get__(self):
             """The underlying object that uniquely represents the symbol."""

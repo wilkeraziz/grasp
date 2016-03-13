@@ -305,6 +305,7 @@ def sliced_parsing(seg: 'the input segment (e.g. a Sentence)',
     if options.save_chain:
         save_markov_chain('{0}/slice/chain/{1}.gz'.format(outdir, seg.id),
                           markov_chain,
+                          derivation2str=lambda d: DerivationYield.derivation(d.rules()),
                           flat=False)
 
 

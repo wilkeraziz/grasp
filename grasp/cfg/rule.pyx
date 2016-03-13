@@ -5,7 +5,7 @@ This module contains class definitions for rules, such as a context-free product
 """
 
 import logging
-from grasp.cfg.symbol cimport Terminal
+from grasp.cfg.symbol cimport Symbol, Terminal
 from grasp.ptypes cimport weight_t
 from cpython.object cimport Py_EQ, Py_NE
 
@@ -38,6 +38,17 @@ cdef class NewCFGProduction(Rule):
         self._lhs = lhs
         self._rhs = tuple(rhs)
         self._fmap = dict(fmap)
+        self._hash = hash((self._lhs, self._rhs, tuple(self._fmap.items())))
+
+    def __getstate__(self):
+        return {'lhs': self._lhs,
+                'rhs': self._rhs,
+                'fmap': self._fmap}
+
+    def __setstate__(self, d):
+        self._lhs = d['lhs']
+        self._rhs = d['rhs']
+        self._fmap = dict(d['fmap'])
         self._hash = hash((self._lhs, self._rhs, tuple(self._fmap.items())))
 
     property lhs:
@@ -137,3 +148,21 @@ def get_oov_cfg_productions(oovs, unk_lhs, fname, fvalue):
         r = NewCFGProduction(Nonterminal(unk_lhs), (Terminal(word),), {fname: fvalue})
         logging.debug('Passthrough rule for %s: %s', word, r)
         yield r
+
+
+cdef _visit(Symbol sym, dict rules, list projection):
+    cdef Symbol child
+    for child in rules[sym].rhs:
+        if isinstance(child, Terminal):
+            projection.append(child)
+        else:
+            _visit(child, rules, projection)
+
+
+cpdef tuple get_leaves(tuple derivation):
+    """Return the yield (sequence of Terminal symbols) of a derivation (sequence of Rule objects)."""
+    cdef Rule r
+    cdef dict rules = {r.lhs: r for r in derivation}
+    cdef list projection = []
+    _visit(derivation[0].lhs, rules, projection)
+    return tuple(projection)

@@ -119,12 +119,12 @@ cdef class SpanSliceVariables(SliceVariables):
     cdef object _constr
 
 
-cdef class ExpSpanSliceVariables(SliceVariables):
+cdef class ExpSpanSliceVariables(SpanSliceVariables):
 
     pass
 
 
-cdef class BetaSpanSliceVariables(SliceVariables):
+cdef class BetaSpanSliceVariables(SpanSliceVariables):
 
     pass
 

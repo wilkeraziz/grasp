@@ -3,21 +3,18 @@ Table lookup extractors.
 
 :Authors: - Wilker Aziz
 """
-from grasp.scoring.extractor cimport FVec
+from grasp.scoring.frepr cimport FRepr, FVec
+from grasp.ptypes cimport weight_t
 
 
 CDEC_DEFAULT = 'Glue PassThrough EgivenFCoherent SampleCountF CountEF MaxLexFgivenE MaxLexEgivenF IsSingletonF IsSingletonFE'.split()
 
 
-cdef class TableLookup(Extractor):
-
-    def __init__(self, int uid, str name):
-        super(TableLookup, self).__init__(uid, name)
-
-    cpdef FRepr featurize(self, rule): pass
-
-
 cdef class RuleTable(TableLookup):
+    """
+    A rule table much like those in cdec and Moses.
+    Features are stored in an FVec.
+    """
 
     def __init__(self, int uid, str name, list fnames=CDEC_DEFAULT):
         super(RuleTable, self).__init__(uid, name)
@@ -38,9 +35,12 @@ cdef class RuleTable(TableLookup):
                 raise KeyError('Missing RuleTable feature: %s' % f)
         return FVec(wvec)
 
-    cpdef FRepr featurize(self, rule):  # using a dense representation
+    cpdef FRepr featurize(self, rule):
         """
         :param rule: an SCFGProduction
         :return:
         """
         return FVec([rule.fvalue(fname, 0) for fname in self._fnames])
+
+    cpdef FRepr constant(self, weight_t value):
+        return FVec([value] * len(self._fnames))

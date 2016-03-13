@@ -1,9 +1,4 @@
-from grasp.scoring.extractor cimport FRepr, Extractor
-
-
-cdef class TableLookup(Extractor):
-
-    cpdef FRepr featurize(self, rule)
+from grasp.scoring.extractor cimport TableLookup
 
 
 cdef class RuleTable(TableLookup):

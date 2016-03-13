@@ -1,9 +1,9 @@
-from grasp.ptypes cimport id_t, real_t
+from grasp.ptypes cimport id_t, weight_t
 
 
 cdef class Arc:
     
-    def __init__(self, id_t origin, id_t destination, Label label, real_t weight):
+    def __init__(self, id_t origin, id_t destination, Label label, weight_t weight):
         self._origin = origin
         self._destination = destination
         self._label = label
@@ -51,7 +51,7 @@ cdef class DFA:
         self._FS.append(dict())
         return len(self._FS) - 1
     
-    cpdef id_t add_arc(self, id_t origin, id_t destination, Label label, real_t weight) except -100:
+    cpdef id_t add_arc(self, id_t origin, id_t destination, Label label, weight_t weight) except -100:
         cdef id_t i = self._FS[origin].get(label, -1)
         if i < 0:
             i = len(self._arcs)
@@ -100,7 +100,7 @@ cdef class DFA:
                                                  ' '.join(str(i) for i in self.iterfinal()))
         
 
-cpdef DFA make_dfa(words, real_t w=0.0):
+cpdef DFA make_dfa(words, weight_t w=0.0):
     cdef DFA dfa = DFA()
     cdef id_t i = dfa.add_state()
     cdef str word
@@ -109,4 +109,57 @@ cpdef DFA make_dfa(words, real_t w=0.0):
         i = dfa.add_state()
         dfa.add_arc(i - 1, i, Label(word), w)
     dfa.make_final(i)
+    return dfa
+
+
+cpdef DFA make_dfa_set(list sentences, weight_t w=0.0):
+    cdef DFA dfa = DFA()
+    cdef id_t s0 = dfa.add_state()
+    cdef id_t sfrom, sto
+    cdef str word, key
+    cdef list sentence
+    cdef states = {'': s0}
+    dfa.make_initial(s0)
+
+    for sentence in sentences:
+        sfrom = s0
+        for i, word in enumerate(sentence):
+            key = '{0}-{1}'.format(sfrom, word)
+            sto = states.get(key, -1)
+            if sto == -1:
+                sto = dfa.add_state()
+                states[key] = sto
+                dfa.add_arc(sfrom, sto, Label(word), w)
+            sfrom = sto
+        dfa.make_final(sto)
+
+    return dfa
+
+
+cpdef DFA make_dfa_set2(list sentences, StatefulScorer stateful):
+    cdef DFA dfa = DFA()
+    cdef id_t s0 = dfa.add_state()
+    cdef id_t sfrom, sto
+    cdef str word, key
+    cdef list sentence
+    cdef states = {'': s0}
+    cdef Label label
+    cdef dfa2scorer= {s0: stateful.initial()}
+    dfa.make_initial(s0)
+
+    for sentence in sentences:
+        sfrom = s0
+        for i, word in enumerate(sentence):
+            key = '{0}-{1}'.format(sfrom, word)
+            sto = states.get(key, -1)
+            if sto == -1:
+                sto = dfa.add_state()
+                states[key] = sto
+                label = Label(word)
+                weight, scorer_to = stateful.score(label, context=dfa2scorer[sfrom])
+                dfa.add_arc(sfrom, sto, label, weight)
+                dfa2scorer[sto] = scorer_to
+            sfrom = sto
+        dfa.make_final(sto)
+
     return dfa

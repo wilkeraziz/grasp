@@ -1,93 +1,15 @@
 """
-This module contains definitions for scorers.
-
-Highlights:
-    - when implementing a stateful scorer you should inherit from Stateful
-    - when using your scorer with programs such as Earley and Nederhof, remember to wrap it using StatefulScorerWrapper
-        this will basically abstract away implementation details such as the nature of states.
+This module contains definitions for feature extractors.
 
 :Authors: - Wilker Aziz
 """
-cimport numpy as np
-import numpy as np
 from grasp.ptypes cimport weight_t
-import grasp.ptypes as ptypes
-
-
-cdef class FRepr:
-
-    cpdef weight_t dot(self, FRepr w): pass
-
-
-cdef class FValue(FRepr):
-
-    def __init__(self, weight_t value):
-        self.value = value
-
-    cpdef weight_t dot(self, FRepr w) except *:
-        return self.value * (<FValue?>w).value
-
-    def __len__(self):
-        return 1
-
-    def __iter__(self):
-        return iter([self.value])
-
-    def __str__(self):
-        return str(self.value)
-
-    def __repr__(self):
-        return repr(self.value)
-
-
-cdef class FVec(FRepr):
-
-    def __init__(self, iterable):
-        self.vec = np.array(iterable, dtype=ptypes.weight)
-
-    cpdef weight_t dot(self, FRepr w) except *:
-        return np.dot(self.vec, (<FVec?>w).vec)
-
-    def __len__(self):
-        return len(self.vec)
-
-    def __iter__(self):
-        return iter(self.vec)
-
-    def __str__(self):
-        return ' '.join(str(x) for x in self.vec)
-
-    def __repr__(self):
-        return repr(self.vec)
-
-
-cdef class FMap(FRepr):
-
-    def __init__(self, iterable):
-        self.map = dict(iterable)
-
-    cpdef weight_t dot(self, FRepr w) except *:
-        cdef weight_t v
-        cdef dict wmap = (<FMap?>w).map
-        if len(self.map) < len(wmap):
-            return np.sum([v * wmap.get(k, 0.0) for k, v in self.map.items()])
-        else:
-            return np.sum([v * self.map.get(k, 0.0) for k, v in wmap.items()])
-
-    def __len__(self):
-        return len(self.map)
-
-    def __iter__(self):
-        return iter(self.map.items())
-
-    def __str__(self):
-        return ' '.join('{0}={1}'.format(k, v) for k, v in self.map.items())
-
-    def __repr__(self):
-        return repr(self.map)
 
 
 cdef class Extractor:
+    """
+    An Extractor is capable of featurizing rules/edges/strings/derivations.
+    """
 
     def __init__(self, int uid, str name):
         self._uid = uid
@@ -105,3 +27,119 @@ cdef class Extractor:
 
     cpdef weight_t dot(self, FRepr frepr, FRepr wrepr):
         return frepr.dot(wrepr)
+
+    cpdef FRepr constant(self, weight_t value):
+        """
+        Return a constant feature representation (this is useful to get a vector/map of zeros/ones
+        of appropriate size.
+        """
+        raise NotImplementedError('I do not know which type of FRepr to create.')
+
+
+cdef class TableLookup(Extractor):
+    """
+    This is the simplest feature extractor.
+    It applies to rules directly.
+    """
+
+    def __init__(self, int uid, str name):
+        super(TableLookup, self).__init__(uid, name)
+
+    cpdef FRepr featurize(self, rule):
+        raise NotImplementedError('I do not know how to featurize a rule')
+
+
+cdef class Stateless(Extractor):
+    """
+    Stateless extractor score edges individually and do not return state information.
+    """
+
+    def __init__(self, int uid, str name):
+        super(Stateless, self).__init__(uid, name)
+
+    cpdef FRepr featurize(self, edge):
+        raise NotImplementedError('I do not know how to featurize an edge')
+
+
+cdef class StatefulFRepr:
+    """
+    Wraper for a feature representation object (FRepr) and a State object to be used by stateful extractors.
+    """
+
+    def __cinit__(self, FRepr frepr, object state):
+        self.frepr = frepr
+        self.state = state
+
+    def __getitem__(self, int i):
+        if i == 0:
+            return self.frepr
+        elif i == 1:
+            return self.state
+        else:
+            raise IndexError('StatefulReturn can only be indexed by 0 or 1')
+
+    def __iter__(self):
+        return iter([self.frepr, self.state])
+
+    def __str__(self):
+        return '(%s, %s)' % (self.frepr, self.state)
+
+    def __repr__(self):
+        return '(%r, %r)' % (self.frepr, self.state)
+
+
+cdef class Stateful(Extractor):
+    """
+    Stateful extractors are those that score edges in context and update state information.
+    """
+
+    def __init__(self, int uid, str name):
+        super(Stateful, self).__init__(uid, name)
+
+    cpdef object initial(self):
+        """
+        Return the initial state.
+        :return:
+        """
+        raise NotImplementedError('I do not know what an initial state looks like.')
+
+    cpdef object final(self):
+        """
+        Return the final state.
+        :return:
+        """
+        raise NotImplementedError('I do not know what a final state looks like.')
+
+    cpdef FRepr featurize_initial(self):
+        """
+        Score associated with the initial state.
+        :return:
+        """
+        raise NotImplementedError('I cannot featurize initial states.')
+
+    cpdef FRepr featurize_final(self, context):
+        """
+        Score associated with a transition to the final state.
+        :param context: a state
+        :return: feature representation
+        """
+        raise NotImplementedError('I cannot featurize final states.')
+
+    cpdef StatefulFRepr featurize(self, word, context):  # TODO: pass edge and position of the dot instead of word
+        """
+        Return the score and the next state.
+        :param word: a Terminal
+        :param context: a state
+        :returns: feature representation, state
+        """
+        raise NotImplementedError('I cannot featurize words in context.')
+
+    cpdef FRepr featurize_yield(self, derivation_yield):
+        """
+        Featurize a derivation (as a sequence of edges).
+        :param derivation:
+        :return:
+        """
+        raise NotImplementedError('I cannot featurize the yield of a derivation.')
+
+

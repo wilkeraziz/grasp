@@ -14,6 +14,7 @@ import numpy as np
 import itertools
 from collections import deque
 
+import logging
 
 cdef class SliceReturn:
     """
@@ -62,7 +63,8 @@ cdef SliceReturn slice_forest(Hypergraph D,
         Hypergraph S = Hypergraph()  # the slice
         set discovered = set([tsort.root()])
         id_t selected
-        id_t cell, head
+        id_t head
+        Symbol cell
         id_t input_edge, output_edge, dead_edge, e
         list n_uniform = []
         list n_exponential = []
@@ -70,18 +72,24 @@ cdef SliceReturn slice_forest(Hypergraph D,
         list S2D_edge_map = []
         list translate = []
         SliceReturn slice_return  # return container
+        frozenset D_edges_in_d0 = frozenset(d0)
+        dict d0transform = {}
 
-    d0_in_D = deque(d0)
-    d0_in_S = deque([])
 
+    # TODO: investigate this code... something strange is happening with the conditions
+
+    logging.debug('Slicing the distribution conditioned on d0=%s', ' '.join(['{0}/{1}'.format(D.head(e), e) for e in d0]))
 
     for level in tsort.iterlevels(reverse=True):  # we go top-down level by level
-        for head in itertools.chain(*level):  # flatten the buckets
-
+        for head in level:
+            if D.is_terminal(head):
+                continue
+            cell = D.label(head)
             if head not in discovered:  # symbols not yet discovered have been pruned
+                #logging.debug(' Pruning: head=%s cell=%s', head, cell)
                 continue
 
-            cell = head
+            #logging.debug(' Inspecting edges for head=%s cell=%s constrained=%s assignment=%s', head, cell, slicevars.has_conditions(cell), slicevars.get_assignment(cell).u)
             selected = 0
 
             # we sort the incoming edges in order to find out which ones are not in the slice
@@ -96,9 +104,9 @@ cdef SliceReturn slice_forest(Hypergraph D,
                                       D.is_glue(input_edge))
                     S2D_edge_map.append(input_edge)
 
-                    if d0_in_D and d0_in_D[0] == input_edge:
-                        d0_in_D.popleft()
-                        d0_in_S.append(output_edge)
+                    # map the edge in case we need it to reconstruct d0 in the slice
+                    if input_edge in D_edges_in_d0:
+                        d0transform[input_edge] = output_edge
 
                     # the contribution of this edge to p(d|u)
                     assert len(weight_table) == output_edge, 'An edge got an id out of order'
@@ -109,15 +117,18 @@ cdef SliceReturn slice_forest(Hypergraph D,
                         if D.is_nonterminal(n):
                             discovered.add(n)
                     selected += 1
+                    #logging.debug('  selected: input-edge=%d output-edge=%d', input_edge, output_edge)
                 else:  # this edge and the remaining are pruned (because we sorted the edges by score)
-                    #logging.info('pruning: %s vs %s', p, slicevars[cell])
+                    #logging.debug('pruning: %s vs %s', p, slicevars[cell])
+                    assert input_edge not in D_edges_in_d0, 'I cannot prune an edge in d0.'
+                    #logging.debug('  pruned: input-edge=%d weight=%s', input_edge, semiring.as_real(D.weight(input_edge)))
                     break
             # update information about slice variables
             if slicevars.has_conditions(cell):
-                n_uniform.append(float(n)/D.n_incoming(head))
+                n_uniform.append(float(selected)/D.n_incoming(head))
             else:
-                n_exponential.append(float(n)/D.n_incoming(head))
-            #logging.info('cell=%s slice=%d/%d conditioning=%s', cell, n, len(incoming), slicevars.has_conditions(cell))
+                n_exponential.append(float(selected)/D.n_incoming(head))
+            #logging.debug('cell=%s slice=%d/%d conditioning=%s', cell, n, len(incoming), slicevars.has_conditions(cell))
             if selected == 0:  # this is a dead-end, instead of pruning bottom-up, we add an edge with 0 weight for simplicity
                 # create a dead-end edge for this node with zero weight
                 # this simplifies bottom-up pruning
@@ -130,17 +141,21 @@ cdef SliceReturn slice_forest(Hypergraph D,
                 assert len(weight_table) == dead_edge, 'A dead edge got an id out of order'
                 weight_table.append(semiring.zero)
 
-    if d0_in_D:
-        raise ValueError('The slice is missing edges that it should contain by construction: %s' % str(d0_in_D))
+    if len(d0transform) != len(d0):
+        raise ValueError('The slice is missing edges that it should contain by construction: %s' % str(D_edges_in_d0 - frozenset(d0transform.keys())))
 
-    #logging.info('Pruning: cells=%s/%s in=%s out=%s', pruned, total_cells, np.array(_in).mean(), np.array(_out).mean())
+    #logging.debug('Pruning: cells=%s/%s in=%s out=%s', pruned, total_cells, np.array(_in).mean(), np.array(_out).mean())
     # EdgeWeight(l_slice)
     slice_return = SliceReturn(S,
                                EdgeWeight(S),
                                LookupFunction(np.array(weight_table, dtype=ptypes.weight)),
                                S2D_edge_map,
-                               tuple(d0_in_S),
+                               tuple([d0transform[e] for e in d0]),
                                np.mean(n_uniform),
                                np.mean(n_exponential))
+
+    logging.debug('D: nodes=%d edges=%d', D.n_nodes(), D.n_edges())
+    logging.debug('S: nodes=%d edges=%d', S.n_nodes(), S.n_edges())
+    logging.debug('Constrained=%f Unconstrained=%f', slice_return.mean_constrained, slice_return.mean_unconstrained)
 
     return slice_return

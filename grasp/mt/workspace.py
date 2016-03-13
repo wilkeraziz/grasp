@@ -35,9 +35,9 @@ def make_dirs(args, exist_ok=True):
         os.makedirs('{0}/kbest'.format(outdir), exist_ok=exist_ok)
     if args.samples > 0:
         if args.framework == 'exact':
-            os.makedirs('{0}/ancestral'.format(outdir), exist_ok=exist_ok)
-            os.makedirs('{0}/ancestral/derivations'.format(outdir), exist_ok=exist_ok)
-            os.makedirs('{0}/ancestral/yields'.format(outdir), exist_ok=exist_ok)
+            os.makedirs('{0}/exact'.format(outdir), exist_ok=exist_ok)
+            os.makedirs('{0}/exact/derivations'.format(outdir), exist_ok=exist_ok)
+            os.makedirs('{0}/exact/yields'.format(outdir), exist_ok=exist_ok)
         elif args.framework == 'slice':
             os.makedirs('{0}/slice'.format(outdir), exist_ok=exist_ok)
             os.makedirs('{0}/slice/derivations'.format(outdir), exist_ok=exist_ok)

@@ -34,6 +34,32 @@ cdef class ValueFunction:
         return op.reduce([self.value(e) for e in iterable])
 
 
+cdef class ConstantFunction(ValueFunction):
+
+    def __init__(self, weight_t constant):
+        self.constant = constant
+
+    cpdef weight_t value(self, id_t e):
+        return self.constant
+
+    def __repr__(self):
+        return '%s(%r)' % (ConstantFunction.__name__, self.constant)
+
+
+cdef class CascadeValueFunction(ValueFunction):
+
+    def __init__(self, Operator op, functions):
+        self.functions = tuple(functions)
+        self.op = op
+
+    cpdef weight_t value(self, id_t e):
+        cdef ValueFunction func
+        return self.op.reduce([func.value(e) for func in self.functions])
+
+    def __repr__(self):
+        return '%s(%r, %r)' % (CascadeValueFunction.__name__, self.op, self.functions)
+
+
 cdef class LookupFunction(ValueFunction):
     """
     A value function that consists in plain simple table lookup.
@@ -104,11 +130,12 @@ cdef class BinaryEdgeWeight(ValueFunction):
             return self.output_semiring.zero
 
 
-cpdef weight_t derivation_value(Hypergraph forest, tuple d, Semiring semiring, ValueFunction omega=None):
+cpdef weight_t derivation_value(Hypergraph forest, tuple edges, Semiring semiring, ValueFunction omega=None):
+    cdef id_t e
     if omega is None:
-        return semiring.times.reduce([forest.weight(e) for e in d])
+        return semiring.times.reduce([forest.weight(e) for e in edges])
     else:
-        return semiring.times.reduce([omega.value(e) for e in d])
+        return semiring.times.reduce([omega.value(e) for e in edges])
 
 
 cdef weight_t node_value(Hypergraph forest,
@@ -161,6 +188,49 @@ cpdef weight_t[::1] acyclic_value_recursion(Hypergraph forest,
         values[parent] = node_value(forest, omega, semiring, values, parent)
 
     return values
+
+
+cpdef weight_t[::1] acyclic_reversed_value_recursion(Hypergraph forest,
+                                            AcyclicTopSortTable tsort,
+                                            Semiring semiring,
+                                            weight_t[::1] values,
+                                            ValueFunction omega=None):
+    """
+    Returns items' reversed values in a given semiring.
+    This is a top-down pass through the forest which runs in O(|forest|).
+    :param forest: an acyclic hypergraph-like object.
+    :param tsort: a TopSortTable object.
+    :param semiring: must define zero, one, sum and times.
+    :param omega: a function that weighs edges/rules (defaults to the edge's weight).
+        You might want to use this to, for instance, convert between semirings.
+    :return: reversed values
+    """
+
+    if omega is None:
+        omega = EdgeWeight(forest)
+
+    cdef:
+        size_t i
+        id_t parent, child, sister, e
+        weight_t partial
+        weight_t[::1] reversed_values = semiring.zeros(forest.n_nodes())
+
+    reversed_values[tsort.root()] = semiring.one
+
+    # we go top-down
+    for parent in tsort.iternodes(reverse=True):
+        for e in forest.iterbs(parent):
+            for child in forest.tail(e):
+                # start from parent's outside and the edge's weight
+                partial = semiring.times(omega.value(e), reversed_values[parent])
+                for sister in forest.tail(e):
+                    if child != sister:
+                        # incorporate inside of sister: note that every sister participates in the tail, thus semiring.times
+                        partial = semiring.times(partial, values[sister])
+                # update child's outside: note that edges contribute with alternative paths, thus we use semiring.plus
+                reversed_values[child] = semiring.plus(reversed_values[child], partial)
+
+    return reversed_values
 
 
 cpdef weight_t[::1] robust_value_recursion(Hypergraph forest,
@@ -273,6 +343,44 @@ cpdef weight_t[::1] compute_edge_values(Hypergraph forest,
             edge_values[e] = w
 
     return edge_values
+
+
+cpdef weight_t[::1] compute_edge_expectation(Hypergraph forest,
+                                        Semiring semiring,
+                                        weight_t[::1] node_values,
+                                        weight_t[::1] node_reversed_values,
+                                        ValueFunction omega=None,
+                                        bint normalise=False):
+    cdef:
+        weight_t[::1] edge_expec = semiring.zeros(forest.n_edges())
+        id_t e, child
+        weight_t w
+
+    if omega is None:
+        omega = EdgeWeight(forest)
+
+    if normalise:
+        for e in range(forest.n_edges()):
+            # we start with the weight outside the parent node
+            # and incorporate the edges weight
+            w = semiring.times(node_reversed_values[forest.head(e)], omega.value(e))
+            # we then incorporate the inside weight of each child node
+            for child in forest.tail(e):
+                w = semiring.times(w, node_values[child])
+
+            # and finally normalise the edge's weight by its head inside
+            edge_expec[e] = semiring.divide(w, node_values[forest.head(e)])
+    else:
+        for e in range(forest.n_edges()):
+            # we start with the weight outside the parent node
+            # and incorporate the edges weight
+            w = semiring.times(node_reversed_values[forest.head(e)], omega.value(e))
+            # we then incorporate the inside weight of each child node
+            for child in forest.tail(e):
+                w = semiring.times(w, node_values[child])
+            edge_expec[e] = w
+
+    return edge_expec
 
 
 cdef class EdgeValues(ValueFunction):

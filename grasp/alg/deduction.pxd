@@ -8,8 +8,9 @@ from grasp.cfg.rule cimport Rule
 from libcpp.pair cimport pair
 cimport numpy as np
 from grasp.semiring._semiring cimport Semiring
-from grasp.scoring.scorer cimport StatelessScorer, StatefulScorer
+from grasp.scoring.scorer cimport TableLookupScorer, StatelessScorer, StatefulScorer
 
+from grasp.scoring.frepr cimport FComponents
 
 
 cdef class Item:
@@ -17,6 +18,8 @@ cdef class Item:
     cdef readonly id_t edge
     cdef readonly tuple states
     cdef readonly weight_t weight
+    # TODO: change this tuple to FComponents
+    cdef readonly tuple frepr
     
 
 cdef class ItemFactory:
@@ -26,11 +29,11 @@ cdef class ItemFactory:
     
     cpdef Item item(self, id_t i)
         
-    cpdef Item get_item(self, id_t edge, tuple states, weight_t weight)
+    cpdef Item get_item(self, id_t edge, tuple states, weight_t weight, tuple frepr)
 
-    cdef pair[id_t, bint] insert(self, id_t edge, tuple states, weight_t weight)
+    cdef pair[id_t, bint] insert(self, id_t edge, tuple states, weight_t weight, tuple frepr)
 
-    cdef pair[id_t, bint] advance(self, Item item, id_t to, weight_t weight)
+    cdef pair[id_t, bint] advance(self, Item item, id_t to, weight_t weight, tuple frepr)
 
 
 cdef class Agenda:
@@ -55,7 +58,13 @@ cdef class Agenda:
 
     cdef set destinations(self, id_t node, id_t start)
 
-    cdef Hypergraph make_output(self, id_t root, Rule goal_rule, set initial, set final, list mapping=?)
+    cdef Hypergraph make_output(self, id_t root,
+                                Rule goal_rule,
+                                set initial,
+                                set final,
+                                list mapping=?,
+                                list components=?,
+                                FComponents comp_one=?)
 
 
 cdef class DeductiveIntersection:
@@ -152,13 +161,20 @@ cdef class Rescorer(DeductiveIntersection):
     """
 
     cdef:
+        TableLookupScorer _lookup
         StatelessScorer _stateless
         StatefulScorer _stateful
         id_t _initial
         id_t _final
         list _mapping
+        bint _keep_frepr
+        list _components
+        #FComponents _stateless_one, _stateful_one, _comp_one
+        list _skeleton_frepr
 
-    cdef weight_t score_on_creation(self, id_t e)
+
+
+    cdef weight_t score_on_creation(self, id_t e, list parts)
 
     cdef bint scan(self, Item item)
 
@@ -166,6 +182,9 @@ cdef class Rescorer(DeductiveIntersection):
 
     cpdef id_t maps_to(self, id_t e)
 
+    cpdef list components(self)
+
+    cpdef list skeleton_components(self)
 
 cdef class EarleyRescorer(Rescorer):
     """

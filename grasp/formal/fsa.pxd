@@ -1,4 +1,4 @@
-from grasp.ptypes cimport id_t, real_t
+from grasp.ptypes cimport id_t, weight_t
 from grasp.cfg.symbol cimport Terminal as Label
 
 
@@ -11,7 +11,7 @@ cdef class Arc:
     cdef id_t _origin
     cdef id_t _destination
     cdef Label _label
-    cdef real_t _weight
+    cdef weight_t _weight
 
 
 cdef class DFA:
@@ -23,7 +23,7 @@ cdef class DFA:
     
     cpdef id_t add_state(self)
     
-    cpdef id_t add_arc(self, id_t origin, id_t destination, Label label, real_t weight) except -100
+    cpdef id_t add_arc(self, id_t origin, id_t destination, Label label, weight_t weight) except -100
     
     cpdef id_t fetch(self, id_t origin, Label label) except -100
     
@@ -48,4 +48,9 @@ cdef class DFA:
     cpdef iterfinal(self)
 
 
-cpdef DFA make_dfa(words, real_t w=?)
+cpdef DFA make_dfa(words, weight_t w=?)
+
+cpdef DFA make_dfa_set(list sentences, weight_t w=?)
+
+from grasp.scoring.scorer cimport StatefulScorer
+cpdef DFA make_dfa_set2(list sentences, StatefulScorer stateful)
