@@ -23,15 +23,15 @@ cdef class SliceReturn:
     """
 
     def __init__(self, Hypergraph S,
-                 ValueFunction l,
-                 ValueFunction u,
+                 ValueFunction local,
+                 ValueFunction residual,
                  list S2D_edge_mapping,
                  tuple d0_in_S,
                  weight_t mean_constrained,
                  weight_t mean_unconstrained):
         self.S = S
-        self.l = l
-        self.u = u
+        self.local = local
+        self.residual = residual
         self.S2D_edge_mapping = S2D_edge_mapping
         self.d0_in_S = d0_in_S
         self.mean_constrained = mean_constrained
@@ -41,23 +41,23 @@ cdef class SliceReturn:
         cdef id_t e
         return tuple([self.S2D_edge_mapping[e] for e in d_in_S])
 
-
 cdef SliceReturn slice_forest(Hypergraph D,
-                        TopSortTable tsort,
-                        tuple d0,
-                        SliceVariables slicevars,
-                        Semiring semiring,
-                        Rule dead_rule,
-                        Symbol dead_terminal=Terminal('<null>')):
+                              ValueFunction omega,
+                              TopSortTable tsort,
+                              tuple d0,
+                              SliceVariables slicevars,
+                              Semiring semiring,
+                              Rule dead_rule):
     """
     Prune a forest and compute a new weight function for edges.
 
     :param D: weighted forest
+    :param omega: a value function over edges in D
     :param tsort: forest's top-sort table
     :param slicevars: an instance of SliceVariable
     :param semiring: the appropriate semiring
     :param dead_terminal: a Terminal symbol which represents a dead-end.
-    :return: pruned forest and weight table mapping edges to weights.
+    :return: pruned forest (edges are weighted by omega) and weight table mapping edges to u(e) weights.
     """
     cdef:
         Hypergraph S = Hypergraph()  # the slice
@@ -66,9 +66,10 @@ cdef SliceReturn slice_forest(Hypergraph D,
         id_t head
         Symbol cell
         id_t input_edge, output_edge, dead_edge, e
+        weight_t w_e
         list n_uniform = []
         list n_exponential = []
-        list weight_table = []
+        list residuals = []
         list S2D_edge_map = []
         list translate = []
         SliceReturn slice_return  # return container
@@ -93,13 +94,14 @@ cdef SliceReturn slice_forest(Hypergraph D,
             selected = 0
 
             # we sort the incoming edges in order to find out which ones are not in the slice
-            for input_edge in sorted(D.iterbs(head), key=lambda e: semiring.heapify(D.weight(e))):
+            for input_edge in sorted(D.iterbs(head), key=lambda e: semiring.heapify(omega.value(e))):
                 #u = semiring.from_real(slicevars[cell])
-                if slicevars.is_inside(cell, semiring.as_real(D.weight(input_edge))):  # inside slice
+                w_e = omega.value(input_edge)
+                if slicevars.is_inside(cell, semiring.as_real(w_e)):  # inside slice
                     # copy the edge to the output
                     output_edge = S.add_xedge(D.label(head),
                                       tuple([D.label(n) for n in D.tail(input_edge)]),
-                                      D.weight(input_edge),
+                                      w_e,
                                       D.rule(input_edge),
                                       D.is_glue(input_edge))
                     S2D_edge_map.append(input_edge)
@@ -109,8 +111,8 @@ cdef SliceReturn slice_forest(Hypergraph D,
                         d0transform[input_edge] = output_edge
 
                     # the contribution of this edge to p(d|u)
-                    assert len(weight_table) == output_edge, 'An edge got an id out of order'
-                    weight_table.append(slicevars.pdf_semiring(cell, D.weight(input_edge), semiring))
+                    assert len(residuals) == output_edge, 'An edge got an id out of order'
+                    residuals.append(slicevars.pdf_semiring(cell, w_e, semiring))
 
                     # update discovered heads with the nonterminal children
                     for n in D.tail(input_edge):
@@ -121,7 +123,7 @@ cdef SliceReturn slice_forest(Hypergraph D,
                 else:  # this edge and the remaining are pruned (because we sorted the edges by score)
                     #logging.debug('pruning: %s vs %s', p, slicevars[cell])
                     assert input_edge not in D_edges_in_d0, 'I cannot prune an edge in d0.'
-                    #logging.debug('  pruned: input-edge=%d weight=%s', input_edge, semiring.as_real(D.weight(input_edge)))
+                    #logging.debug('  pruned: input-edge=%d weight=%s', input_edge, semiring.as_real(w_e))
                     break
             # update information about slice variables
             if slicevars.has_conditions(cell):
@@ -133,22 +135,22 @@ cdef SliceReturn slice_forest(Hypergraph D,
                 # create a dead-end edge for this node with zero weight
                 # this simplifies bottom-up pruning
                 dead_edge = S.add_xedge(D.label(head),
-                                         tuple([dead_terminal]),
+                                         tuple([dead_rule.rhs[0]]),
                                          semiring.zero,
                                          dead_rule,
                                          glue=False)
                 S2D_edge_map.append(-1)
-                assert len(weight_table) == dead_edge, 'A dead edge got an id out of order'
-                weight_table.append(semiring.zero)
+                assert len(residuals) == dead_edge, 'A dead edge got an id out of order'
+                residuals.append(semiring.zero)
 
     if len(d0transform) != len(d0):
         raise ValueError('The slice is missing edges that it should contain by construction: %s' % str(D_edges_in_d0 - frozenset(d0transform.keys())))
 
     #logging.debug('Pruning: cells=%s/%s in=%s out=%s', pruned, total_cells, np.array(_in).mean(), np.array(_out).mean())
-    # EdgeWeight(l_slice)
+
     slice_return = SliceReturn(S,
                                EdgeWeight(S),
-                               LookupFunction(np.array(weight_table, dtype=ptypes.weight)),
+                               LookupFunction(np.array(residuals, dtype=ptypes.weight)),
                                S2D_edge_map,
                                tuple([d0transform[e] for e in d0]),
                                np.mean(n_uniform),

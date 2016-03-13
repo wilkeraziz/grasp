@@ -281,9 +281,18 @@ cdef class DeductiveIntersection:
     """
 
     def __init__(self, Hypergraph hg,
+                 ValueFunction omega,
                  Semiring semiring,
                  SliceVariables slicevars):
+        """
+
+        :param hg: a Hypergaph
+        :param omega: a function that returns the value of edges in the hypergraph
+        :param semiring: a Semiring
+        :param slicevars: slice variables
+        """
         self._hg = hg
+        self._omega = omega
         self._semiring = semiring
         self._slicevars = slicevars
 
@@ -429,20 +438,20 @@ cdef class DeductiveIntersection:
 cdef class Parser(DeductiveIntersection):
 
     def __init__(self, Hypergraph hg,
-                 DFA dfa,
+                 ValueFunction omega,
                  Semiring semiring,
-                 SliceVariables slicevars):
-        super(Parser, self).__init__(hg, semiring, slicevars)
+                 SliceVariables slicevars,
+                 DFA dfa):
+        """
+
+        :param hg: a Hypergraph
+        :param omega: a ValueFunction over edges in hg
+        :param dfa: a deterministic automaton
+        :param semiring: a Semiring
+        :param slicevars: slice variables
+        """
+        super(Parser, self).__init__(hg, omega, semiring, slicevars)
         self._dfa = dfa
-
-    #cdef weight_t score_on_creation(self, id_t e):
-    #    return self._hg.weight(e)
-
-    #cdef weight_t score_on_completion(self, Item item):
-    #    return item.weight
-
-    #cdef weight_t score_on_scan(self, Item item, Arc arc):
-    #    return self._semiring.times(item.weight, arc.weight)
 
     cdef bint scan(self, Item item):
         """
@@ -495,15 +504,23 @@ cdef class EarleyParser(Parser):
     The Earley parser is specialises the skeleton deductive parser by implementing top-down prediction.
     """
     
-    def __init__(self, Hypergraph hg, DFA dfa, Semiring semiring, SliceVariables slicevars=None):
-        super(EarleyParser, self).__init__(hg, dfa, semiring, slicevars)
+    def __init__(self, Hypergraph hg,
+                 DFA dfa,
+                 Semiring semiring,
+                 SliceVariables slicevars=None,
+                 ValueFunction omega=None):
+        """
+        """
+        if omega is None:
+            omega = EdgeWeight(hg)
+        super(EarleyParser, self).__init__(hg, omega, semiring, slicevars, dfa)
         self._predictions = set()
         
     cdef void axioms(self, id_t root):
         cdef id_t e, start
         for start in self._dfa.iterinitial():
             for e in self._hg.iterbs(root):
-                self.push(self._ifactory.insert(e, (start,), self._hg.weight(e), tuple()))
+                self.push(self._ifactory.insert(e, (start,), self._omega.value(e), tuple()))
                 self._predictions.add((root, start))
 
     cdef bint _predict(self, Item item):
@@ -520,12 +537,12 @@ cdef class EarleyParser(Parser):
 
         if self._dfa.is_initial(start):  # for initial states we just add whatever edge matches
             for e_i in self._hg.iterbs(n_i):
-                self.push(self._ifactory.insert(e_i, (start,), self._hg.weight(e_i), tuple()))
+                self.push(self._ifactory.insert(e_i, (start,), self._omega.value(e_i), tuple()))
         else:  # if a state is not initial, we only create items based on edges which are not  *glue*
             for e_i in self._hg.iterbs(n_i):
                 if self.is_glue(e_i):
                     continue
-                self.push(self._ifactory.insert(e_i, (start,), self._hg.weight(e_i), tuple()))
+                self.push(self._ifactory.insert(e_i, (start,), self._omega.value(e_i), tuple()))
 
         return True
 
@@ -544,8 +561,14 @@ cdef class NederhofParser(Parser):
     It specialises the skeleton deductive parser by implementing delayed axioms.
     """
 
-    def __init__(self, Hypergraph hg, DFA dfa, Semiring semiring, SliceVariables slicevars=None):
-        super(NederhofParser, self).__init__(hg, dfa, semiring, slicevars)
+    def __init__(self, Hypergraph hg,
+                 DFA dfa,
+                 Semiring semiring,
+                 SliceVariables slicevars=None,
+                 ValueFunction omega=None):
+        if omega is None:
+            omega = EdgeWeight(hg)
+        super(NederhofParser, self).__init__(hg, omega, semiring, slicevars, dfa)
 
         # indexes edges by tail[0]
         self._edges_by_tail0 = [[] for _ in range(self._hg.n_nodes())]
@@ -595,13 +618,13 @@ cdef class NederhofParser(Parser):
         cdef weight_t e_weight
         if self._dfa.is_initial(start):
             for e in self._edges_by_tail0[node]:
-                e_weight = self._semiring.times(self._hg.weight(e), weight)
+                e_weight = self._semiring.times(self._omega.value(e), weight)
                 self.push(self._ifactory.insert(e, (start, end), e_weight, tuple()))
         else:  # not an initial finite state
             for e in self._edges_by_tail0[node]:
                 if self.is_glue(e):  # skip glue edge
                     continue
-                e_weight = self._semiring.times(self._hg.weight(e), weight)
+                e_weight = self._semiring.times(self._omega.value(e), weight)
                 self.push(self._ifactory.insert(e, (start, end), e_weight, tuple()))
 
     cdef void process_incomplete(self, Item item):
@@ -628,14 +651,15 @@ cdef class NederhofParser(Parser):
 cdef class Rescorer(DeductiveIntersection):
 
     def __init__(self, Hypergraph hg,
+                 ValueFunction omega,
+                 Semiring semiring,
+                 SliceVariables slicevars,
                  TableLookupScorer lookup,
                  StatelessScorer stateless,
                  StatefulScorer stateful,
-                 Semiring semiring,
-                 SliceVariables slicevars,
                  bint map_edges=True,
                  bint keep_frepr=False):
-        super(Rescorer, self).__init__(hg, semiring, slicevars)
+        super(Rescorer, self).__init__(hg, omega, semiring, slicevars)
         self._lookup = lookup
         self._stateless = stateless
         self._stateful = stateful
@@ -687,7 +711,7 @@ cdef class Rescorer(DeductiveIntersection):
             if self._stateless:
                 stateless_score = self._stateless.score(self._hg.rule(e))  # TODO: pass (head label, tail labels, and rule)
 
-        return self._semiring.times(self._hg.weight(e), self._semiring.times(lookup_score, stateless_score))
+        return self._semiring.times(self._omega.value(e), self._semiring.times(lookup_score, stateless_score))
 
     cdef bint scan(self, Item item):
         cdef FComponents components, combined
@@ -762,14 +786,18 @@ cdef class EarleyRescorer(Rescorer):
                  StatefulScorer stateful,
                  Semiring semiring,
                  SliceVariables slicevars=None,
+                 ValueFunction omega=None,
                  bint map_edges=True,
                  bint keep_frepr=False):
+        if omega is None:
+            omega = EdgeWeight(hg)
         super(EarleyRescorer, self).__init__(hg,
+                                             omega,
+                                             semiring,
+                                             slicevars,
                                              lookup=lookup,
                                              stateless=stateless,
                                              stateful=stateful,
-                                             semiring=semiring,
-                                             slicevars=slicevars,
                                              map_edges=map_edges,
                                              keep_frepr=keep_frepr)
         self._predictions = set()
@@ -782,7 +810,7 @@ cdef class EarleyRescorer(Rescorer):
         for e in self._hg.iterbs(root):
             # In MT for some reason, in some decoders, people don't score the top rule
             # that is, they would do something like this
-            # self.push(self._ifactory.insert(e, (start,), self._hg.weight(e)))
+            # self.push(self._ifactory.insert(e, (start,), self._omega.value(e)))
             # I don't see a real good reason for that and I don't want to program bypasses, thus
             # I score top rules normally as follows
             parts = self.skeleton_components()
@@ -819,17 +847,19 @@ cdef class EarleyRescorer(Rescorer):
             self.complete_itself(item)
 
 
-cpdef weight_t[::1] reweight(Hypergraph forest, SliceVariables slicevars, Semiring semiring):
+cpdef weight_t[::1] reweight(Hypergraph forest, SliceVariables slicevars, Semiring semiring, ValueFunction omega=None):
     cdef weight_t[::1] values = np.zeros(forest.n_edges(), dtype=ptypes.weight)
     cdef id_t e
+    if omega is None:
+        omega = EdgeWeight(forest)
     if semiring.LOG:
         for e in range(forest.n_edges()):
             values[e] = slicevars.logpdf(forest.label(forest.head(e)).underlying,  # the underlying object is e.g. a tuple (sym, start, end)
-                                         semiring.as_real(forest.weight(e)))
+                                         semiring.as_real(omega.value(e)))
     else:
         for e in range(forest.n_edges()):
             values[e] = semiring.from_real(slicevars.pdf(forest.label(forest.head(e)).underlying,
-                                                         semiring.as_real(forest.weight(e))))
+                                                         semiring.as_real(omega.value(e))))
     return values
 
 

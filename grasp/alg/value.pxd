@@ -48,6 +48,12 @@ cdef class ScaledEdgeWeight(ValueFunction):
     cdef weight_t scalar
 
 
+cdef class ScaledValue(ValueFunction):
+
+    cdef ValueFunction func
+    cdef weight_t scalar
+
+
 cdef class ThresholdValueFunction(ValueFunction):
 
     cdef:

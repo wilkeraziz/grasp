@@ -867,6 +867,7 @@ struct __pyx_obj_5grasp_3alg_5value_CascadeValueFunction;
 struct __pyx_obj_5grasp_3alg_5value_LookupFunction;
 struct __pyx_obj_5grasp_3alg_5value_EdgeWeight;
 struct __pyx_obj_5grasp_3alg_5value_ScaledEdgeWeight;
+struct __pyx_obj_5grasp_3alg_5value_ScaledValue;
 struct __pyx_obj_5grasp_3alg_5value_ThresholdValueFunction;
 struct __pyx_obj_5grasp_3alg_5value_BinaryEdgeWeight;
 struct __pyx_obj_5grasp_3alg_5value_EdgeValues;
@@ -1065,7 +1066,7 @@ struct __pyx_opt_args_5grasp_3alg_5value_robust_value_recursion;
 struct __pyx_opt_args_5grasp_3alg_5value_compute_edge_values;
 struct __pyx_opt_args_5grasp_3alg_5value_compute_edge_expectation;
 
-/* "grasp/alg/value.pxd":67
+/* "grasp/alg/value.pxd":73
  * 
  * 
  * cpdef weight_t derivation_value(Hypergraph forest, tuple edges, Semiring semiring, ValueFunction omega=?)             # <<<<<<<<<<<<<<
@@ -1077,7 +1078,7 @@ struct __pyx_opt_args_5grasp_3alg_5value_derivation_value {
   struct __pyx_obj_5grasp_3alg_5value_ValueFunction *omega;
 };
 
-/* "grasp/alg/value.pxd":77
+/* "grasp/alg/value.pxd":83
  * 
  * 
  * cpdef weight_t[::1] acyclic_value_recursion(Hypergraph forest,             # <<<<<<<<<<<<<<
@@ -1089,7 +1090,7 @@ struct __pyx_opt_args_5grasp_3alg_5value_acyclic_value_recursion {
   struct __pyx_obj_5grasp_3alg_5value_ValueFunction *omega;
 };
 
-/* "grasp/alg/value.pxd":82
+/* "grasp/alg/value.pxd":88
  *                                             ValueFunction omega=?)
  * 
  * cpdef weight_t[::1] acyclic_reversed_value_recursion(Hypergraph forest,             # <<<<<<<<<<<<<<
@@ -1101,7 +1102,7 @@ struct __pyx_opt_args_5grasp_3alg_5value_acyclic_reversed_value_recursion {
   struct __pyx_obj_5grasp_3alg_5value_ValueFunction *omega;
 };
 
-/* "grasp/alg/value.pxd":88
+/* "grasp/alg/value.pxd":94
  *                                             ValueFunction omega=?)
  * 
  * cpdef weight_t[::1] robust_value_recursion(Hypergraph forest,             # <<<<<<<<<<<<<<
@@ -1113,7 +1114,7 @@ struct __pyx_opt_args_5grasp_3alg_5value_robust_value_recursion {
   struct __pyx_obj_5grasp_3alg_5value_ValueFunction *omega;
 };
 
-/* "grasp/alg/value.pxd":99
+/* "grasp/alg/value.pxd":105
  *                                         list bucket)
  * 
  * cpdef weight_t[::1] compute_edge_values(Hypergraph forest,             # <<<<<<<<<<<<<<
@@ -1126,7 +1127,7 @@ struct __pyx_opt_args_5grasp_3alg_5value_compute_edge_values {
   int normalise;
 };
 
-/* "grasp/alg/value.pxd":105
+/* "grasp/alg/value.pxd":111
  *                                         bint normalise=?)
  * 
  * cpdef weight_t[::1] compute_edge_expectation(Hypergraph forest,             # <<<<<<<<<<<<<<
@@ -1668,6 +1669,20 @@ struct __pyx_obj_5grasp_3alg_5value_ScaledEdgeWeight {
 /* "grasp/alg/value.pxd":51
  * 
  * 
+ * cdef class ScaledValue(ValueFunction):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef ValueFunction func
+ */
+struct __pyx_obj_5grasp_3alg_5value_ScaledValue {
+  struct __pyx_obj_5grasp_3alg_5value_ValueFunction __pyx_base;
+  struct __pyx_obj_5grasp_3alg_5value_ValueFunction *func;
+  __pyx_t_5grasp_6ptypes_weight_t scalar;
+};
+
+
+/* "grasp/alg/value.pxd":57
+ * 
+ * 
  * cdef class ThresholdValueFunction(ValueFunction):             # <<<<<<<<<<<<<<
  * 
  *     cdef:
@@ -1681,7 +1696,7 @@ struct __pyx_obj_5grasp_3alg_5value_ThresholdValueFunction {
 };
 
 
-/* "grasp/alg/value.pxd":60
+/* "grasp/alg/value.pxd":66
  * 
  * 
  * cdef class BinaryEdgeWeight(ValueFunction):             # <<<<<<<<<<<<<<
@@ -1696,7 +1711,7 @@ struct __pyx_obj_5grasp_3alg_5value_BinaryEdgeWeight {
 };
 
 
-/* "grasp/alg/value.pxd":112
+/* "grasp/alg/value.pxd":118
  *                                         bint normalise=?)
  * 
  * cdef class EdgeValues(ValueFunction):             # <<<<<<<<<<<<<<
@@ -1714,7 +1729,7 @@ struct __pyx_obj_5grasp_3alg_5value_EdgeValues {
 };
 
 
-/* "grasp/alg/value.pxd":122
+/* "grasp/alg/value.pxd":128
  * 
  * 
  * cdef class LazyEdgeValues(ValueFunction):             # <<<<<<<<<<<<<<
@@ -2284,6 +2299,20 @@ static struct __pyx_vtabstruct_5grasp_3alg_5value_ScaledEdgeWeight *__pyx_vtabpt
 /* "grasp/alg/value.pxd":51
  * 
  * 
+ * cdef class ScaledValue(ValueFunction):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef ValueFunction func
+ */
+
+struct __pyx_vtabstruct_5grasp_3alg_5value_ScaledValue {
+  struct __pyx_vtabstruct_5grasp_3alg_5value_ValueFunction __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_3alg_5value_ScaledValue *__pyx_vtabptr_5grasp_3alg_5value_ScaledValue;
+
+
+/* "grasp/alg/value.pxd":57
+ * 
+ * 
  * cdef class ThresholdValueFunction(ValueFunction):             # <<<<<<<<<<<<<<
  * 
  *     cdef:
@@ -2295,7 +2324,7 @@ struct __pyx_vtabstruct_5grasp_3alg_5value_ThresholdValueFunction {
 static struct __pyx_vtabstruct_5grasp_3alg_5value_ThresholdValueFunction *__pyx_vtabptr_5grasp_3alg_5value_ThresholdValueFunction;
 
 
-/* "grasp/alg/value.pxd":60
+/* "grasp/alg/value.pxd":66
  * 
  * 
  * cdef class BinaryEdgeWeight(ValueFunction):             # <<<<<<<<<<<<<<
@@ -2309,7 +2338,7 @@ struct __pyx_vtabstruct_5grasp_3alg_5value_BinaryEdgeWeight {
 static struct __pyx_vtabstruct_5grasp_3alg_5value_BinaryEdgeWeight *__pyx_vtabptr_5grasp_3alg_5value_BinaryEdgeWeight;
 
 
-/* "grasp/alg/value.pxd":112
+/* "grasp/alg/value.pxd":118
  *                                         bint normalise=?)
  * 
  * cdef class EdgeValues(ValueFunction):             # <<<<<<<<<<<<<<
@@ -2323,7 +2352,7 @@ struct __pyx_vtabstruct_5grasp_3alg_5value_EdgeValues {
 static struct __pyx_vtabstruct_5grasp_3alg_5value_EdgeValues *__pyx_vtabptr_5grasp_3alg_5value_EdgeValues;
 
 
-/* "grasp/alg/value.pxd":122
+/* "grasp/alg/value.pxd":128
  * 
  * 
  * cdef class LazyEdgeValues(ValueFunction):             # <<<<<<<<<<<<<<
@@ -2338,14 +2367,6 @@ struct __pyx_vtabstruct_5grasp_3alg_5value_LazyEdgeValues {
 };
 static struct __pyx_vtabstruct_5grasp_3alg_5value_LazyEdgeValues *__pyx_vtabptr_5grasp_3alg_5value_LazyEdgeValues;
 
-
-/* "grasp/alg/inference.pyx":128
- * 
- * 
- * cdef class DerivationCounter:             # <<<<<<<<<<<<<<
- * 
- *     def __init__(self,
- */
 
 struct __pyx_vtabstruct_5grasp_3alg_9inference_DerivationCounter {
   void (*__pyx_do)(struct __pyx_obj_5grasp_3alg_9inference_DerivationCounter *);
@@ -2814,8 +2835,6 @@ static CYTHON_INLINE int __Pyx_PyInt_As_int(PyObject *);
 
 static CYTHON_INLINE PyObject* __Pyx_PyInt_From_int(int value);
 
-#include <new>
-
 #if CYTHON_CCOMPLEX
   #ifdef __cplusplus
     #define __Pyx_CREAL(z) ((z).real())
@@ -2913,6 +2932,8 @@ static CYTHON_INLINE __pyx_t_double_complex __pyx_t_double_complex_from_parts(do
         static CYTHON_INLINE __pyx_t_double_complex __Pyx_c_pow(__pyx_t_double_complex, __pyx_t_double_complex);
     #endif
 #endif
+
+#include <new>
 
 static int __pyx_memviewslice_is_contig(const __Pyx_memviewslice *mvs,
                                         char order, int ndim);
@@ -3049,6 +3070,7 @@ static PyTypeObject *__pyx_ptype_5grasp_3alg_5value_CascadeValueFunction = 0;
 static PyTypeObject *__pyx_ptype_5grasp_3alg_5value_LookupFunction = 0;
 static PyTypeObject *__pyx_ptype_5grasp_3alg_5value_EdgeWeight = 0;
 static PyTypeObject *__pyx_ptype_5grasp_3alg_5value_ScaledEdgeWeight = 0;
+static PyTypeObject *__pyx_ptype_5grasp_3alg_5value_ScaledValue = 0;
 static PyTypeObject *__pyx_ptype_5grasp_3alg_5value_ThresholdValueFunction = 0;
 static PyTypeObject *__pyx_ptype_5grasp_3alg_5value_BinaryEdgeWeight = 0;
 static PyTypeObject *__pyx_ptype_5grasp_3alg_5value_EdgeValues = 0;
@@ -21280,14 +21302,16 @@ PyMODINIT_FUNC PyInit_inference(void)
   __pyx_vtabptr_5grasp_3alg_5value_EdgeWeight = (struct __pyx_vtabstruct_5grasp_3alg_5value_EdgeWeight*)__Pyx_GetVtable(__pyx_ptype_5grasp_3alg_5value_EdgeWeight->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_3alg_5value_EdgeWeight)) {__pyx_filename = __pyx_f[9]; __pyx_lineno = 40; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_ptype_5grasp_3alg_5value_ScaledEdgeWeight = __Pyx_ImportType("grasp.alg.value", "ScaledEdgeWeight", sizeof(struct __pyx_obj_5grasp_3alg_5value_ScaledEdgeWeight), 1); if (unlikely(!__pyx_ptype_5grasp_3alg_5value_ScaledEdgeWeight)) {__pyx_filename = __pyx_f[9]; __pyx_lineno = 45; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_vtabptr_5grasp_3alg_5value_ScaledEdgeWeight = (struct __pyx_vtabstruct_5grasp_3alg_5value_ScaledEdgeWeight*)__Pyx_GetVtable(__pyx_ptype_5grasp_3alg_5value_ScaledEdgeWeight->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_3alg_5value_ScaledEdgeWeight)) {__pyx_filename = __pyx_f[9]; __pyx_lineno = 45; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_3alg_5value_ThresholdValueFunction = __Pyx_ImportType("grasp.alg.value", "ThresholdValueFunction", sizeof(struct __pyx_obj_5grasp_3alg_5value_ThresholdValueFunction), 1); if (unlikely(!__pyx_ptype_5grasp_3alg_5value_ThresholdValueFunction)) {__pyx_filename = __pyx_f[9]; __pyx_lineno = 51; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_3alg_5value_ThresholdValueFunction = (struct __pyx_vtabstruct_5grasp_3alg_5value_ThresholdValueFunction*)__Pyx_GetVtable(__pyx_ptype_5grasp_3alg_5value_ThresholdValueFunction->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_3alg_5value_ThresholdValueFunction)) {__pyx_filename = __pyx_f[9]; __pyx_lineno = 51; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_3alg_5value_BinaryEdgeWeight = __Pyx_ImportType("grasp.alg.value", "BinaryEdgeWeight", sizeof(struct __pyx_obj_5grasp_3alg_5value_BinaryEdgeWeight), 1); if (unlikely(!__pyx_ptype_5grasp_3alg_5value_BinaryEdgeWeight)) {__pyx_filename = __pyx_f[9]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_3alg_5value_BinaryEdgeWeight = (struct __pyx_vtabstruct_5grasp_3alg_5value_BinaryEdgeWeight*)__Pyx_GetVtable(__pyx_ptype_5grasp_3alg_5value_BinaryEdgeWeight->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_3alg_5value_BinaryEdgeWeight)) {__pyx_filename = __pyx_f[9]; __pyx_lineno = 60; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_3alg_5value_EdgeValues = __Pyx_ImportType("grasp.alg.value", "EdgeValues", sizeof(struct __pyx_obj_5grasp_3alg_5value_EdgeValues), 1); if (unlikely(!__pyx_ptype_5grasp_3alg_5value_EdgeValues)) {__pyx_filename = __pyx_f[9]; __pyx_lineno = 112; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_3alg_5value_EdgeValues = (struct __pyx_vtabstruct_5grasp_3alg_5value_EdgeValues*)__Pyx_GetVtable(__pyx_ptype_5grasp_3alg_5value_EdgeValues->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_3alg_5value_EdgeValues)) {__pyx_filename = __pyx_f[9]; __pyx_lineno = 112; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_3alg_5value_LazyEdgeValues = __Pyx_ImportType("grasp.alg.value", "LazyEdgeValues", sizeof(struct __pyx_obj_5grasp_3alg_5value_LazyEdgeValues), 1); if (unlikely(!__pyx_ptype_5grasp_3alg_5value_LazyEdgeValues)) {__pyx_filename = __pyx_f[9]; __pyx_lineno = 122; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_3alg_5value_LazyEdgeValues = (struct __pyx_vtabstruct_5grasp_3alg_5value_LazyEdgeValues*)__Pyx_GetVtable(__pyx_ptype_5grasp_3alg_5value_LazyEdgeValues->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_3alg_5value_LazyEdgeValues)) {__pyx_filename = __pyx_f[9]; __pyx_lineno = 122; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_3alg_5value_ScaledValue = __Pyx_ImportType("grasp.alg.value", "ScaledValue", sizeof(struct __pyx_obj_5grasp_3alg_5value_ScaledValue), 1); if (unlikely(!__pyx_ptype_5grasp_3alg_5value_ScaledValue)) {__pyx_filename = __pyx_f[9]; __pyx_lineno = 51; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_3alg_5value_ScaledValue = (struct __pyx_vtabstruct_5grasp_3alg_5value_ScaledValue*)__Pyx_GetVtable(__pyx_ptype_5grasp_3alg_5value_ScaledValue->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_3alg_5value_ScaledValue)) {__pyx_filename = __pyx_f[9]; __pyx_lineno = 51; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_3alg_5value_ThresholdValueFunction = __Pyx_ImportType("grasp.alg.value", "ThresholdValueFunction", sizeof(struct __pyx_obj_5grasp_3alg_5value_ThresholdValueFunction), 1); if (unlikely(!__pyx_ptype_5grasp_3alg_5value_ThresholdValueFunction)) {__pyx_filename = __pyx_f[9]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_3alg_5value_ThresholdValueFunction = (struct __pyx_vtabstruct_5grasp_3alg_5value_ThresholdValueFunction*)__Pyx_GetVtable(__pyx_ptype_5grasp_3alg_5value_ThresholdValueFunction->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_3alg_5value_ThresholdValueFunction)) {__pyx_filename = __pyx_f[9]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_3alg_5value_BinaryEdgeWeight = __Pyx_ImportType("grasp.alg.value", "BinaryEdgeWeight", sizeof(struct __pyx_obj_5grasp_3alg_5value_BinaryEdgeWeight), 1); if (unlikely(!__pyx_ptype_5grasp_3alg_5value_BinaryEdgeWeight)) {__pyx_filename = __pyx_f[9]; __pyx_lineno = 66; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_3alg_5value_BinaryEdgeWeight = (struct __pyx_vtabstruct_5grasp_3alg_5value_BinaryEdgeWeight*)__Pyx_GetVtable(__pyx_ptype_5grasp_3alg_5value_BinaryEdgeWeight->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_3alg_5value_BinaryEdgeWeight)) {__pyx_filename = __pyx_f[9]; __pyx_lineno = 66; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_3alg_5value_EdgeValues = __Pyx_ImportType("grasp.alg.value", "EdgeValues", sizeof(struct __pyx_obj_5grasp_3alg_5value_EdgeValues), 1); if (unlikely(!__pyx_ptype_5grasp_3alg_5value_EdgeValues)) {__pyx_filename = __pyx_f[9]; __pyx_lineno = 118; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_3alg_5value_EdgeValues = (struct __pyx_vtabstruct_5grasp_3alg_5value_EdgeValues*)__Pyx_GetVtable(__pyx_ptype_5grasp_3alg_5value_EdgeValues->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_3alg_5value_EdgeValues)) {__pyx_filename = __pyx_f[9]; __pyx_lineno = 118; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_3alg_5value_LazyEdgeValues = __Pyx_ImportType("grasp.alg.value", "LazyEdgeValues", sizeof(struct __pyx_obj_5grasp_3alg_5value_LazyEdgeValues), 1); if (unlikely(!__pyx_ptype_5grasp_3alg_5value_LazyEdgeValues)) {__pyx_filename = __pyx_f[9]; __pyx_lineno = 128; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_3alg_5value_LazyEdgeValues = (struct __pyx_vtabstruct_5grasp_3alg_5value_LazyEdgeValues*)__Pyx_GetVtable(__pyx_ptype_5grasp_3alg_5value_LazyEdgeValues->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_3alg_5value_LazyEdgeValues)) {__pyx_filename = __pyx_f[9]; __pyx_lineno = 128; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   /*--- Variable import code ---*/
   /*--- Function import code ---*/
   __pyx_t_1 = __Pyx_ImportModule("grasp.alg.value"); if (!__pyx_t_1) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 1; __pyx_clineno = __LINE__; goto __pyx_L1_error;}

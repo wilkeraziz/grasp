@@ -97,6 +97,19 @@ cdef class ScaledEdgeWeight(ValueFunction):
         return self.hg.weight(e) * self.scalar
 
 
+cdef class ScaledValue(ValueFunction):
+    """
+    A value function which reproduces the edge's weight in a hypergraph.
+    """
+
+    def __init__(self, ValueFunction func, weight_t scalar):
+        self.func = func
+        self.scalar = scalar
+
+    cpdef weight_t value(self, id_t e):
+        return self.func.value(e) * self.scalar
+
+
 cdef class ThresholdValueFunction(ValueFunction):
     """
     Applies a threshold to an edge's value.

@@ -31,7 +31,7 @@ from grasp.mt.cdec_format import load_grammar
 from grasp.mt.segment import SegmentMetaData
 from grasp.mt.input import make_input
 from grasp.mt.workspace import make_dirs
-from grasp.mt.util import load_feature_extractors, GoalRuleMaker
+from grasp.mt.util import load_feature_extractors, GoalRuleMaker, make_dead_srule
 
 from grasp.recipes import timeit, smart_wopen
 
@@ -53,7 +53,7 @@ from grasp.alg.deduction import NederhofParser
 from grasp.alg.deduction import EarleyRescorer
 from grasp.alg.inference import viterbi_derivation, AncestralSampler
 from grasp.alg.chain import group_by_projection, group_by_identity, apply_batch_filters, apply_filters
-from grasp.alg.value import derivation_value
+from grasp.alg.value import derivation_value, EdgeWeight
 
 
 def save_forest(hg, outdir, sid, name):
@@ -202,8 +202,11 @@ def t_cy_decode(seg, extra_grammars, glue_grammars, model, args, outdir):
     if model.stateful:
         if args.framework == 'exact':
             logging.info('Stateful rescoring...')
-            rescorer = EarleyRescorer(ehg, TableLookupScorer(model.dummy),
-                                      StatelessScorer(model.dummy), StatefulScorer(model.stateful), semiring.inside)
+            rescorer = EarleyRescorer(ehg,
+                                      TableLookupScorer(model.dummy),
+                                      StatelessScorer(model.dummy),
+                                      StatefulScorer(model.stateful),
+                                      semiring.inside)
 
             goal_maker.update()
 
@@ -232,15 +235,18 @@ def t_cy_decode(seg, extra_grammars, glue_grammars, model, args, outdir):
         else:
             from grasp.alg.rescoring import SlicedRescoring
 
-            dead_rule = SCFGProduction(Nonterminal('X'), (Terminal('<dead-end>'),), (Terminal('<dead-end>'),), [], {'DeadRule': 1.0})
+            logging.info('Sliced rescoring...')
 
-            rescorer = SlicedRescoring(ehg, tsort,
-                            StatelessScorer(model.dummy), StatefulScorer(model.stateful),
-                            semiring.inside,
-                            OutputView(goal_maker.get_next_srule()),
-                            OutputView(dead_rule),
-                            Terminal('<dead-end>'),
-                            temperature0=args.temperature0)
+            rescorer = SlicedRescoring(ehg,
+                                       EdgeWeight(ehg),
+                                       tsort,
+                                       TableLookupScorer(model.dummy),
+                                       StatelessScorer(model.dummy),
+                                       StatefulScorer(model.stateful),
+                                       semiring.inside,
+                                       OutputView(goal_maker.get_next_srule()),
+                                       OutputView(make_dead_srule()),
+                                       temperature0=args.temperature0)
 
             # here samples are represented as sequences of edge ids
             d0, markov_chain = rescorer.sample(args)

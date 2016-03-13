@@ -12,6 +12,8 @@ from grasp.scoring.scorer cimport TableLookupScorer, StatelessScorer, StatefulSc
 
 from grasp.scoring.frepr cimport FComponents
 
+from grasp.alg.value cimport ValueFunction, EdgeWeight
+
 
 cdef class Item:
     
@@ -70,6 +72,7 @@ cdef class Agenda:
 cdef class DeductiveIntersection:
 
     cdef Hypergraph _hg
+    cdef ValueFunction _omega
     cdef Semiring _semiring
     cdef SliceVariables _slicevars
 
@@ -202,4 +205,4 @@ cdef class EarleyRescorer(Rescorer):
     cdef void process_incomplete(self, Item item)
 
 
-cpdef weight_t[::1] reweight(Hypergraph forest, SliceVariables slicevars, Semiring semiring)
+cpdef weight_t[::1] reweight(Hypergraph forest, SliceVariables slicevars, Semiring semiring, ValueFunction omega=?)
