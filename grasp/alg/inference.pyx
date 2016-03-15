@@ -10,15 +10,15 @@ from libcpp.vector cimport vector
 import grasp.ptypes as ptypes
 import grasp.semiring as semiring
 from grasp.formal.topsort cimport AcyclicTopSortTable, RobustTopSortTable
-from grasp.alg.value cimport EdgeWeight, LazyEdgeValues, LookupFunction, BinaryEdgeWeight
-from grasp.alg.value cimport acyclic_value_recursion, robust_value_recursion, compute_edge_values
+from grasp.formal.wfunc cimport HypergraphLookupFunction, TableLookupFunction, ThresholdFunction
+from grasp.alg.value cimport LazyEdgeValues, acyclic_value_recursion, robust_value_recursion, compute_edge_values
 from grasp.ptypes cimport weight_t, id_t
 
 
 cpdef tuple sample(Hypergraph forest,
                    id_t root,
                    Semiring semiring,
-                   ValueFunction omega):
+                   WeightFunction omega):
     """
     Samples (in a generalised sense) a derivation from the forest.
     The outcome depends on the semiring. For instance, with semiring.viterbi we get the 1-best,
@@ -55,7 +55,7 @@ cpdef list batch_sample(Hypergraph forest,
                         TopSortTable tsort,
                         Semiring semiring,
                         size_t size,
-                        ValueFunction omega=None,
+                        WeightFunction omega=None,
                         weight_t[::1] node_values=None,
                         weight_t[::1] edge_values=None):
     """
@@ -72,7 +72,7 @@ cpdef list batch_sample(Hypergraph forest,
     """
 
     if omega is None:
-        omega = EdgeWeight(forest)
+        omega = HypergraphLookupFunction(forest)
 
     if node_values is None:
         if isinstance(tsort, AcyclicTopSortTable):
@@ -87,7 +87,7 @@ cpdef list batch_sample(Hypergraph forest,
                                                  omega)
 
 
-    cdef ValueFunction e_omega
+    cdef WeightFunction e_omega
     if edge_values is None:
         e_omega = LazyEdgeValues(forest,
                                  semiring,
@@ -95,14 +95,14 @@ cpdef list batch_sample(Hypergraph forest,
                                  omega,
                                  normalise=not semiring.idempotent)
     else:
-        e_omega = LookupFunction(edge_values)
+        e_omega = TableLookupFunction(edge_values)
 
     return [sample(forest, tsort.root(), semiring, e_omega) for _ in range(size)]
 
 
 cpdef tuple viterbi_derivation(Hypergraph forest,
                                TopSortTable tsort,
-                               ValueFunction omega=None,
+                               WeightFunction omega=None,
                                weight_t[::1] node_values=None,
                                weight_t[::1] edge_values=None):
     return batch_sample(forest, tsort, semiring.viterbi, 1, omega, node_values, edge_values)[0]
@@ -110,7 +110,7 @@ cpdef tuple viterbi_derivation(Hypergraph forest,
 
 cpdef tuple sample_derivation(Hypergraph forest,
                               TopSortTable tsort,
-                              ValueFunction omega=None,
+                              WeightFunction omega=None,
                               weight_t[::1] node_values=None,
                               weight_t[::1] edge_values=None):
     return batch_sample(forest, tsort, semiring.inside, 1, omega, node_values, edge_values)[0]
@@ -119,7 +119,7 @@ cpdef tuple sample_derivation(Hypergraph forest,
 cpdef list sample_derivations(Hypergraph forest,
                               TopSortTable tsort,
                               size_t size,
-                              ValueFunction omega=None,
+                              WeightFunction omega=None,
                               weight_t[::1] node_values=None,
                               weight_t[::1] edge_values=None):
     return batch_sample(forest, tsort, semiring.inside, size, omega, node_values, edge_values)
@@ -132,16 +132,17 @@ cdef class DerivationCounter:
                  TopSortTable tsort):
         self._forest = forest
         self._tsort = tsort
-        self._omega = EdgeWeight(forest)
+        self._omega = HypergraphLookupFunction(forest)
         self._root = self._tsort.root()
         self._counts_computed = False
 
     cdef void do(self):
-        cdef ValueFunction omega
+        cdef WeightFunction omega
         if not self._counts_computed:
 
             # this emulates the Counting semiring
-            omega = BinaryEdgeWeight(self._forest, semiring.inside, semiring.inside)
+            omega = ThresholdFunction(HypergraphLookupFunction(self._forest),
+                                      semiring.inside)
 
             if isinstance(self._tsort, AcyclicTopSortTable):
                 self._count_values = acyclic_value_recursion(self._forest,
@@ -170,12 +171,12 @@ cdef class AncestralSampler:
     def __init__(self,
                  Hypergraph forest,
                  TopSortTable tsort,
-                 ValueFunction omega=None):
+                 WeightFunction omega=None):
         self._forest = forest
         self._tsort = tsort
 
         if omega is None:
-            omega = EdgeWeight(forest)
+            omega = HypergraphLookupFunction(forest)
         self._omega = omega
 
 

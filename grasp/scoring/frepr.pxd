@@ -2,7 +2,9 @@
 :Authors: - Wilker Aziz
 """
 from grasp.ptypes cimport weight_t
-from grasp.semiring._semiring cimport Operator
+from grasp.semiring.operator cimport BinaryOperator
+from grasp.semiring.operator cimport UnaryOperator
+from grasp.semiring._semiring cimport Semiring
 
 
 cdef class FRepr:
@@ -11,7 +13,15 @@ cdef class FRepr:
 
     cpdef weight_t dot(self, FRepr w) except *
 
-    cpdef FRepr hadamard(self, FRepr other, Operator op)
+    cpdef FRepr hadamard(self, FRepr rhs, BinaryOperator op)
+
+    cpdef FRepr elementwise(self, UnaryOperator op)
+
+    cpdef FRepr elementwise_b(self, weight_t rhs, BinaryOperator op)
+
+    cpdef FRepr densify(self)
+
+    cpdef FRepr power(self, weight_t power, Semiring semiring)
 
 
 cdef class FValue(FRepr):

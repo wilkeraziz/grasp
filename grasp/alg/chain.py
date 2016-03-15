@@ -64,18 +64,18 @@ def group_by_identity(derivations):
     counts = Counter(derivations)
     output = []
     for d, n in counts.most_common():
-        output.append(SimpleNamespace(derivation=d, count=n))
+        output.append(SimpleNamespace(key=d, count=n))
     return output
 
 
 def group_by_projection(samples, get_projection):
-    p2d = defaultdict(set)
+    p2d = defaultdict(list)
     counts = Counter()
     for d in samples:
         y = get_projection(d)
         counts[y] += 1
-        p2d[y].add(d)
+        p2d[y].append(d)
     output = []
     for y, n in counts.most_common():
-        output.append(SimpleNamespace(projection=y, count=n, derivations=p2d[y]))
+        output.append(SimpleNamespace(key=y, count=n, values=p2d[y]))
     return output

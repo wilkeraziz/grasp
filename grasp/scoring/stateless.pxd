@@ -10,3 +10,4 @@ cdef class WordPenalty(Stateless):
 cdef class ArityPenalty(Stateless):
 
     cdef weight_t _penalty
+    cdef int _max_arity

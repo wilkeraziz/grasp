@@ -55,6 +55,9 @@ cdef class StatelessLM(Stateless):
                                                                                       repr(self._bos),
                                                                                       repr(self._eos))
 
+    cpdef tuple fnames(self, wkeys):
+        return self._features
+
     cpdef FRepr weights(self, dict wmap):  # using dense representation
         cdef list wvec = []
         cdef str f
@@ -140,6 +143,9 @@ cdef class KenLM(Stateful):
                                                                                       repr(self._path),
                                                                                       repr(self._bos),
                                                                                       repr(self._eos))
+
+    cpdef tuple fnames(self, wkeys):
+        return self._features
 
     cpdef FRepr weights(self, dict wmap):  # using dense representation
         cdef list wvec = []

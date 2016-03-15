@@ -5,11 +5,14 @@ from grasp.ptypes cimport weight_t
 cdef class Model:
 
     cdef tuple _extractors
+    cdef dict _wmap
     cdef FComponents _weights
 
     cpdef tuple extractors(self)
 
     cpdef weight_t score(self, FComponents freprs)
+
+    cpdef tuple fnames(self, wkey=?)
 
     cpdef FComponents weights(self)
 
@@ -24,5 +27,7 @@ cdef class DummyModel(Model):
 cdef class ModelContainer(Model):  # TODO: rename it to LogLinearModel
 
     cdef public Model lookup, stateless, stateful, dummy
+
+    cpdef itercomponents(self)
 
 

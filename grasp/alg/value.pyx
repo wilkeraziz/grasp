@@ -11,148 +11,14 @@ We also have an implementation which is robust to the presence of cycles.
 from grasp.ptypes cimport weight_t, id_t
 from grasp.formal.hg cimport Hypergraph
 from grasp.formal.topsort cimport AcyclicTopSortTable, RobustTopSortTable
+from grasp.formal.wfunc cimport HypergraphLookupFunction
 
 import numpy as np
 cimport numpy as np
 
 
-cdef class ValueFunction:
-    """
-    A value function assigns a value to an edge.
-    """
-
-    def __init__(self):
-        pass
-
-    def __call__(self, id_t e):
-        return self.value(e)
-
-    cpdef weight_t value(self, id_t e): pass
-
-    cpdef weight_t reduce(self, Operator op, iterable):
-        cdef id_t e
-        return op.reduce([self.value(e) for e in iterable])
-
-
-cdef class ConstantFunction(ValueFunction):
-
-    def __init__(self, weight_t constant):
-        self.constant = constant
-
-    cpdef weight_t value(self, id_t e):
-        return self.constant
-
-    def __repr__(self):
-        return '%s(%r)' % (ConstantFunction.__name__, self.constant)
-
-
-cdef class CascadeValueFunction(ValueFunction):
-
-    def __init__(self, Operator op, functions):
-        self.functions = tuple(functions)
-        self.op = op
-
-    cpdef weight_t value(self, id_t e):
-        cdef ValueFunction func
-        return self.op.reduce([func.value(e) for func in self.functions])
-
-    def __repr__(self):
-        return '%s(%r, %r)' % (CascadeValueFunction.__name__, self.op, self.functions)
-
-
-cdef class LookupFunction(ValueFunction):
-    """
-    A value function that consists in plain simple table lookup.
-    """
-
-    def __init__(self, weight_t[::1] table):
-        self.table = table
-
-    cpdef weight_t value(self, id_t e):
-        return self.table[e]
-
-
-cdef class EdgeWeight(ValueFunction):
-    """
-    A value function which reproduces the edge's weight in a hypergraph.
-    """
-
-    def __init__(self, Hypergraph hg):
-        self.hg = hg
-
-    cpdef weight_t value(self, id_t e):
-        return self.hg.weight(e)
-
-
-cdef class ScaledEdgeWeight(ValueFunction):
-    """
-    A value function which reproduces the edge's weight in a hypergraph.
-    """
-
-    def __init__(self, Hypergraph hg, weight_t scalar):
-        self.hg = hg
-        self.scalar = scalar
-
-    cpdef weight_t value(self, id_t e):
-        return self.hg.weight(e) * self.scalar
-
-
-cdef class ScaledValue(ValueFunction):
-    """
-    A value function which reproduces the edge's weight in a hypergraph.
-    """
-
-    def __init__(self, ValueFunction func, weight_t scalar):
-        self.func = func
-        self.scalar = scalar
-
-    cpdef weight_t value(self, id_t e):
-        return self.func.value(e) * self.scalar
-
-
-cdef class ThresholdValueFunction(ValueFunction):
-    """
-    Applies a threshold to an edge's value.
-    """
-
-    def __init__(self, ValueFunction f, Semiring input_semiring, weight_t threshold, Semiring output_semiring):
-        self.f = f
-        self.input_semiring = input_semiring
-        self.threshold = threshold
-        self.output_semiring = output_semiring
-
-    cpdef weight_t value(self, id_t e):
-        """
-        Returns 1 (in the output semiring) if the edge's value is greater than the threshold (both in the input semiring),
-        otherwise it returns 0 (in the output semiring).
-        """
-        return self.output_semiring.one if self.input_semiring.gt(self.f.value(e), self.threshold) else self.output_semiring.zero
-
-
-cdef class BinaryEdgeWeight(ValueFunction):
-
-    def __init__(self, Hypergraph hg, Semiring input_semiring, Semiring output_semiring):
-        self.hg = hg
-        self.input_semiring = input_semiring
-        self.output_semiring = output_semiring
-
-    cpdef weight_t value(self, id_t e):
-        if self.input_semiring.gt(self.hg.weight(e), self.input_semiring.zero):
-            return self.output_semiring.one
-        else:
-            return self.output_semiring.zero
-
-
-cpdef weight_t derivation_value(Hypergraph forest, tuple edges, Semiring semiring, ValueFunction omega=None):
-    cdef id_t e
-    if omega is None:
-        return semiring.times.reduce([forest.weight(e) for e in edges])
-    else:
-        return semiring.times.reduce([omega.value(e) for e in edges])
-
-
 cdef weight_t node_value(Hypergraph forest,
-                            ValueFunction omega,
+                            WeightFunction omega,
                             Semiring semiring,
                             weight_t[::1] values,
                             id_t parent):
@@ -174,7 +40,7 @@ cdef weight_t node_value(Hypergraph forest,
 cpdef weight_t[::1] acyclic_value_recursion(Hypergraph forest,
                                             AcyclicTopSortTable tsort,
                                             Semiring semiring,
-                                            ValueFunction omega=None):
+                                            WeightFunction omega=None):
     """
     Returns items' values in a given semiring.
     This is a bottom-up pass through the forest which runs in O(|forest|).
@@ -187,7 +53,7 @@ cpdef weight_t[::1] acyclic_value_recursion(Hypergraph forest,
     """
 
     if omega is None:
-        omega = EdgeWeight(forest)
+        omega = HypergraphLookupFunction(forest)
 
     cdef weight_t[::1] values = semiring.zeros(forest.n_nodes())
 
@@ -207,7 +73,7 @@ cpdef weight_t[::1] acyclic_reversed_value_recursion(Hypergraph forest,
                                             AcyclicTopSortTable tsort,
                                             Semiring semiring,
                                             weight_t[::1] values,
-                                            ValueFunction omega=None):
+                                            WeightFunction omega=None):
     """
     Returns items' reversed values in a given semiring.
     This is a top-down pass through the forest which runs in O(|forest|).
@@ -220,7 +86,7 @@ cpdef weight_t[::1] acyclic_reversed_value_recursion(Hypergraph forest,
     """
 
     if omega is None:
-        omega = EdgeWeight(forest)
+        omega = HypergraphLookupFunction(forest)
 
     cdef:
         size_t i
@@ -249,7 +115,7 @@ cpdef weight_t[::1] acyclic_reversed_value_recursion(Hypergraph forest,
 cpdef weight_t[::1] robust_value_recursion(Hypergraph forest,
                                            RobustTopSortTable tsort,
                                            Semiring semiring,
-                                           ValueFunction omega=None):
+                                           WeightFunction omega=None):
     """
     Returns items' values in a given semiring.
     This is a bottom-up pass through the forest which runs in O(|forest|).
@@ -262,7 +128,7 @@ cpdef weight_t[::1] robust_value_recursion(Hypergraph forest,
     """
 
     if omega is None:
-        omega = EdgeWeight(forest)
+        omega = HypergraphLookupFunction(forest)
 
     cdef weight_t[::1] values = semiring.zeros(forest.n_nodes())
 
@@ -286,7 +152,7 @@ cpdef weight_t[::1] robust_value_recursion(Hypergraph forest,
 
 
 cdef weight_t[::1] approximate_supremum(Hypergraph forest,
-                                        ValueFunction omega,
+                                        WeightFunction omega,
                                         Semiring semiring,
                                         weight_t[::1] values,
                                         list bucket):
@@ -334,7 +200,7 @@ cdef weight_t[::1] approximate_supremum(Hypergraph forest,
 cpdef weight_t[::1] compute_edge_values(Hypergraph forest,
                                         Semiring semiring,
                                         weight_t[::1] node_values,
-                                        ValueFunction omega=None,
+                                        WeightFunction omega=None,
                                         bint normalise=False):
     cdef:
         weight_t[::1] edge_values = semiring.zeros(forest.n_edges())
@@ -342,7 +208,7 @@ cpdef weight_t[::1] compute_edge_values(Hypergraph forest,
         weight_t tail_value, w
 
     if omega is None:
-        omega = EdgeWeight(forest)
+        omega = HypergraphLookupFunction(forest)
 
     if normalise:
         for e in range(forest.n_edges()):
@@ -362,7 +228,7 @@ cpdef weight_t[::1] compute_edge_expectation(Hypergraph forest,
                                         Semiring semiring,
                                         weight_t[::1] node_values,
                                         weight_t[::1] node_reversed_values,
-                                        ValueFunction omega=None,
+                                        WeightFunction omega=None,
                                         bint normalise=False):
     cdef:
         weight_t[::1] edge_expec = semiring.zeros(forest.n_edges())
@@ -370,7 +236,7 @@ cpdef weight_t[::1] compute_edge_expectation(Hypergraph forest,
         weight_t w
 
     if omega is None:
-        omega = EdgeWeight(forest)
+        omega = HypergraphLookupFunction(forest)
 
     if normalise:
         for e in range(forest.n_edges()):
@@ -396,7 +262,7 @@ cpdef weight_t[::1] compute_edge_expectation(Hypergraph forest,
     return edge_expec
 
 
-cdef class EdgeValues(ValueFunction):
+cdef class EdgeValues(WeightFunction):
     """
     Compute the value associated with edges given node values and rule values.
     """
@@ -404,7 +270,7 @@ cdef class EdgeValues(ValueFunction):
     def __init__(self, Hypergraph forest,
                  Semiring semiring,
                  weight_t[::1] node_values,
-                 ValueFunction omega=None,
+                 WeightFunction omega=None,
                  normalise=False):
         """
         :param forest: a hypergraph
@@ -420,7 +286,7 @@ cdef class EdgeValues(ValueFunction):
         self._normalise = normalise
 
         if omega is None:
-            self._omega = EdgeWeight(forest)
+            self._omega = HypergraphLookupFunction(forest)
         else:
             self._omega = omega
 
@@ -434,7 +300,7 @@ cdef class EdgeValues(ValueFunction):
         return self._edge_values[e]
 
 
-cdef class LazyEdgeValues(ValueFunction):
+cdef class LazyEdgeValues(WeightFunction):
     """
     In some cases, such as in slice sampling, we are unlikely to visit every edge.
     Thus lazily computing edge values might be appropriate.
@@ -443,7 +309,7 @@ cdef class LazyEdgeValues(ValueFunction):
     def __init__(self, Hypergraph forest,
                  Semiring semiring,
                  weight_t[::1] node_values,
-                 ValueFunction omega=None,
+                 WeightFunction omega=None,
                  normalise=False):
         """
         :param forest: a hypergraph
@@ -459,7 +325,7 @@ cdef class LazyEdgeValues(ValueFunction):
         self._edge_values = [None] * forest.n_edges()
 
         if omega is None:
-            self._omega = EdgeWeight(forest)
+            self._omega = HypergraphLookupFunction(forest)
         else:
             self._omega = omega
 

@@ -1,5 +1,5 @@
 from grasp.alg.slicevars cimport SliceVariables
-from grasp.alg.value cimport ValueFunction, EdgeWeight, LookupFunction
+from grasp.formal.wfunc cimport WeightFunction, HypergraphLookupFunction, TableLookupFunction
 
 from grasp.formal.hg cimport Hypergraph
 from grasp.formal.topsort cimport TopSortTable
@@ -23,8 +23,8 @@ cdef class SliceReturn:
     """
 
     def __init__(self, Hypergraph S,
-                 ValueFunction local,
-                 ValueFunction residual,
+                 WeightFunction local,
+                 WeightFunction residual,
                  list S2D_edge_mapping,
                  tuple d0_in_S,
                  weight_t mean_constrained,
@@ -42,7 +42,7 @@ cdef class SliceReturn:
         return tuple([self.S2D_edge_mapping[e] for e in d_in_S])
 
 cdef SliceReturn slice_forest(Hypergraph D,
-                              ValueFunction omega,
+                              WeightFunction omega,
                               TopSortTable tsort,
                               tuple d0,
                               SliceVariables slicevars,
@@ -149,8 +149,8 @@ cdef SliceReturn slice_forest(Hypergraph D,
     #logging.debug('Pruning: cells=%s/%s in=%s out=%s', pruned, total_cells, np.array(_in).mean(), np.array(_out).mean())
 
     slice_return = SliceReturn(S,
-                               EdgeWeight(S),
-                               LookupFunction(np.array(residuals, dtype=ptypes.weight)),
+                               HypergraphLookupFunction(S),
+                               TableLookupFunction(np.array(residuals, dtype=ptypes.weight)),
                                S2D_edge_map,
                                tuple([d0transform[e] for e in d0]),
                                np.mean(n_uniform),

@@ -10,12 +10,22 @@ cdef class Model:
         cdef Extractor extractor
         self._extractors = tuple(extractors)
         self._weights = FComponents([extractor.weights(wmap) for extractor in self._extractors])
+        self._wmap = dict(wmap)
 
     cpdef tuple extractors(self):
         return self._extractors
 
     cpdef weight_t score(self, FComponents freprs):
         return freprs.dot(self._weights)
+
+    cpdef tuple fnames(self, wkey=None):
+        cdef Extractor extractor
+        cdef list names = []
+        if wkey is None:
+            wkey = self._wmap.keys()
+        for extractor in self._extractors:
+            names.extend(extractor.fnames(wkey))
+        return tuple(names)
 
     cpdef FComponents weights(self):
         return self._weights
@@ -55,6 +65,9 @@ cdef class ModelContainer(Model):
     cpdef FComponents constant(self, weight_t value):
         cdef Extractor extractor
         return FComponents([self.lookup.constant(value), self.stateless.constant(value), self.stateful.constant(value)])
+
+    cpdef itercomponents(self):
+        return iter([self.lookup.extractors(), self.stateless.extractors(), self.stateful.extractors()])
 
 
 def make_models(wmap, extractors):

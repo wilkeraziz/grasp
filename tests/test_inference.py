@@ -3,7 +3,7 @@ import unittest
 
 from grasp.formal.topsort import AcyclicTopSortTable, RobustTopSortTable
 from grasp.alg.inference import viterbi_derivation, sample_derivations, AncestralSampler
-from grasp.alg.value import EdgeWeight
+from grasp.formal.wfunc import HypergraphLookupFunction
 from grasp.cfg import CFG, Terminal, Nonterminal
 from grasp.cfg.rule import NewCFGProduction as CFGProduction
 import grasp.semiring as semiring
@@ -53,7 +53,7 @@ class InferenceTestCase(unittest.TestCase):
                                    self.semiring.from_real(0.3)))
         self.forest = cfg_to_hg([self.cfg], [], PCFG('LogProb'))
         self.tsort = AcyclicTopSortTable(self.forest)
-        self.omega = EdgeWeight(self.forest)
+        self.omega = HypergraphLookupFunction(self.forest)
 
     def test_viterbi(self):
         d = viterbi_derivation(self.forest, self.tsort)

@@ -20,7 +20,7 @@ It samples from the inverted CDF by efficiently computing node and edge values i
 """
 
 from grasp.semiring import SumTimes, Counting
-from .value import derivation_value, compute_edge_values
+from .value import derivation_weight, compute_edge_values
 from .value import robust_value_recursion as compute_values
 from .sample import sample_k
 
@@ -84,7 +84,7 @@ class AncestralSampler(object):
                         n_samples=n)
 
     def prob(self, d):
-        return self._semiring.as_real(derivation_value(d, self._semiring, self.Z, self._omega))
+        return self._semiring.as_real(derivation_weight(d, self._semiring, self.Z, self._omega))
 
 
 class LocalSampler(object):

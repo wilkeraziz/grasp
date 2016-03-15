@@ -88,6 +88,8 @@ def cmd_model(group):
                        help='score n-grams within rules with a stateless LM (name, order, path).')
     group.add_argument('--lm', nargs=3,
                        help='rescore forest with a language model (name, order, path).')
+    group.add_argument('--default', type=float, default=None,
+                       help='if not None, reset weights to a default value')
 
 
 def cmd_parser(group):

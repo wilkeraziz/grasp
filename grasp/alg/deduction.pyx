@@ -281,7 +281,7 @@ cdef class DeductiveIntersection:
     """
 
     def __init__(self, Hypergraph hg,
-                 ValueFunction omega,
+                 WeightFunction omega,
                  Semiring semiring,
                  SliceVariables slicevars):
         """
@@ -438,14 +438,14 @@ cdef class DeductiveIntersection:
 cdef class Parser(DeductiveIntersection):
 
     def __init__(self, Hypergraph hg,
-                 ValueFunction omega,
+                 WeightFunction omega,
                  Semiring semiring,
                  SliceVariables slicevars,
                  DFA dfa):
         """
 
         :param hg: a Hypergraph
-        :param omega: a ValueFunction over edges in hg
+        :param omega: a WeightFunction over edges in hg
         :param dfa: a deterministic automaton
         :param semiring: a Semiring
         :param slicevars: slice variables
@@ -508,11 +508,11 @@ cdef class EarleyParser(Parser):
                  DFA dfa,
                  Semiring semiring,
                  SliceVariables slicevars=None,
-                 ValueFunction omega=None):
+                 WeightFunction omega=None):
         """
         """
         if omega is None:
-            omega = EdgeWeight(hg)
+            omega = HypergraphLookupFunction(hg)
         super(EarleyParser, self).__init__(hg, omega, semiring, slicevars, dfa)
         self._predictions = set()
         
@@ -565,9 +565,9 @@ cdef class NederhofParser(Parser):
                  DFA dfa,
                  Semiring semiring,
                  SliceVariables slicevars=None,
-                 ValueFunction omega=None):
+                 WeightFunction omega=None):
         if omega is None:
-            omega = EdgeWeight(hg)
+            omega = HypergraphLookupFunction(hg)
         super(NederhofParser, self).__init__(hg, omega, semiring, slicevars, dfa)
 
         # indexes edges by tail[0]
@@ -651,7 +651,7 @@ cdef class NederhofParser(Parser):
 cdef class Rescorer(DeductiveIntersection):
 
     def __init__(self, Hypergraph hg,
-                 ValueFunction omega,
+                 WeightFunction omega,
                  Semiring semiring,
                  SliceVariables slicevars,
                  TableLookupScorer lookup,
@@ -786,11 +786,11 @@ cdef class EarleyRescorer(Rescorer):
                  StatefulScorer stateful,
                  Semiring semiring,
                  SliceVariables slicevars=None,
-                 ValueFunction omega=None,
+                 WeightFunction omega=None,
                  bint map_edges=True,
                  bint keep_frepr=False):
         if omega is None:
-            omega = EdgeWeight(hg)
+            omega = HypergraphLookupFunction(hg)
         super(EarleyRescorer, self).__init__(hg,
                                              omega,
                                              semiring,
@@ -847,11 +847,11 @@ cdef class EarleyRescorer(Rescorer):
             self.complete_itself(item)
 
 
-cpdef weight_t[::1] reweight(Hypergraph forest, SliceVariables slicevars, Semiring semiring, ValueFunction omega=None):
+cpdef weight_t[::1] reweight(Hypergraph forest, SliceVariables slicevars, Semiring semiring, WeightFunction omega=None):
     cdef weight_t[::1] values = np.zeros(forest.n_edges(), dtype=ptypes.weight)
     cdef id_t e
     if omega is None:
-        omega = EdgeWeight(forest)
+        omega = HypergraphLookupFunction(forest)
     if semiring.LOG:
         for e in range(forest.n_edges()):
             values[e] = slicevars.logpdf(forest.label(forest.head(e)).underlying,  # the underlying object is e.g. a tuple (sym, start, end)

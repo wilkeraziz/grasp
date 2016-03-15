@@ -16,13 +16,16 @@ def cdec_basic():
                 Glue=1.0)
 
 
-def read_weights(path, temperature=1.0):
-    wmap = defaultdict(None)
+def read_weights(path, temperature=1.0, default=None):
+    wmap = {}
     with smart_ropen(path) as fi:
         for line in fi.readlines():
             fields = line.split()
             if len(fields) != 2:
                 continue
-            wmap[fields[0]] = float(fields[1]) / temperature
+            if default is not None:
+                wmap[fields[0]] = default
+            else:
+                wmap[fields[0]] = float(fields[1]) / temperature
     return wmap
 

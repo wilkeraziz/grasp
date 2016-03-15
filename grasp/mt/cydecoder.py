@@ -53,7 +53,7 @@ from grasp.alg.deduction import NederhofParser
 from grasp.alg.deduction import EarleyRescorer
 from grasp.alg.inference import viterbi_derivation, AncestralSampler
 from grasp.alg.chain import group_by_projection, group_by_identity, apply_batch_filters, apply_filters
-from grasp.alg.value import derivation_value, EdgeWeight
+from grasp.formal.wfunc import derivation_weight, HypergraphLookupFunction
 
 
 def save_forest(hg, outdir, sid, name):
@@ -82,7 +82,7 @@ def traced_load_and_decode(seg, args, outdir):
         # Load feature extractors
         extractors = load_feature_extractors(args)
         # Load the model
-        model = make_models(read_weights(args.weights, args.temperature), extractors)
+        model = make_models(read_weights(args.weights, args.temperature, default=args.default), extractors)
         logging.debug('Model\n%s', model)
         # Load additional grammars
         extra_grammars = []
@@ -227,7 +227,7 @@ def t_cy_decode(seg, extra_grammars, glue_grammars, model, args, outdir):
                 derivations = group_by_identity(samples)
                 save_mc_derivations('{0}/exact/derivations/{1}.gz'.format(outdir, seg.id),
                                     derivations, sampler.Z,
-                                    valuefunc=lambda d: derivation_value(ehg, d, semiring.inside),
+                                    valuefunc=lambda d: derivation_weight(ehg, d, semiring.inside),
                                     derivation2str=lambda d: bracketed_string(ehg, d))
                 projections = group_by_projection(samples, lambda d: yield_string(ehg, d))
                 save_mc_yields('{0}/exact/yields/{1}.gz'.format(outdir, seg.id), projections)
@@ -238,7 +238,7 @@ def t_cy_decode(seg, extra_grammars, glue_grammars, model, args, outdir):
             logging.info('Sliced rescoring...')
 
             rescorer = SlicedRescoring(ehg,
-                                       EdgeWeight(ehg),
+                                       HypergraphLookupFunction(ehg),
                                        tsort,
                                        TableLookupScorer(model.dummy),
                                        StatelessScorer(model.dummy),

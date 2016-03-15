@@ -5,32 +5,39 @@ from grasp.semiring._semiring cimport Semiring
 from grasp.cfg.symbol cimport Terminal
 from grasp.cfg.rule cimport Rule
 from grasp.alg.inference cimport AncestralSampler
+from grasp.scoring.frepr cimport FComponents
 from grasp.scoring.scorer cimport TableLookupScorer, StatelessScorer, StatefulScorer
 from grasp.formal.topsort cimport TopSortTable
-from grasp.alg.value cimport ValueFunction
+from grasp.formal.wfunc cimport WeightFunction
 
 from grasp.ptypes cimport weight_t
 
 
-cdef class StatelessValueFunction(ValueFunction):
+cdef class StatelessValueFunction(WeightFunction):
 
     cdef Hypergraph hg
     cdef StatelessScorer stateless
 
 
-cpdef Hypergraph weight_edges(Hypergraph hg, ValueFunction omega)
+cpdef Hypergraph weight_edges(Hypergraph hg, WeightFunction omega)
 
 
 cpdef Hypergraph stateless_rescoring(Hypergraph hg,
                                      StatelessScorer stateless,
                                      Semiring semiring)
 
+cdef class SampleReturn:
+
+    cdef readonly tuple edges
+    cdef readonly weight_t score
+    cdef public FComponents components
+
 
 cdef class SlicedRescoring:
 
     cdef:
         Hypergraph _forest
-        ValueFunction _lfunc
+        WeightFunction _lfunc
         TopSortTable _tsort
         TableLookupScorer _lookup
         StatelessScorer _stateless
@@ -44,18 +51,20 @@ cdef class SlicedRescoring:
 
     cdef weight_t _nfunc(self, Hypergraph forest, tuple derivation)
 
-    cdef tuple _initialise(self, Hypergraph forest, TopSortTable tsort, ValueFunction lfunc, Semiring semiring, str strategy, weight_t temperature)
+    cdef tuple _nfunc_and_component(self, Hypergraph forest, tuple derivation)
 
-    cdef _weighted(self, Hypergraph forest, TopSortTable tsort, ValueFunction lfunc, ValueFunction ufunc, int batch_size, tuple d0)
+    cdef tuple _initialise(self, Hypergraph forest, TopSortTable tsort, WeightFunction lfunc, Semiring semiring, str strategy, weight_t temperature)
 
-    cdef _importance(self, Hypergraph forest, TopSortTable tsort, ValueFunction lfunc, ValueFunction ufunc, int batch_size)
+    cdef _weighted(self, Hypergraph forest, TopSortTable tsort, WeightFunction lfunc, WeightFunction ufunc, int batch_size, tuple d0)
 
-    cdef _cimportance(self, Hypergraph forest, TopSortTable tsort, ValueFunction lfunc, ValueFunction ufunc, int batch_size, tuple d0)
+    cdef _importance(self, Hypergraph forest, TopSortTable tsort, WeightFunction lfunc, WeightFunction ufunc, int batch_size)
 
-    cdef _uniform(self, Hypergraph forest, TopSortTable tsort, ValueFunction lfunc, ValueFunction ufunc, int batch_size, tuple d0)
+    cdef _cimportance(self, Hypergraph forest, TopSortTable tsort, WeightFunction lfunc, WeightFunction ufunc, int batch_size, tuple d0)
 
-    cdef _exact(self, Hypergraph forest, TopSortTable tsort, ValueFunction lfunc, ValueFunction ufunc, int batch_size)
+    cdef _uniform(self, Hypergraph forest, TopSortTable tsort, WeightFunction lfunc, WeightFunction ufunc, int batch_size, tuple d0)
 
-    cdef _sample(self, Hypergraph forest, TopSortTable tsort, ValueFunction lfunc, ValueFunction ufunc, tuple prev_d, int batch_size, str algorithm)
+    cdef _exact(self, Hypergraph forest, TopSortTable tsort, WeightFunction lfunc, WeightFunction ufunc, int batch_size)
+
+    cdef _sample(self, Hypergraph forest, TopSortTable tsort, WeightFunction lfunc, WeightFunction ufunc, tuple prev_d, int batch_size, str algorithm)
 
     cpdef sample(self, args)

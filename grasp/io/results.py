@@ -85,7 +85,7 @@ def save_mc_yields(path, samples):
                   file=out)
 
 
-def save_mcmc_derivations(path, samples, valuefunc, derivation2str):  # =lambda d: DerivationYield.derivation(d.rules())
+def save_mcmc_derivations(path, groups, valuefunc, derivation2str, compfunc=None):  # =lambda d: DerivationYield.derivation(d.rules())
     """
 
     :param path: where to save
@@ -94,65 +94,75 @@ def save_mcmc_derivations(path, samples, valuefunc, derivation2str):  # =lambda 
     :param omega_d: a function over derivations
     """
     with smart_wopen(path) as out:
-        total = sum(sample.count for sample in samples)
+        total = sum(group.count for group in groups)
         print('# MCMC samples={0}'.format(total), file=out)
-        print('# estimate\tcount\tscore\tderivation', file=out)
-        for i, sample in enumerate(samples, 1):
-            print('{0}\t{1}\t{2}\t{3}'.format(sample.count/total,  # estimate
-                                              sample.count,
-                                              valuefunc(sample.derivation),  # TODO: fix it
-                                              derivation2str(sample.derivation)),
-                  file=out)
+        if compfunc is not None:
+            print('# estimate\tcount\tscore\tderivation\tfeatures', file=out)
+            for i, group in enumerate(groups, 1):
+                sample = group.key
+                print('{0}\t{1}\t{2}\t{3}\t{4}'.format(group.count / total,  # estimate
+                                                       group.count,
+                                                       valuefunc(sample),
+                                                       derivation2str(sample),
+                                                       compfunc(sample)),
+                      file=out)
+        else:
+            print('# estimate\tcount\tscore\tderivation', file=out)
+            for i, group in enumerate(groups, 1):
+                sample = group.key
+                print('{0}\t{1}\t{2}\t{3}'.format(group.count/total,  # estimate
+                                                  group.count,
+                                                  valuefunc(sample),
+                                                  derivation2str(sample)),
+                      file=out)
 
 
-def save_mcmc_yields(path, samples):
+def save_mcmc_yields(path, groups):
     """
 
     :param path: where to save
-    :param samples: sorted list of sampled (obtained by group_by_projection)
+    :param groups: sorted list of sampled (obtained by group_by_projection)
     """
     with smart_wopen(path) as out:
-        total = sum(sample.count for sample in samples)
+        total = sum(group.count for group in groups)
         print('# MCMC samples={0}\n# estimate\tcount\tderivations\tyield'.format(total), file=out)
-        for i, sample in enumerate(samples, 1):
-            print('{0}\t{1}\t{2}\t{3}'.format(float(sample.count)/total,
-                                              sample.count,
-                                              len(sample.derivations),
-                                              sample.projection),
+        for i, group in enumerate(groups, 1):
+            sample = group
+            print('{0}\t{1}\t{2}\t{3}'.format(float(group.count)/total,
+                                              group.count,
+                                              len(set(group.values)),
+                                              group.key),
                   file=out)
 
 
-def save_markov_chain(path, markov_chain, derivation2str, valuefunc=None, flat=True):
+def save_markov_chain(path, markov_chain, derivation2str, valuefunc=None, compfunc=None, flat=True):
     """
 
     :param path: where to save
     :param markov_chain: the original Markov chain
-    :param valuefunc: an optional function over derivations
+    :param valuefunc: an optional function over derivations that returns a score
+    :param compfunc: an optional function over derivations that return feature components
     :param flat: whether the Markov chain is flat (each state represents a single derivation) or not,
         in which case each state is a sequence of derivations.
     """
     if flat:
-        if valuefunc is None:
-            with smart_wopen(path) as out:
-                for d in markov_chain:
-                    print(derivation2str(d), file=out)
-                    # TODO: fix cy_parser to act more like cy_decoder
-                    #print(derivation2str(d.rules()), file=out)
-        else:
-            with smart_wopen(path) as out:
-                for d in markov_chain:
-                    print('{0}\t{1}'.format(valuefunc(d), derivation2str(d)), file=out)
-                    #print('{0}\t{1}'.format(omega_d(d.rules()), derivation2str(d.rules())), file=out)
+        with smart_wopen(path) as out:
+            for d in markov_chain:
+                fields = []
+                if valuefunc is not None:
+                    fields.append(valuefunc(d))
+                fields.append(derivation2str(d))
+                if compfunc is not None:
+                    fields.append(compfunc(d))
+                print('\t'.join(str(x) for x in fields), file=out)
     else:
-        if valuefunc is None:
-            with smart_wopen(path) as out:
-                for i, batch in enumerate(markov_chain):
-                    for d in batch:
-                        print('{0}\t{1}'.format(i, derivation2str(d)), file=out)
-                        #print('{0}\t{1}'.format(i, derivation2str(d.rules())), file=out)
-        else:
-            with smart_wopen(path) as out:
-                for i, batch in enumerate(markov_chain):
-                    for d in batch:
-                        print('{0}\t{1}\t{2}'.format(i, valuefunc(d), derivation2str(d)), file=out)
-                        #print('{0}\t{1}\t{2}'.format(i, omega_d(d.rules()), derivation2str(d.rules())), file=out)
+        with smart_wopen(path) as out:
+            for i, batch in enumerate(markov_chain):
+                for d in batch:
+                    fields = [i]
+                    if valuefunc is not None:
+                        fields.append(valuefunc(d))
+                    fields.append(derivation2str(d))
+                    if compfunc is not None:
+                        fields.append(compfunc(d))
+                    print('\t'.join(str(x) for x in fields), file=out)

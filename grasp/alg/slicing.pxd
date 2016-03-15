@@ -1,5 +1,5 @@
 from grasp.alg.slicevars cimport SliceVariables
-from grasp.alg.value cimport ValueFunction
+from grasp.formal.wfunc cimport WeightFunction
 
 from grasp.formal.hg cimport Hypergraph
 from grasp.ptypes cimport weight_t, id_t
@@ -13,8 +13,8 @@ cdef class SliceReturn:
 
     cdef public:
         Hypergraph S
-        ValueFunction local
-        ValueFunction residual
+        WeightFunction local
+        WeightFunction residual
         list S2D_edge_mapping
         tuple d0_in_S
         weight_t mean_constrained, mean_unconstrained
@@ -23,7 +23,7 @@ cdef class SliceReturn:
 
 
 cdef SliceReturn slice_forest(Hypergraph D,
-                              ValueFunction omega,
+                              WeightFunction omega,
                               TopSortTable tsort,
                               tuple d0,
                               SliceVariables slicevars,

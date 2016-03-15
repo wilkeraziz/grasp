@@ -18,7 +18,7 @@ from collections import Counter, defaultdict
 
 from grasp.alg.deduction import EarleyParser, NederhofParser, reweight
 from grasp.alg.slicevars import get_distribution, get_prior, SpanSliceVariables, VectorOfPriors
-from grasp.alg.value import LookupFunction, derivation_value, EdgeWeight
+from grasp.formal.wfunc import TableLookupFunction, derivation_weight, HypergraphLookupFunction
 from grasp.alg.inference import viterbi_derivation, AncestralSampler, DerivationCounter
 from grasp.alg.chain import group_by_identity, apply_batch_filters, apply_filters
 
@@ -56,7 +56,7 @@ def group_raw(forest, raw_samples):  # TODO: compute values as well
      'd' (derivation as a sequence of rules) and 'n' (count).
     """
     raw_dist = Counter(raw_samples)
-    edge_value = EdgeWeight(forest)
+    edge_value = HypergraphLookupFunction(forest)
 
     output = [SimpleNamespace(derivation=make_derivation(forest, d),
                               count=n,
@@ -195,7 +195,7 @@ def uninformed_conditions(hg, dfa, slicevars, root, goal_rule, batch, algorithm)
         values = reweight(forest, slicevars, semiring.inside)
         sampler = AncestralSampler(forest,
                                    tsort,
-                                   LookupFunction(values))
+                                   TableLookupFunction(values))
         raw_derivations = sampler.sample(batch)
         conditions = make_batch_conditions(forest, raw_derivations)
         slicevars.reset(conditions)
@@ -264,7 +264,7 @@ def sliced_parsing(seg: 'the input segment (e.g. a Sentence)',
         # sample from the slice
         tsort = RobustTopSortTable(forest)
         residual = reweight(forest, u, semiring.inside)
-        sampler = AncestralSampler(forest, tsort, LookupFunction(residual))
+        sampler = AncestralSampler(forest, tsort, TableLookupFunction(residual))
         raw_derivations = sampler.sample(options.batch)
         # update the slice variables and the state of the Markov chain
         u.reset(make_batch_conditions(forest, raw_derivations))

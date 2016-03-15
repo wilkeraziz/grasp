@@ -12,6 +12,8 @@ cdef class Extractor:
 
     cpdef FRepr weights(self, dict wmap)
 
+    cpdef tuple fnames(self, wkeys)
+
     cpdef weight_t dot(self, FRepr frepr, FRepr wrepr)
 
     cpdef FRepr constant(self, weight_t value)

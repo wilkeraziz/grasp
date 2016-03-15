@@ -481,6 +481,7 @@ static const char *__pyx_f[] = {
   "__init__.pxd",
   "stringsource",
   "type.pxd",
+  "grasp/semiring/operator.pxd",
   "grasp/semiring/_semiring.pxd",
 };
 struct __pyx_memoryview_obj;
@@ -819,16 +820,23 @@ typedef __pyx_t_5numpy_double_t __pyx_t_5grasp_6ptypes_weight_t;
 
 
 /*--- Type declarations ---*/
-struct __pyx_obj_5grasp_8semiring_9_semiring_Operator;
-struct __pyx_obj_5grasp_8semiring_9_semiring_Plus;
-struct __pyx_obj_5grasp_8semiring_9_semiring_Times;
+struct __pyx_obj_5grasp_8semiring_8operator_UnaryOperator;
+struct __pyx_obj_5grasp_8semiring_8operator_BinaryOperator;
+struct __pyx_obj_5grasp_8semiring_8operator_FixedLHS;
+struct __pyx_obj_5grasp_8semiring_8operator_FixedRHS;
+struct __pyx_obj_5grasp_8semiring_8operator_Plus;
+struct __pyx_obj_5grasp_8semiring_8operator_Times;
+struct __pyx_obj_5grasp_8semiring_8operator_ProbPower;
+struct __pyx_obj_5grasp_8semiring_8operator_ProbInverse;
+struct __pyx_obj_5grasp_8semiring_8operator_LogProbPower;
+struct __pyx_obj_5grasp_8semiring_8operator_LogProbInverse;
+struct __pyx_obj_5grasp_8semiring_8operator_ProbTimes;
+struct __pyx_obj_5grasp_8semiring_8operator_LogProbTimes;
+struct __pyx_obj_5grasp_8semiring_8operator_ViterbiTimes;
+struct __pyx_obj_5grasp_8semiring_8operator_ProbPlus;
+struct __pyx_obj_5grasp_8semiring_8operator_LogProbPlus;
+struct __pyx_obj_5grasp_8semiring_8operator_ViterbiPlus;
 struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring;
-struct __pyx_obj_5grasp_8semiring_9_semiring_ProbTimes;
-struct __pyx_obj_5grasp_8semiring_9_semiring_LogProbTimes;
-struct __pyx_obj_5grasp_8semiring_9_semiring_ViterbiTimes;
-struct __pyx_obj_5grasp_8semiring_9_semiring_ProbPlus;
-struct __pyx_obj_5grasp_8semiring_9_semiring_LogProbPlus;
-struct __pyx_obj_5grasp_8semiring_9_semiring_ViterbiPlus;
 struct __pyx_obj_5grasp_8semiring_9_semiring_Prob;
 struct __pyx_obj_5grasp_8semiring_9_semiring_LogProb;
 struct __pyx_obj_5grasp_8semiring_9_semiring_Viterbi;
@@ -994,46 +1002,209 @@ struct __pyx_opt_args_5grasp_3alg_9slicevars_18SpanSliceVariables_reset {
   PyObject *parameter;
 };
 
-/* "grasp/semiring/_semiring.pxd":4
+/* "grasp/semiring/operator.pxd":4
  * 
  * 
- * cdef class Operator:             # <<<<<<<<<<<<<<
+ * cdef class UnaryOperator:             # <<<<<<<<<<<<<<
+ * 
+ *     cdef weight_t evaluate(self, weight_t x)
+ */
+struct __pyx_obj_5grasp_8semiring_8operator_UnaryOperator {
+  PyObject_HEAD
+  struct __pyx_vtabstruct_5grasp_8semiring_8operator_UnaryOperator *__pyx_vtab;
+};
+
+
+/* "grasp/semiring/operator.pxd":9
+ * 
+ * 
+ * cdef class BinaryOperator:             # <<<<<<<<<<<<<<
  * 
  *     cdef readonly weight_t identity
  */
-struct __pyx_obj_5grasp_8semiring_9_semiring_Operator {
+struct __pyx_obj_5grasp_8semiring_8operator_BinaryOperator {
   PyObject_HEAD
-  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Operator *__pyx_vtab;
+  struct __pyx_vtabstruct_5grasp_8semiring_8operator_BinaryOperator *__pyx_vtab;
   __pyx_t_5grasp_6ptypes_weight_t identity;
 };
 
 
-/* "grasp/semiring/_semiring.pxd":13
+/* "grasp/semiring/operator.pxd":18
  * 
  * 
- * cdef class Plus(Operator):             # <<<<<<<<<<<<<<
+ * cdef class FixedLHS(UnaryOperator):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef weight_t lhs
+ */
+struct __pyx_obj_5grasp_8semiring_8operator_FixedLHS {
+  struct __pyx_obj_5grasp_8semiring_8operator_UnaryOperator __pyx_base;
+  __pyx_t_5grasp_6ptypes_weight_t lhs;
+  struct __pyx_obj_5grasp_8semiring_8operator_BinaryOperator *op;
+};
+
+
+/* "grasp/semiring/operator.pxd":24
+ * 
+ * 
+ * cdef class FixedRHS(UnaryOperator):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef weight_t rhs
+ */
+struct __pyx_obj_5grasp_8semiring_8operator_FixedRHS {
+  struct __pyx_obj_5grasp_8semiring_8operator_UnaryOperator __pyx_base;
+  __pyx_t_5grasp_6ptypes_weight_t rhs;
+  struct __pyx_obj_5grasp_8semiring_8operator_BinaryOperator *op;
+};
+
+
+/* "grasp/semiring/operator.pxd":30
+ * 
+ * 
+ * cdef class Plus(BinaryOperator):             # <<<<<<<<<<<<<<
  * 
  *     cdef readonly bint idempotent
  */
-struct __pyx_obj_5grasp_8semiring_9_semiring_Plus {
-  struct __pyx_obj_5grasp_8semiring_9_semiring_Operator __pyx_base;
+struct __pyx_obj_5grasp_8semiring_8operator_Plus {
+  struct __pyx_obj_5grasp_8semiring_8operator_BinaryOperator __pyx_base;
   int idempotent;
 };
 
 
-/* "grasp/semiring/_semiring.pxd":20
+/* "grasp/semiring/operator.pxd":37
  * 
  * 
- * cdef class Times(Operator):             # <<<<<<<<<<<<<<
+ * cdef class Times(BinaryOperator):             # <<<<<<<<<<<<<<
  * 
- *     cpdef weight_t inverse(self, weight_t a)
+ *     cdef readonly UnaryOperator inverse
  */
-struct __pyx_obj_5grasp_8semiring_9_semiring_Times {
-  struct __pyx_obj_5grasp_8semiring_9_semiring_Operator __pyx_base;
+struct __pyx_obj_5grasp_8semiring_8operator_Times {
+  struct __pyx_obj_5grasp_8semiring_8operator_BinaryOperator __pyx_base;
+  struct __pyx_obj_5grasp_8semiring_8operator_UnaryOperator *inverse;
+  struct __pyx_obj_5grasp_8semiring_8operator_BinaryOperator *power;
 };
 
 
-/* "grasp/semiring/_semiring.pxd":25
+/* "grasp/semiring/operator.pxd":43
+ * 
+ * 
+ * cdef class ProbPower(BinaryOperator): pass             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+struct __pyx_obj_5grasp_8semiring_8operator_ProbPower {
+  struct __pyx_obj_5grasp_8semiring_8operator_BinaryOperator __pyx_base;
+};
+
+
+/* "grasp/semiring/operator.pxd":46
+ * 
+ * 
+ * cdef class ProbInverse(UnaryOperator): pass             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+struct __pyx_obj_5grasp_8semiring_8operator_ProbInverse {
+  struct __pyx_obj_5grasp_8semiring_8operator_UnaryOperator __pyx_base;
+};
+
+
+/* "grasp/semiring/operator.pxd":49
+ * 
+ * 
+ * cdef class LogProbPower(BinaryOperator): pass             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+struct __pyx_obj_5grasp_8semiring_8operator_LogProbPower {
+  struct __pyx_obj_5grasp_8semiring_8operator_BinaryOperator __pyx_base;
+};
+
+
+/* "grasp/semiring/operator.pxd":52
+ * 
+ * 
+ * cdef class LogProbInverse(UnaryOperator): pass             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+struct __pyx_obj_5grasp_8semiring_8operator_LogProbInverse {
+  struct __pyx_obj_5grasp_8semiring_8operator_UnaryOperator __pyx_base;
+};
+
+
+/* "grasp/semiring/operator.pxd":55
+ * 
+ * 
+ * cdef class ProbTimes(Times): pass             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+struct __pyx_obj_5grasp_8semiring_8operator_ProbTimes {
+  struct __pyx_obj_5grasp_8semiring_8operator_Times __pyx_base;
+};
+
+
+/* "grasp/semiring/operator.pxd":58
+ * 
+ * 
+ * cdef class LogProbTimes(Times): pass             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+struct __pyx_obj_5grasp_8semiring_8operator_LogProbTimes {
+  struct __pyx_obj_5grasp_8semiring_8operator_Times __pyx_base;
+};
+
+
+/* "grasp/semiring/operator.pxd":61
+ * 
+ * 
+ * cdef class ViterbiTimes(Times): pass             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+struct __pyx_obj_5grasp_8semiring_8operator_ViterbiTimes {
+  struct __pyx_obj_5grasp_8semiring_8operator_Times __pyx_base;
+};
+
+
+/* "grasp/semiring/operator.pxd":64
+ * 
+ * 
+ * cdef class ProbPlus(Plus): pass             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+struct __pyx_obj_5grasp_8semiring_8operator_ProbPlus {
+  struct __pyx_obj_5grasp_8semiring_8operator_Plus __pyx_base;
+};
+
+
+/* "grasp/semiring/operator.pxd":67
+ * 
+ * 
+ * cdef class LogProbPlus(Plus): pass             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+struct __pyx_obj_5grasp_8semiring_8operator_LogProbPlus {
+  struct __pyx_obj_5grasp_8semiring_8operator_Plus __pyx_base;
+};
+
+
+/* "grasp/semiring/operator.pxd":70
+ * 
+ * 
+ * cdef class ViterbiPlus(Plus): pass             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+struct __pyx_obj_5grasp_8semiring_8operator_ViterbiPlus {
+  struct __pyx_obj_5grasp_8semiring_8operator_Plus __pyx_base;
+};
+
+
+/* "grasp/semiring/_semiring.pxd":5
  * 
  * 
  * cdef class Semiring:             # <<<<<<<<<<<<<<
@@ -1047,109 +1218,37 @@ struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring {
   int idempotent;
   __pyx_t_5grasp_6ptypes_weight_t one;
   __pyx_t_5grasp_6ptypes_weight_t zero;
-  struct __pyx_obj_5grasp_8semiring_9_semiring_Plus *plus;
-  struct __pyx_obj_5grasp_8semiring_9_semiring_Times *times;
+  struct __pyx_obj_5grasp_8semiring_8operator_Plus *plus;
+  struct __pyx_obj_5grasp_8semiring_8operator_Times *times;
 };
 
 
-/* "grasp/semiring/_semiring.pxd":51
+/* "grasp/semiring/_semiring.pxd":33
  * 
- * 
- * cdef class ProbTimes(Times): pass             # <<<<<<<<<<<<<<
- * 
- * cdef class LogProbTimes(Times): pass
- */
-struct __pyx_obj_5grasp_8semiring_9_semiring_ProbTimes {
-  struct __pyx_obj_5grasp_8semiring_9_semiring_Times __pyx_base;
-};
-
-
-/* "grasp/semiring/_semiring.pxd":53
- * cdef class ProbTimes(Times): pass
- * 
- * cdef class LogProbTimes(Times): pass             # <<<<<<<<<<<<<<
- * 
- * cdef class ViterbiTimes(Times): pass
- */
-struct __pyx_obj_5grasp_8semiring_9_semiring_LogProbTimes {
-  struct __pyx_obj_5grasp_8semiring_9_semiring_Times __pyx_base;
-};
-
-
-/* "grasp/semiring/_semiring.pxd":55
- * cdef class LogProbTimes(Times): pass
- * 
- * cdef class ViterbiTimes(Times): pass             # <<<<<<<<<<<<<<
- * 
- * cdef class ProbPlus(Plus): pass
- */
-struct __pyx_obj_5grasp_8semiring_9_semiring_ViterbiTimes {
-  struct __pyx_obj_5grasp_8semiring_9_semiring_Times __pyx_base;
-};
-
-
-/* "grasp/semiring/_semiring.pxd":57
- * cdef class ViterbiTimes(Times): pass
- * 
- * cdef class ProbPlus(Plus): pass             # <<<<<<<<<<<<<<
- * 
- * cdef class LogProbPlus(Plus): pass
- */
-struct __pyx_obj_5grasp_8semiring_9_semiring_ProbPlus {
-  struct __pyx_obj_5grasp_8semiring_9_semiring_Plus __pyx_base;
-};
-
-
-/* "grasp/semiring/_semiring.pxd":59
- * cdef class ProbPlus(Plus): pass
- * 
- * cdef class LogProbPlus(Plus): pass             # <<<<<<<<<<<<<<
- * 
- * cdef class ViterbiPlus(Plus): pass
- */
-struct __pyx_obj_5grasp_8semiring_9_semiring_LogProbPlus {
-  struct __pyx_obj_5grasp_8semiring_9_semiring_Plus __pyx_base;
-};
-
-
-/* "grasp/semiring/_semiring.pxd":61
- * cdef class LogProbPlus(Plus): pass
- * 
- * cdef class ViterbiPlus(Plus): pass             # <<<<<<<<<<<<<<
- * 
- * cdef class Prob(Semiring): pass
- */
-struct __pyx_obj_5grasp_8semiring_9_semiring_ViterbiPlus {
-  struct __pyx_obj_5grasp_8semiring_9_semiring_Plus __pyx_base;
-};
-
-
-/* "grasp/semiring/_semiring.pxd":63
- * cdef class ViterbiPlus(Plus): pass
  * 
  * cdef class Prob(Semiring): pass             # <<<<<<<<<<<<<<
  * 
- * cdef class LogProb(Semiring): pass
+ * 
  */
 struct __pyx_obj_5grasp_8semiring_9_semiring_Prob {
   struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring __pyx_base;
 };
 
 
-/* "grasp/semiring/_semiring.pxd":65
- * cdef class Prob(Semiring): pass
+/* "grasp/semiring/_semiring.pxd":36
+ * 
  * 
  * cdef class LogProb(Semiring): pass             # <<<<<<<<<<<<<<
  * 
- * cdef class Viterbi(Semiring): pass
+ * 
  */
 struct __pyx_obj_5grasp_8semiring_9_semiring_LogProb {
   struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring __pyx_base;
 };
 
 
-/* "grasp/semiring/_semiring.pxd":67
- * cdef class LogProb(Semiring): pass
+/* "grasp/semiring/_semiring.pxd":39
+ * 
  * 
  * cdef class Viterbi(Semiring): pass             # <<<<<<<<<<<<<<
  * 
@@ -1435,52 +1534,233 @@ struct __pyx_memoryviewslice_obj {
 
 
 
-/* "grasp/semiring/_semiring.pxd":4
+/* "grasp/semiring/operator.pxd":4
  * 
  * 
- * cdef class Operator:             # <<<<<<<<<<<<<<
+ * cdef class UnaryOperator:             # <<<<<<<<<<<<<<
+ * 
+ *     cdef weight_t evaluate(self, weight_t x)
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_8operator_UnaryOperator {
+  __pyx_t_5grasp_6ptypes_weight_t (*evaluate)(struct __pyx_obj_5grasp_8semiring_8operator_UnaryOperator *, __pyx_t_5grasp_6ptypes_weight_t);
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_8operator_UnaryOperator *__pyx_vtabptr_5grasp_8semiring_8operator_UnaryOperator;
+
+
+/* "grasp/semiring/operator.pxd":9
+ * 
+ * 
+ * cdef class BinaryOperator:             # <<<<<<<<<<<<<<
  * 
  *     cdef readonly weight_t identity
  */
 
-struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Operator {
-  __pyx_t_5grasp_6ptypes_weight_t (*evaluate)(struct __pyx_obj_5grasp_8semiring_9_semiring_Operator *, __pyx_t_5grasp_6ptypes_weight_t, __pyx_t_5grasp_6ptypes_weight_t);
-  __pyx_t_5grasp_6ptypes_weight_t (*reduce)(struct __pyx_obj_5grasp_8semiring_9_semiring_Operator *, PyObject *, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_5grasp_8semiring_8operator_BinaryOperator {
+  __pyx_t_5grasp_6ptypes_weight_t (*evaluate)(struct __pyx_obj_5grasp_8semiring_8operator_BinaryOperator *, __pyx_t_5grasp_6ptypes_weight_t, __pyx_t_5grasp_6ptypes_weight_t);
+  __pyx_t_5grasp_6ptypes_weight_t (*reduce)(struct __pyx_obj_5grasp_8semiring_8operator_BinaryOperator *, PyObject *, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Operator *__pyx_vtabptr_5grasp_8semiring_9_semiring_Operator;
+static struct __pyx_vtabstruct_5grasp_8semiring_8operator_BinaryOperator *__pyx_vtabptr_5grasp_8semiring_8operator_BinaryOperator;
 
 
-/* "grasp/semiring/_semiring.pxd":13
+/* "grasp/semiring/operator.pxd":18
  * 
  * 
- * cdef class Plus(Operator):             # <<<<<<<<<<<<<<
+ * cdef class FixedLHS(UnaryOperator):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef weight_t lhs
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_8operator_FixedLHS {
+  struct __pyx_vtabstruct_5grasp_8semiring_8operator_UnaryOperator __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_8operator_FixedLHS *__pyx_vtabptr_5grasp_8semiring_8operator_FixedLHS;
+
+
+/* "grasp/semiring/operator.pxd":24
+ * 
+ * 
+ * cdef class FixedRHS(UnaryOperator):             # <<<<<<<<<<<<<<
+ * 
+ *     cdef weight_t rhs
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_8operator_FixedRHS {
+  struct __pyx_vtabstruct_5grasp_8semiring_8operator_UnaryOperator __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_8operator_FixedRHS *__pyx_vtabptr_5grasp_8semiring_8operator_FixedRHS;
+
+
+/* "grasp/semiring/operator.pxd":30
+ * 
+ * 
+ * cdef class Plus(BinaryOperator):             # <<<<<<<<<<<<<<
  * 
  *     cdef readonly bint idempotent
  */
 
-struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Plus {
-  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Operator __pyx_base;
-  int (*choice)(struct __pyx_obj_5grasp_8semiring_9_semiring_Plus *, __Pyx_memviewslice, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_5grasp_8semiring_8operator_Plus {
+  struct __pyx_vtabstruct_5grasp_8semiring_8operator_BinaryOperator __pyx_base;
+  int (*choice)(struct __pyx_obj_5grasp_8semiring_8operator_Plus *, __Pyx_memviewslice, int __pyx_skip_dispatch);
 };
-static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Plus *__pyx_vtabptr_5grasp_8semiring_9_semiring_Plus;
+static struct __pyx_vtabstruct_5grasp_8semiring_8operator_Plus *__pyx_vtabptr_5grasp_8semiring_8operator_Plus;
 
 
-/* "grasp/semiring/_semiring.pxd":20
+/* "grasp/semiring/operator.pxd":37
  * 
  * 
- * cdef class Times(Operator):             # <<<<<<<<<<<<<<
+ * cdef class Times(BinaryOperator):             # <<<<<<<<<<<<<<
  * 
- *     cpdef weight_t inverse(self, weight_t a)
+ *     cdef readonly UnaryOperator inverse
  */
 
-struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Times {
-  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Operator __pyx_base;
-  __pyx_t_5grasp_6ptypes_weight_t (*inverse)(struct __pyx_obj_5grasp_8semiring_9_semiring_Times *, __pyx_t_5grasp_6ptypes_weight_t, int __pyx_skip_dispatch);
+struct __pyx_vtabstruct_5grasp_8semiring_8operator_Times {
+  struct __pyx_vtabstruct_5grasp_8semiring_8operator_BinaryOperator __pyx_base;
 };
-static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Times *__pyx_vtabptr_5grasp_8semiring_9_semiring_Times;
+static struct __pyx_vtabstruct_5grasp_8semiring_8operator_Times *__pyx_vtabptr_5grasp_8semiring_8operator_Times;
 
 
-/* "grasp/semiring/_semiring.pxd":25
+/* "grasp/semiring/operator.pxd":43
+ * 
+ * 
+ * cdef class ProbPower(BinaryOperator): pass             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_8operator_ProbPower {
+  struct __pyx_vtabstruct_5grasp_8semiring_8operator_BinaryOperator __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_8operator_ProbPower *__pyx_vtabptr_5grasp_8semiring_8operator_ProbPower;
+
+
+/* "grasp/semiring/operator.pxd":46
+ * 
+ * 
+ * cdef class ProbInverse(UnaryOperator): pass             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_8operator_ProbInverse {
+  struct __pyx_vtabstruct_5grasp_8semiring_8operator_UnaryOperator __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_8operator_ProbInverse *__pyx_vtabptr_5grasp_8semiring_8operator_ProbInverse;
+
+
+/* "grasp/semiring/operator.pxd":49
+ * 
+ * 
+ * cdef class LogProbPower(BinaryOperator): pass             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_8operator_LogProbPower {
+  struct __pyx_vtabstruct_5grasp_8semiring_8operator_BinaryOperator __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_8operator_LogProbPower *__pyx_vtabptr_5grasp_8semiring_8operator_LogProbPower;
+
+
+/* "grasp/semiring/operator.pxd":52
+ * 
+ * 
+ * cdef class LogProbInverse(UnaryOperator): pass             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_8operator_LogProbInverse {
+  struct __pyx_vtabstruct_5grasp_8semiring_8operator_UnaryOperator __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_8operator_LogProbInverse *__pyx_vtabptr_5grasp_8semiring_8operator_LogProbInverse;
+
+
+/* "grasp/semiring/operator.pxd":55
+ * 
+ * 
+ * cdef class ProbTimes(Times): pass             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_8operator_ProbTimes {
+  struct __pyx_vtabstruct_5grasp_8semiring_8operator_Times __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_8operator_ProbTimes *__pyx_vtabptr_5grasp_8semiring_8operator_ProbTimes;
+
+
+/* "grasp/semiring/operator.pxd":58
+ * 
+ * 
+ * cdef class LogProbTimes(Times): pass             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_8operator_LogProbTimes {
+  struct __pyx_vtabstruct_5grasp_8semiring_8operator_Times __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_8operator_LogProbTimes *__pyx_vtabptr_5grasp_8semiring_8operator_LogProbTimes;
+
+
+/* "grasp/semiring/operator.pxd":61
+ * 
+ * 
+ * cdef class ViterbiTimes(Times): pass             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_8operator_ViterbiTimes {
+  struct __pyx_vtabstruct_5grasp_8semiring_8operator_Times __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_8operator_ViterbiTimes *__pyx_vtabptr_5grasp_8semiring_8operator_ViterbiTimes;
+
+
+/* "grasp/semiring/operator.pxd":64
+ * 
+ * 
+ * cdef class ProbPlus(Plus): pass             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_8operator_ProbPlus {
+  struct __pyx_vtabstruct_5grasp_8semiring_8operator_Plus __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_8operator_ProbPlus *__pyx_vtabptr_5grasp_8semiring_8operator_ProbPlus;
+
+
+/* "grasp/semiring/operator.pxd":67
+ * 
+ * 
+ * cdef class LogProbPlus(Plus): pass             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_8operator_LogProbPlus {
+  struct __pyx_vtabstruct_5grasp_8semiring_8operator_Plus __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_8operator_LogProbPlus *__pyx_vtabptr_5grasp_8semiring_8operator_LogProbPlus;
+
+
+/* "grasp/semiring/operator.pxd":70
+ * 
+ * 
+ * cdef class ViterbiPlus(Plus): pass             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+
+struct __pyx_vtabstruct_5grasp_8semiring_8operator_ViterbiPlus {
+  struct __pyx_vtabstruct_5grasp_8semiring_8operator_Plus __pyx_base;
+};
+static struct __pyx_vtabstruct_5grasp_8semiring_8operator_ViterbiPlus *__pyx_vtabptr_5grasp_8semiring_8operator_ViterbiPlus;
+
+
+/* "grasp/semiring/_semiring.pxd":5
  * 
  * 
  * cdef class Semiring:             # <<<<<<<<<<<<<<
@@ -1494,6 +1774,7 @@ struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Semiring {
   int (*gt)(struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring *, __pyx_t_5grasp_6ptypes_weight_t, __pyx_t_5grasp_6ptypes_weight_t, int __pyx_skip_dispatch);
   __pyx_t_5grasp_6ptypes_weight_t (*heapify)(struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring *, __pyx_t_5grasp_6ptypes_weight_t, int __pyx_skip_dispatch);
   __pyx_t_5grasp_6ptypes_weight_t (*divide)(struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring *, __pyx_t_5grasp_6ptypes_weight_t, __pyx_t_5grasp_6ptypes_weight_t, int __pyx_skip_dispatch);
+  __pyx_t_5grasp_6ptypes_weight_t (*power)(struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring *, __pyx_t_5grasp_6ptypes_weight_t, __pyx_t_5grasp_6ptypes_weight_t, int __pyx_skip_dispatch);
   __Pyx_memviewslice (*zeros)(struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring *, size_t, int __pyx_skip_dispatch);
   __Pyx_memviewslice (*ones)(struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring *, size_t, int __pyx_skip_dispatch);
   __Pyx_memviewslice (*normalise)(struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring *, __Pyx_memviewslice, int __pyx_skip_dispatch);
@@ -1501,96 +1782,12 @@ struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Semiring {
 static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Semiring *__pyx_vtabptr_5grasp_8semiring_9_semiring_Semiring;
 
 
-/* "grasp/semiring/_semiring.pxd":51
+/* "grasp/semiring/_semiring.pxd":33
  * 
- * 
- * cdef class ProbTimes(Times): pass             # <<<<<<<<<<<<<<
- * 
- * cdef class LogProbTimes(Times): pass
- */
-
-struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ProbTimes {
-  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Times __pyx_base;
-};
-static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ProbTimes *__pyx_vtabptr_5grasp_8semiring_9_semiring_ProbTimes;
-
-
-/* "grasp/semiring/_semiring.pxd":53
- * cdef class ProbTimes(Times): pass
- * 
- * cdef class LogProbTimes(Times): pass             # <<<<<<<<<<<<<<
- * 
- * cdef class ViterbiTimes(Times): pass
- */
-
-struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_LogProbTimes {
-  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Times __pyx_base;
-};
-static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_LogProbTimes *__pyx_vtabptr_5grasp_8semiring_9_semiring_LogProbTimes;
-
-
-/* "grasp/semiring/_semiring.pxd":55
- * cdef class LogProbTimes(Times): pass
- * 
- * cdef class ViterbiTimes(Times): pass             # <<<<<<<<<<<<<<
- * 
- * cdef class ProbPlus(Plus): pass
- */
-
-struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ViterbiTimes {
-  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Times __pyx_base;
-};
-static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ViterbiTimes *__pyx_vtabptr_5grasp_8semiring_9_semiring_ViterbiTimes;
-
-
-/* "grasp/semiring/_semiring.pxd":57
- * cdef class ViterbiTimes(Times): pass
- * 
- * cdef class ProbPlus(Plus): pass             # <<<<<<<<<<<<<<
- * 
- * cdef class LogProbPlus(Plus): pass
- */
-
-struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ProbPlus {
-  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Plus __pyx_base;
-};
-static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ProbPlus *__pyx_vtabptr_5grasp_8semiring_9_semiring_ProbPlus;
-
-
-/* "grasp/semiring/_semiring.pxd":59
- * cdef class ProbPlus(Plus): pass
- * 
- * cdef class LogProbPlus(Plus): pass             # <<<<<<<<<<<<<<
- * 
- * cdef class ViterbiPlus(Plus): pass
- */
-
-struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_LogProbPlus {
-  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Plus __pyx_base;
-};
-static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_LogProbPlus *__pyx_vtabptr_5grasp_8semiring_9_semiring_LogProbPlus;
-
-
-/* "grasp/semiring/_semiring.pxd":61
- * cdef class LogProbPlus(Plus): pass
- * 
- * cdef class ViterbiPlus(Plus): pass             # <<<<<<<<<<<<<<
- * 
- * cdef class Prob(Semiring): pass
- */
-
-struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ViterbiPlus {
-  struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Plus __pyx_base;
-};
-static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ViterbiPlus *__pyx_vtabptr_5grasp_8semiring_9_semiring_ViterbiPlus;
-
-
-/* "grasp/semiring/_semiring.pxd":63
- * cdef class ViterbiPlus(Plus): pass
  * 
  * cdef class Prob(Semiring): pass             # <<<<<<<<<<<<<<
  * 
- * cdef class LogProb(Semiring): pass
+ * 
  */
 
 struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Prob {
@@ -1599,12 +1796,12 @@ struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Prob {
 static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Prob *__pyx_vtabptr_5grasp_8semiring_9_semiring_Prob;
 
 
-/* "grasp/semiring/_semiring.pxd":65
- * cdef class Prob(Semiring): pass
+/* "grasp/semiring/_semiring.pxd":36
+ * 
  * 
  * cdef class LogProb(Semiring): pass             # <<<<<<<<<<<<<<
  * 
- * cdef class Viterbi(Semiring): pass
+ * 
  */
 
 struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_LogProb {
@@ -1613,8 +1810,8 @@ struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_LogProb {
 static struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_LogProb *__pyx_vtabptr_5grasp_8semiring_9_semiring_LogProb;
 
 
-/* "grasp/semiring/_semiring.pxd":67
- * cdef class LogProb(Semiring): pass
+/* "grasp/semiring/_semiring.pxd":39
+ * 
  * 
  * cdef class Viterbi(Semiring): pass             # <<<<<<<<<<<<<<
  * 
@@ -2584,17 +2781,26 @@ static CYTHON_INLINE char *__pyx_f_5numpy__util_dtypestring(PyArray_Descr *, cha
 
 /* Module declarations from 'grasp.ptypes' */
 
+/* Module declarations from 'grasp.semiring.operator' */
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_8operator_UnaryOperator = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_8operator_BinaryOperator = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_8operator_FixedLHS = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_8operator_FixedRHS = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_8operator_Plus = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_8operator_Times = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_8operator_ProbPower = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_8operator_ProbInverse = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_8operator_LogProbPower = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_8operator_LogProbInverse = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_8operator_ProbTimes = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_8operator_LogProbTimes = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_8operator_ViterbiTimes = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_8operator_ProbPlus = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_8operator_LogProbPlus = 0;
+static PyTypeObject *__pyx_ptype_5grasp_8semiring_8operator_ViterbiPlus = 0;
+
 /* Module declarations from 'grasp.semiring._semiring' */
-static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_Operator = 0;
-static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_Plus = 0;
-static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_Times = 0;
 static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_Semiring = 0;
-static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_ProbTimes = 0;
-static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_LogProbTimes = 0;
-static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_ViterbiTimes = 0;
-static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_ProbPlus = 0;
-static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_LogProbPlus = 0;
-static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_ViterbiPlus = 0;
 static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_Prob = 0;
 static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_LogProb = 0;
 static PyTypeObject *__pyx_ptype_5grasp_8semiring_9_semiring_Viterbi = 0;
@@ -29146,32 +29352,46 @@ PyMODINIT_FUNC PyInit_slicevars(void)
   __pyx_ptype_5numpy_broadcast = __Pyx_ImportType("numpy", "broadcast", sizeof(PyArrayMultiIterObject), 0); if (unlikely(!__pyx_ptype_5numpy_broadcast)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 172; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_ptype_5numpy_ndarray = __Pyx_ImportType("numpy", "ndarray", sizeof(PyArrayObject), 0); if (unlikely(!__pyx_ptype_5numpy_ndarray)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 181; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_ptype_5numpy_ufunc = __Pyx_ImportType("numpy", "ufunc", sizeof(PyUFuncObject), 0); if (unlikely(!__pyx_ptype_5numpy_ufunc)) {__pyx_filename = __pyx_f[1]; __pyx_lineno = 864; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_8semiring_9_semiring_Operator = __Pyx_ImportType("grasp.semiring._semiring", "Operator", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_Operator), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_Operator)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 4; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_8semiring_9_semiring_Operator = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Operator*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_Operator->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_Operator)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 4; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_8semiring_9_semiring_Plus = __Pyx_ImportType("grasp.semiring._semiring", "Plus", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_Plus), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_Plus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 13; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_8semiring_9_semiring_Plus = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Plus*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_Plus->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_Plus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 13; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_8semiring_9_semiring_Times = __Pyx_ImportType("grasp.semiring._semiring", "Times", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_Times), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_Times)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 20; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_8semiring_9_semiring_Times = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Times*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_Times->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_Times)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 20; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_8semiring_9_semiring_Semiring = __Pyx_ImportType("grasp.semiring._semiring", "Semiring", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_Semiring)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_8semiring_9_semiring_Semiring = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Semiring*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_Semiring->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_Semiring)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 25; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_8semiring_9_semiring_ProbTimes = __Pyx_ImportType("grasp.semiring._semiring", "ProbTimes", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_ProbTimes), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_ProbTimes)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 51; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_8semiring_9_semiring_ProbTimes = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ProbTimes*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_ProbTimes->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_ProbTimes)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 51; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_8semiring_9_semiring_LogProbTimes = __Pyx_ImportType("grasp.semiring._semiring", "LogProbTimes", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_LogProbTimes), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_LogProbTimes)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 53; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_8semiring_9_semiring_LogProbTimes = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_LogProbTimes*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_LogProbTimes->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_LogProbTimes)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 53; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_8semiring_9_semiring_ViterbiTimes = __Pyx_ImportType("grasp.semiring._semiring", "ViterbiTimes", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_ViterbiTimes), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_ViterbiTimes)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 55; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_8semiring_9_semiring_ViterbiTimes = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ViterbiTimes*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_ViterbiTimes->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_ViterbiTimes)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 55; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_8semiring_9_semiring_ProbPlus = __Pyx_ImportType("grasp.semiring._semiring", "ProbPlus", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_ProbPlus), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_ProbPlus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_8semiring_9_semiring_ProbPlus = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ProbPlus*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_ProbPlus->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_ProbPlus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 57; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_8semiring_9_semiring_LogProbPlus = __Pyx_ImportType("grasp.semiring._semiring", "LogProbPlus", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_LogProbPlus), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_LogProbPlus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_8semiring_9_semiring_LogProbPlus = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_LogProbPlus*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_LogProbPlus->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_LogProbPlus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 59; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_8semiring_9_semiring_ViterbiPlus = __Pyx_ImportType("grasp.semiring._semiring", "ViterbiPlus", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_ViterbiPlus), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_ViterbiPlus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_8semiring_9_semiring_ViterbiPlus = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_ViterbiPlus*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_ViterbiPlus->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_ViterbiPlus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_8semiring_9_semiring_Prob = __Pyx_ImportType("grasp.semiring._semiring", "Prob", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_Prob), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_Prob)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_8semiring_9_semiring_Prob = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Prob*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_Prob->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_Prob)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 63; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_8semiring_9_semiring_LogProb = __Pyx_ImportType("grasp.semiring._semiring", "LogProb", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_LogProb), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_LogProb)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_8semiring_9_semiring_LogProb = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_LogProb*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_LogProb->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_LogProb)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 65; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_ptype_5grasp_8semiring_9_semiring_Viterbi = __Pyx_ImportType("grasp.semiring._semiring", "Viterbi", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_Viterbi), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_Viterbi)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_vtabptr_5grasp_8semiring_9_semiring_Viterbi = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Viterbi*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_Viterbi->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_Viterbi)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_8operator_UnaryOperator = __Pyx_ImportType("grasp.semiring.operator", "UnaryOperator", sizeof(struct __pyx_obj_5grasp_8semiring_8operator_UnaryOperator), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_8operator_UnaryOperator)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 4; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_8operator_UnaryOperator = (struct __pyx_vtabstruct_5grasp_8semiring_8operator_UnaryOperator*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_8operator_UnaryOperator->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_8operator_UnaryOperator)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 4; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_8operator_BinaryOperator = __Pyx_ImportType("grasp.semiring.operator", "BinaryOperator", sizeof(struct __pyx_obj_5grasp_8semiring_8operator_BinaryOperator), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_8operator_BinaryOperator)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 9; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_8operator_BinaryOperator = (struct __pyx_vtabstruct_5grasp_8semiring_8operator_BinaryOperator*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_8operator_BinaryOperator->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_8operator_BinaryOperator)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 9; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_8operator_FixedLHS = __Pyx_ImportType("grasp.semiring.operator", "FixedLHS", sizeof(struct __pyx_obj_5grasp_8semiring_8operator_FixedLHS), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_8operator_FixedLHS)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 18; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_8operator_FixedLHS = (struct __pyx_vtabstruct_5grasp_8semiring_8operator_FixedLHS*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_8operator_FixedLHS->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_8operator_FixedLHS)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 18; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_8operator_FixedRHS = __Pyx_ImportType("grasp.semiring.operator", "FixedRHS", sizeof(struct __pyx_obj_5grasp_8semiring_8operator_FixedRHS), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_8operator_FixedRHS)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 24; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_8operator_FixedRHS = (struct __pyx_vtabstruct_5grasp_8semiring_8operator_FixedRHS*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_8operator_FixedRHS->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_8operator_FixedRHS)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 24; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_8operator_Plus = __Pyx_ImportType("grasp.semiring.operator", "Plus", sizeof(struct __pyx_obj_5grasp_8semiring_8operator_Plus), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_8operator_Plus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_8operator_Plus = (struct __pyx_vtabstruct_5grasp_8semiring_8operator_Plus*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_8operator_Plus->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_8operator_Plus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 30; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_8operator_Times = __Pyx_ImportType("grasp.semiring.operator", "Times", sizeof(struct __pyx_obj_5grasp_8semiring_8operator_Times), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_8operator_Times)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_8operator_Times = (struct __pyx_vtabstruct_5grasp_8semiring_8operator_Times*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_8operator_Times->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_8operator_Times)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_8operator_ProbPower = __Pyx_ImportType("grasp.semiring.operator", "ProbPower", sizeof(struct __pyx_obj_5grasp_8semiring_8operator_ProbPower), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_8operator_ProbPower)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 43; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_8operator_ProbPower = (struct __pyx_vtabstruct_5grasp_8semiring_8operator_ProbPower*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_8operator_ProbPower->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_8operator_ProbPower)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 43; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_8operator_ProbInverse = __Pyx_ImportType("grasp.semiring.operator", "ProbInverse", sizeof(struct __pyx_obj_5grasp_8semiring_8operator_ProbInverse), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_8operator_ProbInverse)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 46; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_8operator_ProbInverse = (struct __pyx_vtabstruct_5grasp_8semiring_8operator_ProbInverse*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_8operator_ProbInverse->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_8operator_ProbInverse)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 46; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_8operator_LogProbPower = __Pyx_ImportType("grasp.semiring.operator", "LogProbPower", sizeof(struct __pyx_obj_5grasp_8semiring_8operator_LogProbPower), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_8operator_LogProbPower)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 49; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_8operator_LogProbPower = (struct __pyx_vtabstruct_5grasp_8semiring_8operator_LogProbPower*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_8operator_LogProbPower->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_8operator_LogProbPower)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 49; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_8operator_LogProbInverse = __Pyx_ImportType("grasp.semiring.operator", "LogProbInverse", sizeof(struct __pyx_obj_5grasp_8semiring_8operator_LogProbInverse), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_8operator_LogProbInverse)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 52; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_8operator_LogProbInverse = (struct __pyx_vtabstruct_5grasp_8semiring_8operator_LogProbInverse*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_8operator_LogProbInverse->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_8operator_LogProbInverse)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 52; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_8operator_ProbTimes = __Pyx_ImportType("grasp.semiring.operator", "ProbTimes", sizeof(struct __pyx_obj_5grasp_8semiring_8operator_ProbTimes), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_8operator_ProbTimes)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 55; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_8operator_ProbTimes = (struct __pyx_vtabstruct_5grasp_8semiring_8operator_ProbTimes*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_8operator_ProbTimes->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_8operator_ProbTimes)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 55; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_8operator_LogProbTimes = __Pyx_ImportType("grasp.semiring.operator", "LogProbTimes", sizeof(struct __pyx_obj_5grasp_8semiring_8operator_LogProbTimes), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_8operator_LogProbTimes)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_8operator_LogProbTimes = (struct __pyx_vtabstruct_5grasp_8semiring_8operator_LogProbTimes*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_8operator_LogProbTimes->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_8operator_LogProbTimes)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 58; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_8operator_ViterbiTimes = __Pyx_ImportType("grasp.semiring.operator", "ViterbiTimes", sizeof(struct __pyx_obj_5grasp_8semiring_8operator_ViterbiTimes), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_8operator_ViterbiTimes)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_8operator_ViterbiTimes = (struct __pyx_vtabstruct_5grasp_8semiring_8operator_ViterbiTimes*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_8operator_ViterbiTimes->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_8operator_ViterbiTimes)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 61; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_8operator_ProbPlus = __Pyx_ImportType("grasp.semiring.operator", "ProbPlus", sizeof(struct __pyx_obj_5grasp_8semiring_8operator_ProbPlus), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_8operator_ProbPlus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_8operator_ProbPlus = (struct __pyx_vtabstruct_5grasp_8semiring_8operator_ProbPlus*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_8operator_ProbPlus->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_8operator_ProbPlus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 64; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_8operator_LogProbPlus = __Pyx_ImportType("grasp.semiring.operator", "LogProbPlus", sizeof(struct __pyx_obj_5grasp_8semiring_8operator_LogProbPlus), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_8operator_LogProbPlus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_8operator_LogProbPlus = (struct __pyx_vtabstruct_5grasp_8semiring_8operator_LogProbPlus*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_8operator_LogProbPlus->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_8operator_LogProbPlus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 67; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_8operator_ViterbiPlus = __Pyx_ImportType("grasp.semiring.operator", "ViterbiPlus", sizeof(struct __pyx_obj_5grasp_8semiring_8operator_ViterbiPlus), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_8operator_ViterbiPlus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_8operator_ViterbiPlus = (struct __pyx_vtabstruct_5grasp_8semiring_8operator_ViterbiPlus*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_8operator_ViterbiPlus->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_8operator_ViterbiPlus)) {__pyx_filename = __pyx_f[4]; __pyx_lineno = 70; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_9_semiring_Semiring = __Pyx_ImportType("grasp.semiring._semiring", "Semiring", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_Semiring), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_Semiring)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 5; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_9_semiring_Semiring = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Semiring*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_Semiring->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_Semiring)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 5; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_9_semiring_Prob = __Pyx_ImportType("grasp.semiring._semiring", "Prob", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_Prob), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_Prob)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_9_semiring_Prob = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Prob*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_Prob->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_Prob)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 33; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_9_semiring_LogProb = __Pyx_ImportType("grasp.semiring._semiring", "LogProb", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_LogProb), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_LogProb)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_9_semiring_LogProb = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_LogProb*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_LogProb->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_LogProb)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 36; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_ptype_5grasp_8semiring_9_semiring_Viterbi = __Pyx_ImportType("grasp.semiring._semiring", "Viterbi", sizeof(struct __pyx_obj_5grasp_8semiring_9_semiring_Viterbi), 1); if (unlikely(!__pyx_ptype_5grasp_8semiring_9_semiring_Viterbi)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_vtabptr_5grasp_8semiring_9_semiring_Viterbi = (struct __pyx_vtabstruct_5grasp_8semiring_9_semiring_Viterbi*)__Pyx_GetVtable(__pyx_ptype_5grasp_8semiring_9_semiring_Viterbi->tp_dict); if (unlikely(!__pyx_vtabptr_5grasp_8semiring_9_semiring_Viterbi)) {__pyx_filename = __pyx_f[5]; __pyx_lineno = 39; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   /*--- Variable import code ---*/
   /*--- Function import code ---*/
   /*--- Execution code ---*/

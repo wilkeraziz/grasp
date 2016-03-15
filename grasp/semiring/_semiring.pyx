@@ -2,33 +2,9 @@ cimport numpy as np
 import numpy as np
 from grasp.ptypes cimport weight_t
 import grasp.ptypes as ptypes
-
-
-cdef class Operator:
-
-    def __call__(self, weight_t a, weight_t b):
-        return self.evaluate(a, b)
-
-    cdef weight_t evaluate(self, weight_t a, weight_t b): pass
-
-    cpdef weight_t reduce(self, iterable) except *: pass
-
-    def __repr__(self):
-        return '%s(identity=%s)' % (self.__class__.__name__, self.identity)
-
-
-cdef class Plus(Operator):
-
-    cpdef int choice(self, weight_t[::1] values) except -1: pass
-
-    def __repr__(self):
-        return '%s(identity=%r, idempotent=%r)' % (self.__class__.__name__, self.identity, self.idempotent)
-
-
-cdef class Times(Operator):
-
-    cpdef weight_t inverse(self, weight_t a): pass
-
+from grasp.semiring.operator cimport ProbPlus, ProbTimes
+from grasp.semiring.operator cimport LogProbPlus, LogProbTimes
+from grasp.semiring.operator cimport ViterbiPlus, ViterbiTimes
 
 cdef class Semiring:
 
@@ -48,8 +24,11 @@ cdef class Semiring:
 
     cpdef weight_t heapify(self, weight_t x): pass
 
-    cpdef weight_t divide(self, weight_t x, weight_t y):
-        return self.times.evaluate(x, self.times.inverse(y))
+    cpdef weight_t divide(self, weight_t num, weight_t den):
+        return self.times.evaluate(num, self.times.inverse.evaluate(den))
+
+    cpdef weight_t power(self, weight_t base, weight_t power):
+        return self.times.power.evaluate(base, power)
 
     cpdef weight_t[::1] zeros(self, size_t size):
         return np.full(size, self.zero, ptypes.weight)
@@ -64,105 +43,6 @@ cdef class Semiring:
 
     def __repr__(self):
         return '%s(plus=%r, times=%r, LOG=%r)' % (self.__class__.__name__, self.plus, self.times, self.LOG)
-
-
-cdef class ProbTimes(Times):
-
-    def __init__(self):
-        self.identity = 1.0
-
-    cdef weight_t evaluate(self, weight_t a, weight_t b):
-        return np.multiply(a, b)
-
-    cpdef weight_t reduce(self, sequence) except *:
-        return np.multiply.reduce(sequence)
-
-    cpdef weight_t inverse(self, weight_t a):
-        return np.divide(1.0, a)
-
-
-cdef class LogProbTimes(Times):
-
-    def __init__(self):
-        self.identity = 0.0
-
-    cdef weight_t evaluate(self, weight_t a, weight_t b):
-        return np.add(a, b)
-
-    cpdef weight_t reduce(self, sequence) except *:
-        return np.add.reduce(sequence)
-
-    cpdef weight_t inverse(self, weight_t a):
-        return np.negative(a)
-
-
-cdef class ViterbiTimes(Times):
-
-    def __init__(self):
-        self.identity = 0.0
-
-    cdef weight_t evaluate(self, weight_t a, weight_t b):
-        return np.add(a, b)
-
-    cpdef weight_t reduce(self, sequence) except *:
-        return np.add.reduce(sequence)
-
-    cpdef weight_t inverse(self, weight_t a):
-        return np.negative(a)
-
-
-cdef class ProbPlus(Plus):
-
-    def __init__(self):
-        self.identity = 0.0
-        self.idempotent = False
-
-    cdef weight_t evaluate(self, weight_t a, weight_t b):
-        return np.add(a, b)
-
-    cpdef weight_t reduce(self, sequence) except *:
-        return np.add.reduce(sequence)
-
-    cpdef int choice(self, weight_t[::1] values) except -1:
-        return np.random.choice(values.shape[0], p=values)
-
-
-cdef class LogProbPlus(Plus):
-
-    def __init__(self):
-        self.identity = -np.inf
-        self.idempotent = False
-
-    cdef weight_t evaluate(self, weight_t a, weight_t b):
-        return np.logaddexp(a, b)
-
-    cpdef weight_t reduce(self, sequence) except *:
-        try:
-            return np.logaddexp.reduce(sequence)
-        except ValueError:
-            return self.identity
-
-    cpdef int choice(self, weight_t[::1] values) except -1:
-        return np.random.choice(values.shape[0], p=np.exp(values))
-
-
-cdef class ViterbiPlus(Plus):
-
-    def __init__(self):
-        self.identity = -np.inf
-        self.idempotent = True
-
-    cdef weight_t evaluate(self, weight_t a, weight_t b):
-        return np.max([a, b])
-
-    cpdef weight_t reduce(self, sequence) except *:
-        try:
-            return np.max(sequence)
-        except ValueError:
-            return self.identity
-
-    cpdef int choice(self, weight_t[::1] values) except -1:
-        return np.argmax(values)
 
 
 cdef class Prob(Semiring):

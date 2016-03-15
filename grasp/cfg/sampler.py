@@ -8,7 +8,7 @@ import argparse
 import logging
 import os
 from grasp.recipes import make_unique_directory
-from grasp.inference.ancestral import AncestralSampler, derivation_value, LocalSampler
+from grasp.inference.ancestral import AncestralSampler, derivation_weight, LocalSampler
 from grasp.parsing.sliced.sampling import group_by_projection, group_by_identity
 from grasp.cfg.projection import DerivationYield
 from grasp.io.results import save_mc_derivations, save_mc_yields
@@ -192,7 +192,7 @@ def monolingual(args, outdir):
         save_mc_derivations('{0}/ancestral/derivations/{1}.gz'.format(outdir, 0),
                             derivations,
                             inside=sampler.Z,
-                            omega_d=derivation_value)
+                            omega_d=derivation_weight)
         # save the empirical distribution over strings
         save_mc_yields('{0}/ancestral/yields/{1}.gz'.format(outdir, 0),
                        sentences)

@@ -20,7 +20,7 @@ from grasp.cfg.rule import CFGProduction
 from grasp.cfg.projection import DerivationYield
 from grasp.parsing import Nederhof
 from grasp.parsing.exact import EarleyRescoring
-from grasp.inference import KBest, viterbi_derivation, AncestralSampler, derivation_value
+from grasp.inference import KBest, viterbi_derivation, AncestralSampler, derivation_weight
 from grasp.parsing.exact.rescoring import stateless_rescoring
 from grasp.parsing.sliced import SlicedRescoring
 from grasp.parsing.sliced.sampling import apply_filters, group_by_projection, group_by_identity
@@ -163,11 +163,11 @@ def exact_rescoring(seg, forest, root, model, semiring, args, outdir):
                                tsorter.do(),
                                generations=args.generations)
 
-        logging.info('Viterbi derivation: %s %s', derivation_value(d), DerivationYield.tree(d))
+        logging.info('Viterbi derivation: %s %s', derivation_weight(d), DerivationYield.tree(d))
         logging.info('Viterbi translation: %s', DerivationYield.string(d))
         save_viterbi('{0}/viterbi/{1}.gz'.format(outdir, seg.id),
                      d,
-                     omega_d=derivation_value,
+                     omega_d=derivation_weight,
                      get_projection=DerivationYield.string,
                      derivation2str=derivation2str)
 
@@ -181,7 +181,7 @@ def exact_rescoring(seg, forest, root, model, semiring, args, outdir):
         derivations = list(kbestparser.iterderivations())
         save_kbest('{0}/kbest/{1}.gz'.format(outdir, seg.id),
                    derivations,
-                   omega_d=derivation_value,
+                   omega_d=derivation_weight,
                    get_projection=DerivationYield.string,
                    derivation2str=derivation2str)
 
@@ -199,7 +199,7 @@ def exact_rescoring(seg, forest, root, model, semiring, args, outdir):
         save_mc_derivations('{0}/ancestral/derivations/{1}.gz'.format(outdir, seg.id),
                             derivations,
                             inside=sampler.Z,
-                            omega_d=derivation_value,
+                            omega_d=derivation_weight,
                             derivation2str=derivation2str)
         # save the empirical distribution over strings
         save_mc_yields('{0}/ancestral/yields/{1}.gz'.format(outdir, seg.id),
@@ -257,7 +257,7 @@ def sliced_rescoring(seg, forest, root, model, semiring, args, outdir):
         return rescorer.sample(args)
 
     # model score
-    omega_d = lambda der: semiring.times(derivation_value(der, semiring),  # the local part
+    omega_d = lambda der: semiring.times(derivation_weight(der, semiring),  # the local part
                                          apply_scorers(der, stateless, stateful, semiring, {root}))  # the global part
     samples = []
     total_dt = 0
@@ -373,7 +373,7 @@ def t_decode(seg, extra_grammars, glue_grammars, model, args, outdir):
             print(e_forest, file=fo)
 
     local_d = viterbi_derivation(e_forest, TopSortTable(e_forest), generations=args.generations)
-    logging.info('Local Viterbi derivation: %s %s', derivation_value(local_d), DerivationYield.derivation(local_d))
+    logging.info('Local Viterbi derivation: %s %s', derivation_weight(local_d), DerivationYield.derivation(local_d))
     logging.info('Local Viterbi translation: %s', DerivationYield.string(local_d))
 
     if args.framework == 'exact':

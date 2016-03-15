@@ -9,7 +9,7 @@ from grasp.cfg.rule cimport NewCFGProduction as CFGProduction
 from grasp.scoring.frepr cimport FComponents
 
 
-cpdef Hypergraph cfg_to_hg(grammars, glue_grammars, omega):  # TODO: make omega a ValueFunction
+cpdef Hypergraph cfg_to_hg(grammars, glue_grammars, omega):  # TODO: make omega a WeightFunction
     """
     Construct a hypergraph from a collection of grammars.
 

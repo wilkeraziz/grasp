@@ -23,7 +23,16 @@ cdef class Extractor:
         def __get__(self):
             return self._name
 
-    cpdef FRepr weights(self, dict wmap): pass
+    cpdef tuple fnames(self, wkeys):
+        """
+        Return an order list of feature names associated with this extractor.
+        Some extractors (e.g. dense ones) will ignore whatever argument passed to this method.
+        Others (e.g. sparse ones) will consult wkeys for features matching a certain prefix.
+        """
+        raise NotImplementedError('I do not know how to convert a dict to an order list of features')
+
+    cpdef FRepr weights(self, dict wmap):
+        raise NotImplementedError('I do not know how to convert a dict to a weight representation.')
 
     cpdef weight_t dot(self, FRepr frepr, FRepr wrepr):
         return frepr.dot(wrepr)

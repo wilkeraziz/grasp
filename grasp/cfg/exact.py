@@ -8,7 +8,7 @@ import logging
 
 
 from grasp.semiring import SumTimes, MaxTimes, Counting
-from grasp.inference import KBest, AncestralSampler, derivation_value, viterbi_derivation
+from grasp.inference import KBest, AncestralSampler, derivation_weight, viterbi_derivation
 from grasp.inference import robust_value_recursion as compute_values
 from grasp.parsing.exact import Earley, Nederhof
 from grasp.io.results import save_viterbi, save_kbest, save_mc_derivations, save_mc_yields
@@ -90,10 +90,10 @@ def exact(uid, input, grammars, glue_grammars, options, outdir):
         tsort = tsorter.do()
         logging.info('Viterbi...')
         d = viterbi_derivation(forest, tsort, generations=options.generations)
-        logging.info('Viterbi derivation: %s %s', derivation_value(d), DerivationYield.derivation(d))
+        logging.info('Viterbi derivation: %s %s', derivation_weight(d), DerivationYield.derivation(d))
         save_viterbi('{0}/viterbi/{1}.gz'.format(outdir, uid),
                      d,
-                     omega_d=derivation_value,
+                     omega_d=derivation_weight,
                      get_projection=DerivationYield.tree)
 
     if options.kbest > 0:
@@ -109,7 +109,7 @@ def exact(uid, input, grammars, glue_grammars, options, outdir):
         derivations = list(kbestparser.iterderivations())
         save_kbest('{0}/kbest/{1}.gz'.format(outdir, uid),
                    derivations,
-                   omega_d=derivation_value,
+                   omega_d=derivation_weight,
                    get_projection=DerivationYield.tree)
 
     if options.samples > 0:
@@ -123,7 +123,7 @@ def exact(uid, input, grammars, glue_grammars, options, outdir):
         save_mc_derivations('{0}/ancestral/derivations/{1}.gz'.format(outdir, uid),
                             derivations,
                             inside=sampler.Z,
-                            omega_d=derivation_value)
+                            omega_d=derivation_weight)
         # save the empirical distribution over strings
         save_mc_yields('{0}/ancestral/trees/{1}.gz'.format(outdir, uid),
                        trees)

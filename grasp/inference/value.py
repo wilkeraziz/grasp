@@ -15,7 +15,7 @@ import itertools
 import logging
 
 
-def derivation_value(derivation, semiring=SumTimes, Z=None, omega=lambda e: e.weight):
+def derivation_weight(derivation, semiring=SumTimes, Z=None, omega=lambda e: e.weight):
     """
     Compute the total weight of a derivation (as a sequence of edges) under a semiring.
 

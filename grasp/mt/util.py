@@ -13,6 +13,8 @@ from grasp.cfg.srule import SCFGProduction, InputGroupView, OutputView
 
 from grasp.recipes import smart_wopen
 
+from collections import deque
+
 
 class GoalRuleMaker:
 
@@ -127,3 +129,27 @@ def load_ffs(path):
         return pickle.load(fo)
 
 
+def make_batches(data, sizeperc):
+    """
+
+    :param data:
+    :param sizeperc: size of a batche expressed as a percentage of the total data
+        (between 0 and 1)
+    :return:
+    """
+    if sizeperc > 1:
+        raise ValueError('sizeperc must be between 0 and 1')
+    if sizeperc < 0:
+        raise ValueError('sizeperc must be between 0 and 1')
+    b_size = max(int(len(data) * sizeperc), 1)
+    n_batches = max(int(len(data)/b_size), 1)
+    batches = [[] for _ in range(n_batches)]
+    pool = deque(data)
+    b = 0
+    while pool:
+        datum = pool.popleft()
+        batches[b].append(datum)
+        b += 1
+        if b == n_batches:
+            b = 0
+    return batches

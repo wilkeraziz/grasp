@@ -63,6 +63,18 @@ cdef class TableLookupScorer(Scorer):
         cdef FComponents frepr = self.featurize(rule)
         return frepr, self._model.score(frepr)
 
+    cpdef tuple featurize_and_score_derivation(self, tuple rules, Semiring semiring):
+        cdef FComponents comp, partial_comp
+        cdef weight_t weight, partial_weight
+        cdef Rule r
+        weight = semiring.one
+        comp = self.constant(semiring.one)
+        for r in rules:
+            partial_comp, partial_weight = self.featurize_and_score(r)
+            weight = semiring.times(weight, partial_weight)
+            comp = comp.hadamard(partial_comp, semiring.times)
+        return comp, weight
+
 
 cdef class StatelessScorer(Scorer):
     """
@@ -98,6 +110,18 @@ cdef class StatelessScorer(Scorer):
     cpdef tuple featurize_and_score(self, edge):
         cdef FComponents frepr = self.featurize(edge)
         return frepr, self._model.score(frepr)
+
+    cpdef tuple featurize_and_score_derivation(self, tuple edges, Semiring semiring):
+        cdef FComponents comp, partial_comp
+        cdef weight_t weight, partial_weight
+        cdef Rule r
+        weight = semiring.one
+        comp = self.constant(semiring.one)
+        for r in edges:
+            partial_comp, partial_weight = self.featurize_and_score(r)
+            weight = semiring.times(weight, partial_weight)
+            comp = comp.hadamard(partial_comp, semiring.times)
+        return comp, weight
 
 
 cdef class StatefulScorer(Scorer):
@@ -198,3 +222,13 @@ cdef class StatefulScorer(Scorer):
 
     cpdef weight_t score_yield(self, derivation_yield):
         return self._model.score(self.featurize_yield(derivation_yield))
+
+    cpdef tuple featurize_and_score_yield(self, derivation_yield):
+        """
+        Featurize a derivation yield and score it.
+        :param derivation_yield:
+        :return: component, score
+        """
+        cdef:
+            FComponents comp = self.featurize_yield(derivation_yield)
+        return comp, self._model.score(comp)

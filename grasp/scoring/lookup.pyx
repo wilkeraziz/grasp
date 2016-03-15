@@ -26,6 +26,9 @@ cdef class RuleTable(TableLookup):
                                                            repr(self.name),
                                                            repr(self._fnames))
 
+    cpdef tuple fnames(self, wkeys):
+        return self._fnames
+
     cpdef FRepr weights(self, dict wmap):  # using a dense representation
         cdef list wvec = []
         for f in self._fnames:
