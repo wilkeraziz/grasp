@@ -129,6 +129,22 @@ def load_ffs(path):
         return pickle.load(fo)
 
 
+def number_of_batches(total, sizeperc):
+    """
+
+    :param data:
+    :param sizeperc: size of a batche expressed as a percentage of the total data
+        (between 0 and 1)
+    :return:
+    """
+    if sizeperc > 1:
+        raise ValueError('sizeperc must be between 0 and 1')
+    if sizeperc < 0:
+        raise ValueError('sizeperc must be between 0 and 1')
+    b_size = max(int(total * sizeperc), 1)
+    return max(int(total/b_size), 1)
+
+
 def make_batches(data, sizeperc):
     """
 

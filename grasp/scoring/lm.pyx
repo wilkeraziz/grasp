@@ -39,12 +39,31 @@ cdef class StatelessLM(Stateless):
         self._bos = bos
         self._eos = eos
         self._path = path
-        self._model = klm.Model(path)
         self._features = (name, '{0}_OOV'.format(name))
+        self._load_model()
 
+    cdef _load_model(self):
         # get the initial state
+        self._model = klm.Model(self._path)
         self._initial = klm.State()
         self._model.BeginSentenceWrite(self._initial)
+
+    def __getstate__(self):
+        return super(StatelessLM,self).__getstate__(), {'order': self._order,
+                                                        'bos': self._bos,
+                                                        'eos': self._eos,
+                                                        'path': self._path,
+                                                        'features': self._features}
+
+    def __setstate__(self, state):
+        superstate, d = state
+        self._order = d['order']
+        self._bos = d['bos']
+        self._eos = d['eos']
+        self._path = d['path']
+        self._features = d['features']
+        self._load_model()
+        super(StatelessLM,self).__setstate__(superstate)
 
     def __repr__(self):
         return '{0}(uid={1}, name={2}, order={3}, path={4}, bos={5}, eos={6})'.format(StatelessLM.__name__,
@@ -128,12 +147,32 @@ cdef class KenLM(Stateful):
         self._bos = bos
         self._eos = eos
         self._path = path
-        self._model = klm.Model(path)
         self._features = (name, '{0}_OOV'.format(name))
-
         # get the initial state
+        self._load_model()
+
+    cdef _load_model(self):
+        # get the initial state
+        self._model = klm.Model(self._path)
         self._initial = klm.State()
         self._model.BeginSentenceWrite(self._initial)
+
+    def __getstate__(self):
+        return super(KenLM,self).__getstate__(), {'order': self._order,
+                                                        'bos': self._bos,
+                                                        'eos': self._eos,
+                                                        'path': self._path,
+                                                        'features': self._features}
+
+    def __setstate__(self, state):
+        superstate, d = state
+        self._order = d['order']
+        self._bos = d['bos']
+        self._eos = d['eos']
+        self._path = d['path']
+        self._features = d['features']
+        self._load_model()
+        super(KenLM,self).__setstate__(superstate)
 
     def __repr__(self):
         return '{0}(uid={1}, name={2}, order={3}, path={4}, bos={5}, eos={6})'.format(KenLM.__name__,

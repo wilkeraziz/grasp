@@ -96,8 +96,8 @@ cdef class FValue(FRepr):
     def __getstate__(self):
         return {'value': self.value}
 
-    def __setstate__(self, d):
-        self.value = ptypes.weight(d['value'])
+    def __setstate__(self, state):
+        self.value = state['value']
 
     def __len__(self):
         return 1
@@ -121,10 +121,10 @@ cdef class FVec(FRepr):
         self.vec = np.array(iterable, dtype=ptypes.weight)
 
     def __getstate__(self):
-        return {'vec': np.array(self.vec, dtype=ptypes.weight)}
+        return {'vec': list(self.vec)}
 
-    def __setstate__(self, d):
-        self.vec = np.array(d['vec'], dtype=ptypes.weight)
+    def __setstate__(self, state):
+        self.vec = np.array(state['vec'], dtype=ptypes.weight)
 
     cpdef FRepr prod(self, weight_t scalar):
         cdef weight_t w
@@ -215,8 +215,8 @@ cdef class FMap(FRepr):
     def __getstate__(self):
         return {'map': self.map}
 
-    def __setstate__(self, d):
-        self.map = dict(d['map'])
+    def __setstate__(self, state):
+        self.map = state['map']
 
     def __len__(self):
         return len(self.map)
@@ -286,8 +286,8 @@ cdef class FComponents(FRepr):
     def __getstate__(self):
         return {'components': self.components}
 
-    def __setstate__(self, d):
-        self.components = list(d['components'])
+    def __setstate__(self, state):
+        self.components = state['components']
 
     def __len__(self):
         return len(self.components)

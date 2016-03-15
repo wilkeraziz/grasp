@@ -9,8 +9,16 @@ cdef class Model:
     def __init__(self, dict wmap, extractors):
         cdef Extractor extractor
         self._extractors = tuple(extractors)
-        self._weights = FComponents([extractor.weights(wmap) for extractor in self._extractors])
         self._wmap = dict(wmap)
+        self._weights = FComponents([extractor.weights(self._wmap) for extractor in self._extractors])
+
+    def __getstate__(self):
+        return {'extractors': self._extractors, 'wmap': self._wmap}
+
+    def __setstate__(self, state):
+        self._extractors = tuple(state['extractors'])
+        self._wmap = dict(state['wmap'])
+        self._weights = FComponents([extractor.weights(self._wmap) for extractor in self._extractors])
 
     cpdef tuple extractors(self):
         return self._extractors
@@ -58,6 +66,20 @@ cdef class ModelContainer(Model):
         self.dummy = DummyModel()
         self._weights = FComponents([self.lookup.weights(), self.stateless.weights(), self.stateful.weights()])
 
+    def __getstate__(self):
+        return super(ModelContainer, self).__getstate__(), {'lookup': self.lookup,
+                                                            'stateless': self.stateless,
+                                                            'stateful': self.stateful,
+                                                            'dummy': self.dummy}
+
+    def __setstate__(self, state):
+        superstate, selfstate = state
+        self.lookup = selfstate['lookup']
+        self.stateless = selfstate['stateless']
+        self.stateful = selfstate['stateful']
+        self.dummy = selfstate['dummy']
+        super(ModelContainer,self).__setstate__(superstate)
+        self._weights = FComponents([self.lookup.weights(), self.stateless.weights(), self.stateful.weights()])
 
     def __str__(self):
         return '# Lookup\n{0}\n# Stateless\n{1}\n# Stateful\n{2}'.format(str(self.lookup), str(self.stateless), str(self.stateful))
@@ -70,10 +92,16 @@ cdef class ModelContainer(Model):
         return iter([self.lookup.extractors(), self.stateless.extractors(), self.stateful.extractors()])
 
 
-def make_models(wmap, extractors):
+def make_models(wmap, extractors, uniform_weights=False):
     wmap = dict(wmap)
     # all scorers sorted by id
     extractors = tuple(sorted(extractors, key=lambda x: x.id))
+
+    if uniform_weights:
+        for extractor in extractors:
+            fnames = extractor.fnames(wmap.keys())
+            for fname in fnames:
+                wmap[fname] = 1.0 / len(extractors) / len(fnames)
     # lookup ones
     lookup = tuple(filter(lambda s: isinstance(s, TableLookup), extractors))
     # stateless ones

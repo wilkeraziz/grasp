@@ -331,11 +331,11 @@ cdef class SpanSliceVariables(SliceVariables):
 
     cpdef bint is_inside(self, key, theta):
         """Whether the node s is in the slice."""
-        return self.is_greater(theta, self[key])
+        return self.is_greater(theta, self.get_assignment(key).u)
 
     cpdef bint is_outside(self, key, theta):
         """Whether the node s is off the slice."""
-        return not self.is_greater(theta, self[key])
+        return not self.is_greater(theta, self.get_assignment(key).u)
 
     cpdef bint has_conditions(self, key):
         return key in self._conditions
@@ -359,6 +359,7 @@ cdef class SpanSliceVariables(SliceVariables):
                 assignment.u = self._dist.sample(assignment.parameter)
             else:  # we have a condition, thus we sample uniformly
                 assignment.u = np.random.uniform(0, condition)
+                assert assignment.u < condition, 'Numpy is going crazy with floats: %r < %r' % (assignment.u, condition)
         return assignment
 
     def __getitem__(self, key):

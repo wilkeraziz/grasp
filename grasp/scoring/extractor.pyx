@@ -23,6 +23,13 @@ cdef class Extractor:
         def __get__(self):
             return self._name
 
+    def __getstate__(self):
+        return {'uid': self._uid, 'name': self._name}
+
+    def __setstate__(self, d):
+        self._uid = d['uid']
+        self._name = d['name']
+
     cpdef tuple fnames(self, wkeys):
         """
         Return an order list of feature names associated with this extractor.
@@ -78,6 +85,13 @@ cdef class StatefulFRepr:
     def __cinit__(self, FRepr frepr, object state):
         self.frepr = frepr
         self.state = state
+
+    def __getstate__(self):
+        return {'frepr': self.frepr, 'state': self.state}
+
+    def __setstate__(self, d):
+        self.frepr = d['frepr']
+        self.state = d['state']
 
     def __getitem__(self, int i):
         if i == 0:

@@ -79,7 +79,15 @@ cdef SliceReturn slice_forest(Hypergraph D,
 
     # TODO: investigate this code... something strange is happening with the conditions
 
-    logging.debug('Slicing the distribution conditioned on d0=%s', ' '.join(['{0}/{1}'.format(D.head(e), e) for e in d0]))
+    logging.debug('Slicing the distribution conditioned on d0=%s', ' '.join(['{0}/{1}/{2}'.format(D.head(e), e, semiring.as_real(omega.value(e))) for e in d0]))
+    cdef list check = []
+    cdef list assignments = []
+    for e in d0:
+        cell = D.label(D.head(e))
+        check.append(slicevars.is_inside(cell, semiring.as_real(omega(e))))
+        assignments.append(slicevars.get_assignment(cell).u)
+    logging.debug('Check: %s', check)
+    assert all(check), 'Something strange here: checks=%s\nassignments=%s' % (check, assignments)
 
     for level in tsort.iterlevels(reverse=True):  # we go top-down level by level
         for head in level:

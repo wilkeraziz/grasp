@@ -19,6 +19,14 @@ cdef class WordPenalty(Stateless):
         super(WordPenalty, self).__init__(uid, name)
         self._penalty = penalty
 
+    def __getstate__(self):
+        return super(WordPenalty,self).__getstate__(), {'penalty': self._penalty}
+
+    def __setstate__(self, state):
+        superstate, d = state
+        self._penalty = d['penalty']
+        super(WordPenalty,self).__setstate__(superstate)
+
     def __repr__(self):
         return '{0}(uid={1}, name={2}, penalty={3})'.format(WordPenalty.__name__,
                                                             repr(self.id),
@@ -61,6 +69,15 @@ cdef class ArityPenalty(Stateless):
         super(ArityPenalty, self).__init__(uid, name)
         self._penalty = penalty
         self._max_arity = max_arity
+
+    def __getstate__(self):
+        return super(ArityPenalty,self).__getstate__(), {'penalty': self._penalty, 'max_arity': self._max_arity}
+
+    def __setstate__(self, state):
+        superstate, d = state
+        self._penalty = d['penalty']
+        self._max_arity = d['max_arity']
+        super(ArityPenalty,self).__setstate__(superstate)
 
     def __repr__(self):
         return '{0}(uid={1}, name={2}, penalty={3}, max_arity={4})'.format(ArityPenalty.__name__,

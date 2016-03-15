@@ -26,6 +26,14 @@ cdef class RuleTable(TableLookup):
                                                            repr(self.name),
                                                            repr(self._fnames))
 
+    def __getstate__(self):
+        return super(RuleTable,self).__getstate__(), {'fnames': self._fnames}
+
+    def __setstate__(self, state):
+        superstate, d = state
+        self._fnames = tuple(d['fnames'])
+        super(RuleTable,self).__setstate__(superstate)
+
     cpdef tuple fnames(self, wkeys):
         return self._fnames
 

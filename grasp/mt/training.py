@@ -16,6 +16,9 @@ import sys
 import itertools
 import os
 import numpy as np
+import traceback
+from multiprocessing import Pool
+from functools import partial
 
 import grasp.ptypes as ptypes
 
@@ -27,7 +30,7 @@ from grasp.scoring.util import read_weights
 
 from grasp.mt.cdec_format import load_grammar
 from grasp.mt.util import load_feature_extractors, GoalRuleMaker
-from grasp.mt.util import save_forest, save_ffs, load_ffs, make_dead_srule, make_batches
+from grasp.mt.util import save_forest, save_ffs, load_ffs, make_dead_srule, make_batches, number_of_batches
 from grasp.mt.segment import SegmentMetaData
 from grasp.mt.input import make_input
 
@@ -84,8 +87,8 @@ def cmd_optimisation(parser):
                         help='shuffle training instances')
     parser.add_argument('--temperature', type=float, default=1.0,
                         help='scales the initial model')
-    parser.add_argument('--default', type=float, default=None,
-                        help='initialise all weights with a default value, if not given, we start from the values already specified in the config file')
+    parser.add_argument('--init', type=str, default=None,
+                        help="use 'uniform' for uniform weights, 'random' for random weights, or choose a default weight")
     parser.add_argument("--resume", type=int, default=0,
                         help="Resume from a certain iteration (requires the config file of the preceding run)")
 
@@ -97,9 +100,9 @@ def cmd_external(parser):
 
 
 def cmd_sgd(parser):
-    parser.add_argument("--sgd", type=int, nargs=2, default=[5, 10],
+    parser.add_argument("--sgd", type=int, nargs=2, default=[10, 10],
                         help="Number of iterations and function evaluations for target optimisation")
-    parser.add_argument("--tol", type=float, nargs=2, default=[1e-4, 1e-4],
+    parser.add_argument("--tol", type=float, nargs=2, default=[1e-9, 1e-9],
                         help="f-tol and g-tol in target optimisation")
     parser.add_argument("--L2", type=float, default=0.0,
                         help="Weight of L2 regulariser in target optimisation")
@@ -236,6 +239,8 @@ def get_argparser():
                         type=str,
                         help='folder within the workspace where results are stored'
                              'by default we use a timestamp and a random suffix')
+    parser.add_argument('--redo', action='store_true',
+                        help='overwrite already computed files (by default we do not repeat computation)')
     cmd_model(parser.add_argument_group('Model'))
     cmd_parser(parser.add_argument_group('Parser'))
     cmd_grammar(parser.add_argument_group('Grammar'))
@@ -276,10 +281,6 @@ def make_dirs(args, exist_ok=True):
     os.makedirs(dynamicdir, exist_ok=exist_ok)
 
     return outdir, staticdir, dynamicdir
-
-
-def update(data):
-    pass
 
 
 def prepare_for_parsing(seg, args):
@@ -330,7 +331,29 @@ def prepare_for_parsing(seg, args):
     return grammars, glue_grammars, input_dfa
 
 
+def t_biparse(seg, args, staticdir, model):
+    try:
+        return biparse(seg, args, staticdir, model)
+    except:
+        raise Exception('job={0} exception={1}'.format(seg.id,
+                                                       ''.join(traceback.format_exception(*sys.exc_info()))))
+
+
 def biparse(seg, args, staticdir, model):
+    # this procedure produces the following files
+    general_files = ['{0}/{1}.src.forest'.format(staticdir, seg.id),
+                     '{0}/{1}.hyp.ffs.rule'.format(staticdir, seg.id),
+                     '{0}/{1}.hyp.ffs.stateless'.format(staticdir, seg.id),
+                     '{0}/{1}.hyp.forest'.format(staticdir, seg.id)]
+    ref_files = ['{0}/{1}.ref.ffs.all'.format(staticdir, seg.id),
+                 '{0}/{1}.ref.forest'.format(staticdir, seg.id)]
+    # check for redundant work
+    if all(os.path.exists(path) for path in general_files) and not args.redo:
+        if all(os.path.exists(path) for path in ref_files):
+            logging.info('Reusing forests for segment %d', seg.id)
+            return True   # parsable
+        else:
+            return False  # not parsable
 
     grammars, glue_grammars, input_dfa = prepare_for_parsing(seg, args)
 
@@ -398,39 +421,91 @@ def biparse(seg, args, staticdir, model):
     return True
 
 
-def ref_expectations(seg, args, staticdir, model, forest=None, components=None, tsort=None):
-
-    # 1. Load pickled objects if necessary
-    if forest is None:
-        logging.debug('[%d] Loading pickled reference forest and components', seg.id)
-        forest = unpickle_it('{0}/{1}.ref.forest'.format(staticdir, seg.id))
-    if components is None:
-        components = unpickle_it('{0}/{1}.ref.ffs.all'.format(staticdir, seg.id))
-    if tsort is None:
-        tsort = AcyclicTopSortTable(forest)
-
-    # 2. Compute f(d|x, y)
-    logging.debug('[%d] Computing f(d|x,y)', seg.id)
-    weights = np.array([model.score(components[e]) for e in range(forest.n_edges())], dtype=ptypes.weight)
-    fd = TableLookupFunction(weights)
-
-    # 3. Compute expectations
-    logging.debug('[%d] Computing expectations', seg.id)
-    values = acyclic_value_recursion(forest, tsort, semiring.inside, omega=fd)
-    reversed_values = acyclic_reversed_value_recursion(forest, tsort, semiring.inside, values, omega=fd)
-    edge_expectations = compute_edge_expectation(forest, semiring.inside, values, reversed_values,
-                                                 omega=fd, normalise=True)
-    expff = model.constant(semiring.prob.zero)
-    for e in sorted(range(forest.n_edges()), key=lambda x: forest.head(x)):
-        ue = semiring.inside.as_real(edge_expectations[e])
-        expff = expff.hadamard(components[e].power(ue, semiring.inside),
-                               semiring.prob.plus)
-    #logging.info('[%d] Z(ref)=%s u(ref)=%s', seg.id, values[tsort.root()], expff)
-
-    return values[tsort.root()], expff
+def load_batch(args, path):
+    """
+    Load training batches
+    :param args:
+    :param path:
+    :return:
+    """
+    return [SegmentMetaData.parse(input_str, grammar_dir=args.dev_grammars) for input_str in smart_ropen(path)]
 
 
-def sample(seg, args, staticdir, workspace, model):
+def save_batch(args, workspace, batch):
+    # 1. Log the segments in the batch
+    os.makedirs(workspace, exist_ok=True)
+    with smart_wopen('{0}/batch.gz'.format(workspace)) as fo:
+        for seg in batch:
+            print(seg.to_sgm(True), file=fo)
+
+
+def prepare_batches(args, workspace, segments):
+    parsable = list(segments)
+    # how many batches we are preparing
+    if args.mode == 'all':
+        n_batches = 1
+    elif args.mode == 'online':
+        n_batches = len(parsable)
+    else:
+        n_batches = number_of_batches(len(parsable), float(args.mode)/100)
+    logging.info('Spliting %d training instances into %d batches', len(parsable), n_batches)
+
+    batches = []
+    if all(os.path.exists('{0}/batch{1}/batch.gz'.format(workspace, b)) for b in range(n_batches)) and not args.redo:
+        for b in range(n_batches):
+            batches.append(load_batch(args, '{0}/batch{1}/batch.gz'.format(workspace, b)))
+        return batches
+
+    # make batches
+    if args.shuffle:
+        shuffle(parsable)
+    if args.mode == 'all':
+        batches = [parsable]  # a single batch with all data points
+        logging.info('Single batch')
+    elif args.mode == 'online':
+        batches = [[seg] for seg in parsable]  # as many batches as training instances
+        logging.info('Online: %d instances', len(batches))
+    else:  # batch mode
+        batches = make_batches(parsable, float(args.mode)/100)
+        logging.info('%d batches: %s', len(batches), '/'.join(str(len(b)) for b in batches))
+
+    assert len(batches) == n_batches, 'Mismatch in number of batches'
+
+    # save batches
+    for b, batch in enumerate(batches):
+        batchdir = '{0}/batch{1}'.format(workspace, b)
+        save_batch(args, batchdir, batch)
+
+    return batches
+
+
+def sample(args, staticdir, workspace, model, iteration, batch_number, batch):
+    logging.info('[%d] Sampling from f(d|x) for x in batch %d', iteration, batch_number)
+
+    workers = Pool(args.jobs)
+    workers.map(partial(t_slice_sample,
+                        args=args,
+                        staticdir=staticdir,
+                        workspace=workspace,
+                        model=model),
+                batch)
+
+
+def t_slice_sample(seg, args, staticdir, workspace, model):
+    try:
+        return slice_sample(seg, args, staticdir, workspace, model)
+    except:
+        raise Exception('job={0} exception={1}'.format(seg.id,
+                                                       ''.join(traceback.format_exception(*sys.exc_info()))))
+
+
+def slice_sample(seg, args, staticdir, workspace, model):
+    files = ['{0}/{1}.hyp-but-ref.ffs.all'.format(workspace, seg.id),
+             '{0}/{1}.hyp.ffs.all'.format(workspace, seg.id)]
+
+    if all(os.path.exists(path) for path in files) and not args.redo:
+        logging.info('Reusing samples for segment %d', seg.id)
+        return
 
     # 1. Load pickled objects
     logging.debug('[%d] Loading target forest', seg.id)
@@ -475,11 +550,12 @@ def sample(seg, args, staticdir, workspace, model):
 
     # 4. Complete feature vectors
     hypcomps = []
-    refcomps = []
+    #refcomps = []
     refset = frozenset(seg.refs)
     hypexp = model.constant(semiring.prob.zero)
-    refexp = model.constant(semiring.prob.zero)
+    #refexp = model.constant(semiring.prob.zero)
     n_samples = 0
+    complement = []
     for y_group in projections:
         y_comps = model.constant(semiring.inside.one)
         for d_group in group_by_identity(y_group.values):
@@ -493,47 +569,24 @@ def sample(seg, args, staticdir, workspace, model):
             sample.components = FComponents([lookup_comps, stateless_comps, sample.components])
             # incorporate sample frequency
             n_samples += d_group.count
-            # TODO use semiring.pow
-            #sample.components.power(d_group.count)
-            hypcomps.append(sample.components.prod(d_group.count))
+            hypcomps.append(sample.components.power(d_group.count, semiring.inside))
             hypexp = hypexp.hadamard(hypcomps[-1], semiring.prob.plus)
-        if y_group.key in refset:
-            refcomps.append(hypcomps[-1])
-            refexp = refexp.hadamard(refcomps[-1], semiring.prob.plus)
+        if y_group.key not in refset:
+            complement.append(sample.components)
+
+        #if y_group.key in refset:
+            #refcomps.append(hypcomps[-1])
+            #refexp = refexp.hadamard(refcomps[-1], semiring.prob.plus)
 
     hypexp = hypexp.prod(1.0/n_samples)
-    refexp = refexp.prod(1.0/n_samples)
+    #refexp = refexp.prod(1.0/n_samples)
 
     #print('{0} ref-estimated {1}'.format(seg.id, refexp))
     #print('{0} hyp-estimated {1}'.format(seg.id, hypexp))
 
     pickle_it('{0}/{1}.hyp.ffs.all'.format(workspace, seg.id), hypcomps)
-    pickle_it('{0}/{1}.ss-ref.ffs.all'.format(workspace, seg.id), refcomps)
-
-    """
-    refffs = []
-
-
-    n_samples = 0
-    for group in derivations:
-        sample = group.key
-        # reduce local components of edges
-        lookup_comps = model.lookup.constant(semiring.inside.one)
-        stateless_comps = model.stateless.constant(semiring.inside.one)
-        for e in sample.edges:
-            lookup_comps = lookup_comps.hadamard(lookupffs[e], semiring.inside.times)
-            stateless_comps = stateless_comps.hadamard(statelessffs[e], semiring.inside.times)
-        # complete components (lookup, stateless, stateful)
-        sample.components = FComponents([lookup_comps, stateless_comps, sample.components])
-        y = yield_string(forest, sample.edges)
-        # if y is a ref
-        if y in refset:
-
-        # incorporate sample frequency
-        n_samples += group.count
-        hypffs.append(sample.components.prod(group.count))
-        expff = expff.hadamard(hypffs[-1], semiring.prob.plus)
-    """
+    pickle_it('{0}/{1}.hyp-but-ref.ffs.all'.format(workspace, seg.id), complement)
+    #pickle_it('{0}/{1}.ss-ref.ffs.all'.format(workspace, seg.id), refcomps)
 
     # 5. Log stuff
 
@@ -558,81 +611,145 @@ def sample(seg, args, staticdir, workspace, model):
                           #compfunc=lambda d: d.components,  # TODO: complete feature vectors of all derivations
                           derivation2str=lambda d: bracketed_string(forest, d.edges))
 
-    return (refcomps, refexp), (hypcomps, hypexp)
+
+def t_hyp_expectations(seg, args, workspace, model, n_samples):
+    try:
+        return hyp_expectations(seg, args, workspace, model, n_samples)
+    except:
+        raise Exception('job={0} exception={1}'.format(seg.id,
+                                                       ''.join(traceback.format_exception(*sys.exc_info()))))
 
 
-def reestimate_expectations(seg, args, model, components):
+def hyp_expectations(seg, args, workspace, model, n_samples):
 
-    # 1. Load ffs if necessary
-    #if refcomps is None:
-    #    refcomps = unpickle_it('{0}/{1}.ss-ref.ffs.all'.format(workspace, seg.id))
-    #if hypcomps is None:
-    #    hypcomps = unpickle_it('{0}/{1}.ss-hyp.ffs.all'.format(workspace, seg.id))
+    # 1. Load ffs
+    components = unpickle_it('{0}/{1}.hyp.ffs.all'.format(workspace, seg.id))
 
     # 2. Re-estimate probabilities
     logging.debug('[%d] Computing f(d|x,y)', seg.id)
+
+    # estimate p(d) by renormalising f(d) [which already incorporates sample frequency]
     fd = np.array([model.score(comp) for comp in components], dtype=ptypes.weight)
     pd = semiring.inside.normalise(fd)
-
+    # estimate Z(x) by averaging f(d)
+    Zx = semiring.inside.divide(semiring.inside.plus.reduce(fd),
+                                semiring.inside.from_real(n_samples))
+    # estimate <phi(d)> wrt f(d)
     expff = model.constant(semiring.prob.zero)
     # here we use the renormalised distribution
     for p, comp in zip(pd, components):
-        expff = expff.hadamard(comp.power(semiring.inside.as_real(p)), semiring.prob.plus)
+        expff = expff.hadamard(comp.power(semiring.inside.as_real(p), semiring.inside), semiring.prob.plus)
 
-    return expff
+    # we may also estimate Z(x, not ref) by simply summing over (x, not ref) without taking sample frequency into account
+    complement = unpickle_it('{0}/{1}.hyp-but-ref.ffs.all'.format(workspace, seg.id))
+    Z_butref = semiring.inside.plus.reduce([model.score(comp) for comp in complement])
+
+    return Zx, expff, Z_butref
 
 
-def process_batch(args, staticdir, workspace, model, batch, iteration, batch_number):
-    # 1. Log the segments in the batch
-    with smart_wopen('{0}/batch.gz'.format(workspace)) as fo:
-        for seg in batch:
-            print(seg, file=fo)
+def t_ref_expectations(seg, args, staticdir, model):
+    try:
+        return ref_expectations(seg, args, staticdir, model)
+    except:
+        raise Exception('job={0} exception={1}'.format(seg.id,
+                                                       ''.join(traceback.format_exception(*sys.exc_info()))))
 
-    #likelihood, derivatives = objective_and_derivatives(args, staticdir, workspace, model, batch)
-    #for fname, fvalue in zip(model.fnames(), derivatives.densify()):
-    #    print('{0} {1}'.format(fname, fvalue))
-    weights = optimise(args, staticdir, workspace, model, batch, iteration, batch_number)
-    #make_models(dict(zip(model.fnames(), weights)), model.extractors())
-    return weights
+
+def ref_expectations(seg, args, staticdir, model, forest=None, components=None, tsort=None):
+
+    # 1. Load pickled objects if necessary
+    if forest is None:
+        logging.debug('[%d] Loading pickled reference forest and components', seg.id)
+        forest = unpickle_it('{0}/{1}.ref.forest'.format(staticdir, seg.id))
+    if components is None:
+        components = unpickle_it('{0}/{1}.ref.ffs.all'.format(staticdir, seg.id))
+    if tsort is None:
+        tsort = AcyclicTopSortTable(forest)
+
+    # 2. Compute f(d|x, y)
+    logging.debug('[%d] Computing f(d|x,y)', seg.id)
+    weights = np.array([model.score(components[e]) for e in range(forest.n_edges())], dtype=ptypes.weight)
+    fd = TableLookupFunction(weights)
+
+    # 3. Compute expectations
+    logging.debug('[%d] Computing expectations', seg.id)
+    values = acyclic_value_recursion(forest, tsort, semiring.inside, omega=fd)
+    reversed_values = acyclic_reversed_value_recursion(forest, tsort, semiring.inside, values, omega=fd)
+    edge_expectations = compute_edge_expectation(forest, semiring.inside, values, reversed_values,
+                                                 omega=fd, normalise=True)
+    expff = model.constant(semiring.prob.zero)
+    for e in range(forest.n_edges()):
+        ue = semiring.inside.as_real(edge_expectations[e])
+        expff = expff.hadamard(components[e].power(ue, semiring.inside),
+                               semiring.prob.plus)
+    #logging.info('[%d] Z(ref)=%s u(ref)=%s', seg.id, values[tsort.root()], expff)
+
+    return values[tsort.root()], expff
+
+
+def update_reference_stats(args, staticdir, workspace, model, batch):
+    workers = Pool(args.jobs)
+    results = workers.map(partial(t_ref_expectations,
+                                  args=args,
+                                  staticdir=staticdir,
+                                  model=model),
+                          batch)
+    Z = semiring.inside.one
+    ff = model.constant(semiring.inside.one)
+    for z, u in results:
+        ff = ff.hadamard(u, semiring.inside.times)
+        Z = semiring.inside.times(Z, z)
+    return Z, ff
+
+
+def update_hypotheses_stats(args, staticdir, workspace, model, batch):
+    workers = Pool(args.jobs)
+    results = workers.map(partial(hyp_expectations,
+                                  args=args,
+                                  workspace=workspace,
+                                  model=model,
+                                  n_samples=args.samples),
+                          batch)
+
+    Z = semiring.inside.one
+    ff = model.constant(semiring.inside.one)
+    Z_butref = semiring.inside.one
+    for z, u, z_butref in results:
+        ff = ff.hadamard(u, semiring.inside.times)
+        Z = semiring.inside.times(Z, z)
+        Z_butref = semiring.inside.times(Z_butref, z_butref)
+
+    return Z, ff, Z_butref
 
 
 def objective_and_derivatives(args, staticdir, workspace, model, batch):
-    # 2. Compute expectations wrt p(d|x,y)
-    refprob = semiring.inside.one
-    refexp = model.constant(semiring.inside.one)
-    for seg in batch:
-        refprob_i, refexp_i = ref_expectations(seg, args, staticdir, model)
-        refexp = refexp.hadamard(refexp_i, semiring.inside.times)
-        refprob = semiring.inside.times(refprob, refprob_i)
-    if len(batch) > 1:
-        refexp = refexp.prod(1.0/len(batch))  # TODO use hadamard and semiring.pow
 
-    # 3. Sample from p(d,y|x)
-    for seg in batch:
-        sample(seg, args, staticdir, workspace, model)
+    # 1. Update expectations wrt p(d|x,y)
+    Z_xy, ff_xy = update_reference_stats(args, staticdir, workspace, model, batch)
 
-    # 4. Compute expectation wrt to p(d,y|x)
-    hypexp = model.constant(semiring.inside.one)
-    for seg in batch:
-        # re-estimate hyp expectations
-        hexp_i = reestimate_expectations(seg, args, model,
-                                         unpickle_it('{0}/{1}.hyp.ffs.all'.format(workspace, seg.id)))
-        hypexp = hypexp.hadamard(hexp_i, semiring.inside.times)
-        #logging.info('[%d] hyp-reestimated=%s', seg.id, hexp_i)
-    if len(batch) > 1:
-        hypexp = hypexp.prod(1.0/len(batch))
+    # 2. Update expectation wrt to p(d,y|x)
+    Z_x, ff_x, Z_x_not_y = update_hypotheses_stats(args, staticdir, workspace, model, batch)
+
+    logging.info('Z_xy=%f Z_x=%f Z_x_not_y=%f', Z_xy, Z_x, Z_x_not_y
+                 )
+    # TODO: normalise by batch length?
+    #if len(batch) > 1:
+    #    refexp = refexp.prod(1.0/len(batch))  # TODO use hadamard and semiring.pow
+    #    hypexp = hypexp.prod(1.0/len(batch))
 
     # TODO: turn semiring.divide into a binary operator
-    derivative = refexp.hadamard(hypexp.elementwise(semiring.inside.times.inverse), semiring.inside.times)
-    #print('ref={0}'.format(refexp))
-    #print('hyp={0}'.format(hypexp))
-    #print('objective={0}'.format(refprob))
-    #print('derivative={0}'.format(derivative))
-    #print('{0} ||| {1}'.format(refprob, derivative))
-    return refprob, derivative
+    #assert all(semiring.inside.gt(zh, zr) for zr, zh in zip(refprob, hypprob)), 'Ops'
+
+    # 3. Compute likelihood and derivative
+    likelihood = semiring.inside.divide(Z_xy, Z_x)
+    # TODO: use Z_x_not_y?
+    derivative = ff_xy.hadamard(ff_x.elementwise(semiring.inside.times.inverse), semiring.inside.times)
+
+    return likelihood, derivative
 
 
-def optimise(args, staticdir, workspace, model, batch, iteration, batch_number):
+def optimise(args, staticdir, workspace, model, iteration, batch_number, batch):
+    logging.info('[%d] Optimising model on batch %d', iteration, batch_number)
 
     def f(theta):
 
@@ -641,7 +758,8 @@ def optimise(args, staticdir, workspace, model, batch, iteration, batch_number):
         logprob, derivatives = objective_and_derivatives(args, staticdir, workspace, model_t, batch)
         obj = -logprob
         jac = -np.array(list(derivatives.densify()), dtype=ptypes.weight)
-
+        logging.info('O=%f', obj)
+        logging.info('J=%s', npvec2str(jac, model.fnames()))
         if args.L2 == 0.0:
             logging.info('[%d:%d] L=%f',  iteration, batch_number, obj)
             return obj, jac
@@ -687,77 +805,64 @@ def core(args):
 
     workspace, staticdir, dynamicdir = make_dirs(args)
 
+    # 1. Make model
     logging.info('Loading feature extractors')
     # Load feature extractors
     extractors = load_feature_extractors(args)
     logging.info('Making model')
     # Load the model
-    model = make_models(read_weights(args.weights, temperature=args.temperature, default=args.default), extractors)
+    if args.init is None:
+        model = make_models(read_weights(args.weights, temperature=args.temperature),
+                            extractors)
+    if args.init == 'random':
+        model = make_models(read_weights(args.weights, random=True),
+                            extractors)
+    elif args.init == 'uniform':
+        model = make_models(read_weights(args.weights),
+                            extractors,
+                            uniform_weights=True)
+    else:
+        model = make_models(read_weights(args.weights, default=float(args.init)),
+                            extractors)
+
     fnames = model.fnames()
     logging.debug('Model\n%s', model)
     print('{0} ||| init ||| {1}'.format(0, npvec2str(model.weights().densify(), fnames)))
 
-    logging.info('Parsing training data')
+    # 2. Parse data
     segments = [SegmentMetaData.parse(input_str, grammar_dir=args.dev_grammars) for input_str in smart_ropen(args.dev)]
-    # get D(x) for each and every segment
-    # get D(x, y) for each and every segment and store it
-    parsable = []
-    for seg in segments:
-        status = biparse(seg, args, staticdir, model)
-        if status:
-            parsable.append(seg)
+    logging.info('Parsing %d training instances using %d workers', len(segments), args.jobs)
+    workers = Pool(args.jobs)
+    feedback = workers.map(partial(t_biparse,
+                                   args=args,
+                                   staticdir=staticdir,
+                                   model=model),
+                           segments)
+    parsable = [seg for seg, status in zip(segments, feedback) if status]
+    logging.info(' %d out of %d training instances are bi-parsable', len(parsable), len(segments))
 
-    logging.info('%d out of %d segments are bi-parsable', len(parsable), len(segments))
-
-    # TODO: make batches
+    # 3. Optimise
     dimensionality = len(fnames)
     for iteration in range(1, args.maxiter + 1):
         iterdir = '{0}/{1}'.format(dynamicdir, iteration)
         os.makedirs(iterdir, exist_ok=True)
-        if args.shuffle:
-            shuffle(parsable)
-        if args.mode == 'all':
-            batches = [parsable]  # a single batch with all data points
-            logging.info('Single batch')
-        elif args.mode == 'online':
-            batches = [[seg] for seg in parsable]  # as many batches as training instances
-            logging.info('Online: %d instances', len(batches))
-        else:  # batch mode
-            batches = make_batches(parsable, float(args.mode)/100)
-            logging.info('%d batches: %s', len(batches), '/'.join(str(len(b)) for b in batches))
+        batches = prepare_batches(args, iterdir, parsable)
 
+        # 3b. process each batch in turn
         avg = np.zeros(dimensionality, dtype=ptypes.weight)
         for b, batch in enumerate(batches):
             batchdir = '{0}/batch{1}'.format(iterdir, b)
-            os.makedirs(batchdir, exist_ok=True)
-            logging.info('[%d] Optimising model on batch %d', iteration, b)
-            weights = process_batch(args, staticdir, batchdir, model, batch, iteration, b)
+
+            # i. sample
+            sample(args, staticdir, batchdir, model, iteration, b, batch)
+
+            # ii. optimise
+            weights = optimise(args, staticdir, batchdir, model, iteration, b, batch)
+
             print('{0} ||| {1} ||| {2}'.format(iteration, b, npvec2str(avg, fnames)))
             avg += weights
         avg /= len(batches)
         print('{0} ||| mean ||| {1}'.format(iteration, npvec2str(avg, fnames)))
-
-    #for seg in parsable:
-    #    expectations(seg, args, staticdir, model)
-
-
-    # iteration 0
-    #iteration = 0
-    #os.makedirs('{0}/{1}'.format(dynamicdir, iteration), exist_ok=True)
-
-    #for seg in parsable:
-    #    decode(seg, args, staticdir, '{0}/{1}'.format(dynamicdir, iteration), model)
-
-    #if args.mode == 'all':
-    #    batches = [segments]  # a single batch with all data points
-    #elif args.mode == 'online':
-    #    batches = list(segments)  # one data point per batch
-    #else:
-    #    perc = float(args.mode)/100
-    #    b_size = len(segments) * perc
-
-
-
 
 
 def main():

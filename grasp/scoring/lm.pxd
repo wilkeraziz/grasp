@@ -23,6 +23,8 @@ cdef class StatelessLM(Stateless):
         tuple _features
         object _initial
 
+    cdef _load_model(self)
+
 
 cdef class KenLM(Stateful):
 
@@ -34,3 +36,5 @@ cdef class KenLM(Stateful):
         object _model
         tuple _features
         object _initial
+
+    cdef _load_model(self)
