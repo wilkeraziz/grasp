@@ -1071,7 +1071,7 @@ struct __pyx_opt_args_5grasp_6formal_2hg_10Hypergraph_fetch {
 struct __pyx_opt_args_5grasp_7scoring_5model_5Model_fnames;
 
 /* "grasp/scoring/model.pxd":15
- *     cpdef weight_t score(self, FComponents freprs)
+ *     cpdef weight_t score(self, FComponents freprs) except *
  * 
  *     cpdef tuple fnames(self, wkey=?)             # <<<<<<<<<<<<<<
  * 

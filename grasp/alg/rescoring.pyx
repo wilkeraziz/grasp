@@ -204,8 +204,7 @@ cdef class SlicedRescoring:
                  StatefulScorer stateful,
                  Semiring semiring,
                  Rule goal_rule,
-                 Rule dead_rule,
-                 weight_t temperature0=1.0):
+                 Rule dead_rule):
         """
         Here
             lfunc is l(d),
@@ -565,7 +564,8 @@ cdef class SlicedRescoring:
         return SampleReturn(sample, fd, comp), semiring.as_real(sampler.Z)
 
 
-    cpdef sample(self, args):
+    cpdef sample(self, size_t n_samples, size_t batch_size, str within,
+                 str initial, list prior, size_t burn, size_t lag, weight_t temperature0):
         cdef Hypergraph D = self._forest
         cdef WeightFunction lfunc = self._lfunc
         cdef TopSortTable tsort_D = self._tsort
@@ -577,10 +577,10 @@ cdef class SlicedRescoring:
             TopSortTable tsort_S  # top sort table associated with S
 
         # Draw the initial sample
-        (d0, n_derivations) = self._initialise(D, tsort_D, lfunc, semiring, args.initial, args.temperature0)
+        (d0, n_derivations) = self._initialise(D, tsort_D, lfunc, semiring, initial, temperature0)
         # Prepare slice variables
         slicevars = self._make_slice_variables(make_span_conditions(D, lfunc, d0.edges, semiring),
-                                               args.prior[0], args.prior[1])
+                                               prior[0], prior[1])
         # Initialise the Markov chain
         markov_chain.append(d0)
 
@@ -601,7 +601,7 @@ cdef class SlicedRescoring:
         #    bar = range(args.burn + (args.samples * args.lag))
         # END LOG STUFF
 
-        for _ in range(args.burn + (args.samples * args.lag)):
+        for _ in range(burn + (n_samples * lag)):
 
             # get a truncated forest weighted by l(d)
             # and a weight table corresponding to g(d)
@@ -634,7 +634,7 @@ cdef class SlicedRescoring:
             logging.debug('2. Sampling from slice')
             d_in_S = self._sample(slice_return.S, tsort_S,
                                   slice_return.local, slice_return.residual,
-                                  slice_return.d0_in_S, args.batch, args.within)
+                                  slice_return.d0_in_S, batch_size, within)
             d_in_D = SampleReturn(slice_return.back_to_D(d_in_S.edges), d_in_S.score, d_in_S.components)
 
             # 3. Update the Markov chain and slice variables

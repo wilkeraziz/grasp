@@ -23,7 +23,7 @@ cdef class Model:
     cpdef tuple extractors(self):
         return self._extractors
 
-    cpdef weight_t score(self, FComponents freprs):
+    cpdef weight_t score(self, FComponents freprs) except *:
         return freprs.dot(self._weights)
 
     cpdef tuple fnames(self, wkey=None):

@@ -5,9 +5,10 @@ Table lookup extractors.
 """
 from grasp.scoring.frepr cimport FRepr, FVec
 from grasp.ptypes cimport weight_t
+import numpy as np
 
 
-CDEC_DEFAULT = 'Glue PassThrough EgivenFCoherent SampleCountF CountEF MaxLexFgivenE MaxLexEgivenF IsSingletonF IsSingletonFE'.split()
+CDEC_DEFAULT = 'Glue PassThrough IsSingletonF IsSingletonFE EgivenFCoherent SampleCountF CountEF MaxLexFgivenE MaxLexEgivenF'.split()
 
 
 cdef class RuleTable(TableLookup):
@@ -55,3 +56,36 @@ cdef class RuleTable(TableLookup):
 
     cpdef FRepr constant(self, weight_t value):
         return FVec([value] * len(self._fnames))
+
+
+cdef class LogTransformedRuleTable(RuleTable):
+    """
+    A rule table much like those in cdec and Moses.
+    Features are stored in an FVec.
+    """
+
+    def __init__(self, int uid, str name, list fnames, weight_t default=1.0):
+        super(LogTransformedRuleTable, self).__init__(uid, name, fnames)
+        self._default = default
+
+    def __repr__(self):
+        return '{0}(uid={1}, name={2}, fnames={3}, default={4})'.format(LogTransformedRuleTable.__name__,
+                                                                        repr(self.id),
+                                                                        repr(self.name),
+                                                                        repr(self._fnames),
+                                                                        repr(self._default))
+
+    def __getstate__(self):
+        return super(LogTransformedRuleTable,self).__getstate__(), {'default': self._default}
+
+    def __setstate__(self, state):
+        superstate, selfstate = state
+        self._default = tuple(selfstate['default'])
+        super(LogTransformedRuleTable,self).__setstate__(superstate)
+
+    cpdef FRepr featurize(self, rule):
+        """
+        :param rule: an SCFGProduction
+        :return:
+        """
+        return FVec([np.log(rule.fvalue(fname, self._default)) for fname in self._fnames])

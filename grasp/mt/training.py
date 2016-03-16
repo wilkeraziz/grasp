@@ -10,6 +10,9 @@ import sys
 :Authors: - Wilker Aziz
 """
 
+from os.path import splitext
+import subprocess as sp
+import shlex
 import argparse
 import logging
 import sys
@@ -19,10 +22,13 @@ import numpy as np
 import traceback
 from multiprocessing import Pool
 from functools import partial
+from collections import deque
+
+from grasp.loss.fast_bleu import DecodingBLEU
 
 import grasp.ptypes as ptypes
 
-from grasp.recipes import smart_ropen, smart_wopen, make_unique_directory, pickle_it, unpickle_it
+from grasp.recipes import smart_ropen, smart_wopen, make_unique_directory, pickle_it, unpickle_it, traceit
 
 from grasp.scoring.scorer import TableLookupScorer, StatelessScorer, StatefulScorer
 from grasp.scoring.model import Model, make_models
@@ -35,7 +41,7 @@ from grasp.mt.segment import SegmentMetaData
 from grasp.mt.input import make_input
 
 import grasp.semiring as semiring
-from grasp.semiring.operator import FixedRHS
+from grasp.semiring.operator import FixedLHS, FixedRHS
 
 from grasp.formal.scfgop import output_projection
 from grasp.formal.fsa import make_dfa, make_dfa_set, make_dfa_set2
@@ -55,7 +61,9 @@ from grasp.alg.inference import viterbi_derivation, AncestralSampler
 from grasp.alg.value import acyclic_value_recursion, acyclic_reversed_value_recursion, compute_edge_expectation
 from grasp.alg.rescoring import weight_edges
 from grasp.alg.rescoring import SlicedRescoring
+from grasp.alg.rescoring import stateless_rescoring
 from grasp.alg.chain import apply_filters, group_by_identity, group_by_projection
+from grasp.alg.expectation import expected_components
 
 from grasp.scoring.frepr import FComponents
 
@@ -65,14 +73,15 @@ from random import shuffle
 from numpy import linalg as LA
 from scipy.optimize import minimize
 from time import time, strftime
+from types import SimpleNamespace
 
 
-def npvec2str(nparray, fnames=None):
+def npvec2str(nparray, fnames=None, separator=' '):
     """converts an array of feature values into a string (fnames can be provided)"""
     if fnames is None:
-        return ' '.join(str(fvalue) for fvalue in nparray)
+        return separator.join(repr(fvalue) for fvalue in nparray)
     else:
-        return ' '.join('{0}={1}'.format(fname, fvalue) for fname, fvalue in zip(fnames, nparray))
+        return separator.join('{0}={1}'.format(fname, repr(fvalue)) for fname, fvalue in zip(fnames, nparray))
 
 
 def cmd_optimisation(parser):
@@ -91,21 +100,20 @@ def cmd_optimisation(parser):
                         help="use 'uniform' for uniform weights, 'random' for random weights, or choose a default weight")
     parser.add_argument("--resume", type=int, default=0,
                         help="Resume from a certain iteration (requires the config file of the preceding run)")
-
-
-def cmd_external(parser):
-    parser.add_argument('--scoring-tool', type=str,
-                        default='/Users/waziz/workspace/github/cdec/mteval/fast_score',
-                        help='a scoring tool such as fast_score')
-
-
-def cmd_sgd(parser):
+    parser.add_argument('--merge', type=int, default=0,
+                        help="how many iterations should we consider in estimating Z(x) (use 0 or less for all)")
     parser.add_argument("--sgd", type=int, nargs=2, default=[10, 10],
                         help="Number of iterations and function evaluations for target optimisation")
     parser.add_argument("--tol", type=float, nargs=2, default=[1e-9, 1e-9],
                         help="f-tol and g-tol in target optimisation")
     parser.add_argument("--L2", type=float, default=0.0,
                         help="Weight of L2 regulariser in target optimisation")
+
+
+def cmd_external(parser):
+    parser.add_argument('--scoring-tool', type=str,
+                        default='/Users/waziz/workspace/cdec/mteval/fast_score',
+                        help='a scoring tool such as fast_score')
 
 
 def cmd_logging(parser):
@@ -163,7 +171,7 @@ def cmd_model(group):
                        help='weight vector')
     group.add_argument('--rt',
                        action='store_true',
-                       help='include rule table features')
+                       help='include rule table features (both indicators and log-transformed probabilites)')
     group.add_argument('--wp', nargs=2,
                        help='include a word penalty feature (name, penalty)')
     group.add_argument('--ap', nargs=2,
@@ -178,9 +186,9 @@ def cmd_slice(group):
     group.add_argument('--chains',
                        type=int, default=1, metavar='K',
                        help='number of random restarts')
-    group.add_argument('--samples',
-                       type=int, default=100, metavar='N',
-                       help='number of samples')
+    group.add_argument('--samples', type=int, nargs=2, default=[100, 100],
+                       metavar='N N',
+                       help='number of samples for training (estimation of expectations) and testing (consensus decoding)')
     group.add_argument('--lag',
                        type=int, default=1, metavar='I',
                        help='lag between samples')
@@ -244,8 +252,7 @@ def get_argparser():
     cmd_model(parser.add_argument_group('Model'))
     cmd_parser(parser.add_argument_group('Parser'))
     cmd_grammar(parser.add_argument_group('Grammar'))
-    cmd_optimisation(parser.add_argument_group('Parameter optimisation by coordinate descent'))
-    cmd_sgd(parser.add_argument_group('Optimisation by SGD'))
+    cmd_optimisation(parser.add_argument_group('Parameter optimisation by SGD'))
     cmd_slice(parser.add_argument_group('Slice sampler'))
     cmd_external(parser.add_argument_group('External tools'))
     cmd_logging(parser.add_argument_group('Logging'))
@@ -275,19 +282,22 @@ def make_dirs(args, exist_ok=True):
         os.makedirs(outdir, exist_ok=exist_ok)
     logging.info('Writing files to: %s', outdir)
 
-    staticdir = '{0}/static'.format(outdir)
-    os.makedirs(staticdir, exist_ok=exist_ok)
+    devdir = '{0}/{1}'.format(outdir, args.dev_alias)
+    os.makedirs(devdir, exist_ok=exist_ok)
+
+    if args.devtest:
+        devtestdir = '{0}/{1}'.format(outdir, args.devtest_alias)
+        os.makedirs(devtestdir, exist_ok=exist_ok)
+
     dynamicdir = '{0}/iterations'.format(outdir)
     os.makedirs(dynamicdir, exist_ok=exist_ok)
 
-    return outdir, staticdir, dynamicdir
+    return outdir, devdir
 
 
 def prepare_for_parsing(seg, args):
     """
     Load grammars (i.e. main, extra, glue, passthrough) and prepare input FSA.
-    :param seg:
-    :param args:
     :return: (normal grammars, glue grammars, input DFA)
     """
     logging.debug('[%d] Loading grammars', seg.id)
@@ -331,20 +341,164 @@ def prepare_for_parsing(seg, args):
     return grammars, glue_grammars, input_dfa
 
 
-def t_biparse(seg, args, staticdir, model):
+def get_target_forest(seg, args, model):
+    """
+    Load grammars with `prepare_for_parsing`,
+        parse and produce target forest.
+
+    :return: forest, GoalRuleMaker
+    """
+    grammars, glue_grammars, input_dfa = prepare_for_parsing(seg, args)
+
+    # 3. Parse input
+    input_grammar = make_hypergraph_from_input_view(grammars, glue_grammars, DummyConstant(semiring.inside.one))
+
+    #  3b. get a parser and intersect the source FSA
+    goal_maker = GoalRuleMaker(args.goal, args.start)
+    parser = NederhofParser(input_grammar, input_dfa, semiring.inside)
+    root = input_grammar.fetch(Nonterminal(args.start))
+    source_forest = parser.do(root, goal_maker.get_iview())
+
+    #  3c. compute target projection
+    target_forest = output_projection(source_forest, semiring.inside, TableLookupScorer(model.dummy))
+    return target_forest, goal_maker
+
+
+def get_localffs(forest, model):
+    """
+    Return a list of lookup components and stateless components.
+    """
+    # 4. Local scoring
+    #  4a. lookup components
+    lookupffs = lookup_components(forest, model.lookup.extractors())
+    #  4b. stateless components
+    statelessffs = stateless_components(forest, model.stateless.extractors())
+    return lookupffs, statelessffs
+
+
+@traceit
+def decode(seg, args, model, workspace=None):
+    """
+    Sample and rank solutions by consensus BLEU
+    """
+    files = ['{0}/{1}.hyp.forest'.format(workspace, seg.id),
+             '{0}/{1}.hyp.ffs.rule'.format(workspace, seg.id),
+             '{0}/{1}.hyp.ffs.stateless'.format(workspace, seg.id)]
+    if args.redo or workspace is None or not all(os.path.exists(path) for path in files):
+        logging.info('[%d] Parsing and local scoring', seg.id)
+        # parse
+        forest, goal_maker = get_target_forest(seg, args, model)
+        goal_maker.update()
+        # local ffs
+        lookupffs, statelessffs = get_localffs(forest, model)
+        if workspace is not None:  # save objects
+            pickle_it('{0}/{1}.hyp.forest'.format(workspace, seg.id), forest)
+            pickle_it('{0}/{1}.hyp.ffs.rule'.format(workspace, seg.id), lookupffs)
+            pickle_it('{0}/{1}.hyp.ffs.stateless'.format(workspace, seg.id), statelessffs)
+    else:  # load
+        logging.info('[%d] Reusing forest and local components', seg.id)
+        forest = unpickle_it('{0}/{1}.hyp.forest'.format(workspace, seg.id))
+        goal_maker = GoalRuleMaker(args.goal, args.start, n=2)
+        lookupffs = unpickle_it('{0}/{1}.hyp.ffs.rule'.format(workspace, seg.id))
+        statelessffs = unpickle_it('{0}/{1}.hyp.ffs.stateless'.format(workspace, seg.id))
+
+    logging.info('[%d] Slice sampling', seg.id)
+    # l(d)
+    lfunc = TableLookupFunction(np.array([semiring.inside.times(model.lookup.score(ff1),
+                                                                model.stateless.score(ff2))
+                                          for ff1, ff2 in zip(lookupffs, statelessffs)], dtype=ptypes.weight))
+    # slice sample
+    tsort = AcyclicTopSortTable(forest)
+
+    sampler = SlicedRescoring(forest,
+                              lfunc,
+                              tsort,
+                              TableLookupScorer(model.dummy),
+                              StatelessScorer(model.dummy),
+                              StatefulScorer(model.stateful),
+                              semiring.inside,
+                              goal_maker.get_oview(),
+                              OutputView(make_dead_srule()))
+
+    # here samples are represented as sequences of edge ids
+    d0, markov_chain = sampler.sample(n_samples=args.samples[1], batch_size=args.batch, within=args.within,
+                                      initial=args.initial, prior=args.prior, burn=args.burn, lag=args.lag,
+                                      temperature0=args.temperature0)
+
+    samples = apply_filters(markov_chain,
+                            burn=args.burn,
+                            lag=args.lag)
+    # total number of samples kept
+    N = len(samples)
+    projections = group_by_projection(samples, lambda d: yield_string(forest, d.edges))
+
+    logging.info('[%d] Consensus decoding', seg.id)
+    # translation strings
+    support = [group.key for group in projections]
+    # empirical distribution
+    posterior = np.array([float(group.count)/N for group in projections], dtype=ptypes.weight)
+    # consensus decoding
+    scorer = DecodingBLEU(support, posterior)
+    losses = np.array([scorer.loss(y) for y in support], dtype=ptypes.weight)
+    # order samples by least loss, then by max prob
+    ranking = sorted(range(len(support)), key=lambda i: (losses[i], -posterior[i]))
+    return [SimpleNamespace(y=support[i], coloss=losses[i], p=posterior[i]) for i in ranking]
+
+
+def mteval(args, staticdir, model, segments, hyp_path, ref_path, eval_path):
+    """
+    Decode and evaluate with an external tool.
+    :return: BLEU score.
+    """
+
+    # decode
+    with Pool(args.jobs) as workers:
+        results = workers.map(partial(decode,
+                                      args=args,
+                                      model=model,
+                                      workspace=staticdir),
+                              segments)
+
+    # write best decisions to file
+    with smart_wopen(hyp_path) as fo:
+        for result in results:
+            print(result[0].y, file=fo)
+    # write all decisions to file
+    with smart_wopen('{0}.ranking'.format(hyp_path)) as fo:
+        for seg, result in zip(segments, results):
+            print('# segment ||| co-loss ||| posterior ||| solution', file=fo)
+            for hyp in result:
+                print('{0} ||| {1} ||| {2} ||| {3}'.format(seg.id, hyp.coloss, hyp.p, hyp.y), file=fo)
+            print(file=fo)
+
+    # call scoring tool
+    cmd_str = '{0} -r {1}'.format(args.scoring_tool, ref_path)
+    logging.info('Scoring: %s', cmd_str)
+    # prepare args
+    cmd_args = shlex.split(cmd_str)
+    # assess
+    score = None
+    with smart_ropen(hyp_path) as fin:
+        with smart_wopen('{0}.stdout'.format(eval_path)) as fout:
+            with smart_wopen('{0}.stderr'.format(eval_path)) as ferr:
+                with sp.Popen(cmd_args, stdin=fin, stdout=fout, stderr=ferr) as proc:
+                    proc.wait()
     try:
-        return biparse(seg, args, staticdir, model)
+        with smart_ropen('{0}.stdout'.format(eval_path)) as fi:
+            line = next(fi)
+            score = float(line.strip())
     except:
-        raise Exception('job={0} exception={1}'.format(seg.id,
-                                                       ''.join(traceback.format_exception(*sys.exc_info()))))
+        logging.error('Problem reading %s.stdout', eval_path)
+
+    return score
 
 
+@traceit
 def biparse(seg, args, staticdir, model):
     # this procedure produces the following files
-    general_files = ['{0}/{1}.src.forest'.format(staticdir, seg.id),
+    general_files = ['{0}/{1}.hyp.forest'.format(staticdir, seg.id),
                      '{0}/{1}.hyp.ffs.rule'.format(staticdir, seg.id),
-                     '{0}/{1}.hyp.ffs.stateless'.format(staticdir, seg.id),
-                     '{0}/{1}.hyp.forest'.format(staticdir, seg.id)]
+                     '{0}/{1}.hyp.ffs.stateless'.format(staticdir, seg.id)]
     ref_files = ['{0}/{1}.ref.ffs.all'.format(staticdir, seg.id),
                  '{0}/{1}.ref.forest'.format(staticdir, seg.id)]
     # check for redundant work
@@ -355,32 +509,13 @@ def biparse(seg, args, staticdir, model):
         else:
             return False  # not parsable
 
-    grammars, glue_grammars, input_dfa = prepare_for_parsing(seg, args)
-
-    # 3. Parse input
-    input_grammar = make_hypergraph_from_input_view(grammars, glue_grammars, DummyConstant(semiring.inside.one))
-
-    logging.debug('[%d] Parsing source', seg.id)
-    #  3b. get a parser and intersect the source FSA
-    goal_maker = GoalRuleMaker(args.goal, args.start)
-    parser = NederhofParser(input_grammar, input_dfa, semiring.inside)
-    root = input_grammar.fetch(Nonterminal(args.start))
-    source_forest = parser.do(root, goal_maker.get_iview())
-    pickle_it('{0}/{1}.src.forest'.format(staticdir, seg.id), source_forest)
-
-    #  3c. compute target projection
-    logging.debug('[%d] Computing target projection', seg.id)
-    # Pass0
-    target_forest = output_projection(source_forest, semiring.inside, TableLookupScorer(model.dummy))
+    target_forest, goal_maker = get_target_forest(seg, args, model)
     pickle_it('{0}/{1}.hyp.forest'.format(staticdir, seg.id), target_forest)
 
     # 4. Local scoring
     logging.debug('[%d] Computing local components', seg.id)
-    #  4a. lookup components
-    lookupffs = lookup_components(target_forest, model.lookup.extractors())
-    #  4b. stateless components
+    lookupffs, statelessffs = get_localffs(target_forest, model)
     pickle_it('{0}/{1}.hyp.ffs.rule'.format(staticdir, seg.id), lookupffs)
-    statelessffs = stateless_components(target_forest, model.stateless.extractors())
     pickle_it('{0}/{1}.hyp.ffs.stateless'.format(staticdir, seg.id), statelessffs)
 
     # 5. Parse references
@@ -400,6 +535,10 @@ def biparse(seg, args, staticdir, model):
     logging.debug('[%d] Rescoring reference forest: nodes=%d edges=%d', seg.id, ref_forest.n_nodes(), ref_forest.n_edges())
     goal_maker.update()
 
+    tsort = AcyclicTopSortTable(ref_forest)
+    n_derivations = int(semiring.inside.as_real(acyclic_value_recursion(ref_forest, tsort, semiring.inside)[tsort.root()]))
+    logging.info('[%d] %d derivations in refset', seg.id, n_derivations)
+
     # 6. Nonlocal scoring
 
     #  5c. complete model: thus, with stateful components
@@ -414,9 +553,10 @@ def biparse(seg, args, staticdir, model):
     pickle_it('{0}/{1}.ref.forest'.format(staticdir, seg.id), ref_forest)
     pickle_it('{0}/{1}.ref.ffs.all'.format(staticdir, seg.id), rescorer.components())
 
-    raw_viterbi = viterbi_derivation(ref_forest, AcyclicTopSortTable(ref_forest))
+    tsort = AcyclicTopSortTable(ref_forest)
+    raw_viterbi = viterbi_derivation(ref_forest, tsort)
     score = derivation_weight(ref_forest, raw_viterbi, semiring.inside)
-    logging.debug('[%d] Viterbi derivation [%s]: %s', seg.id, score, yield_string(ref_forest, raw_viterbi))
+    logging.info('[%d] Viterbi derivation in refset [%s]: %s', seg.id, score, bracketed_string(ref_forest, raw_viterbi))
 
     return True
 
@@ -479,28 +619,32 @@ def prepare_batches(args, workspace, segments):
     return batches
 
 
-def sample(args, staticdir, workspace, model, iteration, batch_number, batch):
-    logging.info('[%d] Sampling from f(d|x) for x in batch %d', iteration, batch_number)
+def get_empirical_support(model, refset, forest, lookupffs, statelessffs, markov_chain):
+    # complete feature vectors (with local components) and estimate an empirical support
+    support = []
+    seen = set()
+    for derivation in markov_chain:
+        if derivation.edges in seen:
+            continue
+        seen.add(derivation.edges)  # no duplicates
+        # reconstruct components
+        lookup_comps = model.lookup.constant(semiring.inside.one)
+        stateless_comps = model.stateless.constant(semiring.inside.one)
+        for e in derivation.edges:
+            lookup_comps = lookup_comps.hadamard(lookupffs[e], semiring.inside.times)
+            stateless_comps = stateless_comps.hadamard(statelessffs[e], semiring.inside.times)
+        # complete components (lookup, stateless, stateful)
+        components = FComponents([lookup_comps, stateless_comps, derivation.components])
+        # get yield
+        y = yield_string(forest, derivation.edges)
+        # update estimated support
+        support.append((y in refset, derivation.edges, components))
+    return support
 
-    workers = Pool(args.jobs)
-    workers.map(partial(t_slice_sample,
-                        args=args,
-                        staticdir=staticdir,
-                        workspace=workspace,
-                        model=model),
-                batch)
 
-
-def t_slice_sample(seg, args, staticdir, workspace, model):
-    try:
-        return slice_sample(seg, args, staticdir, workspace, model)
-    except:
-        raise Exception('job={0} exception={1}'.format(seg.id,
-                                                       ''.join(traceback.format_exception(*sys.exc_info()))))
-
-
-def slice_sample(seg, args, staticdir, workspace, model):
-    files = ['{0}/{1}.hyp-but-ref.ffs.all'.format(workspace, seg.id),
+@traceit
+def slice_sample(seg, args, staticdir, supportdir, workspace, model):
+    files = ['{0}/{1}.D.ffs.all'.format(supportdir, seg.id),
              '{0}/{1}.hyp.ffs.all'.format(workspace, seg.id)]
 
     if all(os.path.exists(path) for path in files) and not args.redo:
@@ -510,6 +654,7 @@ def slice_sample(seg, args, staticdir, workspace, model):
     # 1. Load pickled objects
     logging.debug('[%d] Loading target forest', seg.id)
     forest = unpickle_it('{0}/{1}.hyp.forest'.format(staticdir, seg.id))
+    # TODO: store top sort table
     logging.debug('[%d] Loading local components', seg.id)
     lookupffs = unpickle_it('{0}/{1}.hyp.ffs.rule'.format(staticdir, seg.id))
     statelessffs = unpickle_it('{0}/{1}.hyp.ffs.stateless'.format(staticdir, seg.id))
@@ -536,69 +681,57 @@ def slice_sample(seg, args, staticdir, workspace, model):
                               StatefulScorer(model.stateful),
                               semiring.inside,
                               goal_maker.get_oview(),
-                              OutputView(make_dead_srule()),
-                              temperature0=args.temperature0)
+                              OutputView(make_dead_srule()))
 
     # here samples are represented as sequences of edge ids
-    d0, markov_chain = sampler.sample(args)
+    d0, markov_chain = sampler.sample(n_samples=args.samples[0], batch_size=args.batch, within=args.within,
+                                      initial=args.initial, prior=args.prior, burn=args.burn, lag=args.lag,
+                                      temperature0=args.temperature0)
 
+    # save empirical support
+    pickle_it('{0}/{1}.D.ffs.all'.format(supportdir, seg.id),
+              get_empirical_support(model, frozenset(seg.refs), forest, lookupffs, statelessffs, markov_chain))
+
+
+    # apply usual MCMC filters to the Markov chain
     samples = apply_filters(markov_chain,
                             burn=args.burn,
                             lag=args.lag)
 
-    projections = group_by_projection(samples, lambda d: yield_string(forest, d.edges))
+    n_samples = len(samples)
 
-    # 4. Complete feature vectors
+    # 4. Complete feature vectors and compute expectation
     hypcomps = []
-    #refcomps = []
-    refset = frozenset(seg.refs)
     hypexp = model.constant(semiring.prob.zero)
-    #refexp = model.constant(semiring.prob.zero)
-    n_samples = 0
-    complement = []
-    for y_group in projections:
-        y_comps = model.constant(semiring.inside.one)
-        for d_group in group_by_identity(y_group.values):
-            sample = d_group.key
-            lookup_comps = model.lookup.constant(semiring.inside.one)
-            stateless_comps = model.stateless.constant(semiring.inside.one)
-            for e in sample.edges:
-                lookup_comps = lookup_comps.hadamard(lookupffs[e], semiring.inside.times)
-                stateless_comps = stateless_comps.hadamard(statelessffs[e], semiring.inside.times)
-            # complete components (lookup, stateless, stateful)
-            sample.components = FComponents([lookup_comps, stateless_comps, sample.components])
-            # incorporate sample frequency
-            n_samples += d_group.count
-            hypcomps.append(sample.components.power(d_group.count, semiring.inside))
-            hypexp = hypexp.hadamard(hypcomps[-1], semiring.prob.plus)
-        if y_group.key not in refset:
-            complement.append(sample.components)
+    d_groups = group_by_identity(samples)
+    for d_group in d_groups:
+        derivation = d_group.key
+        # reconstruct components
+        lookup_comps = model.lookup.constant(semiring.inside.one)
+        stateless_comps = model.stateless.constant(semiring.inside.one)
+        for e in derivation.edges:
+            lookup_comps = lookup_comps.hadamard(lookupffs[e], semiring.inside.times)
+            stateless_comps = stateless_comps.hadamard(statelessffs[e], semiring.inside.times)
+        # complete components (lookup, stateless, stateful)
+        # note that here we are updating derivation.components!
+        derivation.components = FComponents([lookup_comps, stateless_comps, derivation.components])
+        # incorporate sample frequency
+        hypcomps.append(derivation.components.power(float(d_group.count)/n_samples, semiring.inside))
+        hypexp = hypexp.hadamard(hypcomps[-1], semiring.prob.plus)
 
-        #if y_group.key in refset:
-            #refcomps.append(hypcomps[-1])
-            #refexp = refexp.hadamard(refcomps[-1], semiring.prob.plus)
-
-    hypexp = hypexp.prod(1.0/n_samples)
-    #refexp = refexp.prod(1.0/n_samples)
-
-    #print('{0} ref-estimated {1}'.format(seg.id, refexp))
-    #print('{0} hyp-estimated {1}'.format(seg.id, hypexp))
-
+    # save feature vectors
     pickle_it('{0}/{1}.hyp.ffs.all'.format(workspace, seg.id), hypcomps)
-    pickle_it('{0}/{1}.hyp-but-ref.ffs.all'.format(workspace, seg.id), complement)
-    #pickle_it('{0}/{1}.ss-ref.ffs.all'.format(workspace, seg.id), refcomps)
 
     # 5. Log stuff
-
     if args.save_d:
-        derivations = group_by_identity(samples)
         save_mcmc_derivations('{0}/{1}.hyp.d.gz'.format(workspace, seg.id),
-                              derivations,
+                              d_groups,
                               valuefunc=lambda d: d.score,
-                              #compfunc=lambda d: d.components,
+                              compfunc=lambda d: d.components,
                               derivation2str=lambda d: bracketed_string(forest, d.edges))
 
     if args.save_y:
+        projections = group_by_projection(samples, lambda d: yield_string(forest, d.edges))
         save_mcmc_yields('{0}/{1}.hyp.y.gz'.format(workspace, seg.id),
                          projections)
 
@@ -612,15 +745,49 @@ def slice_sample(seg, args, staticdir, workspace, model):
                           derivation2str=lambda d: bracketed_string(forest, d.edges))
 
 
-def t_hyp_expectations(seg, args, workspace, model, n_samples):
-    try:
-        return hyp_expectations(seg, args, workspace, model, n_samples)
-    except:
-        raise Exception('job={0} exception={1}'.format(seg.id,
-                                                       ''.join(traceback.format_exception(*sys.exc_info()))))
+def sample(args, staticdir, supportdir, workspace, model, iteration, batch_number, batch):
+    logging.info('[%d] Slice sampling batch %d', iteration, batch_number)
+
+    with Pool(args.jobs) as workers:
+        workers.map(partial(slice_sample,
+                            args=args,
+                            staticdir=staticdir,
+                            supportdir=supportdir,
+                            workspace=workspace,
+                            model=model),
+                    batch)
 
 
-def hyp_expectations(seg, args, workspace, model, n_samples):
+@traceit
+def ref_expectations(seg, args, staticdir, model):
+    """
+    Return Z(x, y \in ref) and the expected feature vector.
+    """
+
+    # 1. Load pickled objects if necessary
+
+    logging.debug('[%d] Loading pickled reference forest and components', seg.id)
+    forest = unpickle_it('{0}/{1}.ref.forest'.format(staticdir, seg.id))
+    components = unpickle_it('{0}/{1}.ref.ffs.all'.format(staticdir, seg.id))
+    tsort = AcyclicTopSortTable(forest)
+
+    # 2. Compute f(d|x, y)
+    logging.debug('[%d] Computing f(d|x,y)', seg.id)
+    weights = np.array([model.score(components[e]) for e in range(forest.n_edges())], dtype=ptypes.weight)
+    fe = TableLookupFunction(weights)
+
+    # 3. Compute expectations
+    logging.debug('[%d] Computing expectations', seg.id)
+    Z, mean = expected_components(forest, fe, tsort, semiring.inside, model, components)
+
+    return Z, mean
+
+
+@traceit
+def hyp_expectations(seg, args, workspace, model):
+    """
+    Return Z(x) and the expected feature vector.
+    """
 
     # 1. Load ffs
     components = unpickle_it('{0}/{1}.hyp.ffs.all'.format(workspace, seg.id))
@@ -631,137 +798,173 @@ def hyp_expectations(seg, args, workspace, model, n_samples):
     # estimate p(d) by renormalising f(d) [which already incorporates sample frequency]
     fd = np.array([model.score(comp) for comp in components], dtype=ptypes.weight)
     pd = semiring.inside.normalise(fd)
-    # estimate Z(x) by averaging f(d)
-    Zx = semiring.inside.divide(semiring.inside.plus.reduce(fd),
-                                semiring.inside.from_real(n_samples))
+    # estimate Z(x) = \sum_d f(d)
+    Z = semiring.inside.plus.reduce(fd)
     # estimate <phi(d)> wrt f(d)
-    expff = model.constant(semiring.prob.zero)
-    # here we use the renormalised distribution
+    mean = model.constant(semiring.prob.zero)
+    # here we use the renormalised distribution to compute expected features
     for p, comp in zip(pd, components):
-        expff = expff.hadamard(comp.power(semiring.inside.as_real(p), semiring.inside), semiring.prob.plus)
+        mean = mean.hadamard(comp.elementwise(FixedLHS(semiring.inside.as_real(p),
+                                                       semiring.prob.times)),
+                             semiring.prob.plus)
 
-    # we may also estimate Z(x, not ref) by simply summing over (x, not ref) without taking sample frequency into account
-    complement = unpickle_it('{0}/{1}.hyp-but-ref.ffs.all'.format(workspace, seg.id))
-    Z_butref = semiring.inside.plus.reduce([model.score(comp) for comp in complement])
-
-    return Zx, expff, Z_butref
+    return Z, mean
 
 
-def t_ref_expectations(seg, args, staticdir, model):
-    try:
-        return ref_expectations(seg, args, staticdir, model)
-    except:
-        raise Exception('job={0} exception={1}'.format(seg.id,
-                                                       ''.join(traceback.format_exception(*sys.exc_info()))))
+@traceit
+def estimate_partition_function(seg, model, merging):
+    """
+    Returns Z(x, y \in refset) and Z(x, y \not\in refset).
+    """
 
+    # 1. Load unique derivations separating them depending on whether or not they belong to the reference set
 
-def ref_expectations(seg, args, staticdir, model, forest=None, components=None, tsort=None):
+    components_R = []  # references
+    components_C = []  # complement (not reference)
 
-    # 1. Load pickled objects if necessary
-    if forest is None:
-        logging.debug('[%d] Loading pickled reference forest and components', seg.id)
-        forest = unpickle_it('{0}/{1}.ref.forest'.format(staticdir, seg.id))
-    if components is None:
-        components = unpickle_it('{0}/{1}.ref.ffs.all'.format(staticdir, seg.id))
-    if tsort is None:
-        tsort = AcyclicTopSortTable(forest)
+    seen = set()
+    for supportdir in merging:
+        for is_ref, edges, components in unpickle_it('{0}/{1}.D.ffs.all'.format(supportdir, seg.id)):
+            if edges in seen:  # no duplicates
+                continue
+            seen.add(edges)
+            if is_ref:
+                components_R.append(components)
+            else:
+                components_C.append(components)
+    logging.info('[%d] D(x) |R|=%d |C|=%d', seg.id, len(components_R), len(components_C))
 
-    # 2. Compute f(d|x, y)
-    logging.debug('[%d] Computing f(d|x,y)', seg.id)
-    weights = np.array([model.score(components[e]) for e in range(forest.n_edges())], dtype=ptypes.weight)
-    fd = TableLookupFunction(weights)
+    # 2. Re-estimate probabilities
+    logging.debug('[%d] Computing f(d|x) to estimate partition function', seg.id)
 
-    # 3. Compute expectations
-    logging.debug('[%d] Computing expectations', seg.id)
-    values = acyclic_value_recursion(forest, tsort, semiring.inside, omega=fd)
-    reversed_values = acyclic_reversed_value_recursion(forest, tsort, semiring.inside, values, omega=fd)
-    edge_expectations = compute_edge_expectation(forest, semiring.inside, values, reversed_values,
-                                                 omega=fd, normalise=True)
-    expff = model.constant(semiring.prob.zero)
-    for e in range(forest.n_edges()):
-        ue = semiring.inside.as_real(edge_expectations[e])
-        expff = expff.hadamard(components[e].power(ue, semiring.inside),
-                               semiring.prob.plus)
-    #logging.info('[%d] Z(ref)=%s u(ref)=%s', seg.id, values[tsort.root()], expff)
+    if len(components_R):
+        Z_R = semiring.inside.plus.reduce(np.array([model.score(comp) for comp in components_R], dtype=ptypes.weight))
+    else:
+        Z_R = semiring.inside.zero
+    if len(components_C):
+        Z_C = semiring.inside.plus.reduce(np.array([model.score(comp) for comp in components_C], dtype=ptypes.weight))
+    else:
+        Z_C = semiring.inside.zero
 
-    return values[tsort.root()], expff
+    return Z_R, Z_C
 
 
 def update_reference_stats(args, staticdir, workspace, model, batch):
-    workers = Pool(args.jobs)
-    results = workers.map(partial(t_ref_expectations,
-                                  args=args,
-                                  staticdir=staticdir,
-                                  model=model),
-                          batch)
-    Z = semiring.inside.one
+    """
+    Return an array containing Z(x, y \in refset) for every training instance,
+        as well as the expected feature vector.
+    """
+    with Pool(args.jobs) as workers:
+        results = workers.map(partial(ref_expectations,
+                                      args=args,
+                                      staticdir=staticdir,
+                                      model=model),
+                              batch)
+    # results contain (partition function, expected features) for each training instance
+    # the total in the training set is obtained by reduction using inside.times
     ff = model.constant(semiring.inside.one)
     for z, u in results:
         ff = ff.hadamard(u, semiring.inside.times)
-        Z = semiring.inside.times(Z, z)
-    return Z, ff
+
+    return np.array([z for z, u in results], dtype=ptypes.weight), ff
 
 
 def update_hypotheses_stats(args, staticdir, workspace, model, batch):
-    workers = Pool(args.jobs)
-    results = workers.map(partial(hyp_expectations,
-                                  args=args,
-                                  workspace=workspace,
-                                  model=model,
-                                  n_samples=args.samples),
-                          batch)
+    """
+    Return an array containing Z(x)
+        as well as the expected feature vector.
+    """
+    with Pool(args.jobs) as workers:
+        results = workers.map(partial(hyp_expectations,
+                                      args=args,
+                                      workspace=workspace,
+                                      model=model),
+                              batch)
 
-    Z = semiring.inside.one
+    # results contain (partition function, expected features) for each training instance
+    # the total in the training set is obtained by reduction using inside.times
     ff = model.constant(semiring.inside.one)
-    Z_butref = semiring.inside.one
-    for z, u, z_butref in results:
+    for z, u in results:
         ff = ff.hadamard(u, semiring.inside.times)
-        Z = semiring.inside.times(Z, z)
-        Z_butref = semiring.inside.times(Z_butref, z_butref)
 
-    return Z, ff, Z_butref
+    return np.array([z for z, u in results], dtype=ptypes.weight), ff
 
 
-def objective_and_derivatives(args, staticdir, workspace, model, batch):
+def update_support_stats(args, staticdir, workspace, model, batch, merging):
+    """
+    Return two arrays representing the batch. The first array contains Z(x, y \in refset),
+        the second array contains Z(x, y \not\in refset).
+    """
+    with Pool(args.jobs) as workers:
+        results = workers.map(partial(estimate_partition_function,
+                                      model=model,
+                                      merging=merging),
+                              batch)
+
+    Z_R = np.array([z_r for z_r, z_c in results], dtype=ptypes.weight)
+    Z_C = np.array([z_c for z_r, z_c in results], dtype=ptypes.weight)
+
+    return Z_R, Z_C
+
+
+def objective_and_derivatives(args, staticdir, workspace, model, batch, merging):
+
+    # 1. Update Z(x, y \in refset) and Z(x, y \not\in refset)
+    logging.info('Updating D(x)')
+    Z_R, Z_C = update_support_stats(args, staticdir, workspace, model, batch, merging)
 
     # 1. Update expectations wrt p(d|x,y)
+    # here we keep Z_xy because these are exact quantities
+    logging.info('Updating f(d|x,y)')
     Z_xy, ff_xy = update_reference_stats(args, staticdir, workspace, model, batch)
 
+    # Z_R <= Z_xy
+    # typically, Z_R < Z_xy because the slice sampler that estimates Z_R might miss all the references
+
     # 2. Update expectation wrt to p(d,y|x)
-    Z_x, ff_x, Z_x_not_y = update_hypotheses_stats(args, staticdir, workspace, model, batch)
+    logging.info('Updating f(d,y|x)')
+    Z_x, ff_x = update_hypotheses_stats(args, staticdir, workspace, model, batch)
 
-    logging.info('Z_xy=%f Z_x=%f Z_x_not_y=%f', Z_xy, Z_x, Z_x_not_y
-                 )
-    # TODO: normalise by batch length?
-    #if len(batch) > 1:
-    #    refexp = refexp.prod(1.0/len(batch))  # TODO use hadamard and semiring.pow
-    #    hypexp = hypexp.prod(1.0/len(batch))
+    # 3. Estimate the likelihood \prod_i  Z(x_i, y_i) / Z(x_i)
+    num = semiring.inside.times.reduce(Z_xy)
+    # to approximate the denominator we sum Z_xy (from reference forests) and
+    # Z_C (the complement, estimate by merging supports from different iterations)
+    den = semiring.inside.times.reduce([semiring.inside.plus(a, b) for a, b in zip(Z_xy, Z_C)])
+    likelihood = semiring.inside.divide(num, den)
 
-    # TODO: turn semiring.divide into a binary operator
-    #assert all(semiring.inside.gt(zh, zr) for zr, zh in zip(refprob, hypprob)), 'Ops'
+    logging.info('Zxy=%f Zxy+Zc=%f | Zc=%f | discarded: Zr=%f Zx=%f',
+                 num,
+                 den,
+                 semiring.inside.times.reduce(Z_C),
+                 semiring.inside.times.reduce(Z_R),
+                 semiring.inside.times.reduce(Z_x))
 
-    # 3. Compute likelihood and derivative
-    likelihood = semiring.inside.divide(Z_xy, Z_x)
-    # TODO: use Z_x_not_y?
+    # 4. Estimate the derivative <phi(d)>_p(d|x,y) - <phi(d)>_p(d|x)
     derivative = ff_xy.hadamard(ff_x.elementwise(semiring.inside.times.inverse), semiring.inside.times)
+
+    # normalise by batch size
+    if len(batch) > 1:
+        factor = 1.0 / len(batch)
+        likelihood *= factor
+        derivative = derivative.prod(factor)
 
     return likelihood, derivative
 
 
-def optimise(args, staticdir, workspace, model, iteration, batch_number, batch):
-    logging.info('[%d] Optimising model on batch %d', iteration, batch_number)
+def optimise(args, staticdir, workspace, model, iteration, batch_number, batch, merging):
+    logging.info('[I=%d] Optimising model on batch %d', iteration, batch_number)
 
     def f(theta):
 
         model_t = make_models(dict(zip(model.fnames(), theta)), model.extractors())
 
-        logprob, derivatives = objective_and_derivatives(args, staticdir, workspace, model_t, batch)
+        logprob, derivatives = objective_and_derivatives(args, staticdir, workspace, model_t, batch, merging)
         obj = -logprob
         jac = -np.array(list(derivatives.densify()), dtype=ptypes.weight)
-        logging.info('O=%f', obj)
-        logging.info('J=%s', npvec2str(jac, model.fnames()))
+
         if args.L2 == 0.0:
-            logging.info('[%d:%d] L=%f',  iteration, batch_number, obj)
+            logging.info('[I=%d, b=%d] O=%f',  iteration, batch_number, obj)
+            logging.debug('[I=%d, b=%d] Derivatives\n%s', iteration, batch_number, npvec2str(jac, model.fnames(), '\n'))
             return obj, jac
         else:
             r_obj = obj
@@ -771,17 +974,18 @@ def optimise(args, staticdir, workspace, model, iteration, batch_number, batch):
                 regulariser = LA.norm(theta, 2) ** 2
                 r_obj += args.L2 * regulariser
                 r_jac += 2 * args.L2 * theta
-                logging.info('[%d:%d] L=%f L2-regularised=%f', iteration, batch_number, obj, r_obj)
+                logging.info('[I=%d, b=%d] O=%f L=%f', iteration, batch_number, r_obj, obj)
+                logging.debug('[I=%d, b=%d] Derivatives\n%s', iteration, batch_number, npvec2str(r_jac, model.fnames()))
 
             return r_obj, r_jac
 
     def callback(theta):
-        logging.info('[%d:%d] New theta: %s', iteration, batch_number, npvec2str(theta, fnames=model.fnames()))
+        logging.info('[I=%d, b=%d] New theta\n%s', iteration, batch_number, npvec2str(theta, model.fnames()))
 
     t0 = time()
-    logging.info('[%d:%d] Optimising likelihood', iteration, batch_number)
+    logging.info('[I=%d, b=%d] Optimising likelihood', iteration, batch_number)
     initial = np.array(list(model.weights().densify()), dtype=ptypes.weight)
-    logging.info('[%d:%d] Initial: %s', iteration, batch_number, npvec2str(initial, fnames=model.fnames()))
+    logging.info('[I=%d, b=%d] Initial: %s', iteration, batch_number, npvec2str(initial, model.fnames()))
     result = minimize(f,
                       initial,
                       # method='BFGS',
@@ -794,16 +998,45 @@ def optimise(args, staticdir, workspace, model, iteration, batch_number, batch):
                                'maxfun': args.sgd[1],
                                'disp': False})
     dt = time() - t0
-    logging.info('[%d:%d] Target SGD: function=%f nfev=%d nit=%d success=%s message="%s" minutes=%s',
+    logging.info('[I=%d, b=%d] Target SGD: function=%f nfev=%d nit=%d success=%s message="%s" minutes=%s',
                  iteration, batch_number,
                  result.fun, result.nfev, result.nit, result.success, result.message, dt / 60)
-    logging.info('[%d:%d] Final: %s', iteration, batch_number, npvec2str(result.x, fnames=model.fnames()))
+    logging.info('[I=%d, b=%d] Final\n%s', iteration, batch_number, npvec2str(result.x, model.fnames()))
     return result.x
+
+
+def eval_devtest(args, workspace, iterdir, model, segments):
+    logging.info('Assessing loss on validation set')
+    evaldir = '{0}/mteval'.format(iterdir)
+    os.makedirs(evaldir, exist_ok=True)
+    staticdir = '{0}/{1}'.format(workspace, args.devtest_alias)
+    bleu = mteval(args, staticdir, model, segments,
+                  '{0}/{1}.hyps'.format(evaldir, args.devtest_alias),
+                  '{0}/refs'.format(staticdir, args.devtest_alias),
+                  '{0}/{1}.bleu'.format(evaldir, args.devtest_alias))
+    logging.info('BLEU %s %s', args.devtest_alias, bleu)
+    return bleu
+
+
+def read_segments(path, grammar_dir):
+    return tuple(SegmentMetaData.parse(input_str, grammar_dir=grammar_dir)
+                 for input_str in smart_ropen(path))
+
+
+def parse_training(args, staticdir, model, segments):
+    logging.info('Parsing %d training instances using %d workers', len(segments), args.jobs)
+    with Pool(args.jobs) as workers:
+        feedback = workers.map(partial(biparse,
+                                       args=args,
+                                       staticdir=staticdir,
+                                       model=model),
+                               segments)
+    return tuple([seg for seg, status in zip(segments, feedback) if status])
 
 
 def core(args):
 
-    workspace, staticdir, dynamicdir = make_dirs(args)
+    workspace, devdir = make_dirs(args)
 
     # 1. Make model
     logging.info('Loading feature extractors')
@@ -814,39 +1047,57 @@ def core(args):
     if args.init is None:
         model = make_models(read_weights(args.weights, temperature=args.temperature),
                             extractors)
-    if args.init == 'random':
-        model = make_models(read_weights(args.weights, random=True),
+    elif args.init == 'random':
+        model = make_models(read_weights(args.weights, random=True, temperature=args.temperature),
                             extractors)
     elif args.init == 'uniform':
-        model = make_models(read_weights(args.weights),
+        model = make_models(read_weights(args.weights, temperature=args.temperature),
                             extractors,
                             uniform_weights=True)
     else:
-        model = make_models(read_weights(args.weights, default=float(args.init)),
+        model = make_models(read_weights(args.weights, default=float(args.init), temperature=args.temperature),
                             extractors)
 
     fnames = model.fnames()
     logging.debug('Model\n%s', model)
-    print('{0} ||| init ||| {1}'.format(0, npvec2str(model.weights().densify(), fnames)))
 
     # 2. Parse data
-    segments = [SegmentMetaData.parse(input_str, grammar_dir=args.dev_grammars) for input_str in smart_ropen(args.dev)]
-    logging.info('Parsing %d training instances using %d workers', len(segments), args.jobs)
-    workers = Pool(args.jobs)
-    feedback = workers.map(partial(t_biparse,
-                                   args=args,
-                                   staticdir=staticdir,
-                                   model=model),
-                           segments)
-    parsable = [seg for seg, status in zip(segments, feedback) if status]
+    segments = read_segments(args.dev, args.dev_grammars)
+    parsable = parse_training(args, devdir, model, segments)
     logging.info(' %d out of %d training instances are bi-parsable', len(parsable), len(segments))
+
+    # Validation set
+    devtest = None
+    if args.devtest:
+        devtest = read_segments(args.devtest, args.devtest_grammars)
+        # store references for evaluation purposes
+        with smart_wopen('{0}/{1}/refs'.format(workspace, args.devtest_alias)) as fo:
+            for seg in devtest:
+                print(' ||| '.join(seg.refs), file=fo)
+        # evaluate the initial model
+        bleu = eval_devtest(args, workspace, '{0}/iterations/0'.format(workspace), model, devtest)
+        print('{0} ||| init ||| {1}={2} ||| {3}'.format(0, args.devtest_alias, bleu, npvec2str(model.weights().densify(), fnames)))
+    else:
+        print('{0} ||| init |||  ||| {3}'.format(0, args.devtest_alias, npvec2str(model.weights().densify(), fnames)))
 
     # 3. Optimise
     dimensionality = len(fnames)
+    merging = deque()
     for iteration in range(1, args.maxiter + 1):
-        iterdir = '{0}/{1}'.format(dynamicdir, iteration)
+        # where we store everything related to this iteration
+        iterdir = '{0}/iterations/{1}'.format(workspace, iteration)
         os.makedirs(iterdir, exist_ok=True)
+
+        # prepare batches
         batches = prepare_batches(args, iterdir, parsable)
+
+        # we need to manage a view of the support of each training instance
+        supportdir = '{0}/support'.format(iterdir)
+        os.makedirs(supportdir, exist_ok=True)
+        merging.append(supportdir)
+        # we might not be interested in merge a complete history
+        if len(merging) > args.merge > 0:
+            merging.popleft()
 
         # 3b. process each batch in turn
         avg = np.zeros(dimensionality, dtype=ptypes.weight)
@@ -854,15 +1105,29 @@ def core(args):
             batchdir = '{0}/batch{1}'.format(iterdir, b)
 
             # i. sample
-            sample(args, staticdir, batchdir, model, iteration, b, batch)
+            sample(args, devdir, supportdir, batchdir, model, iteration, b, batch)
 
             # ii. optimise
-            weights = optimise(args, staticdir, batchdir, model, iteration, b, batch)
+            weights = optimise(args, devdir, batchdir, model, iteration, b, batch, merging)
 
-            print('{0} ||| {1} ||| {2}'.format(iteration, b, npvec2str(avg, fnames)))
+            print('{0} ||| batch{1} |||  ||| {2}'.format(iteration, b, npvec2str(weights, fnames)))
             avg += weights
+
         avg /= len(batches)
-        print('{0} ||| mean ||| {1}'.format(iteration, npvec2str(avg, fnames)))
+        model = make_models(dict(zip(model.fnames(), avg)), model.extractors())
+
+        # check loss on validation set
+        if devtest:
+            bleu = eval_devtest(args, workspace, iterdir, model, devtest)
+            print('{0} ||| avg ||| {1}={2} ||| {3}'.format(iteration,
+                                                           args.devtest_alias,
+                                                           bleu,
+                                                           npvec2str(avg, fnames)))
+        else:
+            print('{0} ||| avg |||  ||| {3}'.format(iteration,
+                                                    args.devtest_alias,
+                                                    bleu,
+                                                    npvec2str(avg, fnames)))
 
 
 def main():

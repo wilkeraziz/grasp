@@ -45,7 +45,6 @@ cdef class SlicedRescoring:
         Semiring _semiring
         Rule _goal_rule
         Rule _dead_rule
-        AncestralSampler _sampler0
 
     cdef _make_slice_variables(self, conditions, str prior_type, str prior_parameter)
 
@@ -67,4 +66,5 @@ cdef class SlicedRescoring:
 
     cdef _sample(self, Hypergraph forest, TopSortTable tsort, WeightFunction lfunc, WeightFunction ufunc, tuple prev_d, int batch_size, str algorithm)
 
-    cpdef sample(self, args)
+    cpdef sample(self, size_t n_samples, size_t batch_size, str within,
+                 str initial, list prior, size_t burn, size_t lag, weight_t temperature0)

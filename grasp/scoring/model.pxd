@@ -10,7 +10,7 @@ cdef class Model:
 
     cpdef tuple extractors(self)
 
-    cpdef weight_t score(self, FComponents freprs)
+    cpdef weight_t score(self, FComponents freprs) except *
 
     cpdef tuple fnames(self, wkey=?)
 

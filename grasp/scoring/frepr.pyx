@@ -27,6 +27,7 @@ cdef class FRepr:
     """
 
     cpdef FRepr prod(self, weight_t scalar):
+        """a normal componentwise scalar product"""
         raise NotImplementedError('I do not know how to operate over representations')
 
     cpdef weight_t dot(self, FRepr w) except *:

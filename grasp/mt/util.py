@@ -4,7 +4,7 @@
 import logging
 import pickle
 
-from grasp.scoring.lookup import RuleTable
+from grasp.scoring.lookup import RuleTable, LogTransformedRuleTable
 from grasp.scoring.stateless import WordPenalty, ArityPenalty
 from grasp.scoring.lm import StatelessLM, KenLM
 

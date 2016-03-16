@@ -16,19 +16,29 @@ def cdec_basic():
                 Glue=1.0)
 
 
-def read_weights(path, temperature=1.0, default=None, random=False, u=0, std=0.1):
+def read_weights(path, default=None, random=False, temperature=1.0, u=0, std=0.01):
+    """
+    Read a sequence of key-value pairs.
+    :param path: file where to read sequence from
+    :param default: if set, overwrites the values read from file
+    :param random: if set, sample values from N(u, std)
+    :param temperature: scales the final weight: weight/T
+    :param u: mean of normal
+    :param std: standard deviation
+    :return:
+    """
     wmap = {}
     with smart_ropen(path) as fi:
         for line in fi.readlines():
             fields = line.split()
             if len(fields) != 2:
                 continue
-            if not random:
-                if default is not None:
-                    wmap[fields[0]] = default
-                else:
-                    wmap[fields[0]] = float(fields[1]) / temperature
-            else:
-                wmap[fields[0]] = np.random.normal(u, std)
+            w = float(fields[1])
+            if default is not None:
+                w = default
+            elif random:
+                w = np.random.normal(u, std)
+            w /= temperature
+            wmap[fields[0]] = w
     return wmap
 

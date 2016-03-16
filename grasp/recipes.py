@@ -13,6 +13,9 @@ from io import TextIOWrapper
 from functools import wraps
 from glob import glob
 from os.path import basename, splitext
+import logging
+from datetime import datetime
+import traceback
 
 
 def pickle_it(path, obj):
@@ -114,3 +117,13 @@ def list_numbered_files(basedir, suffix='', sort=True, reverse=False):
         return zip(ids, paths)
     else:
         return sorted(zip(ids, paths), reverse=reverse)
+
+
+def traceit(func):
+    @wraps(func)
+    def newfunc(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except:
+            raise Exception(''.join(traceback.format_exception(*sys.exc_info())))
+    return newfunc
