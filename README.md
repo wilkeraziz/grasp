@@ -102,6 +102,12 @@ Otherwise, just run setup install.
 (grasp)waziz@localhost:~/workspace/github/grasp/$ python setup.py install
 ```
 
+Depending on your system, you may need to specify the compiler `CC=gcc` or `CC=clang` (on MacOS) and set c++11 compatibility `CFLAGS="-std=gnu++11"` or `CLAGS="-std=c++11"` . For example:
+
+```bash
+(grasp)waziz@localhost:~/workspace/github/grasp/$ CC=clang CFLAGS="-std=c++11" python setup.py install
+```
+
 
 ## Sanity check
 
