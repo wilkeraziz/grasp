@@ -449,7 +449,7 @@ def decode(seg, args, model, workspace=None, ranking_path=None):
             for i in ranking:
                 print('{0} ||| {1} ||| {2}'.format(losses[i], posterior[i], support[i]), file=fo)
     best = ranking[0]
-    return SimpleNamespace(y=support[best], coloss=losses[best], p=posterior[best])
+    return support[best]
 
 
 def mteval(args, staticdir, model, segments, hyp_path, ref_path, eval_path, ranking_path):
@@ -472,8 +472,8 @@ def mteval(args, staticdir, model, segments, hyp_path, ref_path, eval_path, rank
 
     # write best decisions to file
     with smart_wopen(hyp_path) as fo:
-        for result in results:
-            print(result.y, file=fo)
+        for y in results:
+            print(y, file=fo)
 
     # call scoring tool
     cmd_str = '{0} -r {1}'.format(args.scoring_tool, ref_path)
