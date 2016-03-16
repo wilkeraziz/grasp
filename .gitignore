@@ -58,3 +58,5 @@ target/
 
 debug/*
 .idea/
+
+examples/*
