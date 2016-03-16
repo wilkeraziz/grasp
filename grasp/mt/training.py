@@ -377,7 +377,7 @@ def get_localffs(forest, model):
 
 
 @traceit
-def decode(seg, args, model, workspace=None):
+def decode(seg, args, model, workspace=None, ranking_path=None):
     """
     Sample and rank solutions by consensus BLEU
     """
@@ -442,34 +442,38 @@ def decode(seg, args, model, workspace=None):
     losses = np.array([scorer.loss(y) for y in support], dtype=ptypes.weight)
     # order samples by least loss, then by max prob
     ranking = sorted(range(len(support)), key=lambda i: (losses[i], -posterior[i]))
-    return [SimpleNamespace(y=support[i], coloss=losses[i], p=posterior[i]) for i in ranking]
+    if ranking_path is not None:
+        # write all decisions to file
+        with smart_wopen('{0}/{1}.gz'.format(ranking_path, seg.id)) as fo:
+            print('# co-loss ||| posterior ||| solution', file=fo)
+            for i in ranking:
+                print('{0} ||| {1} ||| {2}'.format(losses[i], posterior[i], support[i]), file=fo)
+    best = ranking[0]
+    return SimpleNamespace(y=support[best], coloss=losses[best], p=posterior[best])
 
 
-def mteval(args, staticdir, model, segments, hyp_path, ref_path, eval_path):
+def mteval(args, staticdir, model, segments, hyp_path, ref_path, eval_path, ranking_path):
     """
     Decode and evaluate with an external tool.
     :return: BLEU score.
     """
+
+    if ranking_path:
+        os.makedirs(ranking_path, exist_ok=True)
 
     # decode
     with Pool(args.jobs) as workers:
         results = workers.map(partial(decode,
                                       args=args,
                                       model=model,
-                                      workspace=staticdir),
+                                      workspace=staticdir,
+                                      ranking_path=ranking_path),
                               segments)
 
     # write best decisions to file
     with smart_wopen(hyp_path) as fo:
         for result in results:
-            print(result[0].y, file=fo)
-    # write all decisions to file
-    with smart_wopen('{0}.ranking'.format(hyp_path)) as fo:
-        for seg, result in zip(segments, results):
-            print('# segment ||| co-loss ||| posterior ||| solution', file=fo)
-            for hyp in result:
-                print('{0} ||| {1} ||| {2} ||| {3}'.format(seg.id, hyp.coloss, hyp.p, hyp.y), file=fo)
-            print(file=fo)
+            print(result.y, file=fo)
 
     # call scoring tool
     cmd_str = '{0} -r {1}'.format(args.scoring_tool, ref_path)
@@ -1017,7 +1021,8 @@ def eval_devtest(args, workspace, iterdir, model, segments):
     bleu = mteval(args, staticdir, model, segments,
                   '{0}/{1}.hyps'.format(evaldir, args.devtest_alias),
                   '{0}/refs'.format(staticdir, args.devtest_alias),
-                  '{0}/{1}.bleu'.format(evaldir, args.devtest_alias))
+                  '{0}/{1}.bleu'.format(evaldir, args.devtest_alias),
+                  '{0}/{1}.ranking'.format(evaldir, args.devtest_alias))
     logging.info('BLEU %s %s', args.devtest_alias, bleu)
     return bleu
 
