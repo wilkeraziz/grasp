@@ -909,6 +909,8 @@ def update_support_stats(args, staticdir, workspace, model, batch, merging):
 
 def objective_and_derivatives(args, staticdir, workspace, model, batch, merging):
 
+    factor = 1.0 / len(batch)
+
     # 1. Update Z(x, y \in refset) and Z(x, y \not\in refset)
     logging.info('Updating D(x)')
     Z_R, Z_C = update_support_stats(args, staticdir, workspace, model, batch, merging)
@@ -929,6 +931,8 @@ def objective_and_derivatives(args, staticdir, workspace, model, batch, merging)
     num = semiring.inside.times.reduce(Z_xy)
     # to approximate the denominator we sum Z_xy (from reference forests) and
     # Z_C (the complement, estimate by merging supports from different iterations)
+    for i, (a, b, c) in enumerate(zip(Z_xy, Z_C, Z_x)):
+        logging.info('(%d) Zxy=%f Zc=%f Zyx+Zc=%f Zx=%f', i, a, b, semiring.inside.plus(a, b), c)
     den = semiring.inside.times.reduce([semiring.inside.plus(a, b) for a, b in zip(Z_xy, Z_C)])
     likelihood = semiring.inside.divide(num, den)
 
