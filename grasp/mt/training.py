@@ -24,6 +24,8 @@ from multiprocessing import Pool
 from functools import partial
 from collections import deque
 
+
+
 from grasp.loss.fast_bleu import DecodingBLEU
 
 import grasp.ptypes as ptypes
@@ -35,10 +37,10 @@ from grasp.scoring.model import Model, make_models
 from grasp.scoring.util import read_weights
 
 from grasp.mt.cdec_format import load_grammar
-from grasp.mt.util import load_feature_extractors, GoalRuleMaker
+from grasp.mt.util import GoalRuleMaker
 from grasp.mt.util import save_forest, save_ffs, load_ffs, make_dead_srule, make_batches, number_of_batches
 from grasp.mt.segment import SegmentMetaData
-from grasp.mt.input import make_input
+from grasp.mt.input import make_pass_grammar
 
 import grasp.semiring as semiring
 from grasp.semiring.operator import FixedLHS, FixedRHS
@@ -74,6 +76,11 @@ from numpy import linalg as LA
 from scipy.optimize import minimize
 from time import time, strftime
 from types import SimpleNamespace
+
+from grasp.mt.pipeline import read_segments_from_file
+from grasp.mt.pipeline import save_segments
+from grasp.mt.pipeline import load_feature_extractors
+from grasp.mt.pipeline import training_decode
 
 
 def npvec2str(nparray, fnames=None, separator=' '):
@@ -297,179 +304,6 @@ def make_dirs(args, exist_ok=True):
     return outdir, devdir
 
 
-def prepare_for_parsing(seg, args):
-    """
-    Load grammars (i.e. main, extra, glue, passthrough) and prepare input FSA.
-    :return: (normal grammars, glue grammars, input DFA)
-    """
-    logging.debug('[%d] Loading grammars', seg.id)
-    # 1. Load grammars
-    #  1a. additional grammars
-    extra_grammars = []
-    if args.extra_grammar:
-        for grammar_path in args.extra_grammar:
-            logging.debug('[%d] Loading additional grammar: %s', seg.id, grammar_path)
-            grammar = load_grammar(grammar_path)
-            logging.debug('[%d] Additional grammar: productions=%d', seg.id, len(grammar))
-            extra_grammars.append(grammar)
-    #  1b. glue grammars
-    glue_grammars = []
-    if args.glue_grammar:
-        for glue_path in args.glue_grammar:
-            logging.debug('[%d] Loading glue grammar: %s', seg.id, glue_path)
-            glue = load_grammar(glue_path)
-            logging.debug('[%d] Glue grammar: productions=%d', seg.id, len(glue))
-            glue_grammars.append(glue)
-    #  1c. main grammar
-    main_grammar = load_grammar(seg.grammar)
-
-    logging.debug('[%d] Preparing source FSA: %s', seg.id, seg.src)
-    # 2. Make input FSA and a pass-through grammar for the given segment
-    #  2a. pass-through grammar
-    _, pass_grammar = make_input(seg,
-                                 list(itertools.chain([main_grammar], extra_grammars, glue_grammars)),
-                                 semiring.inside,
-                                 args.default_symbol)
-    #  2b. input FSA
-    input_dfa = make_dfa(seg.src_tokens())
-    logging.debug('[%d] Source FSA: states=%d arcs=%d', seg.id, input_dfa.n_states(), input_dfa.n_arcs())
-
-    #  3a. put all (normal) grammars together
-    if args.pass_through:
-        grammars = list(itertools.chain([main_grammar], extra_grammars, [pass_grammar]))
-    else:
-        grammars = list(itertools.chain([main_grammar], extra_grammars))
-
-    return grammars, glue_grammars, input_dfa
-
-
-def get_target_forest(seg, args, model):
-    """
-    Load grammars with `prepare_for_parsing`,
-        parse and produce target forest.
-
-    :return: forest, GoalRuleMaker
-    """
-    grammars, glue_grammars, input_dfa = prepare_for_parsing(seg, args)
-
-    # 3. Parse input
-    input_grammar = make_hypergraph_from_input_view(grammars, glue_grammars, DummyConstant(semiring.inside.one))
-
-    #  3b. get a parser and intersect the source FSA
-    goal_maker = GoalRuleMaker(args.goal, args.start)
-    parser = NederhofParser(input_grammar, input_dfa, semiring.inside)
-    root = input_grammar.fetch(Nonterminal(args.start))
-    source_forest = parser.do(root, goal_maker.get_iview())
-
-    #  3c. compute target projection
-    target_forest = output_projection(source_forest, semiring.inside, TableLookupScorer(model.dummy))
-    return target_forest, goal_maker
-
-
-def get_localffs(forest, model):
-    """
-    Return a list of lookup components and stateless components.
-    """
-    # 4. Local scoring
-    #  4a. lookup components
-    lookupffs = lookup_components(forest, model.lookup.extractors())
-    #  4b. stateless components
-    statelessffs = stateless_components(forest, model.stateless.extractors())
-    return lookupffs, statelessffs
-
-
-@traceit
-def decode(seg, args, model, workspace=None, ranking_path=None):
-    """
-    Sample and rank solutions by consensus BLEU
-    """
-    files = ['{0}/{1}.hyp.forest'.format(workspace, seg.id),
-             '{0}/{1}.hyp.ffs.rule'.format(workspace, seg.id),
-             '{0}/{1}.hyp.ffs.stateless'.format(workspace, seg.id)]
-
-    # first we check whether the decisions have been completed before
-    if ranking_path and os.path.exists('{0}/{1}.gz'.format(ranking_path, seg.id)) and not args.redo:
-        logging.info('[%d] Reusing decisions', seg.id)
-        with smart_ropen('{0}/{1}.gz'.format(ranking_path, seg.id)) as fi:
-            for line in fi.readlines():
-                if line.startswith('#'):
-                    continue
-                line = line.strip()
-                if not line:
-                    continue
-                fields = line.split(' ||| ')  # that should be (loss, posterior, solution)
-                if len(fields) == 3:
-                    return fields[2]  # that's the solution
-
-    # now we check if forest/components have been completed before
-    if args.redo or workspace is None or not all(os.path.exists(path) for path in files):
-        logging.info('[%d] Parsing and local scoring', seg.id)
-        # parse
-        forest, goal_maker = get_target_forest(seg, args, model)
-        goal_maker.update()
-        # local ffs
-        lookupffs, statelessffs = get_localffs(forest, model)
-        if workspace is not None:  # save objects
-            pickle_it('{0}/{1}.hyp.forest'.format(workspace, seg.id), forest)
-            pickle_it('{0}/{1}.hyp.ffs.rule'.format(workspace, seg.id), lookupffs)
-            pickle_it('{0}/{1}.hyp.ffs.stateless'.format(workspace, seg.id), statelessffs)
-    else:  # load
-        logging.info('[%d] Reusing forest and local components', seg.id)
-        forest = unpickle_it('{0}/{1}.hyp.forest'.format(workspace, seg.id))
-        goal_maker = GoalRuleMaker(args.goal, args.start, n=2)
-        lookupffs = unpickle_it('{0}/{1}.hyp.ffs.rule'.format(workspace, seg.id))
-        statelessffs = unpickle_it('{0}/{1}.hyp.ffs.stateless'.format(workspace, seg.id))
-
-    logging.info('[%d] Slice sampling', seg.id)
-    # l(d)
-    lfunc = TableLookupFunction(np.array([semiring.inside.times(model.lookup.score(ff1),
-                                                                model.stateless.score(ff2))
-                                          for ff1, ff2 in zip(lookupffs, statelessffs)], dtype=ptypes.weight))
-    # slice sample
-    tsort = AcyclicTopSortTable(forest)
-
-    sampler = SlicedRescoring(forest,
-                              lfunc,
-                              tsort,
-                              TableLookupScorer(model.dummy),
-                              StatelessScorer(model.dummy),
-                              StatefulScorer(model.stateful),
-                              semiring.inside,
-                              goal_maker.get_oview(),
-                              OutputView(make_dead_srule()))
-
-    # here samples are represented as sequences of edge ids
-    d0, markov_chain = sampler.sample(n_samples=args.samples[1], batch_size=args.batch, within=args.within,
-                                      initial=args.initial, prior=args.prior, burn=args.burn, lag=args.lag,
-                                      temperature0=args.temperature0)
-
-    samples = apply_filters(markov_chain,
-                            burn=args.burn,
-                            lag=args.lag)
-    # total number of samples kept
-    N = len(samples)
-    projections = group_by_projection(samples, lambda d: yield_string(forest, d.edges))
-
-    logging.info('[%d] Consensus decoding', seg.id)
-    # translation strings
-    support = [group.key for group in projections]
-    # empirical distribution
-    posterior = np.array([float(group.count)/N for group in projections], dtype=ptypes.weight)
-    # consensus decoding
-    scorer = DecodingBLEU(support, posterior)
-    losses = np.array([scorer.loss(y) for y in support], dtype=ptypes.weight)
-    # order samples by least loss, then by max prob
-    ranking = sorted(range(len(support)), key=lambda i: (losses[i], -posterior[i]))
-    if ranking_path is not None:
-        # write all decisions to file
-        with smart_wopen('{0}/{1}.gz'.format(ranking_path, seg.id)) as fo:
-            print('# co-loss ||| posterior ||| solution', file=fo)
-            for i in ranking:
-                print('{0} ||| {1} ||| {2}'.format(losses[i], posterior[i], support[i]), file=fo)
-    best = ranking[0]
-    return support[best]
-
-
 def mteval(args, staticdir, model, segments, hyp_path, ref_path, eval_path, ranking_path):
     """
     Decode and evaluate with an external tool.
@@ -481,11 +315,14 @@ def mteval(args, staticdir, model, segments, hyp_path, ref_path, eval_path, rank
 
     # decode
     with Pool(args.jobs) as workers:
-        results = workers.map(partial(decode,
+        results = workers.map(partial(training_decode,
                                       args=args,
+                                      n_samples=args.samples[1],
+                                      staticdir=staticdir,
+                                      decisiondir=ranking_path,
                                       model=model,
-                                      workspace=staticdir,
-                                      ranking_path=ranking_path),
+                                      redo=args.redo,
+                                      log=logging.info),
                               segments)
 
     # write best decisions to file
@@ -515,92 +352,6 @@ def mteval(args, staticdir, model, segments, hyp_path, ref_path, eval_path, rank
     return score
 
 
-@traceit
-def biparse(seg, args, staticdir, model):
-    # this procedure produces the following files
-    general_files = ['{0}/{1}.hyp.forest'.format(staticdir, seg.id),
-                     '{0}/{1}.hyp.ffs.rule'.format(staticdir, seg.id),
-                     '{0}/{1}.hyp.ffs.stateless'.format(staticdir, seg.id)]
-    ref_files = ['{0}/{1}.ref.ffs.all'.format(staticdir, seg.id),
-                 '{0}/{1}.ref.forest'.format(staticdir, seg.id)]
-    # check for redundant work
-    if all(os.path.exists(path) for path in general_files) and not args.redo:
-        if all(os.path.exists(path) for path in ref_files):
-            logging.info('Reusing forests for segment %d', seg.id)
-            return True   # parsable
-        else:
-            return False  # not parsable
-
-    target_forest, goal_maker = get_target_forest(seg, args, model)
-    pickle_it('{0}/{1}.hyp.forest'.format(staticdir, seg.id), target_forest)
-
-    # 4. Local scoring
-    logging.debug('[%d] Computing local components', seg.id)
-    lookupffs, statelessffs = get_localffs(target_forest, model)
-    pickle_it('{0}/{1}.hyp.ffs.rule'.format(staticdir, seg.id), lookupffs)
-    pickle_it('{0}/{1}.hyp.ffs.stateless'.format(staticdir, seg.id), statelessffs)
-
-    # 5. Parse references
-    logging.debug('[%d] Preparing target FSA for %d references', seg.id, len(seg.refs))
-    #  5a. make input FSA
-    ref_dfa = make_dfa_set([ref.split() for ref in seg.refs], semiring.inside.one)
-    #  5b. get a parser and intersect the target FSA
-    logging.debug('[%d] Parsing references: states=%d arcs=%d', seg.id, ref_dfa.n_states(), ref_dfa.n_arcs())
-    goal_maker.update()
-    parser = EarleyParser(target_forest, ref_dfa, semiring.inside)
-    ref_forest = parser.do(0, goal_maker.get_oview())
-
-    if not ref_forest:
-        logging.debug('[%d] The model cannot generate reference translations', seg.id)
-        return False
-
-    logging.debug('[%d] Rescoring reference forest: nodes=%d edges=%d', seg.id, ref_forest.n_nodes(), ref_forest.n_edges())
-    goal_maker.update()
-
-    tsort = AcyclicTopSortTable(ref_forest)
-    n_derivations = int(semiring.inside.as_real(acyclic_value_recursion(ref_forest, tsort, semiring.inside)[tsort.root()]))
-    logging.info('[%d] %d derivations in refset', seg.id, n_derivations)
-
-    # 6. Nonlocal scoring
-
-    #  5c. complete model: thus, with stateful components
-    rescorer = EarleyRescorer(ref_forest,
-                              TableLookupScorer(model.lookup),
-                              StatelessScorer(model.stateless),
-                              StatefulScorer(model.stateful),
-                              semiring.inside,
-                              map_edges=False,
-                              keep_frepr=True)
-    ref_forest = rescorer.do(0, goal_maker.get_oview())
-    pickle_it('{0}/{1}.ref.forest'.format(staticdir, seg.id), ref_forest)
-    pickle_it('{0}/{1}.ref.ffs.all'.format(staticdir, seg.id), rescorer.components())
-
-    tsort = AcyclicTopSortTable(ref_forest)
-    raw_viterbi = viterbi_derivation(ref_forest, tsort)
-    score = derivation_weight(ref_forest, raw_viterbi, semiring.inside)
-    logging.info('[%d] Viterbi derivation in refset [%s]: %s', seg.id, score, bracketed_string(ref_forest, raw_viterbi))
-
-    return True
-
-
-def load_batch(args, path):
-    """
-    Load training batches
-    :param args:
-    :param path:
-    :return:
-    """
-    return [SegmentMetaData.parse(input_str, grammar_dir=args.dev_grammars) for input_str in smart_ropen(path)]
-
-
-def save_batch(args, workspace, batch):
-    # 1. Log the segments in the batch
-    os.makedirs(workspace, exist_ok=True)
-    with smart_wopen('{0}/batch.gz'.format(workspace)) as fo:
-        for seg in batch:
-            print(seg.to_sgm(True), file=fo)
-
-
 def prepare_batches(args, workspace, segments):
     parsable = list(segments)
     # how many batches we are preparing
@@ -615,7 +366,9 @@ def prepare_batches(args, workspace, segments):
     batches = []
     if all(os.path.exists('{0}/batch{1}/batch.gz'.format(workspace, b)) for b in range(n_batches)) and not args.redo:
         for b in range(n_batches):
-            batches.append(load_batch(args, '{0}/batch{1}/batch.gz'.format(workspace, b)))
+            batches.append(read_segments_from_file('{0}/batch{1}/batch.gz'.format(workspace, b),
+                                                   grammar_dir=args.dev_grammars,
+                                                   shuffle=False))
         return batches
 
     # make batches
@@ -636,7 +389,8 @@ def prepare_batches(args, workspace, segments):
     # save batches
     for b, batch in enumerate(batches):
         batchdir = '{0}/batch{1}'.format(workspace, b)
-        save_batch(args, batchdir, batch)
+        os.makedirs(batchdir, exist_ok=True)
+        save_segments('{0}/batch.gz'.format(batchdir), batch)
 
     return batches
 
@@ -1040,23 +794,22 @@ def eval_devtest(args, workspace, iterdir, model, segments):
                   '{0}/{1}.hyps'.format(evaldir, args.devtest_alias),
                   '{0}/refs'.format(staticdir, args.devtest_alias),
                   '{0}/{1}.bleu'.format(evaldir, args.devtest_alias),
-                  '{0}/{1}.ranking'.format(evaldir, args.devtest_alias))
+                  '{0}/{1}.decisions'.format(evaldir, args.devtest_alias))
     logging.info('BLEU %s %s', args.devtest_alias, bleu)
     return bleu
 
 
-def read_segments(path, grammar_dir):
-    return tuple(SegmentMetaData.parse(input_str, grammar_dir=grammar_dir)
-                 for input_str in smart_ropen(path))
-
-
 def parse_training(args, staticdir, model, segments):
     logging.info('Parsing %d training instances using %d workers', len(segments), args.jobs)
+
+    from grasp.mt.pipeline import training_biparse
+
     with Pool(args.jobs) as workers:
-        feedback = workers.map(partial(biparse,
+        feedback = workers.map(partial(training_biparse,
                                        args=args,
-                                       staticdir=staticdir,
-                                       model=model),
+                                       workingdir=staticdir,
+                                       model=model,
+                                       log=logging.info),
                                segments)
     return tuple([seg for seg, status in zip(segments, feedback) if status])
 
@@ -1088,7 +841,7 @@ def core(args):
     # 1. Make model
     logging.info('Loading feature extractors')
     # Load feature extractors
-    extractors = load_feature_extractors(args)
+    extractors = load_feature_extractors(rt=args.rt, wp=args.wp, ap=args.ap, slm=args.slm, lm=args.lm)
     logging.info('Making model')
     # Load the model
     if args.init is None:
@@ -1109,7 +862,7 @@ def core(args):
     logging.debug('Model\n%s', model)
 
     # 2. Parse data
-    segments = read_segments(args.dev, args.dev_grammars)
+    segments = read_segments_from_file(args.dev, args.dev_grammars)
     parsable = parse_training(args, devdir, model, segments)
     logging.info(' %d out of %d training instances are bi-parsable', len(parsable), len(segments))
 
@@ -1120,7 +873,7 @@ def core(args):
         args.devtest_grammars = args.dev_grammars
         devtest = parsable if args.biparsable else segments
     else:
-        devtest = read_segments(args.devtest, args.devtest_grammars)
+        devtest = read_segments_from_file(args.devtest, args.devtest_grammars)
 
     # store references for evaluation purposes
     with smart_wopen('{0}/{1}/refs'.format(workspace, args.devtest_alias)) as fo:
@@ -1133,7 +886,7 @@ def core(args):
     # 3. Optimise
     dimensionality = len(fnames)
     merging = deque()
-    
+
     for iteration in range(1, args.maxiter + 1):
         # where we store everything related to this iteration
         iterdir = '{0}/iterations/{1}'.format(workspace, iteration)

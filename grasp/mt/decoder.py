@@ -11,410 +11,173 @@ from itertools import chain
 from multiprocessing import Pool
 from functools import partial
 import traceback
+from types import SimpleNamespace
+
+from grasp.mt.pipeline import read_segments_from_stream
+from grasp.recipes import traceit
 
 from grasp.io.report import EmptyReport, IterationReport
-from grasp.semiring import SumTimes
-from grasp.cfg.symbol import Nonterminal, make_span
-from grasp.cfg import CFG, TopSortTable, LazyTopSortTable, Terminal
-from grasp.cfg.rule import CFGProduction
-from grasp.cfg.projection import DerivationYield
-from grasp.parsing import Nederhof
-from grasp.parsing.exact import EarleyRescoring
-from grasp.inference import KBest, viterbi_derivation, AncestralSampler, derivation_weight
-from grasp.parsing.exact.rescoring import stateless_rescoring
-from grasp.parsing.sliced import SlicedRescoring
-from grasp.parsing.sliced.sampling import apply_filters, group_by_projection, group_by_identity
-from grasp.mt.cmdline import argparser
-from grasp.mt.cdec_format import load_grammar
-from grasp.mt.segment import SegmentMetaData
-from grasp.ff.lm import KenLMScorer
-from grasp.ff.lookup import RuleTable
-from grasp.ff.stateless import WordPenalty, ArityPenalty, StatelessLM
-from grasp.ff.scorer import StatefulScorer, StatelessScorer, TableLookupScorer, apply_scorers
-
-
-from grasp.ff.loglinear import LogLinearModel, read_weights
-from grasp.recipes import timeit, smart_wopen
-from .input import make_input
-from .workspace import make_dirs
 from grasp.io.results import save_kbest, save_viterbi
 from grasp.io.results import save_mc_derivations, save_mc_yields
-from grasp.io.results import save_mcmc_yields, save_mcmc_derivation, save_markov_chain
+from grasp.io.results import save_mcmc_yields, save_mcmc_derivations, save_markov_chain
+
+from grasp.mt.cmdline import argparser
+from grasp.mt.workspace import make_dirs
+from grasp.mt.util import GoalRuleMaker
+from grasp.mt.util import make_dead_oview
+import grasp.mt.pipeline as pipeline
+from grasp.recipes import dummyfunc
+
+from grasp.recipes import timeit, smart_wopen
+
+from grasp.scoring.scorer import StatefulScorer, StatelessScorer, TableLookupScorer
+from grasp.scoring.model import Model, make_models
+from grasp.scoring.util import read_weights
+
+import grasp.semiring as semiring
+
+from grasp.formal.topsort import AcyclicTopSortTable
+from grasp.formal.traversal import bracketed_string, yield_string
+
+from grasp.alg.rescoring import stateless_rescoring
+from grasp.alg.deduction import EarleyRescorer
+from grasp.alg.inference import viterbi_derivation, AncestralSampler
+from grasp.alg.chain import group_by_projection, group_by_identity, apply_batch_filters, apply_filters
+from grasp.formal.wfunc import derivation_weight, HypergraphLookupFunction
 
 
-def load_feature_extractors(args) -> 'list of extractors':  # TODO: generalise it and use a configuration file
+def save_forest(hg, outdir, sid, name):
+    with smart_wopen('{0}/forest/{1}.{2}.gz'.format(outdir, name, sid)) as fo:
+            print('# FOREST', file=fo)
+            print(hg, file=fo)
+
+
+def viterbi(sid, hg, tsort, outdir, round):
+    edges = viterbi_derivation(hg, tsort)
+    score = derivation_weight(hg, edges, semiring.inside)
+    logging.info('Viterbi derivation: %s', score)
+    save_viterbi('{0}/viterbi/{1}.{2}.gz'.format(outdir, round, sid),
+                 SimpleNamespace(derivation=edges),
+                 valuefunc=lambda d: derivation_weight(hg, d, semiring.inside),
+                 get_projection=lambda d: yield_string(hg, d),
+                 derivation2str=lambda d: bracketed_string(hg, d))
+
+
+@traceit
+def decode(seg, args, model, outdir):
     """
-    Load feature extractors depending on command line options.
-
-    For now we have the following extractors:
-
-        * RuleTable: named features in the rule table (a lookup scorer)
-        * WordPenalty
-        * ArityPenalty
-        * KenLMScorer
-
-    :param args:
-    :return: a vector of Extractor objects
-    """
-    extractors = []
-
-    if args.rt:
-        extractor = RuleTable(uid=len(extractors),
-                              name='RuleTable')
-        extractors.append(extractor)
-        logging.debug('Scorer: %r', extractor)
-
-    if args.wp:
-        extractor = WordPenalty(uid=len(extractors),
-                                name=args.wp[0],
-                                penalty=float(args.wp[1]))
-        extractors.append(extractor)
-        logging.debug('Scorer: %r', extractor)
-
-    if args.ap:
-        extractor = ArityPenalty(uid=len(extractors),
-                                 name=args.ap[0],
-                                 penalty=float(args.ap[1]))
-        extractors.append(extractor)
-        logging.debug('Scorer: %r', extractor)
-
-    if args.slm:
-        extractor = StatelessLM(uid=len(extractors),
-                                name=args.slm[0],
-                                order=int(args.slm[1]),
-                                path=args.slm[2],
-                                bos=Terminal(StatelessLM.DEFAULT_BOS_STRING),
-                                eos=Terminal(StatelessLM.DEFAULT_EOS_STRING))
-        extractors.append(extractor)
-        logging.debug('Scorer: %r', extractor)
-
-    if args.lm:
-        extractor = KenLMScorer(uid=len(extractors),
-                                name=args.lm[0],
-                                order=int(args.lm[1]),
-                                path=args.lm[2],
-                                bos=Terminal(KenLMScorer.DEFAULT_BOS_STRING),
-                                eos=Terminal(KenLMScorer.DEFAULT_EOS_STRING))
-        extractors.append(extractor)
-        logging.debug('Scorer: %r', extractor)
-
-    return extractors
-
-
-@timeit
-def t_stateless_rescoring(forest, root, model, semiring) -> 'forest and its start symbol':
-    """Locally rescore a forest."""
-    if model.stateless:
-        logging.info('Stateless rescoring...')
-        forest = stateless_rescoring(forest, StatelessScorer(model), semiring, do_nothing={root})
-        logging.info('Done!')
-    return forest, root
-
-
-@timeit
-def t_earley_rescoring(forest, root, model, semiring) -> 'forest and its start symbol':
-    """Exactly rescore a forest using a variant of the Earley algorithm."""
-    logging.info('Stateful rescoring: %s', model.stateful)
-    rescorer = EarleyRescoring(forest,
-                               semiring=semiring,
-                               stateful=StatefulScorer(model),
-                               stateless=StatelessScorer(model),
-                               do_nothing={root})
-    forest = rescorer.do(root=root)
-    root = make_span(root)
-    return forest, root
-
-
-def exact_rescoring(seg, forest, root, model, semiring, args, outdir):
-    """
-    Exact decoding strategies.
-
-    :param seg: input segment
-    :param forest: a CFG forest
-    :param root: the forest's starty symbol
-    :param model: a linear model
-    :param semiring: a semiring
-    :param args: command line options
-    :param outdir: where to save results
     """
 
-    # rescore and compute rescoring time
-    if not model.stateful:
-        dt, (forest, root) = t_stateless_rescoring(forest, root, model, semiring)
-        derivation2str = DerivationYield.derivation
-    else:
-        dt, (forest, root) = t_earley_rescoring(forest, root, model, semiring)
-        derivation2str = DerivationYield.tree  # we do not need to show states to users
-
-    time_report = {'rescoring': dt}
-
-    if args.forest:
-        with smart_wopen('{0}/forest/rescored.{1}.gz'.format(outdir, seg.id)) as fo:
-            print('# FOREST terminals=%d nonterminals=%d rules=%d' % (forest.n_terminals(),
-                                                                      forest.n_nonterminals(),
-                                                                      len(forest)), file=fo)
-            print(forest, file=fo)
-
-    tsorter = LazyTopSortTable(forest)
-
-    @timeit
-    def t_viterbi():
-        d = viterbi_derivation(forest,
-                               tsorter.do(),
-                               generations=args.generations)
-
-        logging.info('Viterbi derivation: %s %s', derivation_weight(d), DerivationYield.tree(d))
-        logging.info('Viterbi translation: %s', DerivationYield.string(d))
-        save_viterbi('{0}/viterbi/{1}.gz'.format(outdir, seg.id),
-                     d,
-                     omega_d=derivation_weight,
-                     get_projection=DerivationYield.string,
-                     derivation2str=derivation2str)
-
-    @timeit
-    def t_kbest():
-        logging.info('K-best...')
-        kbestparser = KBest(forest,
-                            root,
-                            args.kbest).do()
-        logging.info('Done!')
-        derivations = list(kbestparser.iterderivations())
-        save_kbest('{0}/kbest/{1}.gz'.format(outdir, seg.id),
-                   derivations,
-                   omega_d=derivation_weight,
-                   get_projection=DerivationYield.string,
-                   derivation2str=derivation2str)
-
-    @timeit
-    def t_ancestral():
-        logging.info('Sampling...')
-        sampler = AncestralSampler(forest,
-                                   tsorter.do(),
-                                   generations=args.generations)
-        samples = list(sampler.sample(args.samples))
-        # group samples by derivation and yield
-        derivations = group_by_identity(samples)
-        yields = group_by_projection(samples, DerivationYield.string)
-        # save the empirical distribution over derivations
-        save_mc_derivations('{0}/ancestral/derivations/{1}.gz'.format(outdir, seg.id),
-                            derivations,
-                            inside=sampler.Z,
-                            omega_d=derivation_weight,
-                            derivation2str=derivation2str)
-        # save the empirical distribution over strings
-        save_mc_yields('{0}/ancestral/yields/{1}.gz'.format(outdir, seg.id),
-                       yields)
+    # pass0
+    src_forest = pipeline.pass0(seg,
+                       extra_grammar_paths=args.extra_grammar,
+                       glue_grammar_paths=args.glue_grammar,
+                       pass_through=args.pass_through,
+                       default_symbol=args.default_symbol,
+                       goal_str=args.goal,
+                       start_str=args.start,
+                       n_goal=0, log=logging.info)
+    tgt_forest = pipeline.make_target_forest(src_forest, TableLookupScorer(model.lookup))
+    tsort = AcyclicTopSortTable(tgt_forest)
 
     if args.viterbi:
-        dt, _ = t_viterbi()
-        time_report['viterbi'] = dt
+        viterbi(seg.id, tgt_forest, tsort, outdir, "pass0")
 
-    if args.kbest > 0:
-        dt, _ = t_kbest()
-        time_report['kbest'] = dt
+    # pass1
+    if model.stateless:
+        tgt_forest = stateless_rescoring(tgt_forest, StatelessScorer(model.stateless), semiring.inside)
+        if args.viterbi:
+            viterbi(seg.id, tgt_forest, tsort, outdir, "pass1")
 
-    if args.samples > 0:
-        dt, _ = t_ancestral()
-        time_report['ancestral'] = dt
-
-    return time_report
-
-
-def sliced_rescoring(seg, forest, root, model, semiring, args, outdir):
-    """
-    Decode by slice sampling.
-
-    :param seg: an input segment
-    :param forest: a CFG forest
-    :param root: the forest's start symbol
-    :param model: a linear model
-    :param semiring: a semiring
-    :param args: command line options
-    :param outdir: where to save results
-    """
-
-    # sometimes we want a very detailed report
-    if args.report:
-        report = IterationReport('{0}/slice/report/{1}'.format(outdir, seg.id))
-    else:
-        report = EmptyReport()
-
-    # make scorers
-    stateless = StatelessScorer(model)
-    stateful = StatefulScorer(model)
-
-    @timeit
-    def t_sample():
-        rescorer = SlicedRescoring(forest,
-                                   TopSortTable(forest),
-                                   stateful=stateful,
-                                   stateless=stateless,
-                                   do_nothing={root},
-                                   generations=args.generations,
-                                   temperature0=args.temperature0,
-                                   report=report)
-        # construct a Markov chain
-        return rescorer.sample(args)
-
-    # model score
-    omega_d = lambda der: semiring.times(derivation_weight(der, semiring),  # the local part
-                                         apply_scorers(der, stateless, stateful, semiring, {root}))  # the global part
     samples = []
-    total_dt = 0
-    for run in range(1, args.chains + 1):  # TODO: run chains in parallel?
-        logging.info('Chain %d/%d', run, args.chains)
-        dt, markov_chain = t_sample()
-        total_dt += dt
 
-        # get the final samples from the chain (after burn-in, lag, resampling, etc.)
-        samples.extend(apply_filters(markov_chain, burn=args.burn, lag=args.lag))
+    if args.framework == 'exact' or not model.stateful:  # exact scoring or no stateful scoring
+        # we have access to Viterbi, k-best, sampling
+        if model.stateful:
+            goal_maker = GoalRuleMaker(goal_str=args.goal, start_str=args.start, n=1)
+
+            rescorer = EarleyRescorer(tgt_forest,
+                                          TableLookupScorer(model.dummy),
+                                          StatelessScorer(model.dummy),
+                                          StatefulScorer(model.stateful),
+                                          semiring.inside)
+
+            tgt_forest = rescorer.do(tsort.root(), goal_maker.get_oview())
+            tsort = AcyclicTopSortTable(tgt_forest)
+
+        # Do everything: viterbi, map, consensus, etc...
+        if args.viterbi:
+            viterbi(seg.id, tgt_forest, tsort, outdir, "pass2")
+
+        if args.kbest > 0:
+            # TODO: call kbest code
+            pass
+        if args.samples > 0:
+            sampler = AncestralSampler(tgt_forest, tsort)
+            samples = sampler.sample(args.samples)
+            derivations = group_by_identity(samples)
+            save_mc_derivations('{0}/exact/derivations/{1}.gz'.format(outdir, seg.id),
+                                derivations, sampler.Z,
+                                valuefunc=lambda d: derivation_weight(tgt_forest, d, semiring.inside),
+                                derivation2str=lambda d: bracketed_string(tgt_forest, d))
+            projections = group_by_projection(samples, lambda d: yield_string(tgt_forest, d))
+            save_mc_yields('{0}/exact/yields/{1}.gz'.format(outdir, seg.id), projections)
+
+    else:  # for sliced scoring, we only have access to sampling
+
+        logging.info('Sliced rescoring...')
+        from grasp.alg.rescoring import SlicedRescoring
+        goal_maker = GoalRuleMaker(goal_str=args.goal, start_str=args.start, n=1)
+        rescorer = SlicedRescoring(tgt_forest,
+                                   HypergraphLookupFunction(tgt_forest),
+                                   tsort,
+                                   TableLookupScorer(model.dummy),
+                                   StatelessScorer(model.dummy),
+                                   StatefulScorer(model.stateful),
+                                   semiring.inside,
+                                   goal_maker.get_oview(),
+                                   make_dead_oview(args.default_symbol))
+
+        # here samples are represented as sequences of edge ids
+        d0, markov_chain = rescorer.sample(n_samples=args.samples, batch_size=args.batch, within=args.within,
+                                           initial=args.initial, prior=args.prior, burn=args.burn, lag=args.lag,
+                                           temperature0=args.temperature0)
+
+        # apply usual MCMC heuristics (e.g. burn-in, lag)
+        samples = apply_filters(markov_chain,
+                                burn=args.burn,
+                                lag=args.lag)
+
+        # group by derivation (now a sample is represented by a Derivation object)
+        derivations = group_by_identity(samples)
+        save_mcmc_derivations('{0}/slice/derivations/{1}.gz'.format(outdir, seg.id),
+                              derivations,
+                              valuefunc=lambda d: d.score,
+                              derivation2str=lambda d: bracketed_string(tgt_forest, d.edges))
+        projections = group_by_projection(samples, lambda d: yield_string(tgt_forest, d.edges))
+        save_mcmc_yields('{0}/slice/yields/{1}.gz'.format(outdir, seg.id),
+                         projections)
 
         if args.save_chain:
-            logging.info('Saving Markov chain (might take some time)...')
-            save_markov_chain('{0}/slice/chain/{1}-{2}.gz'.format(outdir, seg.id, run),
+            markov_chain.appendleft(d0)
+            save_markov_chain('{0}/slice/chain/{1}.gz'.format(outdir, seg.id),
                               markov_chain,
-                              omega_d)
+                              flat=True,
+                              valuefunc=lambda d: d.score,
+                              derivation2str=lambda d: bracketed_string(tgt_forest, d.edges))
 
-    # group by derivation
-    derivations = group_by_identity(samples)
-    # group by string
-    yields = group_by_projection(samples, DerivationYield.string)
-
-    # save everything
-    save_mcmc_derivation('{0}/slice/derivations/{1}.gz'.format(outdir, seg.id),
-                         derivations,
-                         omega_d)
-    save_mcmc_yields('{0}/slice/yields/{1}.gz'.format(outdir, seg.id),
-                     yields)
-
-    # save a customised report
-    report.save()
-
-    return {'slice': total_dt}
+    if samples:
+        # decision rule
+        decisions = pipeline.consensus(seg, tgt_forest, samples)
+        return decisions[0]
 
 
-@timeit
-def t_decode(seg, extra_grammars, glue_grammars, model, args, outdir):
-    """
-    Decode (and time it).
-
-    :param seg: a input segment
-    :param extra_grammars: additional (normal) grammars
-    :param glue_grammars: glue grammars
-    :param model: a linear model
-    :param args: command line options
-    :param outdir: where to save results
-    :return:
-    """
-    semiring = SumTimes
-
-    logging.info('Loading grammar: %s', seg.grammar)
-    # load main SCFG from file
-    main_grammar = load_grammar(seg.grammar)
-    logging.info('Preparing input (%d): %s', seg.id, seg.src)
-    # make input FSA and a pass-through grammar for the given segment
-    input_fsa, pass_grammar = make_input(seg, list(chain([main_grammar], extra_grammars, glue_grammars)), semiring, args.default_symbol)
-    # put all (normal) grammars together
-    grammars = list(chain([main_grammar], extra_grammars, [pass_grammar])) if args.pass_through else list(chain([main_grammar], extra_grammars))
-    # get input projection
-    igrammars = [g.input_projection(semiring, weighted=False) for g in grammars]
-    iglue = [g.input_projection(semiring, weighted=False) for g in glue_grammars]
-
-    logging.info('Input: states=%d arcs=%d', input_fsa.n_states(), input_fsa.n_arcs())
-
-    # 1) get a parser
-    parser = Nederhof(igrammars,
-                      input_fsa,
-                      glue_grammars=iglue,
-                      semiring=semiring)
-
-    # 2) make a forest
-    logging.info('Parsing input...')
-    f_forest = parser.do(root=Nonterminal(args.start), goal=Nonterminal(args.goal))
-    f_root = make_span(Nonterminal(args.goal))
-
-    if not f_forest:
-        logging.error('NO PARSE FOUND')
-        return
-    elif args.forest:
-        with smart_wopen('{0}/forest/source.{1}.gz'.format(outdir, seg.id)) as fo:
-            print('# FOREST terminals=%d nonterminals=%d rules=%d' % (f_forest.n_terminals(), f_forest.n_nonterminals(), len(f_forest)), file=fo)
-            print(f_forest, file=fo)
-
-    logging.info('Target projection...')
-
-    #TODO: clean up this (target projection)
-    lookupscorer = TableLookupScorer(model)
-
-    e_forest = CFG()
-    for f_rule in f_forest:
-        base_lhs = f_rule.lhs.base
-        base_rhs = tuple(s if isinstance(s, Terminal) else s.base for s in f_rule.rhs)
-        e_lhs = f_rule.lhs
-        for grammar in chain(grammars, glue_grammars):
-            for r in grammar.iteroutputrules(base_lhs, base_rhs):
-                alignment = iter(r.alignment)
-                f_nts = tuple(filter(lambda s: isinstance(s, Nonterminal), f_rule.rhs))
-                e_rhs = [s if isinstance(s, Terminal) else f_nts[next(alignment) - 1] for s in r.orhs]
-                e_forest.add(CFGProduction(e_lhs, e_rhs, semiring.times(f_rule.weight, lookupscorer.score(r))))
-
-    # goal rules are treated independently because they are not part of the original grammar.
-    for goal_rule in f_forest.iterrules(f_root):
-        gr = CFGProduction(goal_rule.lhs, [s for s in goal_rule.rhs], goal_rule.weight)
-        e_forest.add(gr)
-        logging.info('Goal rule: %s', gr)
-
-    # the target forest has exactly the same root symbol as the source forest
-    e_root = f_root
-
-    if args.forest:
-        with smart_wopen('{0}/forest/target.{1}.gz'.format(outdir, seg.id)) as fo:
-            print('# FOREST terminals=%d nonterminals=%d rules=%d' % (e_forest.n_terminals(), e_forest.n_nonterminals(), len(e_forest)), file=fo)
-            print(e_forest, file=fo)
-
-    local_d = viterbi_derivation(e_forest, TopSortTable(e_forest), generations=args.generations)
-    logging.info('Local Viterbi derivation: %s %s', derivation_weight(local_d), DerivationYield.derivation(local_d))
-    logging.info('Local Viterbi translation: %s', DerivationYield.string(local_d))
-
-    if args.framework == 'exact':
-        return exact_rescoring(seg, e_forest, e_root, model, semiring, args, outdir)
-    else:
-        return sliced_rescoring(seg, e_forest, e_root, model, semiring, args, outdir)
-
-
-def traced_load_and_decode(seg, args, outdir):
-    """Load grammars and decode. This version traces exception for convenience."""
-    try:
-
-        # Load feature extractors
-        extractors = load_feature_extractors(args)
-        # Load the model
-        model = LogLinearModel(read_weights(args.weights, args.temperature), extractors)
-
-        # Load additional grammars
-        extra_grammars = []
-        if args.extra_grammar:
-            for grammar_path in args.extra_grammar:
-                logging.info('Loading additional grammar: %s', grammar_path)
-                grammar = load_grammar(grammar_path)
-                logging.info('Additional grammar: productions=%d', len(grammar))
-                extra_grammars.append(grammar)
-
-        # Load glue grammars
-        glue_grammars = []
-        if args.glue_grammar:
-            for glue_path in args.glue_grammar:
-                logging.info('Loading glue grammar: %s', glue_path)
-                glue = load_grammar(glue_path)
-                logging.info('Glue grammar: productions=%d', len(glue))
-                glue_grammars.append(glue)
-
-        print('[%d] decoding...' % seg.id, file=sys.stdout)
-        dt, others = t_decode(seg, extra_grammars, glue_grammars, model, args, outdir)
-        print('[%d] decoding time: %s' % (seg.id, dt), file=sys.stdout)
-        return dt, others
-    except:
-        raise Exception(''.join(traceback.format_exception(*sys.exc_info())))
+#@traceit
+#def decode(seg, args, n_samples, decisiondir, model, redo, log=dummyfunc):
+#    saving = {
+#        'decisions': '{0}/{1}.decisions.gz'.format(decisiondir, seg.id)
+#    }
+#    return pipeline.decode(seg, args, n_samples, model, saving, redo, log)
 
 
 def core(args):
@@ -424,23 +187,38 @@ def core(args):
 
     outdir = make_dirs(args)
 
+     # Load feature extractors
+    extractors = pipeline.load_feature_extractors(rt=args.rt, wp=args.wp, ap=args.ap, slm=args.slm, lm=args.lm)
+    # Load the model
+    model = make_models(read_weights(args.weights,
+                                     default=args.default,
+                                     temperature=args.temperature),
+                        extractors)
+
     # Load the segments
-    segments = [SegmentMetaData.parse(input_str, grammar_dir=args.grammars) for input_str in args.input]
-    if args.shuffle:
-        random.shuffle(segments)
+    segments = read_segments_from_stream(args.input, grammar_dir=args.grammars, shuffle=args.shuffle)
 
     args.input = None  # necessary because we cannot pickle the input stream (TODO: get rid of this ugly thing!)
 
-    pool = Pool(args.cpus)
-    results = pool.map(partial(traced_load_and_decode,
-                               args=args,
-                               outdir=outdir), segments)
+    with Pool(args.cpus) as workers:
+        results = workers.map(partial(decode,
+                                      args=args,
+                                      model=model,
+                                      outdir=outdir), segments)
 
+    for seg, result in zip(segments, results):
+        if result is not None:
+            l, p, y = result
+            print(y)
+
+    # TODO: reports, MAP decision rule
+    # separate functions: sampling (MC, MCMC) from search (viterbi, kbest, cube pruning?)
+    #    print(y)
     # time report
-    time_report = IterationReport('{0}/time'.format(outdir))
-    for seg, (dt, dt_detail) in sorted(zip(segments, results), key=lambda seg_info: seg_info[0].id):
-        time_report.report(seg.id, total=dt, **dt_detail)
-    time_report.save()
+    #time_report = IterationReport('{0}/time'.format(outdir))
+    #for seg, (dt, dt_detail) in sorted(zip(segments, results), key=lambda seg_info: seg_info[0].id):
+    #    time_report.report(seg.id, total=dt, **dt_detail)
+    #time_report.save()
 
     print('Check output files in:', outdir, file=sys.stdout)
 

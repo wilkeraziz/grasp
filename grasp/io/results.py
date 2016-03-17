@@ -9,7 +9,7 @@ import grasp.semiring as semiring
 from grasp.cfg.projection import DerivationYield
 
 
-def save_viterbi(path, viterbi, get_projection, derivation2str=DerivationYield.derivation):
+def save_viterbi(path, viterbi, valuefunc, derivation2str, get_projection):
     """
 
     :param path: where to save
@@ -19,10 +19,9 @@ def save_viterbi(path, viterbi, get_projection, derivation2str=DerivationYield.d
     """
     with smart_wopen(path) as out:
         print('# score\tyield\tderivation', file=out)
-        rules = viterbi.derivation.rules()
-        print('{0}\t{1}\t{2}'.format(viterbi.value,
-                                     get_projection(rules),
-                                     derivation2str(rules)),
+        print('{0}\t{1}\t{2}'.format(valuefunc(viterbi.derivation),
+                                     get_projection(viterbi.derivation),
+                                     derivation2str(viterbi.derivation)),
               file=out)
 
 
@@ -43,7 +42,7 @@ def save_kbest(path, derivations, get_projection, derivation2str=DerivationYield
                   file=out)
 
 
-def save_mc_derivations(path, samples, inside, valuefunc, derivation2str, semiring=semiring.inside):
+def save_mc_derivations(path, groups, inside, valuefunc, derivation2str, semiring=semiring.inside):
     """
 
     :param path: where to save
@@ -54,34 +53,34 @@ def save_mc_derivations(path, samples, inside, valuefunc, derivation2str, semiri
     :param semiring: semiring used to normalise probabilities
     """
     with smart_wopen(path) as out:
-        total = sum(sample.count for sample in samples)
+        total = sum(group.count for group in groups)
         print('# MC samples={0} inside={1} semiring={2}'.format(total, inside, semiring), file=out)
         print('# exact\testimate\tcount\tscore\tderivation', file=out)
-        for sample in samples:
-            score = valuefunc(sample.derivation)
+        for group in groups:
+            score = valuefunc(group.key)
             prob = semiring.as_real(semiring.divide(score, inside))
             print('{0}\t{1}\t{2}\t{3}\t{4}'.format(prob,
-                                                   sample.count/total,
-                                                   sample.count,
+                                                   group.count/total,
+                                                   group.count,
                                                    score,
-                                                   derivation2str(sample.derivation)),
+                                                   derivation2str(group.key)),
                   file=out)
 
 
-def save_mc_yields(path, samples):
+def save_mc_yields(path, groups):
     """
     :param path: where to save
     :param samples: sorted list of samples (obtained by group_by_projection)
     """
     with smart_wopen(path) as out:
-        total = sum(sample.count for sample in samples)
+        total = sum(sample.count for sample in groups)
         print('# MC samples={0}'.format(total), file=out)
         print('# estimate\tcount\tderivations\tyield', file=out)
-        for i, sample in enumerate(samples, 1):
-            print('{0}\t{1}\t{2}\t{3}'.format(sample.count/total,
-                                              sample.count,
-                                              len(sample.derivations),
-                                              sample.projection),
+        for i, group in enumerate(groups, 1):
+            print('{0}\t{1}\t{2}\t{3}'.format(group.count/total,
+                                              group.count,
+                                              len(set(group.values)),
+                                              group.key),
                   file=out)
 
 
@@ -127,7 +126,6 @@ def save_mcmc_yields(path, groups):
         total = sum(group.count for group in groups)
         print('# MCMC samples={0}\n# estimate\tcount\tderivations\tyield'.format(total), file=out)
         for i, group in enumerate(groups, 1):
-            sample = group
             print('{0}\t{1}\t{2}\t{3}'.format(float(group.count)/total,
                                               group.count,
                                               len(set(group.values)),

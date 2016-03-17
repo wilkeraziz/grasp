@@ -18,6 +18,10 @@ from datetime import datetime
 import traceback
 
 
+def dummyfunc(*args, **kwargs):
+    pass
+
+
 def pickle_it(path, obj):
     """Dump a pickled representation of the object to disk"""
     with open(path, 'wb') as fo:

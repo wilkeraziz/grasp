@@ -8,7 +8,7 @@ from grasp.cfg.scfg import SCFG
 from grasp.cfg.srule import SCFGProduction
 
 
-def make_input(seg, grammars, semiring, unk_lhs):
+def make_pass_grammar(seg, grammars, semiring, unk_lhs):
     """
     Make an input fsa for an input segment as well as its pass-through grammar.
     :param seg: a Segment object.

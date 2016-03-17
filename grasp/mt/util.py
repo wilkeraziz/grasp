@@ -54,6 +54,10 @@ def make_dead_srule(lhs='X', dead='<dead-end>', fname='DeadRule'):
     return SCFGProduction(Nonterminal(lhs), (Terminal(dead),), (Terminal(dead),), [], {fname: 1.0})
 
 
+def make_dead_oview(lhs='X', dead='<dead-end>', fname='DeadRule'):
+    return OutputView(make_dead_srule(lhs, dead, fname))
+
+
 def load_feature_extractors(args) -> 'list of extractors':  # TODO: generalise it and use a configuration file
     """
     Load feature extractors depending on command line options.
