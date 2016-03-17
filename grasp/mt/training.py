@@ -236,6 +236,8 @@ def get_argparser():
                         help="development set")
     parser.add_argument("--alias", type=str,
                         help="an alias for the experiment")
+    parser.add_argument("--biparsable", action='store_true',
+                        help="if no devtest is given we evaluate on dev, this switch constrains evaluation to biparsable instances")
     parser.add_argument("--jobs", type=int, default=2, help="number of processes")
     parser.add_argument('--dev-alias', type=str, default='dev',
             help='Change the alias of the dev set')
@@ -1076,18 +1078,21 @@ def core(args):
     logging.info(' %d out of %d training instances are bi-parsable', len(parsable), len(segments))
 
     # Validation set
-    devtest = None
-    if args.devtest:
-        devtest = read_segments(args.devtest, args.devtest_grammars)
-        # store references for evaluation purposes
-        with smart_wopen('{0}/{1}/refs'.format(workspace, args.devtest_alias)) as fo:
-            for seg in devtest:
-                print(' ||| '.join(seg.refs), file=fo)
-        # evaluate the initial model
-        bleu = eval_devtest(args, workspace, '{0}/iterations/0'.format(workspace), model, devtest)
-        print('{0} ||| init ||| {1}={2} ||| {3}'.format(0, args.devtest_alias, bleu, npvec2str(model.weights().densify(), fnames)))
+    if args.devtest is None:
+        args.devtest = args.dev
+        args.devtest_alias = args.dev_alias
+        args.devtest_grammars = args.dev_grammars
+        devtest = parsable if args.biparsable else segments
     else:
-        print('{0} ||| init |||  ||| {3}'.format(0, args.devtest_alias, npvec2str(model.weights().densify(), fnames)))
+        devtest = read_segments(args.devtest, args.devtest_grammars)
+
+    # store references for evaluation purposes
+    with smart_wopen('{0}/{1}/refs'.format(workspace, args.devtest_alias)) as fo:
+        for seg in devtest:
+            print(' ||| '.join(seg.refs), file=fo)
+    # evaluate the initial model
+    bleu = eval_devtest(args, workspace, '{0}/iterations/0'.format(workspace), model, devtest)
+    print('{0} ||| init ||| {1}={2} ||| {3}'.format(0, args.devtest_alias, bleu, npvec2str(model.weights().densify(), fnames)))
 
     # 3. Optimise
     dimensionality = len(fnames)
@@ -1125,18 +1130,11 @@ def core(args):
         avg /= len(batches)
         model = make_models(dict(zip(model.fnames(), avg)), model.extractors())
 
-        # check loss on validation set
-        if devtest:
-            bleu = eval_devtest(args, workspace, iterdir, model, devtest)
-            print('{0} ||| avg ||| {1}={2} ||| {3}'.format(iteration,
-                                                           args.devtest_alias,
-                                                           bleu,
-                                                           npvec2str(avg, fnames)))
-        else:
-            print('{0} ||| avg |||  ||| {3}'.format(iteration,
-                                                    args.devtest_alias,
-                                                    bleu,
-                                                    npvec2str(avg, fnames)))
+        bleu = eval_devtest(args, workspace, iterdir, model, devtest)
+        print('{0} ||| avg ||| {1}={2} ||| {3}'.format(iteration,
+                                                       args.devtest_alias,
+                                                       bleu,
+                                                       npvec2str(avg, fnames)))
 
 
 def main():
