@@ -386,6 +386,22 @@ def decode(seg, args, model, workspace=None, ranking_path=None):
     files = ['{0}/{1}.hyp.forest'.format(workspace, seg.id),
              '{0}/{1}.hyp.ffs.rule'.format(workspace, seg.id),
              '{0}/{1}.hyp.ffs.stateless'.format(workspace, seg.id)]
+
+    # first we check whether the decisions have been completed before
+    if ranking_path and os.path.exists('{0}/{1}.gz'.format(ranking_path, seg.id)) and not args.redo:
+        logging.info('[%d] Reusing decisions', seg.id)
+        with smart_ropen('{0}/{1}.gz'.format(ranking_path, seg.id)) as fi:
+            for line in fi.readlines():
+                if line.startswith('#'):
+                    continue
+                line = line.strip()
+                if not line:
+                    continue
+                fields = line.split(' ||| ')  # that should be (loss, posterior, solution)
+                if len(fields) == 3:
+                    return fields[2]  # that's the solution
+
+    # now we check if forest/components have been completed before
     if args.redo or workspace is None or not all(os.path.exists(path) for path in files):
         logging.info('[%d] Parsing and local scoring', seg.id)
         # parse
@@ -1045,9 +1061,29 @@ def parse_training(args, staticdir, model, segments):
     return tuple([seg for seg, status in zip(segments, feedback) if status])
 
 
+def sanity_checks(args):
+    failed = False
+    if not os.path.exists(args.scoring_tool):
+        logging.error('Scoring tool not found: %s', args.scoring_tool)
+        failed = True
+    if not os.path.exists(args.dev):
+        logging.error('Training set not found: %s', args.dev)
+        failed = True
+    if args.devtest and not os.path.exists(args.devtest):
+        logging.error('Validation set not found: %s', args.devtest)
+        failed = True
+    if not os.path.exists(args.weights):
+        logging.error('Model description not found: %s', args.weights)
+        failed = True
+    return not failed
+
+
 def core(args):
 
     workspace, devdir = make_dirs(args)
+
+    if not sanity_checks(args):
+        raise FileNotFoundError('One or more files could not be found')
 
     # 1. Make model
     logging.info('Loading feature extractors')
@@ -1097,6 +1133,7 @@ def core(args):
     # 3. Optimise
     dimensionality = len(fnames)
     merging = deque()
+    
     for iteration in range(1, args.maxiter + 1):
         # where we store everything related to this iteration
         iterdir = '{0}/iterations/{1}'.format(workspace, iteration)
