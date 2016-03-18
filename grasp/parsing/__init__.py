@@ -1,5 +1,0 @@
-"""
-:Authors: - Wilker Aziz
-"""
-
-

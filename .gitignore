@@ -60,3 +60,6 @@ debug/*
 .idea/
 
 examples/*
+
+*.cpp
+cpp/
