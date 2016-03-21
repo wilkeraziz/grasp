@@ -8,10 +8,12 @@ from grasp.ptypes cimport weight_t
 from grasp.cfg.symbol cimport Symbol, Terminal
 from grasp.scoring.frepr cimport FRepr, FVec
 from grasp.scoring.extractor cimport StatefulFRepr
-
+from grasp.recipes import re_key_value
+import os
 
 DEFAULT_BOS_STRING = '<s>'
 DEFAULT_EOS_STRING = '</s>'
+
 
 
 cdef class StatelessLM(Stateless):
@@ -39,6 +41,8 @@ cdef class StatelessLM(Stateless):
         self._bos = bos
         self._eos = eos
         self._path = path
+        if not os.path.exists(path):
+            raise FileNotFoundError('LM file not found: %s' % path)
         self._features = (name, '{0}_OOV'.format(name))
         self._load_model()
 
@@ -118,6 +122,38 @@ cdef class StatelessLM(Stateless):
     cpdef FRepr constant(self, weight_t value):
         return FVec([value, value])
 
+    @classmethod
+    def construct(cls, int uid, str name, str cfgstr):
+        cdef int order
+        cdef str path
+        cdef bos = DEFAULT_BOS_STRING
+        cdef eos = DEFAULT_EOS_STRING
+        cfgstr, value = re_key_value('order', cfgstr, optional=False)
+        if value:
+            order = int(value)
+        cfgstr, value = re_key_value('path', cfgstr, optional=False)
+        if value:
+            path = value
+        cfgstr, value = re_key_value('bos', cfgstr, optional=True)
+        if value:
+            bos = value
+        cfgstr, value = re_key_value('eos', cfgstr, optional=True)
+        if value:
+            eos = value
+        return StatelessLM(uid, name, order, path, Terminal(bos), Terminal(eos))
+
+    @staticmethod
+    def help():
+        help_msg = ["# A stateless LM is one that forgets the history at the boundary of nonterminals.",
+                    "# It is a common heuristic in MT to ignore missing context.",
+                    "# Requires: order=int path=str",
+                    "# Optional: bos=str eos=str"]
+        return '\n'.join(help_msg)
+
+    @staticmethod
+    def example():
+        return 'StatelessLM order=3 path=trigrams.klm bos=<s> eos=</s>'
+
 
 cdef class KenLM(Stateful):
     """
@@ -147,6 +183,8 @@ cdef class KenLM(Stateful):
         self._bos = bos
         self._eos = eos
         self._path = path
+        if not os.path.exists(path):
+            raise FileNotFoundError('LM file not found: %s' % path)
         self._features = (name, '{0}_OOV'.format(name))
         # get the initial state
         self._load_model()
@@ -247,3 +285,35 @@ cdef class KenLM(Stateful):
 
     cpdef FRepr constant(self, weight_t value):
         return FVec([value, value])
+
+    @classmethod
+    def construct(cls, int uid, str name, str cfgstr):
+        cdef int order
+        cdef str path
+        cdef bos = DEFAULT_BOS_STRING
+        cdef eos = DEFAULT_EOS_STRING
+        cfgstr, value = re_key_value('order', cfgstr, optional=False)
+        if value:
+            order = int(value)
+        cfgstr, value = re_key_value('path', cfgstr, optional=False)
+        if value:
+            path = value
+        cfgstr, value = re_key_value('bos', cfgstr, optional=True)
+        if value:
+            bos = value
+        cfgstr, value = re_key_value('eos', cfgstr, optional=True)
+        if value:
+            eos = value
+        return KenLM(uid, name, order, path, Terminal(bos), Terminal(eos))
+
+    @staticmethod
+    def help():
+        help_msg = ["# Language model features from kenlm.",
+                    "# This produces two scores: LM probability and OOV count.",
+                    "# Requires: order=int path=str",
+                    "# Optional: bos=str eos=str"]
+        return '\n'.join(help_msg)
+
+    @staticmethod
+    def example():
+        return 'KenLM order=3 path=trigrams.klm bos=<s> eos=</s>'

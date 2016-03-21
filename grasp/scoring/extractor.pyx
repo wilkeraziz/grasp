@@ -51,6 +51,18 @@ cdef class Extractor:
         """
         raise NotImplementedError('I do not know which type of FRepr to create.')
 
+    @classmethod
+    def construct(cls, int uid, str name, str cfgstr):
+        raise NotImplementedError('I do not know how to construct an extractor from a string')
+
+    @staticmethod
+    def help():
+        return "My developer didn't care to leave a help message."
+
+    @staticmethod
+    def example():
+        return "My developer didn't care to leave an example."
+
 
 cdef class TableLookup(Extractor):
     """

@@ -7,6 +7,7 @@ Stateless extractors.
 from grasp.scoring.frepr cimport FRepr, FValue, FMap, FVec
 from grasp.ptypes cimport weight_t
 from grasp.cfg.symbol cimport Symbol, Terminal, Nonterminal
+from grasp.recipes import re_key_value
 
 
 cdef class WordPenalty(Stateless):
@@ -57,6 +58,26 @@ cdef class WordPenalty(Stateless):
 
     cpdef FRepr constant(self, weight_t value):
         return FValue(value)
+
+    @classmethod
+    def construct(cls, int uid, str name, str cfgstr):
+        cdef weight_t penalty = 1.0
+        cfgstr, value = re_key_value('penalty', cfgstr, optional=True)
+        if value:
+            penalty = float(value)
+        return WordPenalty(uid, name, penalty)
+
+    @staticmethod
+    def help():
+        help_msg = ["# Counts the number of terminal symbols in the derivation.",
+                    "# The contribution of each word is a constant (1.0 by default)."
+                    "# This is an example of how to construct the feature:",
+                    "WordPenalty penalty=1.0"]
+        return '\n'.join(help_msg)
+
+    @staticmethod
+    def example():
+        return 'WordPenalty penalty=1.0'
 
 
 cdef class ArityPenalty(Stateless):
@@ -120,9 +141,33 @@ cdef class ArityPenalty(Stateless):
             penalties[arity] = self._penalty
             return FVec(penalties)
 
-
     cpdef FRepr constant(self, weight_t value):
         if self._max_arity < 0:
             return FMap([])
         else:
             return FVec([value for i in range(self._max_arity + 1)])
+
+    @classmethod
+    def construct(cls, int uid, str name, str cfgstr):
+        cdef weight_t penalty = 1.0
+        cdef int max_arity = 2
+        cfgstr, value = re_key_value('penalty', cfgstr, optional=True)
+        if value:
+            penalty = float(value)
+        cfgstr, value = re_key_value('max-arity', cfgstr, optional=True)
+        if value:
+            max_arity = int(value)
+        return ArityPenalty(uid, name, penalty, max_arity)
+
+    @staticmethod
+    def help():
+        help_msg = ["# Counts how many rules of a certain length the derivation contains.",
+                    "# The length, or arity, is measure in number of nonterminals on the RHS.",
+                    "# The contribution of each rule-type is a constant (1.0 by default).",
+                    "# If a maximum arity is provided (2 by default), we produce a fixed number of dense scores.",
+                    "# A negative arity indicates no limit, which turns this into a producer of sparse features."]
+        return '\n'.join(help_msg)
+
+    @staticmethod
+    def example():
+        return 'Arity penalty=1.0 max-arity=2'
