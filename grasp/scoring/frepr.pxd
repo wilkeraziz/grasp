@@ -37,6 +37,9 @@ cdef class FVec(FRepr):
 cdef class FMap(FRepr):
 
     cdef readonly dict map
+    cdef weight_t _default
+
+    cdef weight_t get(self, object key)
 
 
 cdef class FComponents(FRepr):

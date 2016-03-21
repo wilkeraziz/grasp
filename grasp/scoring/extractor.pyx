@@ -38,6 +38,9 @@ cdef class Extractor:
         """
         raise NotImplementedError('I do not know how to convert a dict to an order list of features')
 
+    cpdef tuple features(self):
+        raise NotImplementedError('I do not know which features I can create')
+
     cpdef FRepr weights(self, dict wmap):
         raise NotImplementedError('I do not know how to convert a dict to a weight representation.')
 

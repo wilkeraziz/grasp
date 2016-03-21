@@ -90,28 +90,3 @@ cdef class ModelContainer(Model):
 
     cpdef itercomponents(self):
         return iter([self.lookup.extractors(), self.stateless.extractors(), self.stateful.extractors()])
-
-
-def make_models(wmap, extractors, uniform_weights=False):
-    wmap = dict(wmap)
-    # all scorers sorted by id
-    extractors = tuple(sorted(extractors, key=lambda x: x.id))
-
-    if uniform_weights:
-        for extractor in extractors:
-            fnames = extractor.fnames(wmap.keys())
-            for fname in fnames:
-                wmap[fname] = 1.0 / len(extractors) / len(fnames)
-    # lookup ones
-    lookup = tuple(filter(lambda s: isinstance(s, TableLookup), extractors))
-    # stateless ones
-    stateless = tuple(filter(lambda s: isinstance(s, Stateless), extractors))
-    # stateful ones
-    stateful = tuple(filter(lambda s: isinstance(s, Stateful), extractors))
-
-    # memorise the weight representation of each extractor
-    #lookup_weights = FComponents([extractor.weights(wmap) for extractor in lookup])
-    #stateless_weights = FComponents([extractor.weights(wmap) for extractor in stateless])
-    #stateful_weights = FComponents([extractor.weights(wmap) for extractor in stateful])
-
-    return ModelContainer(wmap, lookup, stateless, stateful)

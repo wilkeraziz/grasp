@@ -174,50 +174,86 @@ cdef class FMap(FRepr):
     This feature representation is a container for a vector of named features (represented as a dictionary).
     This is used for sparse features, thus, Hadamard accepts missing entries and uses the operator's identity
     for completion.
+
+    Each FMap is configured with a default value which is used in querying the underlying container (a dictionary).
+    The default value guarantees that an FMap never produces an exception.
+    More importantly, a default value helps dealing with sparse features.
+    The default value of an FMap is never operated upon, meaning that operations that return transformations of the
+    values in the container can never change the resulting container's default value (which will be always a copy of
+     the base container's default value).
+
+    For example,
+        FMap({'a': 1.0, 'b': 2.0}, default=1.0).prod(2)
+        returns
+        FMap({'a': 2.0, 'b': 4.0}, default=1.0).prod(2)
+
+    Two methods are directly affected by the default value
+        1. self.get(key) returns the default value if key not in map
+        2. self.dot(other) because it uses get(key)
+
+    Important: in combining two containers with self.hadamard(other, op),
+        we use op's identity as a default value. As for the resulting container, it will have the default
+        value of self.
+
     """
 
-    def __init__(self, iterable):
+    def __init__(self, iterable, weight_t default=0.0):
+        """
+        """
         self.map = dict(iterable)
+        self._default = default
+
+    cdef weight_t get(self, object key):
+        return self.map.get(key, self._default)
 
     cpdef FRepr prod(self, weight_t scalar):
-        return FMap([(k, v * scalar) for k, v in self.map.items()])
+        return FMap([(k, v * scalar) for k, v in self.map.items()], default=self._default)
 
     cpdef weight_t dot(self, FRepr w) except *:
+        cdef FMap other = <FMap?>w
+        cdef object k
         cdef weight_t v
-        cdef dict wmap = (<FMap?>w).map
-        if len(self.map) < len(wmap):
-            return np.sum([v * wmap.get(k, 0.0) for k, v in self.map.items()])
-        else:
-            return np.sum([v * self.map.get(k, 0.0) for k, v in wmap.items()])
+        if self._default == 0.0 and other._default == 0.0:  # intersection
+            return np.sum([self.get(k) * other.get(k) for k in self.map.keys() & other.map.keys()], dtype=ptypes.weight)
+        elif self._default != 0.0 and other._default != 0.0:  # union
+            return np.sum([self.get(k) * other.get(k) for k in self.map.keys() | other.map.keys()], dtype=ptypes.weight)
+        elif other._default != 0.0:  # mine
+            return np.sum([v * other.get(k) for k, v in self.map.items()], dtype=ptypes.weight)
+        else:  # theirs
+            return np.sum([self.get(k) * v for k, v in other.map.items()], dtype=ptypes.weight)
 
     cpdef FRepr hadamard(self, FRepr rhs, BinaryOperator op):
+        cdef FMap other = <FMap?> rhs
         cdef object k
-        cdef dict mapx = self.map
-        cdef dict mapy = (<FMap?>rhs).map
-        cdef set keys = set(mapx.keys())
-        keys.update(mapy.keys())
-        return FMap([(k, op.evaluate(mapx.get(k, op.identity), mapy.get(k, op.identity))) for k in keys])
+        return FMap([(k, op.evaluate(self.map.get(k, op.identity),
+                                     other.map.get(k, op.identity))) for k in self.map.keys() | other.map.keys()],
+                    default=self._default)
 
     cpdef FRepr elementwise(self, UnaryOperator op):
         cdef weight_t v
-        return FMap([(k, op.evaluate(v)) for k, v in self.map.items()])
+        cdef object k
+        return FMap([(k, op.evaluate(v)) for k, v in self.map.items()], default=self._default)
 
     cpdef FRepr elementwise_b(self, weight_t rhs, BinaryOperator op):
         cdef weight_t lhs
-        return FMap([(k, op.evaluate(lhs, rhs)) for k, lhs in self.map.items()])
+        cdef object k
+        return FMap([(k, op.evaluate(lhs, rhs)) for k, lhs in self.map.items()], default=self._default)
 
     cpdef FRepr power(self, weight_t power, Semiring semiring):
         cdef weight_t base
-        return FMap([(k, semiring.power(base, power)) for k, base in self.map.items()])
+        cdef object k
+        return FMap([(k, semiring.power(base, power)) for k, base in self.map.items()], default=self._default)
 
     cpdef FRepr densify(self):
+        cdef object k
         return FVec([self.map[k] for k in sorted(self.map.keys())])
 
     def __getstate__(self):
-        return {'map': self.map}
+        return {'map': self.map, 'default': self._default}
 
     def __setstate__(self, state):
         self.map = state['map']
+        self._default = state['default']
 
     def __len__(self):
         return len(self.map)
@@ -229,7 +265,7 @@ cdef class FMap(FRepr):
         return ' '.join('{0}={1}'.format(k, v) for k, v in self.map.items())
 
     def __repr__(self):
-        return 'FMap(%r)' % self.map
+        return 'FMap(%r, default=%r)' % (self.map, self._default)
 
 
 cdef class FComponents(FRepr):

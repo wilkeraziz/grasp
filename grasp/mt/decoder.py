@@ -31,7 +31,7 @@ from grasp.recipes import dummyfunc
 from grasp.recipes import timeit, smart_wopen
 
 from grasp.scoring.scorer import StatefulScorer, StatelessScorer, TableLookupScorer
-from grasp.scoring.model import Model, make_models
+from grasp.scoring.util import make_models
 from grasp.scoring.util import read_weights
 
 import grasp.semiring as semiring
@@ -178,6 +178,50 @@ def decode(seg, args, model, outdir):
 #        'decisions': '{0}/{1}.decisions.gz'.format(decisiondir, seg.id)
 #    }
 #    return pipeline.decode(seg, args, n_samples, model, saving, redo, log)
+
+
+def core(args):
+    """
+    The main pipeline including multiprocessing.
+    """
+
+    outdir = make_dirs(args)
+
+     # Load feature extractors
+    extractors = pipeline.load_feature_extractors(rt=args.rt, wp=args.wp, ap=args.ap, slm=args.slm, lm=args.lm)
+    # Load the model
+    model = make_models(read_weights(args.weights,
+                                     default=args.default,
+                                     temperature=args.temperature),
+                        extractors)
+
+    # Load the segments
+    segments = read_segments_from_stream(args.input, grammar_dir=args.grammars, shuffle=args.shuffle)
+
+    args.input = None  # necessary because we cannot pickle the input stream (TODO: get rid of this ugly thing!)
+
+    with Pool(args.cpus) as workers:
+        results = workers.map(partial(decode,
+                                      args=args,
+                                      model=model,
+                                      outdir=outdir), segments)
+
+    for seg, result in zip(segments, results):
+        if result is not None:
+            l, p, y = result
+            print(y)
+
+    # TODO: reports, MAP decision rule
+    # separate functions: sampling (MC, MCMC) from search (viterbi, kbest, cube pruning?)
+    #    print(y)
+    # time report
+    #time_report = IterationReport('{0}/time'.format(outdir))
+    #for seg, (dt, dt_detail) in sorted(zip(segments, results), key=lambda seg_info: seg_info[0].id):
+    #    time_report.report(seg.id, total=dt, **dt_detail)
+    #time_report.save()
+
+    print('Check output files in:', outdir, file=sys.stdout)
+
 
 def main():
     args = argparser().parse_args()

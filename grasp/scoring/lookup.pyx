@@ -3,13 +3,73 @@ Table lookup extractors.
 
 :Authors: - Wilker Aziz
 """
-from grasp.scoring.frepr cimport FRepr, FVec
+from grasp.scoring.frepr cimport FRepr, FVec, FValue
 from grasp.ptypes cimport weight_t
 from grasp.scoring.extractor cimport Extractor
 from grasp.recipes import re_key_value
 import numpy as np
 
 CDEC_DEFAULT = 'Glue PassThrough IsSingletonF IsSingletonFE EgivenFCoherent SampleCountF CountEF MaxLexFgivenE MaxLexEgivenF'.split()
+
+
+cdef class NamedFeature(TableLookup):
+
+    def __init__(self, int uid, str name, default=0.0):
+        super(NamedFeature, self).__init__(uid, name)
+        self._default = default
+
+    def __repr__(self):
+        return '{0}(uid={1}, name={2}, default={3})'.format(NamedFeature.__name__,
+                                                                       repr(self.id),
+                                                                       repr(self.name),
+                                                                       repr(self._default))
+
+    def __getstate__(self):
+        return super(NamedFeature,self).__getstate__(), {'default': self._default}
+
+    def __setstate__(self, state):
+        superstate, selfstate = state
+        self._default = selfstate['default']
+        super(NamedFeature,self).__setstate__(superstate)
+
+    cpdef tuple fnames(self, wkeys):
+        return tuple([self.name])
+
+    cpdef tuple features(self):
+        return tuple([self.name])
+
+    cpdef FRepr weights(self, dict wmap):
+        try:
+            return FValue(wmap[self.name])
+        except KeyError:
+            raise KeyError('Missing weight for %r' % self)
+
+    cpdef FRepr featurize(self, rule):
+        """
+        :param word: a Terminal
+        :param context: a state
+        :returns: weight
+        """
+        return FValue(rule.fvalue(self.name, self._default))
+
+    cpdef FRepr constant(self, weight_t value):
+        return FValue(value)
+
+    @classmethod
+    def construct(cls, int uid, str name, str cfgstr):
+        cdef weight_t default = 0.0
+        cfgstr, value = re_key_value('default', cfgstr, optional=True)
+        if value:
+            default = float(value)
+        return NamedFeature(uid, name, default)
+
+    @staticmethod
+    def help():
+        return "# A named feature from the rule's feature map. Use default=float to set a default value."
+
+    @staticmethod
+    def example():
+        return 'NamedFeature name=Glue default=0.0'
 
 
 cdef class RuleTable(TableLookup):
@@ -40,6 +100,9 @@ cdef class RuleTable(TableLookup):
         super(RuleTable,self).__setstate__(superstate)
 
     cpdef tuple fnames(self, wkeys):
+        return self._fnames
+
+    cpdef tuple features(self):
         return self._fnames
 
     cpdef FRepr weights(self, dict wmap):  # using a dense representation

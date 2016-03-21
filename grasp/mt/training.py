@@ -33,7 +33,7 @@ import grasp.ptypes as ptypes
 from grasp.recipes import smart_ropen, smart_wopen, make_unique_directory, pickle_it, unpickle_it, traceit
 
 from grasp.scoring.scorer import TableLookupScorer, StatelessScorer, StatefulScorer
-from grasp.scoring.model import Model, make_models
+from grasp.scoring.util import make_models
 from grasp.scoring.util import read_weights
 
 from grasp.mt.cdec_format import load_grammar

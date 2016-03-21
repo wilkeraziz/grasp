@@ -37,6 +37,9 @@ cdef class WordPenalty(Stateless):
     cpdef tuple fnames(self, wkeys):
         return tuple([self._name])
 
+    cpdef tuple features(self):
+        return tuple([self._name])
+
     cpdef FRepr weights(self, dict wmap):
         try:
             return FValue(wmap[self.name])
@@ -113,9 +116,18 @@ cdef class ArityPenalty(Stateless):
         else:
             return tuple(['{0}_{1}'.format(self.name, i) for i in range(self._max_arity + 1)])
 
+    cpdef tuple features(self):
+        if self._max_arity < 0:
+            return tuple([self._name])
+        else:
+            return tuple(['{0}_{1}'.format(self.name, suffix) for suffix in range(self._max_arity + 1)])
+
     cpdef FRepr weights(self, dict wmap):
         if self._max_arity < 0:
-            return FMap({k: v for k, v in wmap.items() if k.startswith('{0}_'.format(self.name))})
+            if self.name not in wmap:
+                raise KeyError('Missing a default weight for %s' % self.name)
+            return FMap({k: v for k, v in wmap.items() if k.startswith('{0}_'.format(self.name))},
+                        default=wmap[self.name])
         else:
             return FVec([wmap['{0}_{1}'.format(self.name, i)] for i in range(self._max_arity + 1)])
 
