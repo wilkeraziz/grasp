@@ -5,7 +5,6 @@
 import time
 import sys
 import tempfile
-import datetime
 import gzip
 import warnings
 import pickle
@@ -112,7 +111,7 @@ def progressbar(it, count=None, prefix='', dynsuffix=lambda: '', size=60, file=s
 
 
 def make_unique_directory(dir=None):
-    return tempfile.mkdtemp(prefix=datetime.datetime.now().strftime("%y%m%d_%H%M%S_"), dir=dir)
+    return tempfile.mkdtemp(prefix=datetime.now().strftime("%y%m%d_%H%M%S_"), dir=dir)
 
 
 def list_numbered_files(basedir, suffix='', sort=True, reverse=False):

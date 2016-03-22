@@ -43,6 +43,12 @@ from grasp.scoring.scorer import StatelessScorer
 from grasp.scoring.scorer import StatefulScorer
 from grasp.scoring.model import DummyModel
 
+from grasp.scoring.util import make_weight_map
+from grasp.scoring.util import InitialWeightFunction
+from grasp.scoring.util import construct_extractors
+from grasp.scoring.util import read_weights
+from grasp.scoring.util import make_models
+
 
 from grasp.cfg.model import DummyConstant
 from grasp.cfg.symbol import Nonterminal
@@ -145,6 +151,29 @@ def load_feature_extractors(rt=None, wp=None, ap=None, slm=None, lm=None) -> 'tu
         extractors.append(extractor)
 
     return tuple(extractors)
+
+
+def load_model(description, weights, init):
+    """
+
+    :param description: path to Extractor constructors
+    :param weights: path to weights
+    :param init: initialisation strategy
+    :return: ModelContainer
+    """
+    extractors = construct_extractors(description)
+    if not weights and init is None:
+        raise ValueError('Either provide a file containing weights or an initialisation strategy')
+    if weights:
+        wmap = read_weights(weights)
+    else:
+        if init == 'uniform':
+            wmap = make_weight_map(extractors, InitialWeightFunction.uniform(len(extractors)))
+        elif init == 'random':
+            wmap = make_weight_map(extractors, InitialWeightFunction.normal())
+        else:
+            wmap = make_weight_map(extractors, InitialWeightFunction.constant(float(init)))
+    return make_models(wmap, extractors)
 
 
 def make_grammar_hypergraph(seg, extra_grammar_paths=[],
@@ -594,6 +623,7 @@ def training_biparse(seg, args, workingdir, model, log=dummyfunc) -> 'bool':
                                                       redo=args.redo,
                                                       log=log)
 
+
     # parse reference lattice
     log('[%d] Parse reference DFA', seg.id)
     ref_dfa = make_reference_dfa(seg)
@@ -623,3 +653,57 @@ def training_biparse(seg, args, workingdir, model, log=dummyfunc) -> 'bool':
           log=log)
 
     return True  # parsable
+
+
+@traceit
+def training_parse(seg, args, workingdir, model, log=dummyfunc) -> 'bool':
+    """
+    Steps:
+        I. Pass0 and pass1: parse source, project, local scoring
+        II. Pass2
+            - make a reference DFA
+            - parse the reference DFA
+            - fully score the reference forest (lookup, stateless, stateful)
+                - save rescored forest and components
+    :return: whether or not the input is bi-parsable
+    """
+
+    pass1_files = ['{0}/{1}.hyp.forest'.format(workingdir, seg.id),
+                   '{0}/{1}.hyp.ffs.rule'.format(workingdir, seg.id),
+                   '{0}/{1}.hyp.ffs.stateless'.format(workingdir, seg.id)]
+
+    # check for redundant work
+    if all(os.path.exists(path) for path in pass1_files) and not args.redo:
+        return True
+
+    # pass0: parsing
+
+    src_forest = pass0(seg,
+                       extra_grammar_paths=args.extra_grammar,
+                       glue_grammar_paths=args.glue_grammar,
+                       pass_through=args.pass_through,
+                       default_symbol=args.default_symbol,
+                       goal_str=args.goal,
+                       start_str=args.start,
+                       n_goal=0,
+                       saving={},
+                       redo=args.redo,
+                       log=log)
+    if not src_forest:
+        return False
+    # pass1: local scoring
+
+    saving1 = {
+        'forest': '{0}/{1}.hyp.forest'.format(workingdir, seg.id),
+        'lookup': '{0}/{1}.hyp.ffs.rule'.format(workingdir, seg.id),
+        'stateless': '{0}/{1}.hyp.ffs.stateless'.format(workingdir, seg.id)
+    }
+
+    tgt_forest, lookup_comps, stateless_comps = pass1(seg,
+                                                      src_forest,
+                                                      model,
+                                                      saving=saving1,
+                                                      redo=args.redo,
+                                                      log=log)
+
+    return True
