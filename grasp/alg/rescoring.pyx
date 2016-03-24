@@ -665,3 +665,40 @@ cdef class SlicedRescoring:
         # I always burn the initial derivation (because it is always byproduct of some heuristic)
         markov_chain.popleft()
         return d0, markov_chain
+
+
+cpdef tuple score_derivation(Hypergraph forest,
+                               tuple derivation,
+                               Semiring semiring,
+                               TableLookupScorer lookup,
+                               StatelessScorer stateless,
+                               StatefulScorer stateful):
+        """
+        Rescores a derivation seen as a sequence of rule applications, thus abstracting away from the
+        hypergraph representation.
+
+        :param d: sequence of Rule applications
+        :return: value
+        """
+        cdef:
+            FComponents comp1, comp2, comp3, partial
+            weight_t w1 = semiring.one
+            weight_t w2 = semiring.one
+            weight_t w3 = semiring.one
+            id_t e, leaf
+            Rule r
+            tuple rules = tuple([forest.rule(e) for e in derivation])
+            tuple labels = tuple([forest.label(leaf) for leaf in top_down_left_right(forest, derivation, terminal_only=True)])
+
+        # score using the complete f(d|u)
+        # 1. Rule scorers
+
+        if lookup:
+            comp1, w1 = lookup.featurize_and_score_derivation(rules, semiring)
+        # 2. Stateless scorers
+        if stateless:
+            comp2, w2 = stateless.featurize_and_score_derivation(rules, semiring)
+        # 3. Stateful scorers
+        if stateful:
+            comp3, w3 = stateful.featurize_and_score_yield(labels)
+        return FComponents([comp1, comp2, comp3]), semiring.times(w1, semiring.times(w2, w3))

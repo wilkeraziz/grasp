@@ -33,6 +33,7 @@ from grasp.recipes import timeit, smart_wopen
 from grasp.scoring.scorer import StatefulScorer, StatelessScorer, TableLookupScorer
 from grasp.scoring.util import make_models
 from grasp.scoring.util import read_weights
+from grasp.scoring.frepr import FComponents
 
 import grasp.semiring as semiring
 
@@ -70,13 +71,14 @@ def decode(seg, args, model, outdir):
 
     # pass0
     src_forest = pipeline.pass0(seg,
-                       extra_grammar_paths=args.extra_grammar,
-                       glue_grammar_paths=args.glue_grammar,
-                       pass_through=args.pass_through,
-                       default_symbol=args.default_symbol,
-                       goal_str=args.goal,
-                       start_str=args.start,
-                       n_goal=0, log=logging.info)
+                                extra_grammar_paths=args.extra_grammar,
+                                glue_grammar_paths=args.glue_grammar,
+                                pass_through=args.pass_through,
+                                default_symbol=args.default_symbol,
+                                goal_str=args.goal,
+                                start_str=args.start,
+                                max_span=args.max_span,
+                                n_goal=0, log=logging.info)
     tgt_forest = pipeline.make_target_forest(src_forest, TableLookupScorer(model.lookup))
     tsort = AcyclicTopSortTable(tgt_forest)
 
@@ -122,6 +124,13 @@ def decode(seg, args, model, outdir):
                                 derivation2str=lambda d: bracketed_string(tgt_forest, d))
             projections = group_by_projection(samples, lambda d: yield_string(tgt_forest, d))
             save_mc_yields('{0}/exact/yields/{1}.gz'.format(outdir, seg.id), projections)
+
+            # TODO: fix this hack
+            # it's here just so I can reuse pipeline.consensus
+            # the fix involves moving SampleReturn to a more general module
+            # and making AncestralSampler use it
+            from grasp.alg.rescoring import SampleReturn
+            samples = [SampleReturn(s, 0.0, FComponents([]))for s in samples]
 
     else:  # for sliced scoring, we only have access to sampling
 

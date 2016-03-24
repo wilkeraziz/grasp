@@ -9,7 +9,7 @@ from libcpp.pair cimport pair
 cimport numpy as np
 from grasp.semiring._semiring cimport Semiring
 from grasp.scoring.scorer cimport TableLookupScorer, StatelessScorer, StatefulScorer
-
+from grasp.alg.constraint cimport Constraint
 from grasp.scoring.frepr cimport FComponents
 
 from grasp.formal.wfunc cimport WeightFunction, HypergraphLookupFunction
@@ -75,6 +75,7 @@ cdef class DeductiveIntersection:
     cdef WeightFunction _omega
     cdef Semiring _semiring
     cdef SliceVariables _slicevars
+    cdef Constraint _constraint
 
     cdef Agenda _agenda
     cdef ItemFactory _ifactory
@@ -98,6 +99,14 @@ cdef class DeductiveIntersection:
 
     cdef Item pop(self)
 
+    cdef bint connected(self, id_t edge, id_t origin, id_t destination)
+
+    cdef bint advance(self, Item item, id_t to, weight_t weight, tuple frepr)
+
+    cdef bint insert(self, id_t edge, tuple states, weight_t weight, tuple frepr)
+
+    cdef int n_items(self)
+
     # The following methods need to be implemented by subclasses
 
     cdef void axioms(self, id_t root)
@@ -109,6 +118,7 @@ cdef class DeductiveIntersection:
     cdef void process_complete(self, Item item)
 
     cpdef Hypergraph do(self, id_t root, Rule goal_rule)
+
 
 
 cdef class Parser(DeductiveIntersection):

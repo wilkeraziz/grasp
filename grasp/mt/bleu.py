@@ -1,4 +1,6 @@
 """
+A simple command line tool for computing IBM BLEU.
+
 :Authors: - Wilker Aziz
 """
 import argparse

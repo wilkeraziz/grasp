@@ -100,9 +100,9 @@ def cmd_parser(group):
             type=str, default='exact', choices=['exact', 'slice'],
             metavar='FRAMEWORK',
             help="inference framework: 'exact', 'slice' sampling")
-    group.add_argument('--generations',
-            type=int, default=20, metavar='N',
-            help='number of generations in loopy inside computations')
+    group.add_argument('--max-span',
+            type=int, default=-1, metavar='N',
+            help='size of the longest input path under an X nonterminal (a negative value implies no constraint)')
 
 
 def cmd_info(group):

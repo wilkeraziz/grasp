@@ -26,6 +26,15 @@ cpdef Hypergraph stateless_rescoring(Hypergraph hg,
                                      StatelessScorer stateless,
                                      Semiring semiring)
 
+
+cpdef tuple score_derivation(Hypergraph forest,
+                               tuple derivation,
+                               Semiring semiring,
+                               TableLookupScorer lookup,
+                               StatelessScorer stateless,
+                               StatefulScorer stateful)
+
+
 cdef class SampleReturn:
 
     cdef readonly tuple edges

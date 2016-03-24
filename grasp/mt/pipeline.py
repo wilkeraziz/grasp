@@ -61,6 +61,9 @@ from grasp.alg.chain import apply_filters
 from grasp.alg.chain import group_by_identity
 from grasp.alg.chain import group_by_projection
 from grasp.alg.value import acyclic_value_recursion
+from grasp.alg.constraint import Constraint as DummyConstraint
+from grasp.alg.constraint import GlueConstraint
+from grasp.alg.constraint import HieroConstraints
 
 
 def is_step_complete(step, saving, redo):
@@ -234,15 +237,15 @@ def make_reference_dfa(seg) -> 'DFA':
     return make_dfa_set([ref.split() for ref in seg.refs], semiring.inside.one)
 
 
-def parse_dfa(hg, root, dfa, goal_rule, bottomup=True) -> 'Hypergraph':
+def parse_dfa(hg, root, dfa, goal_rule, bottomup=True, constraint=DummyConstraint()) -> 'Hypergraph':
     """
     Intersect a (possibly cyclic) hypergaph and a DFA.
     """
     #  2a. get a parser and intersect the source FSA
     if bottomup:
-        parser = NederhofParser(hg, dfa, semiring.inside)
+        parser = NederhofParser(hg, dfa, semiring.inside, constraint=constraint)
     else:
-        parser = EarleyParser(hg, dfa, semiring.inside)
+        parser = EarleyParser(hg, dfa, semiring.inside, constraint=constraint)
     return parser.do(root,goal_rule)
 
 
@@ -282,7 +285,7 @@ def rescore_forest(forest, root, lookup, stateless, stateful, goal_rule, omega=N
 
 
 def pass0(seg, extra_grammar_paths=[], glue_grammar_paths=[], pass_through=True,
-          default_symbol='X', goal_str='GOAL', start_str='S', n_goal=0,
+          default_symbol='X', goal_str='GOAL', start_str='S', max_span=-1, n_goal=0,
           saving={}, redo=True, log=dummyfunc) -> 'Hypergraph':
     """
     Pass0 consists in parsing with the source side of the grammar.
@@ -315,7 +318,8 @@ def pass0(seg, extra_grammar_paths=[], glue_grammar_paths=[], pass_through=True,
                        grammar.fetch(Nonterminal(start_str)),
                        dfa,
                        goal_maker.get_iview(),
-                       bottomup=True)
+                       bottomup=True,
+                       constraint=HieroConstraints(grammar, dfa, max_span))
     if 'forest' in saving:
         pickle_it(saving['forest'], forest)
     return forest

@@ -1,5 +1,6 @@
 from grasp.ptypes cimport id_t, weight_t
 from grasp.cfg.symbol cimport Terminal as Label
+cimport numpy as np
 
 
 cdef class Arc:
@@ -8,10 +9,10 @@ cdef class Arc:
     Instead of an arbitrary rule, it contains a label (a Symbol) and it carries a weight.
     """
     
-    cdef id_t _origin
-    cdef id_t _destination
-    cdef Label _label
-    cdef weight_t _weight
+    cdef readonly id_t origin
+    cdef readonly id_t destination
+    cdef readonly Label label
+    cdef readonly weight_t weight
 
 
 cdef class DFA:
@@ -47,6 +48,8 @@ cdef class DFA:
     
     cpdef iterfinal(self)
 
+
+cpdef np.int_t[:,::1] floyd_warshall(DFA dfa, np.int_t inf=?)
 
 cpdef DFA make_dfa(words, weight_t w=?)
 

@@ -16,6 +16,18 @@ import logging
 from datetime import datetime
 import traceback
 import re
+import os
+
+
+def symlink(path_from, path_to):
+    """
+    Create a (forced) symlink between abspath(from) and abspath(to).
+    """
+    i_path = os.path.abspath(path_from)
+    o_path = os.path.abspath(path_to)
+    if os.path.exists(o_path):
+        os.remove(o_path)
+    os.symlink(i_path, o_path)
 
 
 def dummyfunc(*args, **kwargs):

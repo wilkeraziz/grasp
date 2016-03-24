@@ -276,9 +276,18 @@ cdef class FComponents(FRepr):
 
     def __init__(self, iterable):
         """Here each component must be itself a FRepr"""
-        self.components = list(iterable)
-        if not all(isinstance(comp, FRepr) for comp in self.components):
-            raise ValueError('Every component in an FComponents object must be itself a FRepr object')
+        self.components = []
+        for other in iterable:
+            if isinstance(other, FComponents):
+                self.components.extend(other.components)
+            elif isinstance(other, FRepr):
+                self.components.append(other)
+            else:
+                raise ValueError('Every component in an FComponents object must be itself a FRepr object')
+
+        #if not all(isinstance(comp, FRepr) for comp in self.components):
+        #    raise ValueError('Every component in an FComponents object must be itself a FRepr object')
+        #self.components = list(iterable)
 
     cpdef FComponents concatenate(self, FComponents other):
         if len(self) == 0:

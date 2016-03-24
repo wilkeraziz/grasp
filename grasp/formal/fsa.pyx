@@ -1,41 +1,26 @@
 from grasp.ptypes cimport id_t, weight_t
+import numpy as np
 
 
 cdef class Arc:
     
     def __init__(self, id_t origin, id_t destination, Label label, weight_t weight):
-        self._origin = origin
-        self._destination = destination
-        self._label = label
-        self._weight = weight
+        self.origin = origin
+        self.destination = destination
+        self.label = label
+        self.weight = weight
     
     def __str__(self):
-        return 'from={0} to={1} label={2} weight={3}'.format(self._origin, 
-                                                             self._destination, 
-                                                             repr(self._label),
-                                                             self._weight)
+        return 'from={0} to={1} label={2} weight={3}'.format(self.origin,
+                                                             self.destination,
+                                                             repr(self.label),
+                                                             self.weight)
     
     def __repr__(self):
-        return 'Arc(%r, %r, %r, %r)' % (self._origin, 
-                                        self._destination, 
-                                        self._label, 
-                                        self._weight)
-
-    property origin:
-        def __get__(self):
-            return self._origin
-        
-    property destination:
-        def __get__(self):
-            return self._destination
-    
-    property label:
-        def __get__(self):
-            return self._label
-        
-    property weight:
-        def __get__(self):
-            return self._weight
+        return 'Arc(%r, %r, %r, %r)' % (self.origin,
+                                        self.destination,
+                                        self.label,
+                                        self.weight)
         
     
 cdef class DFA:
@@ -98,7 +83,34 @@ cdef class DFA:
                                                  '\n'.join(str(arc) for arc in self.iterarcs()),
                                                  ' '.join(str(i) for i in self.iterinitial()),
                                                  ' '.join(str(i) for i in self.iterfinal()))
-        
+
+
+cpdef np.int_t[:,::1] floyd_warshall(DFA dfa, np.int_t inf=-1):
+    """
+    Compute the lenght of the minimum path between every node pair.
+
+    :param dfa: DFA with |V| nodes and |E| edges
+    :param inf: a representation of infinity
+    :return: a |V|x|V| memoryview with distances (inf represents lack of path between nodes)
+    """
+    cdef np.int_t[:,::1] dist = np.full((dfa.n_states(), dfa.n_states()), inf, dtype=np.int)
+    cdef size_t a, i, j, k
+    cdef Arc arc
+    for v in range(dfa.n_states()):
+        dist[v,v] = 0
+    for a in range(dfa.n_arcs()):
+        arc = dfa.arc(a)
+        dist[arc.origin,arc.destination] = 1  # TODO generalise to weight function
+    for k in range(dfa.n_states()):
+        for i in range(dfa.n_states()):
+            for j in range(dfa.n_states()):
+                if dist[i,k] == inf or dist[k,j] == inf:  # inf + anything is inf
+                    continue
+                if dist[i,j] == inf or dist[i,j] > dist[i,k] + dist[k,j]:  # inf is bigger than anything
+                    dist[i,j] = dist[i,k] + dist[k,j]
+    return dist
+
+
 
 cpdef DFA make_dfa(words, weight_t w=0.0):
     cdef DFA dfa = DFA()

@@ -12,6 +12,9 @@ cdef class Model:
         self._wmap = dict(wmap)
         self._weights = FComponents([extractor.weights(self._wmap) for extractor in self._extractors])
 
+    def __bool__(self):
+        return bool(self._extractors)
+
     def __getstate__(self):
         return {'extractors': self._extractors, 'wmap': self._wmap}
 
@@ -86,6 +89,8 @@ cdef class ModelContainer(Model):
 
     cpdef FComponents constant(self, weight_t value):
         cdef Extractor extractor
+        # TODO: should I skip empty models? then I have to be consistent elsewhere (e.g. weights(self, wmap))
+        #return FComponents([model.constant(value) for model in [self.lookup, self.stateless, self.stateful] if model])
         return FComponents([self.lookup.constant(value), self.stateless.constant(value), self.stateful.constant(value)])
 
     cpdef itercomponents(self):

@@ -5,9 +5,12 @@ Most packages have a `README` file of their own, those might also contain a list
 
 * reversed value recursion (with approximate supremum)
 * unit tests
-* migrate core code to Cython
 * synchronous parsing
 * support to TSG and TAG
 * Simulated annealing 
 * configuration file
+
+* optional max span for parser (relevant for MT)
+* ngram order features in KenLM/StatelessLM
+* accept rules without features (change parser)
 
