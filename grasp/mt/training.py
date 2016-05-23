@@ -109,7 +109,8 @@ def cmd_optimisation(parser):
                         help="Resume from a certain iteration (requires the config file of the preceding run)")
     parser.add_argument('--merge', type=int, default=0,
                         help="how many iterations should we consider in estimating Z(x) (use 0 or less for all)")
-    parser.add_argument("--sgd", type=int, nargs=2, default=[10, 10],
+    # TODO: change this to 'gd'
+    parser.add_argument("--gd", type=int, nargs=2, default=[10, 10],
                         help="Number of iterations and function evaluations for target optimisation")
     parser.add_argument("--tol", type=float, nargs=2, default=[1e-9, 1e-9],
                         help="f-tol and g-tol in target optimisation")
@@ -261,7 +262,7 @@ def get_argparser():
     cmd_model(parser.add_argument_group('Model'))
     cmd_parser(parser.add_argument_group('Parser'))
     cmd_grammar(parser.add_argument_group('Grammar'))
-    cmd_optimisation(parser.add_argument_group('Parameter optimisation by SGD'))
+    cmd_optimisation(parser.add_argument_group('Gradient-based parameter optimisation'))
     cmd_slice(parser.add_argument_group('Slice sampler'))
     cmd_external(parser.add_argument_group('External tools'))
     cmd_logging(parser.add_argument_group('Logging'))
@@ -521,8 +522,31 @@ def slice_sample(seg, args, staticdir, supportdir, workspace, model):
                           derivation2str=lambda d: bracketed_string(forest, d.edges))
 
 
+#def new_sample(args, staticdir, supportdir, workspace, model, iteration, batch_number, batch):
+
+
+
 def sample(args, staticdir, supportdir, workspace, model, iteration, batch_number, batch):
+    """
+
+    1. Expectations with respect to p(y|x)
+        if local only
+            just link vectors
+        elif exact
+            rescoring, save vectors
+        else
+            slice rescoring, save vectors
+
+    2. Expectations with respect to p(x,y)
+        if local only
+            just link vectors
+        elif exact
+            rescoring, save vectors
+        else
+            slice rescoring, save vectors
+    """
     logging.info('[%d] Slice sampling batch %d', iteration, batch_number)
+
 
     with Pool(args.jobs) as workers:
         workers.map(partial(slice_sample,
@@ -685,8 +709,6 @@ def update_support_stats(args, staticdir, workspace, model, batch, merging):
 
 def objective_and_derivatives(args, staticdir, workspace, model, batch, merging):
 
-    factor = 1.0 / len(batch)
-
     # 1. Update Z(x, y \in refset) and Z(x, y \not\in refset)
     logging.info('Updating D(x)')
     Z_R, Z_C = update_support_stats(args, staticdir, workspace, model, batch, merging)
@@ -772,10 +794,10 @@ def optimise(args, staticdir, workspace, model, iteration, batch_number, batch, 
                       method='L-BFGS-B',
                       jac=True,
                       callback=callback,
-                      options={'maxiter': args.sgd[0],
+                      options={'maxiter': args.gd[0],
                                'ftol': args.tol[0],
                                'gtol': args.tol[1],
-                               'maxfun': args.sgd[1],
+                               'maxfun': args.gd[1],
                                'disp': False})
     dt = time() - t0
     logging.info('[I=%d, b=%d] Target SGD: function=%f nfev=%d nit=%d success=%s message="%s" minutes=%s',
@@ -783,6 +805,65 @@ def optimise(args, staticdir, workspace, model, iteration, batch_number, batch, 
                  result.fun, result.nfev, result.nit, result.success, result.message, dt / 60)
     logging.info('[I=%d, b=%d] Final\n%s', iteration, batch_number, npvec2str(result.x, model.fnames()))
     return result.x
+
+
+def sgd_optimise(args, staticdir, workspace, model, iteration, batch_number, batch, merging, gamma=1, N=1):
+    """
+
+        w_{t+1} = w_t - \gamma_t * (1/M) * \sum_{i=1}^M Grad_w [ log p(x_i) -  (1/N) * 0.5 \lambda L2(w)^2 ]
+
+        N is the total number of training instances (not only those in this batch)
+        M is the batch size
+        (x_i: for 1 <= i <= M) are the training instances in the batch
+        \lambda is a L2 regularisation strength
+        \gamma is a learning rate
+
+
+    :param args:
+    :param staticdir:
+    :param workspace:
+    :param model:
+    :param iteration:
+    :param batch_number:
+    :param batch:
+    :param merging:
+    :param training_size:
+    :return:
+    """
+    logging.info('[I=%d] batch=%d size=%d total=%d gamma=%f', iteration, batch_number, len(batch), N, gamma)
+
+    def f(theta):
+
+        model_t = make_models(dict(zip(model.fnames(), theta)), model.extractors())
+
+        logprob, derivatives = objective_and_derivatives(args, staticdir, workspace, model_t, batch, merging)
+        obj = logprob
+        jac = np.array(list(derivatives.densify()), dtype=ptypes.weight)
+
+        if args.L2 == 0.0:
+            logging.info('[I=%d, b=%d] O=%f', iteration, batch_number, obj)
+            logging.debug('[I=%d, b=%d] Derivatives\n%s', iteration, batch_number, npvec2str(jac, model.fnames(), '\n'))
+            return obj, jac
+        else:
+            r_obj = obj
+            r_jac = jac.copy()
+
+            if args.L2 != 0.0:  # L2-regularised:  p(theta_k) \propto exp(-\lambda_k ^ 2 / (2*\sigma^2), sigma^2=1, lambda_k = lambda
+                regulariser = LA.norm(theta, 2) ** 2
+                r_obj -= args.L2 * regulariser / (2 * N)  #  0.5 * lambda * ||theta||^2
+                r_jac -= args.L2 * theta / N  # lambda * theta
+                logging.info('[I=%d, b=%d] O=%f L=%f', iteration, batch_number, r_obj, obj)
+                logging.debug('[I=%d, b=%d] Derivatives\n%s', iteration, batch_number, npvec2str(r_jac, model.fnames()))
+
+            return r_obj, r_jac
+
+    w0 = np.array(list(model.weights().densify()), dtype=ptypes.weight)
+    obj_b, jac_b = f(w0)
+    w1 = w0 - gamma * jac_b
+    # TODO: AdaGrad
+    # TODO: Finite differences
+
+    return w1
 
 
 def eval_devtest(args, workspace, iterdir, model, segments):
@@ -884,6 +965,7 @@ def core(args):
     print('{0} ||| init ||| {1}={2} ||| {3}'.format(0, args.devtest_alias, bleu, npvec2str(model.weights().densify(), fnames)))
 
     # 3. Optimise
+    training_size = len(parsable)
     dimensionality = len(fnames)
     merging = deque()
 
@@ -912,19 +994,24 @@ def core(args):
             sample(args, devdir, supportdir, batchdir, model, iteration, b, batch)
 
             # ii. optimise
-            weights = optimise(args, devdir, batchdir, model, iteration, b, batch, merging)
+            if len(batches) == 1:  # GD
+                weights = optimise(args, devdir, batchdir, model, iteration, b, batch, merging)
+            else:  # SGD
+                weights = sgd_optimise(args, devdir, batchdir, model, iteration, b, batch, merging, gamma=1, N=training_size)
 
             print('{0} ||| batch{1} |||  ||| {2}'.format(iteration, b, npvec2str(weights, fnames)))
-            avg += weights
+            # Polyak and Juditsky (1992)
+            t = float(iteration - 1)
+            avg = t / (t + 1) * avg + 1.0 / (t + 1) * weights
+            print('{0} ||| avg{1} |||  ||| {2}'.format(iteration, b, npvec2str(avg, fnames)))
 
-        avg /= len(batches)
         model = make_models(dict(zip(model.fnames(), avg)), model.extractors())
 
         bleu = eval_devtest(args, workspace, iterdir, model, devtest)
-        print('{0} ||| avg ||| {1}={2} ||| {3}'.format(iteration,
-                                                       args.devtest_alias,
-                                                       bleu,
-                                                       npvec2str(avg, fnames)))
+        print('{0} ||| final ||| {1}={2} ||| {3}'.format(iteration,
+                                                         args.devtest_alias,
+                                                         bleu,
+                                                         npvec2str(avg, fnames)))
 
 
 def main():

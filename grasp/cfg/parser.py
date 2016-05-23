@@ -23,7 +23,7 @@ from grasp.alg.inference import viterbi_derivation, AncestralSampler, Derivation
 from grasp.alg.chain import group_by_identity, apply_batch_filters, apply_filters
 
 from grasp.recipes import timeit, smart_wopen, progressbar, deprecated
-from grasp.io.results import save_mcmc_derivation, save_mcmc_yields, save_markov_chain
+from grasp.io.results import save_mcmc_derivations, save_mcmc_yields, save_markov_chain
 from grasp.io.results import save_viterbi, save_kbest, save_mc_derivations, save_mc_yields
 
 from grasp.cfg import CFG

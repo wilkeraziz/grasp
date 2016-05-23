@@ -108,12 +108,13 @@ def save_references(path, segments):
             print(' ||| '.join(seg.refs), file=fo)
 
 
-def load_model(description, weights, init, temperature):
+def load_model(description, weights, init, temperature=1.0):
     """
 
     :param description: path to Extractor constructors
     :param weights: path to weights
     :param init: initialisation strategy
+    :param temperature: scale the model
     :return: ModelContainer
     """
     extractors = construct_extractors(description)
