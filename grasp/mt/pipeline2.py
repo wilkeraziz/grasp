@@ -11,6 +11,8 @@ import grasp.ptypes as ptypes
 
 import grasp.semiring as semiring
 
+from types import SimpleNamespace
+
 from grasp.mt.segment import SegmentMetaData
 import grasp.mt.cdec_format as cdeclib
 from grasp.mt.input import make_pass_grammar
@@ -22,6 +24,7 @@ from grasp.formal.fsa import make_dfa
 from grasp.formal.fsa import make_dfa_set
 from grasp.formal.topsort import AcyclicTopSortTable
 from grasp.formal.wfunc import TableLookupFunction
+from grasp.formal.wfunc import ConstantFunction
 from grasp.formal.wfunc import derivation_weight
 from grasp.formal.traversal import bracketed_string
 from grasp.formal.traversal import yield_string
@@ -75,14 +78,11 @@ def read_segments_from_stream(istream, grammar_dir=None, shuffle=False) -> 'tupl
     :param shuffle: shuffle segments inplace
     :return: tuple of SegmentMetaData objects
     """
+    segments = [SegmentMetaData.parse(input_str, grammar_dir=grammar_dir)
+                for input_str in istream]
     if shuffle:
-        segments = [SegmentMetaData.parse(input_str, grammar_dir=grammar_dir)
-                    for input_str in istream]
         random.shuffle(segments)
-        return tuple(segments)
-    else:
-        return tuple(SegmentMetaData.parse(input_str, grammar_dir=grammar_dir)
-                     for input_str in istream)
+    return segments
 
 
 def read_segments_from_file(path, grammar_dir=None, shuffle=False) -> 'tuple':
@@ -437,3 +437,146 @@ def importance_sample(seg, options, proxy, target, saving={}, redo=True, log=dum
         pickle_it(saving['is.samples'], is_yields)
 
     return is_yields
+
+
+def preprocessed_training_files(stem):
+    return {'joint.forest': '{0}.joint.forest'.format(stem),
+            'joint.components': '{0}.joint.components'.format(stem),
+            'conditional.forest': '{0}.conditional.forest'.format(stem),
+            'conditional.components': '{0}.conditional.components'.format(stem)}
+
+
+def biparse(seg, options, lookup, stateless, joint_stateful, conditional_stateful, workingdir=None, redo=True, log=dummyfunc):
+
+    if workingdir:
+        saving = preprocessed_training_files('{0}/{1}'.format(workingdir, seg.id))
+    else:
+        saving = {}
+
+    steps = ['joint.forest', 'joint.components', 'conditional.forest', 'conditional.components']
+    result = SimpleNamespace()
+    result.joint = SimpleNamespace()
+    result.conditional = SimpleNamespace()
+
+    if all(is_step_complete(step, saving, redo) for step in steps):
+        log('[%d] Reusing joint and conditional distributions from files', seg.id)
+        result.joint.forest = unpickle_it(saving['joint.forest'])
+        result.joint.components = unpickle_it(saving['joint.components'])
+        result.conditional.forest = unpickle_it(saving['conditional.forest'])
+        result.conditional.components = unpickle_it(saving['conditional.components'])
+        return result
+
+    # 1. Make a grammar
+
+    # here we need to decode for sure
+    log('[%d] Make hypergraph view of all available grammars', seg.id)
+    # make a hypergraph view of all available grammars
+    grammar = make_grammar_hypergraph(seg,
+                                      extra_grammar_paths=options.extra_grammars,
+                                      glue_grammar_paths=options.glue_grammars,
+                                      pass_through=options.pass_through,
+                                      default_symbol=options.default_symbol)
+    #print('GRAMMAR')
+    #print(grammar)
+
+    # 2. Joint distribution - Step 1: parse source lattice
+    n_goal = 0
+    log('[%d] Parse source DFA', seg.id)
+    goal_maker = GoalRuleMaker(goal_str=options.goal, start_str=options.start, n=n_goal)
+    src_dfa = make_input_dfa(seg)
+    src_forest = parse_dfa(grammar,
+                           grammar.fetch(Nonterminal(options.start)),
+                           src_dfa,
+                           goal_maker.get_iview(),
+                           bottomup=True,
+                           constraint=HieroConstraints(grammar, src_dfa, options.max_span))
+    #print('SOURCE')
+    #print(src_forest)
+
+    if not src_forest:
+        raise ValueError('I cannot parse the input lattice: i) make sure your grammar has glue rules; ii) make sure it handles OOVs')
+
+    # 3. Target projection of the forest
+    log('[%d] Project target rules', seg.id)
+    tgt_forest = make_target_forest(src_forest)
+    #print('TARGET')
+    #print(tgt_forest)
+
+    # 4. Joint distribution - Step 2: scoring
+
+    if not joint_stateful:  # when only local scoring is done we can avoid Earley rescoring
+        log('[%d] Joint - Lookup scoring', seg.id)
+        lookup_comps = get_lookup_components(tgt_forest, lookup.extractors())  # lookup
+        log('[%d] Joint - Stateless scoring', seg.id)
+        stateless_comps = get_stateless_components(tgt_forest, stateless.extractors())  # stateless
+        joint_forest = tgt_forest
+        joint_components = [FComponents([comps1, comps2]) for comps1, comps2 in zip(lookup_comps, stateless_comps)]
+
+    else:  # here we cannot avoid it
+        log('[%d] Joint - Forest rescoring', seg.id)
+        goal_maker.update()
+        joint_forest, joint_components = rescore_forest(tgt_forest,
+                                                        0,
+                                                        TableLookupScorer(lookup),
+                                                        StatelessScorer(stateless),
+                                                        StatefulScorer(joint_stateful),
+                                                        goal_rule=goal_maker.get_oview(),
+                                                        keep_components=True)
+    # save joint distribution
+    if 'joint.forest' in saving:
+        pickle_it(saving['joint.forest'], joint_forest)
+    if 'joint.components' in saving:
+        pickle_it(saving['joint.components'], joint_components)
+
+    result.joint.forest = joint_forest
+    result.joint.components = joint_components
+    #print('JOINT')
+    #print(result.joint.forest)
+
+    # 5. Conditional distribution - Step 1: parse the reference lattice
+
+    log('[%d] Parse reference DFA', seg.id)
+    ref_dfa = make_reference_dfa(seg)
+    goal_maker.update()
+    ref_forest = parse_dfa(joint_forest,
+                           0,
+                           ref_dfa,
+                           goal_maker.get_oview(),
+                           bottomup=False)
+
+    if not ref_forest:  # reference cannot be parsed
+        log('[%d] References cannot be parsed', seg.id)
+        conditional_forest = ref_forest
+        conditional_components = []
+    else:
+        # 6. Conditional distribution - Step 2: scoring
+
+        if not conditional_stateful:
+            log('[%d] Conditional - Lookup scoring', seg.id)
+            lookup_comps = get_lookup_components(ref_forest, lookup.extractors())  # lookup
+            log('[%d] Conditional - Stateless scoring', seg.id)
+            stateless_comps = get_stateless_components(ref_forest, stateless.extractors())  # stateless
+            conditional_forest = ref_forest
+            conditional_components = [FComponents([comps1, comps2]) for comps1, comps2 in
+                                      zip(lookup_comps, stateless_comps)]
+        else:
+            log('[%d] Conditional - Forest rescoring', seg.id)
+            goal_maker.update()
+            conditional_forest, conditional_components = rescore_forest(ref_forest,
+                                                                        0,
+                                                                        TableLookupScorer(lookup),
+                                                                        StatelessScorer(stateless),
+                                                                        StatefulScorer(conditional_stateful),
+                                                                        goal_rule=goal_maker.get_oview(),
+                                                                        keep_components=True)
+
+    # save conditional distribution
+    if 'conditional.forest' in saving:
+        pickle_it(saving['conditional.forest'], conditional_forest)
+    if 'conditional.components' in saving:
+        pickle_it(saving['conditional.components'], conditional_components)
+
+    result.conditional.forest = conditional_forest
+    result.conditional.components = conditional_components
+
+    return result
