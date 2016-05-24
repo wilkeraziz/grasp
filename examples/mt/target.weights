@@ -1,0 +1,15 @@
+Glue 1.0
+PassThrough 1.0
+IsSingletonF 1.0
+IsSingletonFE 1.0
+EgivenFCoherent 1.0
+SampleCountF 1.0
+CountEF 1.0
+MaxLexFgivenE 1.0
+MaxLexEgivenF 1.0
+WordPenalty 1.0
+ArityPenalty_0 1.0
+ArityPenalty_1 1.0
+ArityPenalty_2 1.0
+KenLM 1.0
+KenLM_OOV 1.0
