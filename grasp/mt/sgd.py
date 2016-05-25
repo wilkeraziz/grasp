@@ -403,7 +403,7 @@ def preprocess_dataset(args, path, grammars, workingdir, joint_model, conditiona
     return unconstrained_data, data
 
 
-def expected_features(seg, args, staticdir, forest_path, components_path,
+def sample_derivations(seg, args, staticdir, forest_path, components_path,
                       model: ModelView, n_top):
     # 1. Load pickled objects for the conditional distribution
     logging.debug('[%d] Loading target forest', seg.id)
@@ -464,7 +464,7 @@ def expected_features(seg, args, staticdir, forest_path, components_path,
     n_samples = len(samples)
 
     # 4. Complete feature vectors and compute expectation
-    hypcomps = []
+    f_vectors = []
     expected_fvec = model.constant(semiring.prob.zero)
     d_groups = group_by_identity(samples)
     for d_group in d_groups:
@@ -483,10 +483,16 @@ def expected_features(seg, args, staticdir, forest_path, components_path,
         derivation.components = model.merge(local_vec, derivation.components)
         # print('D', derivation.components)
         # incorporate sample frequency
-        hypcomps.append(derivation.components.power(float(d_group.count) / n_samples, semiring.inside))
-        expected_fvec = expected_fvec.hadamard(hypcomps[-1], semiring.prob.plus)
+        f_vectors.append(derivation.components.power(float(d_group.count) / n_samples, semiring.inside))
+        expected_fvec = expected_fvec.hadamard(f_vectors[-1], semiring.prob.plus)
 
-    return expected_fvec  # , hypcomps
+    return forest, d_groups, f_vectors, expected_fvec
+
+
+def expected_features(seg, args, staticdir, forest_path, components_path,
+                      model: ModelView, n_top):
+    _, _, _, expected = sample_derivations(seg, args, staticdir, forest_path, components_path, model, n_top)
+    return expected
 
 
 @traceit
@@ -620,7 +626,6 @@ def core(args):
             # update models
             model = make_models(dict(zip(model.fnames(), avg)), model.extractors())
             joint_model, conditional_model = pipeline.get_factorised_models(model, args.factorisation)
-
 
 
 def main():

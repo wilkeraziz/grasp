@@ -33,6 +33,7 @@ from grasp.recipes import timeit, smart_wopen
 from grasp.scoring.scorer import StatefulScorer, StatelessScorer, TableLookupScorer
 from grasp.scoring.util import make_models
 from grasp.scoring.util import read_weights
+from grasp.scoring.util import construct_extractors
 from grasp.scoring.frepr import FComponents
 
 import grasp.semiring as semiring
@@ -197,7 +198,8 @@ def core(args):
     outdir = make_dirs(args)
 
      # Load feature extractors
-    extractors = pipeline.load_feature_extractors(rt=args.rt, wp=args.wp, ap=args.ap, slm=args.slm, lm=args.lm)
+    #extractors = pipeline.load_feature_extractors(rt=args.rt, wp=args.wp, ap=args.ap, slm=args.slm, lm=args.lm)
+    extractors = construct_extractors(args.model)
     # Load the model
     model = make_models(read_weights(args.weights,
                                      default=args.default,

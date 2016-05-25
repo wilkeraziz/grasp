@@ -14,12 +14,16 @@ def argparser():
     parser.description = 'MT decoding by sampling'
     parser.formatter_class = argparse.ArgumentDefaultsHelpFormatter
 
-    parser.add_argument('input', nargs='?',
-            type=argparse.FileType('r'), default=sys.stdin,
-            help='input corpus (one sentence per line)')
+
     parser.add_argument('workspace',
                         type=str,
                         help='where everything happens')
+    parser.add_argument('model',
+                        type=str,
+                        help='path to model specification')
+    parser.add_argument('input', nargs='?',
+            type=argparse.FileType('r'), default=sys.stdin,
+            help='input corpus (one sentence per line)')
     parser.add_argument('--experiment',
                         type=str,
                         help='folder within the workspace where results are stored'
@@ -77,17 +81,6 @@ def cmd_model(group):
                        type=str,
                        metavar='FILE',
                        help='weight vector')
-    group.add_argument('--rt',
-                       action='store_true',
-                       help='include rule table features')
-    group.add_argument('--wp', nargs=2,
-                       help='include a word penalty feature (name, penalty)')
-    group.add_argument('--ap', nargs=2,
-                       help='include an arity penalty feature (name, penalty)')
-    group.add_argument('--slm', nargs=3,
-                       help='score n-grams within rules with a stateless LM (name, order, path).')
-    group.add_argument('--lm', nargs=3,
-                       help='rescore forest with a language model (name, order, path).')
     group.add_argument('--default', type=float, default=None,
                        help='if not None, reset weights to a default value')
 
