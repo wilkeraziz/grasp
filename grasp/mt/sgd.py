@@ -602,6 +602,8 @@ def core(args):
     regularisation_strength = args.L2
     learning_rate = args.learning_rate
 
+    t = 0
+
     for epoch in range(1, args.maxiter + 1):
 
         # where we store everything related to this iteration
@@ -633,9 +635,9 @@ def core(args):
 
             print('{0} ||| batch{1} |||  ||| {2}'.format(epoch, b, npvec2str(weights, fnames)))
             # recursive average (Polyak and Juditsky, 1992)
-            t = float(epoch - 1)
             avg = t / (t + 1) * avg + 1.0 / (t + 1) * weights
-            print('{0} ||| avg{1} |||  ||| {2}'.format(epoch, b, npvec2str(avg, fnames)))
+            t += 1
+            print('{0} ||| avg{1} |||  ||| {2}'.format(epoch, t, npvec2str(avg, fnames)))
 
             # update models
             model = make_models(dict(zip(model.fnames(), avg)), model.extractors())
