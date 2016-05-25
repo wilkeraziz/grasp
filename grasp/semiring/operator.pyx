@@ -166,7 +166,7 @@ cdef class ProbPlus(Plus):
             if acc > threshold:
                 return i
             i += 1
-        return i
+        return i - 1  # last
 
 
 cdef class LogProbPlus(Plus):
@@ -195,8 +195,7 @@ cdef class LogProbPlus(Plus):
             if acc > threshold:
                 return i
             i += 1
-        return i
-
+        return i - 1  # last
 
 
 cdef class ViterbiPlus(Plus):

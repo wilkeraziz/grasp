@@ -151,7 +151,7 @@ def cmd_slice(group):
     #                   type=int, default=0,
     #                   help='resample with replacement (use more than 0 to enable resampling)')
     group.add_argument('--within',
-                       type=str, default='importance', choices=['exact', 'importance', 'uniform', 'cimportance'],
+                       type=str, default='importance', choices=['exact', 'importance', 'uniform', 'uniform2', 'cimportance'],
                        help='how to sample within the slice')
     group.add_argument('--batch',
             type=int, default=100, metavar='K',
@@ -167,7 +167,7 @@ def cmd_slice(group):
                        help='Save the actual Markov chain on disk.')
 
     group.add_argument('--prior', nargs=2,
-                       default=['asym', 'mean'],
+                       default=['sym', '0.1'],
                        help="We have a slice variable for each node in the forest. "
                             "Some of them are constrained (those are sampled uniformly), "
                             "some of them are not (those are sampled from an exponential distribution). "

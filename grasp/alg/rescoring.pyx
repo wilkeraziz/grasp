@@ -400,6 +400,64 @@ cdef class SlicedRescoring:
         fd = semiring.times(nonlocal_score, local_score)
         return SampleReturn(sampled_derivation, fd, comp)  #, c_i, sampler.n_derivations()
 
+    cdef _uniform2(self, Hypergraph forest, TopSortTable tsort, WeightFunction lfunc, WeightFunction ufunc, int batch_size, tuple d0):
+        """
+        Draw from the slice by uniform sampling from the support and then resampling.
+        This version instead of sampling without replacement, samples with replacement and discards duplicates.
+        This version does not guarantee as many samples as in batch_size.
+
+        :param forest: locally scored sliced forest
+        :param tsort: forest's top sort table
+        :param lfunc: local component over edges (used to compute l(d))
+        :param ufunc: residual over edges (used to compute u(d))
+        :param batch_size: number of samples
+        :param d0: the previous state of the Markov chain, we sample derivations to compete with this one.
+        :return: derivation (consistent with input slice), conditions, number of derivations in the slice
+        """
+        cdef:
+            Semiring semiring = self._semiring
+            set unique
+            list support
+            weight_t[::1] empdist  # empirical distribution
+            id_t e
+            tuple d, sampled_derivation
+            size_t i, n
+            weight_t nonlocal_score, local_score, residual_score, score, denominator, fd
+            AncestralSampler sampler
+
+        logging.debug(' [uniform] Uniform sampling %d candidates from S to compete against previous state', batch_size)
+        assert d0 is not None, 'Uniform sampling requires the previous state of the Markov chain'
+
+        # 1. A uniform sampler over state space
+        sampler = AncestralSampler(forest, tsort, ThresholdFunction(ufunc, semiring))
+
+        # 1. Sample a number of derivations and group them by identity
+        unique = set(sampler.sample(batch_size))
+        # make sure prev_d is in the sample
+        unique.add(d0)
+        support = list(unique)
+        empdist = np.zeros(len(support))
+        for i, d in enumerate(unique):
+            support[i] = d
+            # score using the complete f(d|u)
+            nonlocal_score = self._nfunc(forest, d)  # this is n(d)
+            residual_score = ufunc.reduce(semiring.times, d)  # this is u(d)
+            score = semiring.times(residual_score, nonlocal_score)
+            empdist[i] = score
+        empdist = semiring.normalise(empdist)
+
+        # 3. Sample a derivation
+        i = semiring.plus.choice(empdist)
+        sampled_derivation = support[i]
+
+        # 4. Score it exactly wrt f(d) and get d's feature vector
+        cdef FComponents comp
+        comp, nonlocal_score = self._nfunc_and_component(forest, sampled_derivation)
+        local_score = derivation_weight(forest, sampled_derivation, semiring, omega=lfunc)
+        fd = semiring.times(nonlocal_score, local_score)
+        return SampleReturn(sampled_derivation, fd, comp)  #, c_i, sampler.n_derivations()
+
+
     cdef _weighted(self, Hypergraph forest, TopSortTable tsort, WeightFunction lfunc, WeightFunction ufunc, int batch_size, tuple d0):
         """
         Draw from the slice by importance sampling.
@@ -531,6 +589,8 @@ cdef class SlicedRescoring:
         """
         if algorithm == 'uniform':
             return self._uniform(forest, tsort, lfunc, ufunc, batch_size, prev_d)
+        elif algorithm == 'uniform2':
+            return self._uniform2(forest, tsort, lfunc, ufunc, batch_size, prev_d)
         elif algorithm == 'importance':
             return self._importance(forest, tsort, lfunc, ufunc, batch_size)
         elif algorithm == 'cimportance':
@@ -639,6 +699,7 @@ cdef class SlicedRescoring:
 
             # we need to top sort nodes in the slice before continuing
             logging.debug('1b. Sorting the slice')
+            # TODO: avoid topsorting again
             tsort_S = AcyclicTopSortTable(slice_return.S)
 
             # TODO: count the number of derivations in S

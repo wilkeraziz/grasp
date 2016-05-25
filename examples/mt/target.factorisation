@@ -1,0 +1,10 @@
+# Lookup and Stateless components are assumed local unless otherwise noted
+# Stateful models components are assumed nonlocal for either type of inference (joint or conditional)
+# Here we get to change the default
+
+[joint]
+nonlocal=KenLM
+
+[conditional]
+local=KenLM
+

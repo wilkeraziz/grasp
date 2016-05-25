@@ -71,6 +71,8 @@ cdef class SlicedRescoring:
 
     cdef _uniform(self, Hypergraph forest, TopSortTable tsort, WeightFunction lfunc, WeightFunction ufunc, int batch_size, tuple d0)
 
+    cdef _uniform2(self, Hypergraph forest, TopSortTable tsort, WeightFunction lfunc, WeightFunction ufunc, int batch_size, tuple d0)
+
     cdef _exact(self, Hypergraph forest, TopSortTable tsort, WeightFunction lfunc, WeightFunction ufunc, int batch_size)
 
     cdef _sample(self, Hypergraph forest, TopSortTable tsort, WeightFunction lfunc, WeightFunction ufunc, tuple prev_d, int batch_size, str algorithm)

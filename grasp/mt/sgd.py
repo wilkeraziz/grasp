@@ -149,6 +149,9 @@ def cmd_parser(group):
     group.add_argument('--max-span',
                        type=int, default=-1, metavar='N',
                        help='A Hiero-style constraint: size of the longest input path under an X nonterminal (a negative value implies no constraint)')
+    #group.add_argument('--max-length',
+    #                   type=int, default=-1, metavar='N',
+    #                   help='if positive, impose a maximum sentence length')
 
 
 def cmd_grammar(group):
@@ -533,7 +536,6 @@ def _gradient(seg: SegmentMetaData, args, staticdir: str,
                                   '{0}/{1}.joint.components'.format(staticdir, seg.id),
                                   joint_model, 2)
     joint_vec = np.array(list(joint_vec.densify()), dtype=ptypes.weight)
-
     gradient_vector = conditional_vec - joint_vec
     return gradient_vector
 
