@@ -70,7 +70,23 @@ class SegmentMetaData(object):
             grammar_dir = args['grammar']
         # sanity checks
         if not isfile(args['grammar']):
-            raise FileNotFoundError('Grammar file not found: %s' % args['grammar'])
+            # a few more chances
+            failed = False
+            path = args['grammar']
+            if path.endswith('.gz'):
+                path = path[:-3]
+                if isfile(path):
+                    args['grammar'] = path
+                else:
+                    failed = True
+            else:
+                path += '.gz'
+                if isfile(path):
+                    args['grammar'] = path
+                else:
+                    failed = True
+            if failed:
+                raise FileNotFoundError('Grammar file not found: %s' % args['grammar'])
         # construct segment
         return SegmentMetaData(**args)
 
