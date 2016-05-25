@@ -310,7 +310,7 @@ def sanity_checks(args):
         logging.error('Validation set not found: %s', args.validation)
         failed = True
     if not os.path.exists(args.model):
-        logging.error('Model specification not found: %s', args.proxy)
+        logging.error('Model specification not found: %s', args.model)
         failed = True
     if args.weights and not os.path.exists(args.weights):
         logging.error('Model parameters not found: %s', args.proxy_weights)
