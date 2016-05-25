@@ -149,9 +149,9 @@ def cmd_parser(group):
     group.add_argument('--max-span',
                        type=int, default=-1, metavar='N',
                        help='A Hiero-style constraint: size of the longest input path under an X nonterminal (a negative value implies no constraint)')
-    #group.add_argument('--max-length',
-    #                   type=int, default=-1, metavar='N',
-    #                   help='if positive, impose a maximum sentence length')
+    group.add_argument('--max-length',
+                       type=int, default=-1, metavar='N',
+                       help='if positive, impose a maximum sentence length')
 
 
 def cmd_grammar(group):
@@ -412,8 +412,13 @@ def preprocess_dataset(args, path, grammars, workingdir, joint_model, conditiona
     logging.info('Loaded %d segments', len(unconstrained_data))
     # store references for evaluation purposes
     pipeline.save_references('{0}/refs'.format(workingdir), unconstrained_data)
+    # filter for length
+    if args.max_length > 0:
+        data = [seg for seg in unconstrained_data if len(seg.src_tokens()) <= args.max_length]
+    else:
+        data = unconstrained_data
     # biparse
-    data = biparse(args, workingdir, joint_model, conditional_model, unconstrained_data)
+    data = biparse(args, workingdir, joint_model, conditional_model, data)
     return unconstrained_data, data
 
 

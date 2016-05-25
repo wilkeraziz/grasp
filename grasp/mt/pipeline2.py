@@ -76,7 +76,7 @@ def all_steps_complete(saving, redo):
     return all(is_step_complete(step, saving, redo) for step in saving.keys())
 
 
-def read_segments_from_stream(istream, grammar_dir=None, shuffle=False) -> 'tuple':
+def read_segments_from_stream(istream, grammar_dir=None, shuffle=False) -> 'list[SegmentMetaData]':
     """
     Read cdec-formated input segments (possibly along with their reference translations) from an input stream.
     :param istream: input stream
@@ -91,7 +91,7 @@ def read_segments_from_stream(istream, grammar_dir=None, shuffle=False) -> 'tupl
     return segments
 
 
-def read_segments_from_file(path, grammar_dir=None, shuffle=False) -> 'tuple':
+def read_segments_from_file(path, grammar_dir=None, shuffle=False) -> 'list[SegmentMetaData]':
     """
     Read cdec-formated input segments (possibly along with their reference translations) from a file.
     :param path: path to file (possibly gzipped)
