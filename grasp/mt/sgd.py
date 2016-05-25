@@ -69,6 +69,7 @@ from grasp.alg.chain import apply_filters, group_by_identity, group_by_projectio
 from grasp.alg.expectation import expected_components
 
 from grasp.scoring.frepr import FComponents
+from grasp.scoring.model import ModelView
 
 from grasp.io.results import save_mcmc_yields, save_mcmc_derivations, save_markov_chain
 
@@ -111,6 +112,8 @@ def cmd_optimisation(parser):
 #                        help="f-tol and g-tol in target optimisation")
     parser.add_argument("--L2", type=float, default=0.0,
                         help="Weight of L2 regulariser in target optimisation")
+    parser.add_argument("--learning-rate", type=float, default=1.0,
+                        help="Learning rate")
 
 def cmd_logging(parser):
     parser.add_argument('--save-d',
@@ -177,6 +180,47 @@ def cmd_sampler(group):
                        metavar='N',
                        help="number of samples from proxy")
 
+def cmd_slice(group):
+    group.add_argument('--chains',
+                       type=int, default=1, metavar='K',
+                       help='number of random restarts')
+    group.add_argument('--samples', type=int, nargs=2, default=[100, 100],
+                       metavar='N N',
+                       help='number of samples for training (MLE) and testing (consensus)')
+    group.add_argument('--lag',
+                       type=int, default=1, metavar='I',
+                       help='lag between samples')
+    group.add_argument('--burn',
+                       type=int, default=10, metavar='N',
+                       help='number of initial samples to be discarded (applies after lag)')
+    group.add_argument('--within',
+                       type=str, default='importance', choices=['exact', 'importance', 'uniform', 'cimportance'],
+                       help='how to sample within the slice')
+    group.add_argument('--slice-size',
+                       type=int, default=100, metavar='K',
+                       help='number of samples from slice (for importance and uniform sampling)')
+    group.add_argument('--initial',
+                       type=str, default='uniform', choices=['uniform', 'local'],
+                       help='how to sample the initial state of the Markov chain')
+    group.add_argument('--temperature0',
+                       type=float, default=1.0,
+                       help='flattens the distribution from where we obtain the initial derivation (for local initialisation only)')
+    group.add_argument('--prior', nargs=2,
+                       default=['sym', '0.1'],
+                       help="We have a slice variable for each node in the forest. "
+                            "Some of them are constrained (those are sampled uniformly), "
+                            "some of them are not (those are sampled from an exponential distribution). "
+                            "An exponential distribution has a scale parameter which is inversely proportional "
+                            "to the size of the slice. Think of the scale as a mean threshold. "
+                            "You can choose a constant or a prior distribution for the scale: "
+                            "'const', 'sym' (symmetric Gamma) and 'asym' (asymmetric Gamma). "
+                            "Each option takes one argument. "
+                            "The constant distribution takes a real number (>0). "
+                            "The symmetric Gamma takes a single scale parameter (>0). "
+                            "The asymmetric Gamma takes either the keyword 'mean' or "
+                            "a percentile expressed as a real value between 0-100. "
+                            "The later are computed based on the local distribution over incoming edges.")
+
 def get_argparser():
     parser = argparse.ArgumentParser(description='Training by MLE',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -201,6 +245,8 @@ def get_argparser():
                              'by default we use a timestamp and a random suffix')
     parser.add_argument("--weights", '-W', type=str,
                         help="model parameters")
+    parser.add_argument("--factorisation", '-F', type=str,
+                        help="change the default factorisation of the model")
     parser.add_argument("--jobs", type=int, default=2, help="number of processes")
     parser.add_argument('--training-alias', type=str, default='training',
             help='Change the alias of the training set')
@@ -214,7 +260,7 @@ def get_argparser():
     cmd_grammar(parser.add_argument_group('Grammar'))
     cmd_optimisation(parser.add_argument_group('Parameter optimisation by SGD'))
     cmd_loss(parser.add_argument_group('Loss'))
-    cmd_sampler(parser.add_argument_group('Slice sampler'))
+    cmd_slice(parser.add_argument_group('Slice sampler'))
     cmd_logging(parser.add_argument_group('Logging'))
     # General
 
@@ -312,13 +358,14 @@ def _biparse(seg, *args, **kwargs):
     return bool(result.conditional.forest)
 
 
-def biparse(args, workingdir, model, segments):
+def biparse(args, workingdir: str, joint_model: ModelView, conditional_model: ModelView, segments) -> list:
     """
     This method bi-parses a whole data set and saves forests and components to a working directory.
 
     :param args: command line arguments
     :param workingdir: where to save everything
-    :param model: a Model
+    :param joint_model: a factorised view of the joint model
+    :param conditional_model: a factorised view of the conditional model
     :param segments: a data set
     :return: parsable segments
     """
@@ -327,10 +374,8 @@ def biparse(args, workingdir, model, segments):
     with Pool(args.jobs) as workers:
         feedback = workers.map(partial(_biparse,
                                        options=options,
-                                       lookup=model.lookup,
-                                       stateless=model.stateless,
-                                       joint_stateful=model.dummy,
-                                       conditional_stateful=model.dummy,
+                                       joint_model=joint_model,
+                                       conditional_model=conditional_model,
                                        workingdir=workingdir,
                                        redo=args.redo,
                                        log=logging.info),
@@ -338,7 +383,7 @@ def biparse(args, workingdir, model, segments):
     return [seg for seg, status in zip(segments, feedback) if status]
 
 
-def preprocess_dataset(args, path, grammars, workingdir, model):
+def preprocess_dataset(args, path, grammars, workingdir, joint_model, conditional_model):
     """
     Apply basic pre-processing steps to a data set.
         i.e. load, save references, biparse, save forests and components.
@@ -354,25 +399,139 @@ def preprocess_dataset(args, path, grammars, workingdir, model):
     # store references for evaluation purposes
     pipeline.save_references('{0}/refs'.format(workingdir), unconstrained_data)
     # biparse
-    data = biparse(args, workingdir, model, unconstrained_data)
+    data = biparse(args, workingdir, joint_model, conditional_model, unconstrained_data)
     return unconstrained_data, data
 
 
-@traceit
-def _sample(seg, args, staticdir, supportdir, workspace, model):
-    files = ['{0}/{1}.D.ffs.all'.format(supportdir, seg.id),
-             '{0}/{1}.hyp.ffs.all'.format(workspace, seg.id)]
-
-    if all(os.path.exists(path) for path in files) and not args.redo:
-        logging.info('Reusing samples for segment %d', seg.id)
-        return
-
+def expected_features(seg, args, staticdir, forest_path, components_path,
+                      model: ModelView, n_top):
     # 1. Load pickled objects for the conditional distribution
     logging.debug('[%d] Loading target forest', seg.id)
-    conditional_forest = unpickle_it('{0}/{1}.conditional.forest'.format(staticdir, seg.id))
+    forest = unpickle_it(forest_path)
+    tsort = AcyclicTopSortTable(forest)  # TODO: save/load it?
 
     logging.debug('[%d] Loading local components', seg.id)
-    conditional_components = unpickle_it('{0}/{1}.conditional.components'.format(staticdir, seg.id))
+    local_components = unpickle_it(components_path)
+
+    logging.debug('[%d] Computing l(d)', seg.id)
+    lfunc = TableLookupFunction(np.array([model.local_model().score(fcomp)
+                                          for fcomp in local_components], dtype=ptypes.weight))
+
+    if not model.nonlocal_model():  # with local models only we can do ancestral sampling (or even exact computations)
+        sampler = AncestralSampler(forest, tsort, lfunc)
+        raw = sampler.sample(args.samples[0])
+
+        # TODO: create code to produce SampleReturn objects and reconstruct components
+        from grasp.alg.rescoring import SampleReturn
+        samples = [None] * len(raw)
+        for i, edges in enumerate(raw):
+            score = lfunc.reduce(semiring.inside.times, edges)
+            sample = SampleReturn(edges, score, FComponents([]))
+            samples[i] = sample
+
+    else:  # with nonlocal models we need slice sampling
+
+        # 3. Sample from f(d) = n(d) * l(d)
+        logging.debug('[%d] Sampling from f(d) = n(d) * l(d)', seg.id)
+
+        goal_maker = GoalRuleMaker(args.goal, args.start, n=n_top)  # 2 or 3
+
+        slice_sampler = SlicedRescoring(forest,
+                                        lfunc,
+                                        tsort,
+                                        TableLookupScorer(model.nonlocal_model().lookup),
+                                        StatelessScorer(model.nonlocal_model().stateless),
+                                        StatefulScorer(model.nonlocal_model().stateful),
+                                        semiring.inside,
+                                        goal_maker.get_oview(),
+                                        OutputView(make_dead_srule()))
+
+        # here samples are represented as sequences of edge ids
+        d0, markov_chain = slice_sampler.sample(n_samples=args.samples[0],
+                                                batch_size=args.slice_size,
+                                                within=args.within,
+                                                initial=args.initial,
+                                                prior=args.prior,
+                                                burn=args.burn,
+                                                lag=args.lag,
+                                                temperature0=args.temperature0)
+
+        samples = apply_filters(markov_chain,
+                                burn=args.burn,
+                                lag=args.lag)
+        shuffle(samples)  # make it look like MC samples
+
+    n_samples = len(samples)
+
+    # 4. Complete feature vectors and compute expectation
+    hypcomps = []
+    expected_fvec = model.constant(semiring.prob.zero)
+    d_groups = group_by_identity(samples)
+    for d_group in d_groups:
+        derivation = d_group.key
+        # print(derivation)
+        # reconstruct components
+        # TODO: create code to reconstruct components
+        local_vec = model.local_model().constant(semiring.inside.one)
+        for e in derivation.edges:
+            # print('e_%d' % e, coarse_components[e])
+            local_vec = local_vec.hadamard(local_components[e], semiring.inside.times)
+        # print('D', comps)
+
+        # complete components
+        # note that here we are updating derivation.components!
+        derivation.components = model.merge(local_vec, derivation.components)
+        # print('D', derivation.components)
+        # incorporate sample frequency
+        hypcomps.append(derivation.components.power(float(d_group.count) / n_samples, semiring.inside))
+        expected_fvec = expected_fvec.hadamard(hypcomps[-1], semiring.prob.plus)
+
+    return expected_fvec  # , hypcomps
+
+
+@traceit
+def _gradient(seg: SegmentMetaData, args, staticdir: str,
+              joint_model: ModelView, conditional_model: ModelView) -> np.array:
+    """
+    Compute the gradient vector:
+        Expectation(feature vector; conditional distribution) - Expectation(feature vector; joint distribution)
+
+    :param seg:
+    :param args:
+    :param staticdir:
+    :param joint_model:
+    :param conditional_model:
+    :return: np.array (gradient vector)
+    """
+
+    conditional_vec = expected_features(seg, args, staticdir,
+                                        '{0}/{1}.conditional.forest'.format(staticdir, seg.id),
+                                        '{0}/{1}.conditional.components'.format(staticdir, seg.id),
+                                        conditional_model, 3)
+
+    conditional_vec = np.array(list(conditional_vec.densify()), dtype=ptypes.weight)
+
+    joint_vec = expected_features(seg, args, staticdir,
+                                  '{0}/{1}.joint.forest'.format(staticdir, seg.id),
+                                  '{0}/{1}.joint.components'.format(staticdir, seg.id),
+                                  joint_model, 2)
+    joint_vec = np.array(list(joint_vec.densify()), dtype=ptypes.weight)
+
+    gradient_vector = conditional_vec - joint_vec
+    return gradient_vector
+
+
+def gradient(segments, args, staticdir: str,
+             joint_model: ModelView, conditional_model: ModelView) -> np.array:
+    logging.info('Computing gradient based on a batch of %d instances using %d workers', len(segments), args.jobs)
+    with Pool(args.jobs) as workers:
+        vectors = workers.map(partial(_gradient,
+                                      args=args,
+                                      staticdir=staticdir,
+                                      joint_model=joint_model,
+                                      conditional_model=conditional_model),
+                              segments)
+    return np.array(vectors)
 
 
 def core(args):
@@ -384,15 +543,30 @@ def core(args):
     if not sanity_checks(args):
         raise FileNotFoundError('One or more files could not be found')
 
+    # We load the complete model
     model = pipeline.load_model(args.model, args.weights, args.init)
+    # Then we get a joint factorisation of the model and a conditional factorisation of the model
+    # each factorisation defines a local model and a nonlocal model
+    # we assume that exact inference is tractable wrt local models
+    # and for nonlocal models we resort to slice sampling
+    joint_model, conditional_model = pipeline.get_factorised_models(model, args.factorisation)
+
     logging.info('Model:\n%s', model)
+    logging.info('Joint view:\n%s', joint_model)
+    logging.info('Conditional view:\n%s', conditional_model)
+
+    # make factorisations
+    # e.g. joint model contains lookup and stateless
+    # e.g. conditional model contains lookup, stateless
 
     # 1. Load/Parse
     # 1a. Training data
-    _training, training = preprocess_dataset(args, args.training, args.training_grammars, training_dir, model)
+    _training, training = preprocess_dataset(args, args.training, args.training_grammars, training_dir,
+                                             joint_model, conditional_model)
     # 1b. Validation data (if applicable)
     if args.validation:
-        _validation, validation = preprocess_dataset(args, args.validation, args.validation_grammars, validation_dir, model)
+        _validation, validation = preprocess_dataset(args, args.validation, args.validation_grammars, validation_dir,
+                                                     joint_model, conditional_model)
     else:
         _validation, validation = [], []
     logging.info('This model can generate %d out of %d training instances', len(training),
@@ -402,7 +576,12 @@ def core(args):
 
     # 2. SGD
     fnames = model.fnames()
-    dimensionality = len(fnames)  # TODO: Sparse SGD
+    #dimensionality = len(fnames)  # TODO: Sparse SGD
+    weights = np.array(list(model.weights().densify()), dtype=ptypes.weight)
+    dimensionality = len(weights)
+    avg = np.zeros(dimensionality, dtype=ptypes.weight)
+    regularisation_strength = args.L2
+    learning_rate = args.learning_rate
 
     for epoch in range(1, args.maxiter + 1):
 
@@ -413,24 +592,24 @@ def core(args):
         # first we get a random permutation of the training data
         shuffle(training)
 
-        avg = np.zeros(dimensionality, dtype=ptypes.weight)
-        weights = np.zeros(dimensionality, dtype=ptypes.weight)
+        n_batches = np.ceil(len(training) / float(args.batch_size))
 
         # then we operate in mini-batches
         for b, first in enumerate(range(0, len(training), args.batch_size), 1):
             # gather segments in this batch
             batch = [training[ith] for ith in range(first, min(first + args.batch_size, len(training)))]
-            print([seg.id for seg in batch])
+            #print([seg.id for seg in batch])
             batch_dir = '{0}/batch{0}'.format(epoch, b)
             os.makedirs(batch_dir, exist_ok=True)
 
-            # sample with the current parameters
-            #sample(args, devdir, supportdir, batchdir, model, iteration, b, batch)
-
-            # optimise parameters
-
-            #weights = sgd_optimise(args, devdir, batchdir, model, iteration, b, batch, merging, gamma=1,
-            #                       N=training_size)
+            gradient_vectors = gradient(batch, args, training_dir, joint_model, conditional_model)
+            gradient_vector = gradient_vectors.sum(0) / len(batch_dir)
+            #print(npvec2str(gradient_vector, fnames))
+            # incorporate regulariser
+            if regularisation_strength != 0:
+                gradient_vector -= regularisation_strength * weights / n_batches
+            # maximisation update w = w + learning_rate * w
+            weights += learning_rate * gradient_vector
 
             print('{0} ||| batch{1} |||  ||| {2}'.format(epoch, b, npvec2str(weights, fnames)))
             # recursive average (Polyak and Juditsky, 1992)
@@ -438,9 +617,9 @@ def core(args):
             avg = t / (t + 1) * avg + 1.0 / (t + 1) * weights
             print('{0} ||| avg{1} |||  ||| {2}'.format(epoch, b, npvec2str(avg, fnames)))
 
-        model = make_models(dict(zip(model.fnames(), avg)), model.extractors())
-
-
+            # update models
+            model = make_models(dict(zip(model.fnames(), avg)), model.extractors())
+            joint_model, conditional_model = pipeline.get_factorised_models(model, args.factorisation)
 
 
 

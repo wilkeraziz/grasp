@@ -214,6 +214,47 @@ cdef class AncestralSampler:
                                   self._node_values,
                                   self._edge_values)
 
+    cpdef list sample_without_replacement(self, size_t n, size_t batch_size, int attempts, set seen=set()):
+        """
+        Sample without replacement - by rejection sampling.
+
+        :param n: number of samples
+        :param batch: number of samples per trial
+        :param attempts: maximal number of attempts (use 0 or less for unbounded -- be careful with it!)
+        :param seen: exclude these derivations
+        :return:
+        """
+        cdef list derivations = []
+        cdef list batch
+        cdef tuple d
+        cdef size_t my_n = 0
+        cdef size_t i = 0
+        while True:
+            i += 1
+            batch = sample_derivations(self._forest,
+                                  self._tsort,
+                                  batch_size,
+                                  self._omega,
+                                  self._node_values,
+                                  self._edge_values)
+
+
+            for d in batch:
+                my_n = len(seen)
+                seen.add(d)
+                if len(seen) > my_n:  # accept if new
+                    my_n += 1
+                    derivations.append(d)
+                    if my_n == n:
+                        break
+
+            if my_n == n:
+                break
+
+            if attempts > 0 and i == attempts:
+                break
+
+        return derivations
 
     cpdef weight_t prob(self, tuple d):
         cdef weight_t w = self._omega.reduce(semiring.inside.times, d)

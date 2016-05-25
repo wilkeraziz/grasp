@@ -157,3 +157,4 @@ cpdef list stateless_components(Hypergraph forest, tuple extractors):
 
     return edge_comps
 
+

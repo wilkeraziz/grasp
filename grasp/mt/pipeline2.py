@@ -6,6 +6,7 @@ import os
 import itertools
 import numpy as np
 import sys
+from collections import defaultdict
 
 import grasp.ptypes as ptypes
 
@@ -20,6 +21,7 @@ from grasp.mt.util import GoalRuleMaker
 from grasp.mt.util import make_dead_oview
 
 import grasp.formal.scfgop as scfgop
+from grasp.formal.hg import Hypergraph
 from grasp.formal.fsa import make_dfa
 from grasp.formal.fsa import make_dfa_set
 from grasp.formal.topsort import AcyclicTopSortTable
@@ -40,7 +42,7 @@ from grasp.scoring.frepr import FComponents
 from grasp.scoring.scorer import TableLookupScorer
 from grasp.scoring.scorer import StatelessScorer
 from grasp.scoring.scorer import StatefulScorer
-from grasp.scoring.model import DummyModel
+from grasp.scoring.model import DummyModel, Model, ModelView, ModelContainer
 from grasp.scoring.util import make_weight_map
 from grasp.scoring.util import InitialWeightFunction
 from grasp.scoring.util import construct_extractors
@@ -60,6 +62,10 @@ from grasp.alg.inference import AncestralSampler
 from grasp.alg.impsamp import ISDerivation, ISYield
 from grasp.alg.constraint import Constraint as DummyConstraint
 from grasp.alg.constraint import HieroConstraints
+
+
+def prefixlog(prefix, log):
+    return lambda x: log(prefix, x)
 
 
 def is_step_complete(step, saving, redo):
@@ -106,6 +112,45 @@ def save_references(path, segments):
     with smart_wopen(path) as fo:
         for seg in segments:
             print(' ||| '.join(seg.refs), file=fo)
+
+
+def get_factorised_models(model: Model, path='') -> (ModelView, ModelView):
+    """
+    Return a joint and a conditional factorisation of the model.
+
+    :param model: a Model
+    :param path: (optional) path to a file changing the default way of factorising a model
+    :return: joint view and conditional view
+    """
+    joint_changes = defaultdict(set)
+    conditional_changes = defaultdict(set)
+    if path:
+        with smart_ropen(path) as fi:
+            changes = None
+            for line in fi:
+                line = line.strip()
+                if not line or line.startswith('#'):  # ignore comments and empty lines
+                    continue
+                if line == '[joint]':
+                    changes = joint_changes
+                elif line == '[conditional]':
+                    changes = conditional_changes
+                elif changes is None:
+                    raise ValueError('Syntax error in factorisation file')
+                elif line.startswith('local='):
+                    name = line.replace('local=', '', 1)
+                    changes['local'].add(name)
+                elif line.startswith('nonlocal='):
+                    name = line.replace('nonlocal=', '', 1)
+                    changes['nonlocal'].add(name)
+
+    joint_model = ModelView(model.wmap, model.extractors(),
+                            local_names=joint_changes['local'],
+                            nonlocal_names=joint_changes['nonlocal'])
+    conditional_model = ModelView(model.wmap, model.extractors(),
+                                  local_names=conditional_changes['local'],
+                                  nonlocal_names=conditional_changes['nonlocal'])
+    return joint_model, conditional_model
 
 
 def load_model(description, weights, init, temperature=1.0):
@@ -446,7 +491,62 @@ def preprocessed_training_files(stem):
             'conditional.components': '{0}.conditional.components'.format(stem)}
 
 
-def biparse(seg, options, lookup, stateless, joint_stateful, conditional_stateful, workingdir=None, redo=True, log=dummyfunc):
+def exact_rescoring(model: ModelContainer,
+                    forest: Hypergraph, goal_maker: GoalRuleMaker, log=dummyfunc) -> SimpleNamespace:
+    """
+    Exactly rescore a forest with a certain model.
+
+    :param model: an instance of ModelContainer
+    :param forest: a Hypergraph
+    :param goal_maker: an object to deliver (output view of) goal rules
+    :param log: a logging function
+    :return: result.forest and result.components as a SimpleNamespace object
+    """
+    result = SimpleNamespace()
+
+    if not model.stateful:  # when the model is not stateful, we don't need Earley
+        log('Lookup scoring')
+        lookup_comps = get_lookup_components(forest, model.lookup.extractors())  # lookup
+        log('Stateless scoring')
+        stateless_comps = get_stateless_components(forest, model.stateless.extractors())  # stateless
+        result.forest = forest
+        result.components = [FComponents([comps1, comps2]) for comps1, comps2 in zip(lookup_comps, stateless_comps)]
+
+    else:  # here we cannot avoid it
+        log('Forest rescoring')
+        goal_maker.update()
+        result.forest, result.components = rescore_forest(forest,
+                                                          0,
+                                                          TableLookupScorer(model.lookup),
+                                                          StatelessScorer(model.stateless),
+                                                          StatefulScorer(model.stateful),
+                                                          goal_rule=goal_maker.get_oview(),
+                                                          keep_components=True)
+
+    return result
+
+
+def biparse(seg: SegmentMetaData, options: SimpleNamespace,
+            joint_model: ModelView, conditional_model: ModelView,
+            workingdir=None, redo=True, log=dummyfunc) -> SimpleNamespace:
+    """
+    Biparse a segment using a local model.
+    1. we parse the source with a joint model
+    2. we bi-parse source and target with a conditional model
+    This separation allows us to factorise these models differently wrt local/nonlocal components.
+    For example, an LM maybe seen as a local (read tractable) component of a conditional model,
+     and as a nonlocal (read intractable) component of a joint model.
+    An implementation detail: bi-parsing is implemented as a cascade of intersections (with projections in between).
+
+    :param seg: a segment
+    :param options: parsing options
+    :param joint_model: a factorised view of the joint model, here we use only the local components
+    :param conditional_model: a factorised view of the conditional, here we use only the local components
+    :param workingdir: where to save files
+    :param redo: whether or not previously saved computation should be discarded
+    :param log: a logging function
+    :return: result.{joint,conditional}.{forest,components} for the respective local model
+    """
 
     if workingdir:
         saving = preprocessed_training_files('{0}/{1}'.format(workingdir, seg.id))
@@ -504,32 +604,15 @@ def biparse(seg, options, lookup, stateless, joint_stateful, conditional_statefu
 
     # 4. Joint distribution - Step 2: scoring
 
-    if not joint_stateful:  # when only local scoring is done we can avoid Earley rescoring
-        log('[%d] Joint - Lookup scoring', seg.id)
-        lookup_comps = get_lookup_components(tgt_forest, lookup.extractors())  # lookup
-        log('[%d] Joint - Stateless scoring', seg.id)
-        stateless_comps = get_stateless_components(tgt_forest, stateless.extractors())  # stateless
-        joint_forest = tgt_forest
-        joint_components = [FComponents([comps1, comps2]) for comps1, comps2 in zip(lookup_comps, stateless_comps)]
+    log('[%d] Joint model: (exact) local scoring', seg.id)
+    result.joint = exact_rescoring(joint_model.local_model(), tgt_forest, goal_maker, log)
 
-    else:  # here we cannot avoid it
-        log('[%d] Joint - Forest rescoring', seg.id)
-        goal_maker.update()
-        joint_forest, joint_components = rescore_forest(tgt_forest,
-                                                        0,
-                                                        TableLookupScorer(lookup),
-                                                        StatelessScorer(stateless),
-                                                        StatefulScorer(joint_stateful),
-                                                        goal_rule=goal_maker.get_oview(),
-                                                        keep_components=True)
     # save joint distribution
     if 'joint.forest' in saving:
-        pickle_it(saving['joint.forest'], joint_forest)
+        pickle_it(saving['joint.forest'], result.joint.forest)
     if 'joint.components' in saving:
-        pickle_it(saving['joint.components'], joint_components)
+        pickle_it(saving['joint.components'], result.joint.components)
 
-    result.joint.forest = joint_forest
-    result.joint.components = joint_components
     #print('JOINT')
     #print(result.joint.forest)
 
@@ -538,7 +621,7 @@ def biparse(seg, options, lookup, stateless, joint_stateful, conditional_statefu
     log('[%d] Parse reference DFA', seg.id)
     ref_dfa = make_reference_dfa(seg)
     goal_maker.update()
-    ref_forest = parse_dfa(joint_forest,
+    ref_forest = parse_dfa(result.joint.forest,
                            0,
                            ref_dfa,
                            goal_maker.get_oview(),
@@ -546,37 +629,17 @@ def biparse(seg, options, lookup, stateless, joint_stateful, conditional_statefu
 
     if not ref_forest:  # reference cannot be parsed
         log('[%d] References cannot be parsed', seg.id)
-        conditional_forest = ref_forest
-        conditional_components = []
+        result.conditional.forest = ref_forest
+        result.conditional.components = []
     else:
         # 6. Conditional distribution - Step 2: scoring
-
-        if not conditional_stateful:
-            log('[%d] Conditional - Lookup scoring', seg.id)
-            lookup_comps = get_lookup_components(ref_forest, lookup.extractors())  # lookup
-            log('[%d] Conditional - Stateless scoring', seg.id)
-            stateless_comps = get_stateless_components(ref_forest, stateless.extractors())  # stateless
-            conditional_forest = ref_forest
-            conditional_components = [FComponents([comps1, comps2]) for comps1, comps2 in
-                                      zip(lookup_comps, stateless_comps)]
-        else:
-            log('[%d] Conditional - Forest rescoring', seg.id)
-            goal_maker.update()
-            conditional_forest, conditional_components = rescore_forest(ref_forest,
-                                                                        0,
-                                                                        TableLookupScorer(lookup),
-                                                                        StatelessScorer(stateless),
-                                                                        StatefulScorer(conditional_stateful),
-                                                                        goal_rule=goal_maker.get_oview(),
-                                                                        keep_components=True)
+        log('[%d] Conditional model: exact (local) scoring', seg.id)
+        result.conditional = exact_rescoring(conditional_model.local_model(), ref_forest, goal_maker, log)
 
     # save conditional distribution
     if 'conditional.forest' in saving:
-        pickle_it(saving['conditional.forest'], conditional_forest)
+        pickle_it(saving['conditional.forest'], result.conditional.forest)
     if 'conditional.components' in saving:
-        pickle_it(saving['conditional.components'], conditional_components)
-
-    result.conditional.forest = conditional_forest
-    result.conditional.components = conditional_components
+        pickle_it(saving['conditional.components'], result.conditional.components)
 
     return result

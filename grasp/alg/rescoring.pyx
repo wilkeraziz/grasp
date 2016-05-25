@@ -113,6 +113,9 @@ cdef class SampleReturn:
         self.score = score
         self.components = components
 
+    def __str__(self):
+        return 'edges=%s score=%s components=%s' % (self.edges, self.score, self.components)
+
     def __len__(self):
         return len(self.edges)
 
@@ -330,7 +333,8 @@ cdef class SlicedRescoring:
 
     cdef _uniform(self, Hypergraph forest, TopSortTable tsort, WeightFunction lfunc, WeightFunction ufunc, int batch_size, tuple d0):
         """
-        Draw from the slice by uniform sampling from the support and then resampling.
+        Draw from the slice by uniform sampling (without replacement) from the support and then resampling.
+
         :param forest: locally scored sliced forest
         :param tsort: forest's top sort table
         :param lfunc: local component over edges (used to compute l(d))
@@ -354,31 +358,40 @@ cdef class SlicedRescoring:
 
         # 1. A uniform sampler over state space
         sampler = AncestralSampler(forest, tsort, ThresholdFunction(ufunc, semiring))
+        cdef size_t max_support_size = sampler.n_derivations()
 
         # 1. Sample a number of derivations and group them by identity
-        counts = Counter(sampler.sample(batch_size))
-        # make sure prev_d is in the sample
-        counts.update([d0])
+        #counts = Counter(sampler.sample(batch_size))
 
-        # 2. Compute the empirical (importance) distribution r(d) \propto f(d|u)/g(d|u)
-        support = [None] * len(counts)
-        empdist = np.zeros(len(counts))
-        for i, (d, n) in enumerate(counts.items()):
-            support[i] = d
-            # score using the complete f(d|u)
-            nonlocal_score = self._nfunc(forest, d)  # this is n(d)
-            residual_score = ufunc.reduce(semiring.times, d)  # this is u(d)
-            score = semiring.times(residual_score, nonlocal_score)
-            # take the sample frequency into account
-            empdist[i] = semiring.times(score, semiring.from_real(n))
-            # f(d) = n(d) * l(d)
-            #fd[i] = semiring.times(nonlocal_score,
-            #                       derivation_weight(forest, d, semiring, omega=lfunc))
-        empdist = semiring.normalise(empdist)
+        if max_support_size > 1:
+            support = sampler.sample_without_replacement(n=batch_size,
+                                                         batch_size=batch_size,
+                                                         attempts=10,
+                                                         seen=set([d0]))
+            # make sure prev_d is in the sample
+            support.append(d0)
+            assert len(support) > 2, 'Something strange happened: we have 1 out of %d derivations in the subset slice' % max_support_size
 
-        # 3. Sample a derivation
-        i = semiring.plus.choice(empdist)
-        sampled_derivation = support[i]
+            # 2. Compute the empirical (importance) distribution r(d) \propto f(d|u)/g(d|u)
+            empdist = np.zeros(len(support))
+            for i, d in enumerate(support):
+                support[i] = d
+                # score using the complete f(d|u)
+                nonlocal_score = self._nfunc(forest, d)  # this is n(d)
+                residual_score = ufunc.reduce(semiring.times, d)  # this is u(d)
+                score = semiring.times(residual_score, nonlocal_score)
+                empdist[i] = score
+                # f(d) = n(d) * l(d)
+                #fd[i] = semiring.times(nonlocal_score,
+                #                       derivation_weight(forest, d, semiring, omega=lfunc))
+            empdist = semiring.normalise(empdist)
+
+            # 3. Sample a derivation
+            i = semiring.plus.choice(empdist)
+            sampled_derivation = support[i]
+        else:
+            logging.debug('I found a slice with a single derivation')
+            sampled_derivation = d0
 
         # 4. Score it exactly wrt f(d) and get d's feature vector
         cdef FComponents comp
@@ -435,7 +448,7 @@ cdef class SlicedRescoring:
             #                       derivation_weight(forest, d, semiring, omega=lfunc))
         empdist = semiring.normalise(empdist)
 
-        # 3. Sample a derivation
+        # 3. Re-sample a derivation
         i = semiring.plus.choice(empdist)
         sampled_derivation = support[i]
 

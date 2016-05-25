@@ -75,6 +75,8 @@ cdef class AncestralSampler:
 
     cpdef list sample(self, size_t n)
 
+    cpdef list sample_without_replacement(self, size_t n, size_t batch_size, int attempts, set seen=?)
+
     cpdef weight_t prob(self, tuple d)
 
     cpdef int n_derivations(self)
