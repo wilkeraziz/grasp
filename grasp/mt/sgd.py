@@ -615,12 +615,13 @@ def core(args):
         for b, first in enumerate(range(0, len(training), args.batch_size), 1):
             # gather segments in this batch
             batch = [training[ith] for ith in range(first, min(first + args.batch_size, len(training)))]
+            logging.info('Batch %d/%d', b, n_batches)
             #print([seg.id for seg in batch])
-            batch_dir = '{0}/batch{0}'.format(epoch, b)
-            os.makedirs(batch_dir, exist_ok=True)
+            #batch_dir = '{0}/batch{0}'.format(epoch, b)
+            #os.makedirs(batch_dir, exist_ok=True)
 
             gradient_vectors = gradient(batch, args, training_dir, joint_model, conditional_model)
-            gradient_vector = gradient_vectors.sum(0) / len(batch_dir)
+            gradient_vector = gradient_vectors.sum(0) / len(batch)
             #print(npvec2str(gradient_vector, fnames))
             # incorporate regulariser
             if regularisation_strength != 0:
@@ -637,6 +638,11 @@ def core(args):
             # update models
             model = make_models(dict(zip(model.fnames(), avg)), model.extractors())
             joint_model, conditional_model = pipeline.get_factorised_models(model, args.factorisation)
+
+        # save weights
+        with smart_wopen('{0}/weights.{1}'.format(workspace, epoch)) as fw:
+            for fname, fvalue in zip(fnames, avg):
+                print('{0} {1}'.format(fname, repr(fvalue)), file=fw)
 
 
 def main():
