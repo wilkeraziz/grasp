@@ -323,6 +323,17 @@ def sanity_checks(args):
     #    failed = True
     return not failed
 
+class BiparserOptions:
+
+    def __init__(self, args):
+        self.extra_grammars = args.extra_grammar
+        self.glue_grammars = args.glue_grammar
+        self.pass_through = args.pass_through
+        self.default_symbol = args.default_symbol
+        self.goal = args.goal
+        self.start = args.start
+        self.max_span = args.max_span
+
 
 def make_options_for_biparse(args):
     """
@@ -370,7 +381,7 @@ def biparse(args, workingdir: str, joint_model: ModelView, conditional_model: Mo
     :return: parsable segments
     """
     logging.info('Parsing %d training instances using %d workers', len(segments), args.jobs)
-    options = make_options_for_biparse(args)
+    options = BiparserOptions(args)
     with Pool(args.jobs) as workers:
         feedback = workers.map(partial(_biparse,
                                        options=options,
