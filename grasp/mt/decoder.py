@@ -217,10 +217,13 @@ def core(args):
                                       model=model,
                                       outdir=outdir), segments)
 
-    for seg, result in zip(segments, results):
-        if result is not None:
-            l, p, y = result
-            print(y)
+    with open('{0}/translations'.format(outdir), 'w') as ft:
+        for seg, result in zip(segments, results):
+            if result is not None:
+                l, p, y = result
+                print(y, file=ft)
+            else:
+                print(file=ft)
 
     # TODO: reports, MAP decision rule
     # separate functions: sampling (MC, MCMC) from search (viterbi, kbest, cube pruning?)
@@ -231,7 +234,7 @@ def core(args):
     #    time_report.report(seg.id, total=dt, **dt_detail)
     #time_report.save()
 
-    print('Check output files in:', outdir, file=sys.stdout)
+    print('Check output files in:', outdir, file=sys.stderr)
 
 
 def main():

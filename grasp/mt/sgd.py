@@ -603,8 +603,8 @@ def core(args):
     for epoch in range(1, args.maxiter + 1):
 
         # where we store everything related to this iteration
-        epoch_dir = '{0}/epoch{1}'.format(workspace, epoch)
-        os.makedirs(epoch_dir, exist_ok=True)
+        #epoch_dir = '{0}/epoch{1}'.format(workspace, epoch)
+        #os.makedirs(epoch_dir, exist_ok=True)
 
         # first we get a random permutation of the training data
         shuffle(training)
@@ -615,7 +615,7 @@ def core(args):
         for b, first in enumerate(range(0, len(training), args.batch_size), 1):
             # gather segments in this batch
             batch = [training[ith] for ith in range(first, min(first + args.batch_size, len(training)))]
-            logging.info('Batch %d/%d', b, n_batches)
+            logging.info('Epoch %d/%d - Batch %d/%d', epoch, args.maxiter + 1, b, n_batches)
             #print([seg.id for seg in batch])
             #batch_dir = '{0}/batch{0}'.format(epoch, b)
             #os.makedirs(batch_dir, exist_ok=True)
