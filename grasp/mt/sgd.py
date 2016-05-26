@@ -629,6 +629,7 @@ def core(args):
     learning_rate = args.learning_rate
 
     t = 0
+    n_batches = np.ceil(len(training) / float(args.batch_size))
 
     for epoch in range(1, args.maxiter + 1):
 
@@ -639,23 +640,21 @@ def core(args):
         # first we get a random permutation of the training data
         shuffle(training)
 
-        n_batches = np.ceil(len(training) / float(args.batch_size))
-
         # then we operate in mini-batches
         for b, first in enumerate(range(0, len(training), args.batch_size), 1):
             # gather segments in this batch
             batch = [training[ith] for ith in range(first, min(first + args.batch_size, len(training)))]
-            logging.info('Epoch %d/%d - Batch %d/%d', epoch, args.maxiter + 1, b, n_batches)
+            logging.info('Epoch %d/%d - Batch %d/%d', epoch, args.maxiter, b, n_batches)
             #print([seg.id for seg in batch])
             #batch_dir = '{0}/batch{0}'.format(epoch, b)
             #os.makedirs(batch_dir, exist_ok=True)
 
             gradient_vectors = gradient(batch, args, training_dir, joint_model, conditional_model)
-            gradient_vector = gradient_vectors.sum(0) / len(batch)
+            gradient_vector = gradient_vectors.mean(0)  # normalise for batch size
             #print(npvec2str(gradient_vector, fnames))
             # incorporate regulariser
             regulariser = (weights - prior_mean) / gaussian_prior.var()
-            batch_coeff = float(len(batch)) / len(training)
+            batch_coeff = float(len(batch)) / len(training)  # batch importance
             gradient_vector -= regulariser * batch_coeff
             # maximisation update w = w + learning_rate * w
             weights += learning_rate * gradient_vector
