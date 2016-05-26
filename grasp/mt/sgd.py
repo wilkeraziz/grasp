@@ -27,7 +27,7 @@ from collections import deque
 
 
 from grasp.loss.fast_bleu import DecodingBLEU
-from grasp.loss.fast_bleu import doc_bleu, stream_doc_bleu
+from grasp.loss.fast_bleu import doc_bleu
 
 import grasp.ptypes as ptypes
 
@@ -295,9 +295,6 @@ def make_dirs(args, exist_ok=True):
         validation_dir = '{0}/{1}'.format(outdir, args.validation_alias)
         os.makedirs(validation_dir, exist_ok=exist_ok)
 
-    dynamicdir = '{0}/iterations'.format(outdir)
-    os.makedirs(dynamicdir, exist_ok=exist_ok)
-
     return outdir
 
 
@@ -443,11 +440,11 @@ def sample_derivations(seg, args, staticdir, forest_path, components_path,
 
         # TODO: create code to produce SampleReturn objects and reconstruct components
         from grasp.alg.rescoring import SampleReturn
-        samples = [None] * len(raw)
+        iidsamples = [None] * len(raw)
         for i, edges in enumerate(raw):
             score = lfunc.reduce(semiring.inside.times, edges)
             sample = SampleReturn(edges, score, FComponents([]))
-            samples[i] = sample
+            iidsamples[i] = sample
 
     else:  # with nonlocal models we need slice sampling
 
@@ -488,17 +485,17 @@ def sample_derivations(seg, args, staticdir, forest_path, components_path,
                                                 temperature0=args.temperature0)
         logging.info('[%d] Slice sampling took %s seconds', seg.id, time() - t0)
 
-        samples = apply_filters(markov_chain,
+        iidsamples = apply_filters(markov_chain,
                                 burn=args.burn,
                                 lag=args.lag)
-        shuffle(samples)  # make it look like MC samples
+        shuffle(iidsamples)  # make it look like MC samples
 
-    n_samples = len(samples)
+    n_samples = len(iidsamples)
 
     # 4. Complete feature vectors and compute expectation
     f_vectors = []
     expected_fvec = model.constant(semiring.prob.zero)
-    d_groups = group_by_identity(samples)
+    d_groups = group_by_identity(iidsamples)
     for d_group in d_groups:
         derivation = d_group.key
         # print(derivation)
@@ -518,12 +515,12 @@ def sample_derivations(seg, args, staticdir, forest_path, components_path,
         f_vectors.append(derivation.components.power(float(d_group.count) / n_samples, semiring.inside))
         expected_fvec = expected_fvec.hadamard(f_vectors[-1], semiring.prob.plus)
 
-    return forest, d_groups, f_vectors, expected_fvec
+    return forest, iidsamples, d_groups, f_vectors, expected_fvec
 
 
 def expected_features(seg, args, staticdir, forest_path, components_path,
                       model: ModelView, n_top):
-    _, _, _, expected = sample_derivations(seg, args, staticdir, forest_path, components_path, model, n_top)
+    _, _, _, _, expected = sample_derivations(seg, args, staticdir, forest_path, components_path, model, n_top)
     return expected
 
 
@@ -569,6 +566,54 @@ def gradient(segments, args, staticdir: str,
                                       conditional_model=conditional_model),
                               segments)
     return np.array(vectors)
+
+
+@traceit
+def _decode(seg, args, joint_model: ModelView, staticdir, outdir):
+    """
+    """
+
+    # load forest and local components
+
+    forest, iidsamples, d_groups, f_vectors, expected_fvec = sample_derivations(seg, args, outdir,
+                                 '{0}/{1}.joint.forest'.format(staticdir, seg.id),
+                                 '{0}/{1}.joint.components'.format(staticdir, seg.id),
+                                 joint_model,
+                                 2)
+
+    # decision rule
+    from grasp.mt.pipeline import consensus
+    decisions = consensus(seg, forest, iidsamples)
+    return decisions[0]
+
+
+def decode_and_eval(segments: 'list[SegmentMetaData]', args, joint_model: ModelView, staticdir, outdir):
+    logging.info('Consensus decoding (and evaluation of) %d segments using %d workers', len(segments), args.jobs)
+    os.makedirs(outdir, exist_ok=True)
+    with Pool(args.jobs) as workers:
+        decisions = workers.map(partial(_decode,
+                                        args=args,
+                                        joint_model=joint_model,
+                                        staticdir=staticdir,
+                                        outdir=outdir),
+                                segments)
+
+    with smart_wopen('{0}/translations'.format(outdir)) as fout:
+        with smart_wopen('{0}/translations.log.gz'.format(outdir)) as flog:
+            print('#loss\tposterior\tdecision', file=flog)
+            for loss, posterior, decision in decisions:
+                print(decision, file=fout)
+                print('{0}\t{1}\t{2}'.format(loss, posterior, decision), file=flog)
+
+    bleu, pn, bp = doc_bleu([decision.split() for loss, posterior, decision in decisions],
+                            [[ref.split() for ref in seg.refs] for seg in segments],
+                            max_order=args.bleu_order,
+                            smoothing=args.bleu_smoothing)
+
+    with open('{0}/bleu'.format(outdir), 'w') as fbleu:
+        print('{0}\t{1}\t{2}'.format(bleu, ' '.join(str(x) for x in pn), bp), file=fbleu)
+
+    return bleu
 
 
 def core(args):
@@ -631,11 +676,28 @@ def core(args):
     t = 0
     n_batches = np.ceil(len(training) / float(args.batch_size))
 
+    # save initial weights
+    epoch_dir = '{0}/epoch{1}'.format(workspace, 0)
+    os.makedirs(epoch_dir, exist_ok=True)
+    # save weights
+    with smart_wopen('{0}/weights.txt'.format(epoch_dir)) as fw:
+        for fname, fvalue in zip(fnames, avg):
+            print('{0} {1}'.format(fname, repr(fvalue)), file=fw)
+
+    # evaluate with initial weights
+    if validation:
+        logging.info('Evaluating validation set')
+        mteval_dir = '{0}/mteval-{1}'.format(epoch_dir, args.validation_alias)
+        os.makedirs(epoch_dir, exist_ok=True)
+        bleu = decode_and_eval(validation, args, joint_model, validation_dir, mteval_dir)
+        logging.info('Epoch %d - Validation BLEU %s', 0, bleu)
+
+    # udpate parameters
     for epoch in range(1, args.maxiter + 1):
 
         # where we store everything related to this iteration
-        #epoch_dir = '{0}/epoch{1}'.format(workspace, epoch)
-        #os.makedirs(epoch_dir, exist_ok=True)
+        epoch_dir = '{0}/epoch{1}'.format(workspace, epoch)
+        os.makedirs(epoch_dir, exist_ok=True)
 
         # first we get a random permutation of the training data
         shuffle(training)
@@ -673,9 +735,17 @@ def core(args):
             joint_model, conditional_model = pipeline.get_factorised_models(model, args.factorisation)
 
         # save weights
-        with smart_wopen('{0}/weights.{1}'.format(workspace, epoch)) as fw:
+        with smart_wopen('{0}/weights.txt'.format(epoch_dir)) as fw:
             for fname, fvalue in zip(fnames, avg):
                 print('{0} {1}'.format(fname, repr(fvalue)), file=fw)
+
+        # decode validation set
+        if validation:
+            logging.info('Evaluating validation set')
+            mteval_dir = '{0}/mteval-{1}'.format(epoch_dir, args.validation_alias)
+            os.makedirs(epoch_dir, exist_ok=True)
+            bleu = decode_and_eval(validation, args, joint_model, validation_dir, mteval_dir)
+            logging.info('Epoch %d - Validation BLEU %s', epoch, bleu)
 
 
 def main():

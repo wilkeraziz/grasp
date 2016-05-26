@@ -4,6 +4,7 @@
 import numpy as np
 import importlib
 from grasp.recipes import smart_ropen
+from grasp.recipes import smart_wopen
 from grasp.recipes import re_sub
 from grasp.recipes import re_key_value
 from grasp.scoring.extractor import TableLookup, Stateless, Stateful
@@ -46,6 +47,12 @@ def read_weights(path, default=None, random=False, temperature=1.0, u=0, std=0.0
             w /= temperature
             wmap[fields[0]] = w
     return wmap
+
+
+def save_weights(path: str, fnames: list, fvalues: list):
+    with smart_wopen(path) as fw:
+        for fname, fvalue in zip(fnames, fvalues):
+            print('{0} {1}'.format(fname, repr(fvalue)), file=fw)
 
 
 def get_extractor_implementation(cls, pkg=None):
