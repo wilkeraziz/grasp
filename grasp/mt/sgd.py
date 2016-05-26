@@ -655,15 +655,19 @@ def core(args):
             #print(npvec2str(gradient_vector, fnames))
             # incorporate regulariser
             regulariser = (weights - prior_mean) / gaussian_prior.var()
-            gradient_vector -= regulariser / n_batches
+            batch_coeff = float(len(batch)) / len(training)
+            gradient_vector -= regulariser * batch_coeff
             # maximisation update w = w + learning_rate * w
             weights += learning_rate * gradient_vector
 
-            print('{0} ||| batch{1} |||  ||| {2}'.format(epoch, b, npvec2str(weights, fnames)))
+            print('{0} ||| batch{1} ||| L2={2} ||| {3} ||| '.format(epoch, b, np.linalg.norm(weights - prior_mean, 2),
+                                                                    npvec2str(weights, fnames)))
             # recursive average (Polyak and Juditsky, 1992)
             avg = t / (t + 1) * avg + 1.0 / (t + 1) * weights
             t += 1
-            print('{0} ||| avg{1} |||  ||| {2}'.format(epoch, t, npvec2str(avg, fnames)))
+            print('{0} ||| avg{1} ||| L2={2} ||| {3}'.format(epoch, t, np.linalg.norm(avg - prior_mean, 2),
+                                                             npvec2str(avg, fnames)))
+
 
             # update models
             model = make_models(dict(zip(model.fnames(), avg)), model.extractors())
