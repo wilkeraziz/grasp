@@ -421,7 +421,7 @@ def preprocess_dataset(args, path, grammars, workingdir, joint_model, conditiona
 
 
 def sample_derivations(seg, args, staticdir, forest_path, components_path,
-                      model: ModelView, n_top):
+                      model: ModelView, n_top, sample_size):
     # 1. Load pickled objects for the conditional distribution
     logging.debug('[%d] Loading target forest', seg.id)
     forest = unpickle_it(forest_path)
@@ -436,7 +436,7 @@ def sample_derivations(seg, args, staticdir, forest_path, components_path,
 
     if not model.nonlocal_model():  # with local models only we can do ancestral sampling (or even exact computations)
         sampler = AncestralSampler(forest, tsort, lfunc)
-        raw = sampler.sample(args.samples[0])
+        raw = sampler.sample(sample_size)
 
         # TODO: create code to produce SampleReturn objects and reconstruct components
         from grasp.alg.rescoring import SampleReturn
@@ -473,7 +473,7 @@ def sample_derivations(seg, args, staticdir, forest_path, components_path,
 
         t0 = time()
         # here samples are represented as sequences of edge ids
-        d0, markov_chain = slice_sampler.sample(n_samples=args.samples[0],
+        d0, markov_chain = slice_sampler.sample(n_samples=sample_size,
                                                 batch_size=args.slice_size,
                                                 within=args.within,
                                                 initial=args.initial,
@@ -520,7 +520,8 @@ def sample_derivations(seg, args, staticdir, forest_path, components_path,
 
 def expected_features(seg, args, staticdir, forest_path, components_path,
                       model: ModelView, n_top):
-    _, _, _, _, expected = sample_derivations(seg, args, staticdir, forest_path, components_path, model, n_top)
+    _, _, _, _, expected = sample_derivations(seg, args, staticdir, forest_path, components_path,
+                                              model, n_top, sample_size=args.samples[0])
     return expected
 
 
@@ -569,7 +570,7 @@ def gradient(segments, args, staticdir: str,
 
 
 @traceit
-def _decode(seg, args, joint_model: ModelView, staticdir, outdir):
+def _decode(seg, args, joint_model: ModelView, staticdir, outdir, sample_size):
     """
     """
 
@@ -579,33 +580,40 @@ def _decode(seg, args, joint_model: ModelView, staticdir, outdir):
                                  '{0}/{1}.joint.forest'.format(staticdir, seg.id),
                                  '{0}/{1}.joint.components'.format(staticdir, seg.id),
                                  joint_model,
-                                 2)
+                                 2, sample_size=sample_size)
 
     # decision rule
     from grasp.mt.pipeline import consensus
     decisions = consensus(seg, forest, iidsamples)
-    return decisions[0]
+    return decisions
 
 
 def decode_and_eval(segments: 'list[SegmentMetaData]', args, joint_model: ModelView, staticdir, outdir):
     logging.info('Consensus decoding (and evaluation of) %d segments using %d workers', len(segments), args.jobs)
     os.makedirs(outdir, exist_ok=True)
     with Pool(args.jobs) as workers:
-        decisions = workers.map(partial(_decode,
+        all_decisions = workers.map(partial(_decode,
                                         args=args,
                                         joint_model=joint_model,
                                         staticdir=staticdir,
-                                        outdir=outdir),
+                                        outdir=outdir,
+                                        sample_size=args.samples[1]),
                                 segments)
 
+    one_best = []
     with smart_wopen('{0}/translations'.format(outdir)) as fout:
         with smart_wopen('{0}/translations.log.gz'.format(outdir)) as flog:
-            print('#loss\tposterior\tdecision', file=flog)
-            for loss, posterior, decision in decisions:
-                print(decision, file=fout)
-                print('{0}\t{1}\t{2}'.format(loss, posterior, decision), file=flog)
+            for seg, decisions in zip(segments, all_decisions):
+                # first decision, third field (translation string)
+                print(decisions[0][2], file=fout)
+                one_best.append(decisions[0][2])
+                print(seg.to_sgm(), file=flog)
+                print('#loss\tposterior\tdecision', file=flog)
+                for loss, posterior, decision in decisions:
+                    print('{0}\t{1}\t{2}'.format(loss, posterior, decision), file=flog)
+                print(file=flog)
 
-    bleu, pn, bp = doc_bleu([decision.split() for loss, posterior, decision in decisions],
+    bleu, pn, bp = doc_bleu([decision.split() for decision in one_best],
                             [[ref.split() for ref in seg.refs] for seg in segments],
                             max_order=args.bleu_order,
                             smoothing=args.bleu_smoothing)
