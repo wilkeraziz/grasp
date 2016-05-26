@@ -70,6 +70,7 @@ from grasp.alg.expectation import expected_components
 
 from grasp.scoring.frepr import FComponents
 from grasp.scoring.model import ModelView
+from grasp.scoring.parameter import SymmetricGuassianPrior, AsymmetricGuassianPrior
 
 from grasp.io.results import save_mcmc_yields, save_mcmc_derivations, save_markov_chain
 
@@ -110,10 +111,14 @@ def cmd_optimisation(parser):
 #                        help="Number of iterations and function evaluations for target optimisation")
 #    parser.add_argument("--tol", type=float, nargs=2, default=[1e-9, 1e-9],
 #                        help="f-tol and g-tol in target optimisation")
-    parser.add_argument("--L2", type=float, default=0.0,
-                        help="Weight of L2 regulariser in target optimisation")
+    #parser.add_argument("--L2", type=float, default=0.0,
+    #                    help="Weight of L2 regulariser in target optimisation")
     parser.add_argument("--learning-rate", type=float, default=1.0,
                         help="Learning rate")
+    parser.add_argument("--gaussian-mean", type=str, default=None,
+                        help="Set the mean of the Gaussian prior over parameters to something other than 0 (format: a weight file)")
+    parser.add_argument("--gaussian-variance", type=float, default=1.0,
+                        help="Variance of the Gaussian prior over parameters")
 
 def cmd_logging(parser):
     parser.add_argument('--save-d',
@@ -579,6 +584,12 @@ def core(args):
     logging.info('Joint view:\n%s', joint_model)
     logging.info('Conditional view:\n%s', conditional_model)
 
+    if args.gaussian_mean:
+        gaussian_prior = AsymmetricGuassianPrior(mean=pipeline.read_weights(args.gaussian_mean), var=args.gaussian_variance)
+    else:
+        gaussian_prior = SymmetricGuassianPrior(mean=0.0, var=args.gaussian_variance)
+
+
     # make factorisations
     # e.g. joint model contains lookup and stateless
     # e.g. conditional model contains lookup, stateless
@@ -602,9 +613,11 @@ def core(args):
     fnames = model.fnames()
     #dimensionality = len(fnames)  # TODO: Sparse SGD
     weights = np.array(list(model.weights().densify()), dtype=ptypes.weight)
+    prior_mean = gaussian_prior.mean_vector(fnames)
+    logging.info('Parameters: %s', npvec2str(weights, fnames))
+    logging.info('Prior: variance=%s mean=(%s)', gaussian_prior.var(), npvec2str(prior_mean, fnames))
     dimensionality = len(weights)
     avg = np.zeros(dimensionality, dtype=ptypes.weight)
-    regularisation_strength = args.L2
     learning_rate = args.learning_rate
 
     t = 0
@@ -633,8 +646,8 @@ def core(args):
             gradient_vector = gradient_vectors.sum(0) / len(batch)
             #print(npvec2str(gradient_vector, fnames))
             # incorporate regulariser
-            if regularisation_strength != 0:
-                gradient_vector -= regularisation_strength * weights / n_batches
+            regulariser = (weights - prior_mean) / gaussian_prior.var()
+            gradient_vector -= regulariser / n_batches
             # maximisation update w = w + learning_rate * w
             weights += learning_rate * gradient_vector
 
