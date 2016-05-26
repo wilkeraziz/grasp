@@ -412,12 +412,12 @@ def preprocess_dataset(args, path, grammars, workingdir, joint_model, conditiona
     pipeline.save_references('{0}/refs'.format(workingdir), unconstrained_data)
     # filter for length
     if args.max_length > 0:
-        data = [seg for seg in unconstrained_data if len(seg.src_tokens()) <= args.max_length]
+        length_constrained = [seg for seg in unconstrained_data if len(seg.src_tokens()) <= args.max_length]
     else:
-        data = unconstrained_data
+        length_constrained = unconstrained_data
     # biparse
-    data = biparse(args, workingdir, joint_model, conditional_model, data)
-    return unconstrained_data, data
+    biparsable = biparse(args, workingdir, joint_model, conditional_model, length_constrained)
+    return unconstrained_data, length_constrained, biparsable
 
 
 def sample_derivations(seg, args, staticdir, forest_path, components_path,
@@ -656,18 +656,18 @@ def core(args):
     # e.g. conditional model contains lookup, stateless
 
     # 1. Load/Parse
-    # 1a. Training data
-    _training, training = preprocess_dataset(args, args.training, args.training_grammars, training_dir,
+    # 1a. Training data (biparsable sentences)
+    _training, _, training = preprocess_dataset(args, args.training, args.training_grammars, training_dir,
                                              joint_model, conditional_model)
-    # 1b. Validation data (if applicable)
+    # 1b. Validation data (if applicable -- short enough sentences if any length constraints)
     if args.validation:
-        _validation, validation = preprocess_dataset(args, args.validation, args.validation_grammars, validation_dir,
+        _validation, validation, _ = preprocess_dataset(args, args.validation, args.validation_grammars, validation_dir,
                                                      joint_model, conditional_model)
     else:
         _validation, validation = [], []
     logging.info('This model can generate %d out of %d training instances', len(training),
                  len(_training))
-    logging.info('This model can generate %d out of %d validation instances', len(validation),
+    logging.info('We selected %d out of %d validation instances', len(validation),
                  len(_validation))
 
     # 2. SGD
