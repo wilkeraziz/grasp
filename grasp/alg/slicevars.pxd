@@ -124,6 +124,12 @@ cdef class ExpSpanSliceVariables(SpanSliceVariables):
     pass
 
 
+cdef class GammaSpanSliceVariables(SpanSliceVariables):
+
+    pass
+
+
+
 cdef class BetaSpanSliceVariables(SpanSliceVariables):
 
     pass

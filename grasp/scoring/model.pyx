@@ -17,6 +17,9 @@ cdef class Model:
     def __bool__(self):
         return bool(self._extractors)
 
+    def __len__(self):
+        return len(self._extractors)
+
     def __getstate__(self):
         return {'extractors': self._extractors, 'wmap': self._wmap}
 

@@ -166,21 +166,14 @@ def cmd_slice(group):
                        action='store_true',
                        help='Save the actual Markov chain on disk.')
 
-    group.add_argument('--prior', nargs=2,
-                       default=['sym', '0.1'],
-                       help="We have a slice variable for each node in the forest. "
-                            "Some of them are constrained (those are sampled uniformly), "
-                            "some of them are not (those are sampled from an exponential distribution). "
-                            "An exponential distribution has a scale parameter which is inversely proportional "
-                            "to the size of the slice. Think of the scale as a mean threshold. "
-                            "You can choose a constant or a prior distribution for the scale: "
-                            "'const', 'sym' (symmetric Gamma) and 'asym' (asymmetric Gamma). "
-                            "Each option takes one argument. "
-                            "The constant distribution takes a real number (>0). "
-                            "The symmetric Gamma takes a single scale parameter (>0). "
-                            "The asymmetric Gamma takes either the keyword 'mean' or "
-                            "a percentile expressed as a real value between 0-100. "
-                            "The later are computed based on the local distribution over incoming edges.")
+    group.add_argument('--gamma-shape', type=float, default=0,
+                       help="Unconstrained slice variables are sampled from a Gamma(shape, scale)."
+                            "By default, the shape is the number of local components.")
+
+    group.add_argument('--gamma-scale', nargs=2, default=['const', '1'],
+                   help="Unconstrained slice variables are sampled from a Gamma(shape, scale)."
+                        "The scale can be either a constant, or it can be itself sampled from a Gamma(1, scale')."
+                        "For the former use for example 'const 1', for the latter use 'gamma 1'")
 
 
 if __name__ == '__main__':

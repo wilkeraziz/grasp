@@ -158,6 +158,8 @@ cdef class VectorOfPriors(Prior):
         for prior in priors:
             if isinstance(prior, VectorOfPriors):
                 raise ValueError('VectorOfPriors only take simple Prior objects.')
+            elif not isinstance(prior, Prior):
+                raise ValueError('VectorOfPriors only take Prior objects.')
         self._priors = list(priors)
 
     cpdef weight_t[::1] sample(self, key):
@@ -221,6 +223,35 @@ cdef class Exponential(Distribution):
         :returns: log(Exponential(x; scale))
         """
         return st.expon.logpdf(x, scale=parameters[0])
+
+
+
+cdef class Gamma(Distribution):
+    """
+    Gamma(shape, scale)
+        - the scale is the inverse of the rate.
+    """
+
+    cpdef weight_t sample(self, weight_t[::1] parameters):
+        """
+        :param parameters: [shape, scale]
+        :returns: x ~ Gamma(X; shape, scale)
+        """
+        return np.random.gamma(parameters[0], scale=parameters[1])
+
+    cpdef weight_t pdf(self, weight_t x, weight_t[::1] parameters):
+        """
+        :param parameters: [shape, scale]
+        :returns: Gamma(x; shape, scale)
+        """
+        return st.gamma.pdf(x, parameters[0], scale=parameters[1])
+
+    cpdef weight_t logpdf(self, weight_t x, weight_t[::1] parameters):
+        """
+        :param parameters: [shape, scale]
+        :returns: log(Gamma(x; shape, scale))
+        """
+        return st.gamma.logpdf(x, parameters[0], scale=parameters[1])
 
 
 cdef class Beta(Distribution):
@@ -426,6 +457,12 @@ cdef class ExpSpanSliceVariables(SpanSliceVariables):
 
     def __init__(self, conditions, prior):
         super(ExpSpanSliceVariables, self).__init__(conditions, dist=Exponential(), prior=prior)
+
+
+cdef class GammaSpanSliceVariables(SpanSliceVariables):
+
+    def __init__(self, conditions, prior):
+        super(GammaSpanSliceVariables, self).__init__(conditions, dist=Gamma(), prior=prior)
 
 
 cdef class BetaSpanSliceVariables(SpanSliceVariables):

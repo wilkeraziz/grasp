@@ -31,7 +31,7 @@ from grasp.loss.fast_bleu import doc_bleu, stream_doc_bleu
 
 import grasp.ptypes as ptypes
 
-from grasp.recipes import smart_ropen, smart_wopen, make_unique_directory, pickle_it, unpickle_it, traceit
+from grasp.recipes import smart_ropen, smart_wopen, make_unique_directory, pickle_it, unpickle_it, traceit, timeit
 
 from grasp.scoring.scorer import TableLookupScorer, StatelessScorer, StatefulScorer
 from grasp.scoring.util import make_models
@@ -213,21 +213,13 @@ def cmd_slice(group):
     group.add_argument('--temperature0',
                        type=float, default=1.0,
                        help='flattens the distribution from where we obtain the initial derivation (for local initialisation only)')
-    group.add_argument('--prior', nargs=2,
-                       default=['sym', '0.1'],
-                       help="We have a slice variable for each node in the forest. "
-                            "Some of them are constrained (those are sampled uniformly), "
-                            "some of them are not (those are sampled from an exponential distribution). "
-                            "An exponential distribution has a scale parameter which is inversely proportional "
-                            "to the size of the slice. Think of the scale as a mean threshold. "
-                            "You can choose a constant or a prior distribution for the scale: "
-                            "'const', 'sym' (symmetric Gamma) and 'asym' (asymmetric Gamma). "
-                            "Each option takes one argument. "
-                            "The constant distribution takes a real number (>0). "
-                            "The symmetric Gamma takes a single scale parameter (>0). "
-                            "The asymmetric Gamma takes either the keyword 'mean' or "
-                            "a percentile expressed as a real value between 0-100. "
-                            "The later are computed based on the local distribution over incoming edges.")
+    group.add_argument('--gamma-shape', type=float, default=0,
+                       help="Unconstrained slice variables are sampled from a Gamma(shape, scale)."
+                            "By default, the shape is the number of local components.")
+    group.add_argument('--gamma-scale', nargs=2, default=['const', '1'],
+                       help="Unconstrained slice variables are sampled from a Gamma(shape, scale)."
+                            "The scale can be either a constant, or it can be itself sampled from a Gamma(1, scale')."
+                            "For the former use for example 'const 1', for the latter use 'gamma 1'")
 
 def get_argparser():
     parser = argparse.ArgumentParser(description='Training by MLE',
@@ -323,6 +315,10 @@ def sanity_checks(args):
     if args.weights and not os.path.exists(args.weights):
         logging.error('Model parameters not found: %s', args.proxy_weights)
         failed = True
+
+    if float(args.gamma_scale[1]) <= 0:
+        raise ValueError('The scale parameter of a Gamma distribution must be strictly positive')
+
     #if args.joint and not os.path.exists(args.joint):
     #    logging.error('Joint model factorisation not found: %s', args.joint)
     #    failed = True
@@ -470,15 +466,27 @@ def sample_derivations(seg, args, staticdir, forest_path, components_path,
                                         goal_maker.get_oview(),
                                         OutputView(make_dead_srule()))
 
+        if args.gamma_shape > 0:
+            gamma_shape = args.gamma_shape
+        else:
+            gamma_shape = len(model.local_model())  # number of local components
+        gamma_scale_type = args.gamma_scale[0]
+        gamma_scale_parameter = float(args.gamma_scale[1])
+
+
+        t0 = time()
         # here samples are represented as sequences of edge ids
         d0, markov_chain = slice_sampler.sample(n_samples=args.samples[0],
                                                 batch_size=args.slice_size,
                                                 within=args.within,
                                                 initial=args.initial,
-                                                prior=args.prior,
+                                                gamma_shape=gamma_shape,
+                                                gamma_scale_type=gamma_scale_type,
+                                                gamma_scale_parameter=gamma_scale_parameter,
                                                 burn=args.burn,
                                                 lag=args.lag,
                                                 temperature0=args.temperature0)
+        logging.info('[%d] Slice sampling took %s seconds', seg.id, time() - t0)
 
         samples = apply_filters(markov_chain,
                                 burn=args.burn,

@@ -148,9 +148,20 @@ def decode(seg, args, model, outdir):
                                    goal_maker.get_oview(),
                                    make_dead_oview(args.default_symbol))
 
+        if args.gamma_shape > 0:
+            gamma_shape = args.gamma_shape
+        else:
+            gamma_shape = len(model)  # number of local components
+        gamma_scale_type = args.gamma_scale[0]
+        gamma_scale_parameter = float(args.gamma_scale[1])
+
         # here samples are represented as sequences of edge ids
         d0, markov_chain = rescorer.sample(n_samples=args.samples, batch_size=args.batch, within=args.within,
-                                           initial=args.initial, prior=args.prior, burn=args.burn, lag=args.lag,
+                                           initial=args.initial,
+                                           gamma_shape=gamma_shape,
+                                           gamma_scale_type=gamma_scale_type,
+                                           gamma_scale_parameter=gamma_scale_parameter,
+                                           burn=args.burn, lag=args.lag,
                                            temperature0=args.temperature0)
 
         # apply usual MCMC heuristics (e.g. burn-in, lag)

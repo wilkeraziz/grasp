@@ -246,25 +246,31 @@ cdef class SlicedRescoring:
 
 
 
-    cdef _make_slice_variables(self, conditions, str prior_type, str prior_parameter):
-        if prior_type == 'const':
-            prior = sv.ConstantPrior(float(prior_parameter))
-        elif prior_type == 'sym':
-            prior = sv.SymmetricGamma(scale=float(prior_parameter))
-        elif prior_type == 'asym':
-            if prior_parameter == 'mean':
-                prior = sv.AsymmetricGamma(scales=gamma_priors(self._forest, self._semiring))
-            else:
-                try:
-                    percentile = float(prior_parameter)
-                except ValueError:
-                    raise ValueError("The parameter of the asymmetric "
-                                     "Gamma must be the keyword 'mean' or a number between 0-100: %s" % percentile)
-                if not (0 <= percentile <= 100):
-                    raise ValueError("A percentile is a real number between 0 and 100: %s" % percentile)
-                prior = sv.AsymmetricGamma(scales=gamma_priors(self._forest, self._semiring, percentile=percentile))
+    cdef _make_slice_variables(self, conditions, float shape, str scale_type, float scale_parameter):
+        shape_prior = sv.ConstantPrior(shape)
+        if scale_type == 'const':
+            scale_prior = sv.ConstantPrior(scale_parameter)
+        elif scale_type == 'sym' or scale_type == 'gamma':
+            scale_prior = sv.SymmetricGamma(scale=scale_parameter)
+        else:
+            raise ValueError('I do not know this type of Prior of the scale parameter: %s' % scale_type)
 
-        return sv.ExpSpanSliceVariables(conditions, prior)
+        #elif prior_type == 'asym':
+        #    if prior_parameter == 'mean':
+        #        prior = sv.AsymmetricGamma(scales=gamma_priors(self._forest, self._semiring))
+        #    else:
+        #        try:
+        #            percentile = float(prior_parameter)
+        #        except ValueError:
+        #            raise ValueError("The parameter of the asymmetric "
+        #                             "Gamma must be the keyword 'mean' or a number between 0-100: %s" % percentile)
+        #        if not (0 <= percentile <= 100):
+        #            raise ValueError("A percentile is a real number between 0 and 100: %s" % percentile)
+        #        prior = sv.AsymmetricGamma(scales=gamma_priors(self._forest, self._semiring, percentile=percentile))
+
+        # shape, scale
+
+        return sv.GammaSpanSliceVariables(conditions, sv.VectorOfPriors(shape_prior, scale_prior))
 
     cdef weight_t _nfunc(self, Hypergraph forest, tuple derivation):
         """
@@ -483,6 +489,7 @@ cdef class SlicedRescoring:
             # sample from u(d)
             AncestralSampler sampler = AncestralSampler(forest, tsort, ufunc)
 
+        #logging.info('[importance] Derivations in slice: %s', sampler.n_derivations())
         if d0:
             logging.debug(' [cimportance] Importance sampling %d candidates from S to against previous state', batch_size)
         else:
@@ -638,7 +645,8 @@ cdef class SlicedRescoring:
 
 
     cpdef sample(self, size_t n_samples, size_t batch_size, str within,
-                 str initial, list prior, size_t burn, size_t lag, weight_t temperature0):
+                 str initial, float gamma_shape, str gamma_scale_type,
+                 float gamma_scale_parameter, size_t burn, size_t lag, weight_t temperature0):
         cdef Hypergraph D = self._forest
         cdef WeightFunction lfunc = self._lfunc
         cdef TopSortTable tsort_D = self._tsort
@@ -653,7 +661,7 @@ cdef class SlicedRescoring:
         (d0, n_derivations) = self._initialise(D, tsort_D, lfunc, semiring, initial, temperature0)
         # Prepare slice variables
         slicevars = self._make_slice_variables(make_span_conditions(D, lfunc, d0.edges, semiring),
-                                               prior[0], prior[1])
+                                               gamma_shape, gamma_scale_type, gamma_scale_parameter)
         # Initialise the Markov chain
         markov_chain.append(d0)
 
