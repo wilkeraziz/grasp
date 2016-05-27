@@ -103,8 +103,6 @@ def cmd_optimisation(parser):
     #                    help='shuffle training instances')
     parser.add_argument('--init', type=str, default='uniform',
                         help="use 'uniform' for uniform weights, 'random' for random weights, or choose a default weight")
-    parser.add_argument("--resume", type=int, default=0,
-                        help="Resume from a certain iteration (requires the config file of the preceding run)")
     parser.add_argument('--merge', type=int, default=0,
                         help="how many iterations should we consider in estimating Z(x) (use 0 or less for all)")
 #    parser.add_argument("--sgd", type=int, nargs=2, default=[10, 10],
@@ -129,6 +127,8 @@ def cmd_optimisation(parser):
                         help="We cool the temperature in epochs multiple of this number")
     parser.add_argument("--assess-epoch0", '-0', action='store_true',
                         help="Assess the initial model")
+    parser.add_argument("--resume", type=int, default=0,
+                        help="Pick up from the end of a certain iteration")
 
 def cmd_logging(parser):
     parser.add_argument('--save-d',
@@ -678,7 +678,12 @@ def core(args):
         raise FileNotFoundError('One or more files could not be found')
 
     # We load the complete model
-    model = pipeline.load_model(args.model, args.weights, args.init)
+    if args.resume > 0:
+        model = pipeline.load_model(args.model, '{0}/epoch{1}/weights.txt'.format(workspace, args.resume),
+                                    args.init)
+    else:
+        model = pipeline.load_model(args.model, args.weights, args.init)
+
     # Then we get a joint factorisation of the model and a conditional factorisation of the model
     # each factorisation defines a local model and a nonlocal model
     # we assume that exact inference is tractable wrt local models
@@ -728,92 +733,94 @@ def core(args):
     t = 0
     n_batches = np.ceil(len(training) / float(args.batch_size))
 
-    # save initial weights
-    epoch_dir = '{0}/epoch{1}'.format(workspace, 0)
-    os.makedirs(epoch_dir, exist_ok=True)
-    # save weights
-    with smart_wopen('{0}/weights.txt'.format(epoch_dir)) as fw:
-        for fname, fvalue in zip(fnames, avg):
-            print('{0} {1}'.format(fname, repr(fvalue)), file=fw)
-
-    # evaluate with initial weights
-    if args.assess_epoch0 and validation:
-        logging.info('Evaluating validation set')
-        mteval_dir = '{0}/mteval-{1}'.format(epoch_dir, args.validation_alias)
+    if args.resume == 0:
+        # save initial weights
+        epoch_dir = '{0}/epoch{1}'.format(workspace, 0)
         os.makedirs(epoch_dir, exist_ok=True)
-        bleu = decode_and_eval(validation, args, joint_model, validation_dir, mteval_dir)
-        logging.info('Epoch %d - Validation BLEU %s', 0, bleu)
+        # save weights
+        with smart_wopen('{0}/weights.txt'.format(epoch_dir)) as fw:
+            for fname, fvalue in zip(fnames, avg):
+                print('{0} {1}'.format(fname, repr(fvalue)), file=fw)
+
+        # evaluate with initial weights
+        if args.assess_epoch0 and validation:
+            logging.info('Evaluating validation set')
+            mteval_dir = '{0}/mteval-{1}'.format(epoch_dir, args.validation_alias)
+            os.makedirs(epoch_dir, exist_ok=True)
+            bleu = decode_and_eval(validation, args, joint_model, validation_dir, mteval_dir)
+            logging.info('Epoch %d - Validation BLEU %s', 0, bleu)
 
     temperature = args.max_temperature
 
     # udpate parameters
     for epoch in range(1, args.maxiter + 1):
 
-        # where we store everything related to this iteration
-        epoch_dir = '{0}/epoch{1}'.format(workspace, epoch)
-        os.makedirs(epoch_dir, exist_ok=True)
+        if epoch > args.resume:
+            # where we store everything related to this iteration
+            epoch_dir = '{0}/epoch{1}'.format(workspace, epoch)
+            os.makedirs(epoch_dir, exist_ok=True)
 
-        # first we get a random permutation of the training data
-        shuffle(training)
+            # first we get a random permutation of the training data
+            shuffle(training)
 
-        # then we operate in mini-batches
-        for b, first in enumerate(range(0, len(training), args.batch_size), 1):
-            # gather segments in this batch
-            batch = [training[ith] for ith in range(first, min(first + args.batch_size, len(training)))]
-            logging.info('Epoch %d/%d - Batch %d/%d - Temperature %f', epoch, args.maxiter, b, n_batches, temperature)
-            #print([seg.id for seg in batch])
-            #batch_dir = '{0}/batch{0}'.format(epoch, b)
-            #os.makedirs(batch_dir, exist_ok=True)
+            # then we operate in mini-batches
+            for b, first in enumerate(range(0, len(training), args.batch_size), 1):
+                # gather segments in this batch
+                batch = [training[ith] for ith in range(first, min(first + args.batch_size, len(training)))]
+                logging.info('Epoch %d/%d - Batch %d/%d - Temperature %f', epoch, args.maxiter, b, n_batches, temperature)
+                #print([seg.id for seg in batch])
+                #batch_dir = '{0}/batch{0}'.format(epoch, b)
+                #os.makedirs(batch_dir, exist_ok=True)
 
-            likelihood_gradient_vectors, negative_entropy_gradient_vectors = gradient(batch, args, training_dir, joint_model, conditional_model)
-            likelihood_gradient = likelihood_gradient_vectors.mean(0)  # normalise for batch size
-            negative_entropy_gradient = negative_entropy_gradient_vectors.mean(0)  # normalise for batch size
+                likelihood_gradient_vectors, negative_entropy_gradient_vectors = gradient(batch, args, training_dir, joint_model, conditional_model)
+                likelihood_gradient = likelihood_gradient_vectors.mean(0)  # normalise for batch size
+                negative_entropy_gradient = negative_entropy_gradient_vectors.mean(0)  # normalise for batch size
 
-            # batch importance
-            batch_coeff = float(len(batch)) / len(training)
-            # The gradient of the prior with respect to component k is: - (w_k - mean_k) / var
-            # we also normalise for the importance of the batch
-            prior_gradient = - (weights - prior_mean) / gaussian_prior.var() * batch_coeff
-            # The gradient of the objective function decomposes as the gradient of the (log) likelihood plus
-            # the gradient of the (log) prior
-            gradient_vec = likelihood_gradient + prior_gradient
-            # if we have entropy regularisation, then we also sum the gradient of the negative entropy
-            if temperature != 0:
-                gradient_vec += temperature * negative_entropy_gradient
+                # batch importance
+                batch_coeff = float(len(batch)) / len(training)
+                # The gradient of the prior with respect to component k is: - (w_k - mean_k) / var
+                # we also normalise for the importance of the batch
+                prior_gradient = - (weights - prior_mean) / gaussian_prior.var() * batch_coeff
+                # The gradient of the objective function decomposes as the gradient of the (log) likelihood plus
+                # the gradient of the (log) prior
+                gradient_vec = likelihood_gradient + prior_gradient
+                # if we have entropy regularisation, then we also sum the gradient of the negative entropy
+                if temperature != 0:
+                    gradient_vec += temperature * negative_entropy_gradient
 
-            # finally, the SGD (maximisation) update is w = w + learning_rate * gradient
-            weights += learning_rate * gradient_vec
+                # finally, the SGD (maximisation) update is w = w + learning_rate * gradient
+                weights += learning_rate * gradient_vec
 
-            print('{0} ||| batch{1} ||| L2={2} ||| {3} ||| '.format(epoch, b, np.linalg.norm(weights - prior_mean, 2),
-                                                                    npvec2str(weights, fnames)))
-            # recursive average (Polyak and Juditsky, 1992)
-            avg = t / (t + 1) * avg + 1.0 / (t + 1) * weights
-            t += 1
-            print('{0} ||| avg{1} ||| L2={2} ||| {3}'.format(epoch, t, np.linalg.norm(avg - prior_mean, 2),
-                                                             npvec2str(avg, fnames)))
+                print('{0} ||| batch{1} ||| L2={2} ||| {3} ||| '.format(epoch, b, np.linalg.norm(weights - prior_mean, 2),
+                                                                        npvec2str(weights, fnames)))
+                # recursive average (Polyak and Juditsky, 1992)
+                avg = t / (t + 1) * avg + 1.0 / (t + 1) * weights
+                t += 1
+                print('{0} ||| avg{1} ||| L2={2} ||| {3}'.format(epoch, t, np.linalg.norm(avg - prior_mean, 2),
+                                                                 npvec2str(avg, fnames)))
 
 
-            # update models
-            model = make_models(dict(zip(model.fnames(), avg)), model.extractors())
-            joint_model, conditional_model = pipeline.get_factorised_models(model, args.factorisation)
+                # update models
+                model = make_models(dict(zip(model.fnames(), avg)), model.extractors())
+                joint_model, conditional_model = pipeline.get_factorised_models(model, args.factorisation)
+
+            # save weights
+            with smart_wopen('{0}/weights.txt'.format(epoch_dir)) as fw:
+                for fname, fvalue in zip(fnames, avg):
+                    print('{0} {1}'.format(fname, repr(fvalue)), file=fw)
+
+            # decode validation set
+            if validation:
+                logging.info('Evaluating validation set')
+                mteval_dir = '{0}/mteval-{1}'.format(epoch_dir, args.validation_alias)
+                os.makedirs(epoch_dir, exist_ok=True)
+                bleu = decode_and_eval(validation, args, joint_model, validation_dir, mteval_dir)
+                logging.info('Epoch %d - Validation BLEU %s', epoch, bleu)
 
         if epoch % args.cooling_schedule == 0:  # whether it's time to cool
             temperature /= args.cooling_factor  # cool it
             if temperature < args.min_temperature:  # check for lower bound
                 temperature = args.min_temperature
-
-        # save weights
-        with smart_wopen('{0}/weights.txt'.format(epoch_dir)) as fw:
-            for fname, fvalue in zip(fnames, avg):
-                print('{0} {1}'.format(fname, repr(fvalue)), file=fw)
-
-        # decode validation set
-        if validation:
-            logging.info('Evaluating validation set')
-            mteval_dir = '{0}/mteval-{1}'.format(epoch_dir, args.validation_alias)
-            os.makedirs(epoch_dir, exist_ok=True)
-            bleu = decode_and_eval(validation, args, joint_model, validation_dir, mteval_dir)
-            logging.info('Epoch %d - Validation BLEU %s', epoch, bleu)
 
 
 def main():
