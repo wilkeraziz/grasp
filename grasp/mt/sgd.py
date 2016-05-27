@@ -659,10 +659,10 @@ def core(args):
     # 1a. Training data (biparsable sentences)
     _training, _, training = preprocess_dataset(args, args.training, args.training_grammars, training_dir,
                                              joint_model, conditional_model)
-    # 1b. Validation data (if applicable -- short enough sentences if any length constraints)
-    if args.validation:
+    # 1b. Validation data (if applicable)
+    if args.validation:  # we do not need to biparse the validation set
         _validation, validation, _ = preprocess_dataset(args, args.validation, args.validation_grammars, validation_dir,
-                                                     joint_model, conditional_model)
+                                                     joint_model, conditional_model=None)
     else:
         _validation, validation = [], []
     logging.info('This model can generate %d out of %d training instances', len(training),

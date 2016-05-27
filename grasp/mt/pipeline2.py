@@ -553,11 +553,21 @@ def biparse(seg: SegmentMetaData, options: SimpleNamespace,
     else:
         saving = {}
 
-    steps = ['joint.forest', 'joint.components', 'conditional.forest', 'conditional.components']
     result = SimpleNamespace()
     result.joint = SimpleNamespace()
     result.conditional = SimpleNamespace()
 
+    if conditional_model is None:
+        steps = ['joint.forest', 'joint.components']
+        if all(is_step_complete(step, saving, redo) for step in steps):
+            log('[%d] Reusing joint and conditional distributions from files', seg.id)
+            result.joint.forest = unpickle_it(saving['joint.forest'])
+            result.joint.components = unpickle_it(saving['joint.components'])
+            result.conditional.forest = None
+            result.conditional.components = []
+            return result
+
+    steps = ['joint.forest', 'joint.components', 'conditional.forest', 'conditional.components']
     if all(is_step_complete(step, saving, redo) for step in steps):
         log('[%d] Reusing joint and conditional distributions from files', seg.id)
         result.joint.forest = unpickle_it(saving['joint.forest'])
@@ -613,8 +623,10 @@ def biparse(seg: SegmentMetaData, options: SimpleNamespace,
     if 'joint.components' in saving:
         pickle_it(saving['joint.components'], result.joint.components)
 
-    #print('JOINT')
-    #print(result.joint.forest)
+    if conditional_model is None:
+        result.conditional.forest = None
+        result.conditional.components = []
+        return result
 
     # 5. Conditional distribution - Step 1: parse the reference lattice
 
