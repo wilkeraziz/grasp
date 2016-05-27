@@ -127,6 +127,8 @@ def cmd_optimisation(parser):
                         help="Cooling factor (see cooling-schedule)")
     parser.add_argument("--cooling-schedule", type=int, default=1,
                         help="We cool the temperature in epochs multiple of this number")
+    parser.add_argument("--assess-epoch0", '-0', action='store_true',
+                        help="Assess the initial model")
 
 def cmd_logging(parser):
     parser.add_argument('--save-d',
@@ -735,7 +737,7 @@ def core(args):
             print('{0} {1}'.format(fname, repr(fvalue)), file=fw)
 
     # evaluate with initial weights
-    if validation:
+    if args.assess_epoch0 and validation:
         logging.info('Evaluating validation set')
         mteval_dir = '{0}/mteval-{1}'.format(epoch_dir, args.validation_alias)
         os.makedirs(epoch_dir, exist_ok=True)
@@ -766,16 +768,20 @@ def core(args):
             likelihood_gradient_vectors, negative_entropy_gradient_vectors = gradient(batch, args, training_dir, joint_model, conditional_model)
             likelihood_gradient = likelihood_gradient_vectors.mean(0)  # normalise for batch size
             negative_entropy_gradient = negative_entropy_gradient_vectors.mean(0)  # normalise for batch size
-            #print(npvec2str(gradient_vector, fnames))
-            # incorporate regulariser
-            regulariser = (weights - prior_mean) / gaussian_prior.var()
-            batch_coeff = float(len(batch)) / len(training)  # batch importance
 
-            gradient_vec = likelihood_gradient - regulariser * batch_coeff
+            # batch importance
+            batch_coeff = float(len(batch)) / len(training)
+            # The gradient of the prior with respect to component k is: - (w_k - mean_k) / var
+            # we also normalise for the importance of the batch
+            prior_gradient = - (weights - prior_mean) / gaussian_prior.var() * batch_coeff
+            # The gradient of the objective function decomposes as the gradient of the (log) likelihood plus
+            # the gradient of the (log) prior
+            gradient_vec = likelihood_gradient + prior_gradient
+            # if we have entropy regularisation, then we also sum the gradient of the negative entropy
             if temperature != 0:
                 gradient_vec += temperature * negative_entropy_gradient
 
-            # maximisation update w = w + learning_rate * w
+            # finally, the SGD (maximisation) update is w = w + learning_rate * gradient
             weights += learning_rate * gradient_vec
 
             print('{0} ||| batch{1} ||| L2={2} ||| {3} ||| '.format(epoch, b, np.linalg.norm(weights - prior_mean, 2),
