@@ -119,6 +119,14 @@ def cmd_optimisation(parser):
                         help="Set the mean of the Gaussian prior over parameters to something other than 0 (format: a weight file)")
     parser.add_argument("--gaussian-variance", type=float, default=1.0,
                         help="Variance of the Gaussian prior over parameters")
+    parser.add_argument("--max-temperature", type=float, default=0.0,
+                        help="Annealing / Entropy regularisation")
+    parser.add_argument("--min-temperature", type=float, default=0.0,
+                        help="Annealing / Entropy regularisation")
+    parser.add_argument("--cooling-factor", type=float, default=1.0,
+                        help="Cooling factor (see cooling-schedule)")
+    parser.add_argument("--cooling-schedule", type=int, default=1,
+                        help="We cool the temperature in epochs multiple of this number")
 
 def cmd_logging(parser):
     parser.add_argument('--save-d',
@@ -496,7 +504,10 @@ def sample_derivations(seg, args, staticdir, forest_path, components_path,
     f_vectors = []
     expected_fvec = model.constant(semiring.prob.zero)
     d_groups = group_by_identity(iidsamples)
-    for d_group in d_groups:
+    posterior = np.zeros(len(d_groups))
+    H = 0.0
+
+    for i, d_group in enumerate(d_groups):
         derivation = d_group.key
         # print(derivation)
         # reconstruct components
@@ -512,17 +523,43 @@ def sample_derivations(seg, args, staticdir, forest_path, components_path,
         derivation.components = model.merge(local_vec, derivation.components)
         # print('D', derivation.components)
         # incorporate sample frequency
-        f_vectors.append(derivation.components.power(float(d_group.count) / n_samples, semiring.inside))
+        prob = float(d_group.count) / n_samples
+        f_vectors.append(derivation.components.power(prob, semiring.inside))
         expected_fvec = expected_fvec.hadamard(f_vectors[-1], semiring.prob.plus)
+        H += prob * np.log(prob)
+        posterior[i] = prob
 
-    return forest, iidsamples, d_groups, f_vectors, expected_fvec
+    result = SimpleNamespace()
+    result.forest = forest
+    result.iidsamples = iidsamples
+    result.d_groups = d_groups
+    result.expected_fvec = expected_fvec
+    result.f_vectors = f_vectors
+    result.posterior = posterior
+    result.entropy = -H
+
+    return result
 
 
 def expected_features(seg, args, staticdir, forest_path, components_path,
                       model: ModelView, n_top):
-    _, _, _, _, expected = sample_derivations(seg, args, staticdir, forest_path, components_path,
+    result = sample_derivations(seg, args, staticdir, forest_path, components_path,
                                               model, n_top, sample_size=args.samples[0])
-    return expected
+    return result.expected_fvec
+
+
+def negative_entropy_derivative(expected_fvec: FComponents, d_groups, posterior, entropy, model: ModelView):
+
+    # Expected[log p(d|x) * fvec(x, d)] +
+    #  H(p) * Expected(fvec(x,d))
+    # where H(p) = - Expected(log p(d|x))
+
+    derivative = model.constant(semiring.prob.zero)
+    for d_group, prob in zip(d_groups, posterior):
+        derivation = d_group.key
+        derivative = derivative.hadamard(derivation.components.power(prob * np.log(prob), semiring.inside), semiring.prob.plus)
+    derivative = derivative.hadamard(expected_fvec.power(entropy, semiring.inside), semiring.prob.plus)
+    return derivative
 
 
 @traceit
@@ -540,33 +577,38 @@ def _gradient(seg: SegmentMetaData, args, staticdir: str,
     :return: np.array (gradient vector)
     """
 
-    conditional_vec = expected_features(seg, args, staticdir,
+    conditional = sample_derivations(seg, args, staticdir,
                                         '{0}/{1}.conditional.forest'.format(staticdir, seg.id),
                                         '{0}/{1}.conditional.components'.format(staticdir, seg.id),
-                                        conditional_model, 3)
+                                        conditional_model, 3,
+                                         args.samples[0])
 
-    conditional_vec = np.array(list(conditional_vec.densify()), dtype=ptypes.weight)
+    conditional_vec = np.array(list(conditional.expected_fvec.densify()), dtype=ptypes.weight)
 
-    joint_vec = expected_features(seg, args, staticdir,
+    joint = sample_derivations(seg, args, staticdir,
                                   '{0}/{1}.joint.forest'.format(staticdir, seg.id),
                                   '{0}/{1}.joint.components'.format(staticdir, seg.id),
-                                  joint_model, 2)
-    joint_vec = np.array(list(joint_vec.densify()), dtype=ptypes.weight)
+                                  joint_model, 2, args.samples[0])
+    joint_vec = np.array(list(joint.expected_fvec.densify()), dtype=ptypes.weight)
     gradient_vector = conditional_vec - joint_vec
-    return gradient_vector
+
+    negH_derivative = negative_entropy_derivative(joint.expected_fvec, joint.d_groups, joint.posterior, joint.entropy, joint_model)
+    entropy_vec = np.array(list(negH_derivative.densify()), dtype=ptypes.weight)
+
+    return gradient_vector, entropy_vec
 
 
 def gradient(segments, args, staticdir: str,
              joint_model: ModelView, conditional_model: ModelView) -> np.array:
     logging.info('Computing gradient based on a batch of %d instances using %d workers', len(segments), args.jobs)
     with Pool(args.jobs) as workers:
-        vectors = workers.map(partial(_gradient,
+        derivatives = workers.map(partial(_gradient,
                                       args=args,
                                       staticdir=staticdir,
                                       joint_model=joint_model,
                                       conditional_model=conditional_model),
                               segments)
-    return np.array(vectors)
+    return np.array([likelihood for likelihood, entropy in derivatives]), np.array([entropy for likelihood, entropy in derivatives])
 
 
 @traceit
@@ -576,7 +618,7 @@ def _decode(seg, args, joint_model: ModelView, staticdir, outdir, sample_size):
 
     # load forest and local components
 
-    forest, iidsamples, d_groups, f_vectors, expected_fvec = sample_derivations(seg, args, outdir,
+    result = sample_derivations(seg, args, outdir,
                                  '{0}/{1}.joint.forest'.format(staticdir, seg.id),
                                  '{0}/{1}.joint.components'.format(staticdir, seg.id),
                                  joint_model,
@@ -584,7 +626,7 @@ def _decode(seg, args, joint_model: ModelView, staticdir, outdir, sample_size):
 
     # decision rule
     from grasp.mt.pipeline import consensus
-    decisions = consensus(seg, forest, iidsamples)
+    decisions = consensus(seg, result.forest, result.iidsamples)
     return decisions
 
 
@@ -700,6 +742,8 @@ def core(args):
         bleu = decode_and_eval(validation, args, joint_model, validation_dir, mteval_dir)
         logging.info('Epoch %d - Validation BLEU %s', 0, bleu)
 
+    temperature = args.max_temperature
+
     # udpate parameters
     for epoch in range(1, args.maxiter + 1):
 
@@ -714,20 +758,25 @@ def core(args):
         for b, first in enumerate(range(0, len(training), args.batch_size), 1):
             # gather segments in this batch
             batch = [training[ith] for ith in range(first, min(first + args.batch_size, len(training)))]
-            logging.info('Epoch %d/%d - Batch %d/%d', epoch, args.maxiter, b, n_batches)
+            logging.info('Epoch %d/%d - Batch %d/%d - Temperature %f', epoch, args.maxiter, b, n_batches, temperature)
             #print([seg.id for seg in batch])
             #batch_dir = '{0}/batch{0}'.format(epoch, b)
             #os.makedirs(batch_dir, exist_ok=True)
 
-            gradient_vectors = gradient(batch, args, training_dir, joint_model, conditional_model)
-            gradient_vector = gradient_vectors.mean(0)  # normalise for batch size
+            likelihood_gradient_vectors, negative_entropy_gradient_vectors = gradient(batch, args, training_dir, joint_model, conditional_model)
+            likelihood_gradient = likelihood_gradient_vectors.mean(0)  # normalise for batch size
+            negative_entropy_gradient = negative_entropy_gradient_vectors.mean(0)  # normalise for batch size
             #print(npvec2str(gradient_vector, fnames))
             # incorporate regulariser
             regulariser = (weights - prior_mean) / gaussian_prior.var()
             batch_coeff = float(len(batch)) / len(training)  # batch importance
-            gradient_vector -= regulariser * batch_coeff
+
+            gradient_vec = likelihood_gradient - regulariser * batch_coeff
+            if temperature != 0:
+                gradient_vec += temperature * negative_entropy_gradient
+
             # maximisation update w = w + learning_rate * w
-            weights += learning_rate * gradient_vector
+            weights += learning_rate * gradient_vec
 
             print('{0} ||| batch{1} ||| L2={2} ||| {3} ||| '.format(epoch, b, np.linalg.norm(weights - prior_mean, 2),
                                                                     npvec2str(weights, fnames)))
@@ -741,6 +790,11 @@ def core(args):
             # update models
             model = make_models(dict(zip(model.fnames(), avg)), model.extractors())
             joint_model, conditional_model = pipeline.get_factorised_models(model, args.factorisation)
+
+        if epoch % args.cooling_schedule == 0:  # whether it's time to cool
+            temperature /= args.cooling_factor  # cool it
+            if temperature < args.min_temperature:  # check for lower bound
+                temperature = args.min_temperature
 
         # save weights
         with smart_wopen('{0}/weights.txt'.format(epoch_dir)) as fw:
