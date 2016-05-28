@@ -579,23 +579,35 @@ def _gradient(seg: SegmentMetaData, args, staticdir: str,
     :return: np.array (gradient vector)
     """
 
+    t0 = time()
     conditional = sample_derivations(seg, args, staticdir,
                                         '{0}/{1}.conditional.forest'.format(staticdir, seg.id),
                                         '{0}/{1}.conditional.components'.format(staticdir, seg.id),
                                         conditional_model, 3,
                                          args.samples[0])
+    logging.info('[%d] Conditional gradient took %s seconds', seg.id, time() - t0)
 
     conditional_vec = np.array(list(conditional.expected_fvec.densify()), dtype=ptypes.weight)
 
+    t0 = time()
     joint = sample_derivations(seg, args, staticdir,
                                   '{0}/{1}.joint.forest'.format(staticdir, seg.id),
                                   '{0}/{1}.joint.components'.format(staticdir, seg.id),
                                   joint_model, 2, args.samples[0])
     joint_vec = np.array(list(joint.expected_fvec.densify()), dtype=ptypes.weight)
+    logging.info('[%d] Joint gradient took %s seconds', seg.id, time() - t0)
+
+
+
+
     gradient_vector = conditional_vec - joint_vec
 
     negH_derivative = negative_entropy_derivative(joint.expected_fvec, joint.d_groups, joint.posterior, joint.entropy, joint_model)
     entropy_vec = np.array(list(negH_derivative.densify()), dtype=ptypes.weight)
+
+    print('[{0}] ||| conditional ||| {1}'.format(seg.id, conditional.expected_fvec))
+    print('[{0}] ||| joint ||| {1}'.format(seg.id, joint.expected_fvec))
+    print('[{0}] ||| entropy ||| {1}'.format(seg.id, negH_derivative))
 
     return gradient_vector, entropy_vec
 

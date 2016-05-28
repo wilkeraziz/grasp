@@ -389,8 +389,11 @@ cdef class SpanSliceVariables(SliceVariables):
             if condition is None:  # and there are no conditions
                 assignment.u = self._dist.sample(assignment.parameter)
             else:  # we have a condition, thus we sample uniformly
-                assignment.u = np.random.uniform(0, condition)
-                assert assignment.u < condition, 'Numpy is going crazy with floats: %r < %r' % (assignment.u, condition)
+                try:
+                    assignment.u = np.random.uniform(0, condition)
+                    assert assignment.u < condition, 'Numpy is going crazy with floats: %r < %r' % (assignment.u, condition)
+                except Exception as ex:
+                    raise ValueError('Something went wrong: assignment=%s condition=%s.\n%s' % (assignment.u, condition, ex))
         return assignment
 
     def __getitem__(self, key):
