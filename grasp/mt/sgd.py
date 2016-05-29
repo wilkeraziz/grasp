@@ -62,8 +62,7 @@ from grasp.cfg.srule import OutputView
 from grasp.alg.deduction import NederhofParser, EarleyParser, EarleyRescorer
 from grasp.alg.inference import viterbi_derivation, AncestralSampler
 from grasp.alg.value import acyclic_value_recursion, acyclic_reversed_value_recursion, compute_edge_expectation
-from grasp.alg.rescoring import weight_edges
-from grasp.alg.rescoring import SlicedRescoring
+from grasp.alg.rescoring2 import SlicedRescoring
 from grasp.alg.rescoring import stateless_rescoring
 from grasp.alg.chain import apply_filters, group_by_identity, group_by_projection
 from grasp.alg.expectation import expected_components
