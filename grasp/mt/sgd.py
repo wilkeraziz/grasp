@@ -71,6 +71,7 @@ from grasp.scoring.frepr import FComponents
 from grasp.scoring.model import ModelView
 from grasp.scoring.parameter import SymmetricGuassianPrior, AsymmetricGuassianPrior
 from grasp.scoring.fvecfunc import derivation_fvec
+from grasp.scoring.parameter import GaussianPrior
 
 from grasp.io.results import save_mcmc_yields, save_mcmc_derivations, save_markov_chain
 
@@ -113,10 +114,16 @@ def cmd_optimisation(parser):
     #                    help="Weight of L2 regulariser in target optimisation")
     parser.add_argument("--learning-rate", type=float, default=1.0,
                         help="Learning rate")
-    parser.add_argument("--gaussian-mean", type=str, default=None,
-                        help="Set the mean of the Gaussian prior over parameters to something other than 0 (format: a weight file)")
-    parser.add_argument("--gaussian-variance", type=float, default=1.0,
-                        help="Variance of the Gaussian prior over parameters")
+    parser.add_argument("--local-gaussian-mean", type=str, default=None,
+                        help="Set the mean of the Gaussian prior over parameters of the local model "
+                             "to something other than 0 (format: a weight file)")
+    parser.add_argument("--local-gaussian-variance", type=float, default=1.0,
+                        help="Variance of the Gaussian prior over parameters of the local model")
+    parser.add_argument("--nonlocal-gaussian-mean", type=str, default=None,
+                        help="Set the mean of the Gaussian prior over parameters of the nonlocal model "
+                             "to something other than 0 (format: a weight file)")
+    parser.add_argument("--nonlocal-gaussian-variance", type=float, default=1.0,
+                        help="Variance of the Gaussian prior over parameters of the nonlocal model")
     parser.add_argument("--max-temperature", type=float, default=0.0,
                         help="Annealing / Entropy regularisation")
     parser.add_argument("--min-temperature", type=float, default=0.0,
@@ -688,6 +695,20 @@ def decode_and_eval(segments: 'list[SegmentMetaData]', args, joint_model: ModelV
     return bleu
 
 
+def get_prior_mean_and_variance(model: ModelView, fnames: list,
+                                local_prior: GaussianPrior, nonlocal_prior: GaussianPrior):
+    mean = []
+    var = []
+    for name in fnames:
+        if model.is_local(name):
+            mean.append(local_prior.mean(name))
+            var.append(local_prior.var())
+        else:
+            mean.append(nonlocal_prior.mean(name))
+            var.append(nonlocal_prior.var())
+    return np.array(mean, dtype=ptypes.weight), np.array(var, dtype=ptypes.weight)
+
+
 def core(args):
 
     workspace = make_dirs(args)
@@ -714,11 +735,17 @@ def core(args):
     logging.info('Joint view:\n%s', joint_model)
     logging.info('Conditional view:\n%s', conditional_model)
 
-    if args.gaussian_mean:
-        gaussian_prior = AsymmetricGuassianPrior(mean=pipeline.read_weights(args.gaussian_mean), var=args.gaussian_variance)
+    if args.local_gaussian_mean:
+        local_gaussian_prior = AsymmetricGuassianPrior(mean=pipeline.read_weights(args.local_gaussian_mean),
+                                                       var=args.local_gaussian_variance)
     else:
-        gaussian_prior = SymmetricGuassianPrior(mean=0.0, var=args.gaussian_variance)
+        local_gaussian_prior = SymmetricGuassianPrior(mean=0.0, var=args.local_gaussian_variance)
 
+    if args.nonlocal_gaussian_mean:
+        nonlocal_gaussian_prior = AsymmetricGuassianPrior(mean=pipeline.read_weights(args.nonlocal_gaussian_mean),
+                                                          var=args.nonlocal_gaussian_variance)
+    else:
+        nonlocal_gaussian_prior = SymmetricGuassianPrior(mean=0.0, var=args.nonlocal_gaussian_variance)
 
     # make factorisations
     # e.g. joint model contains lookup and stateless
@@ -743,9 +770,11 @@ def core(args):
     fnames = model.fnames()
     #dimensionality = len(fnames)  # TODO: Sparse SGD
     weights = np.array(list(model.weights().densify()), dtype=ptypes.weight)
-    prior_mean = gaussian_prior.mean_vector(fnames)
+    prior_mean, prior_var = get_prior_mean_and_variance(joint_model, fnames,
+                                                        local_gaussian_prior, nonlocal_gaussian_prior)
     logging.info('Parameters: %s', npvec2str(weights, fnames))
-    logging.info('Prior: variance=%s mean=(%s)', gaussian_prior.var(), npvec2str(prior_mean, fnames))
+    logging.info('Prior mean: %s', npvec2str(prior_mean, fnames))
+    logging.info('Prior var:  %s', npvec2str(prior_var, fnames))
     dimensionality = len(weights)
     avg = np.zeros(dimensionality, dtype=ptypes.weight)
     learning_rate = args.learning_rate
@@ -800,7 +829,7 @@ def core(args):
                 batch_coeff = float(len(batch)) / len(training)
                 # The gradient of the prior with respect to component k is: - (w_k - mean_k) / var
                 # we also normalise for the importance of the batch
-                prior_gradient = - (weights - prior_mean) / gaussian_prior.var() * batch_coeff
+                prior_gradient = - (weights - prior_mean) / prior_var * batch_coeff
                 # The gradient of the objective function decomposes as the gradient of the (log) likelihood plus
                 # the gradient of the (log) prior
                 gradient_vec = likelihood_gradient + prior_gradient

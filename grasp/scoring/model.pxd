@@ -42,8 +42,14 @@ cdef class ModelView(ModelContainer):
     cdef:
         ModelContainer _local
         ModelContainer _nonlocal
+        set _local_names
+        set _nonlocal_names
 
     cpdef FComponents merge(self, FComponents local_comps, FComponents nonlocal_comps)
 
     cpdef ModelContainer local_model(self)
     cpdef ModelContainer nonlocal_model(self)
+
+    cpdef bint is_local(self, str name)
+
+    cpdef bint is_nonlocal(self, str name)

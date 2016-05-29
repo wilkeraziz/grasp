@@ -1,5 +1,6 @@
 import numpy as np
 cimport numpy as np
+from grasp.ptypes cimport weight_t
 import grasp.ptypes as ptypes
 
 
@@ -45,3 +46,4 @@ cdef class AsymmetricGuassianPrior(GaussianPrior):
 
     cpdef weight_t[::1] mean_vector(self, keys):
         return np.array([self.mean(key) for key in keys], dtype=ptypes.weight)
+

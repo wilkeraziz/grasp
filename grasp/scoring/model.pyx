@@ -153,21 +153,30 @@ cdef class ModelView(ModelContainer):
             list local_extractors = []
             list nonlocal_extractors = []
             Extractor extractor
+            set all_local_names = set()
+            set all_nonlocal_names = set()
         for extractor in extractors:
             if extractor.name in local_names:  # user wants this to be local
                 local_extractors.append(extractor)
+                all_local_names.update(extractor.fnames(wmap.keys()))
             elif extractor.name in nonlocal_names:  # user wants this to be nonlocal
                 nonlocal_extractors.append(extractor)
+                all_nonlocal_names.update(extractor.fnames(wmap.keys()))
             else:  # user accepts default behaviour
                 if isinstance(extractor, TableLookup):  # this is local
                     local_extractors.append(extractor)
+                    all_local_names.update(extractor.fnames(wmap.keys()))
                 elif isinstance(extractor, Stateless):  # this is local
                     local_extractors.append(extractor)
+                    all_local_names.update(extractor.fnames(wmap.keys()))
                 else:  # Stateful extractors are nonlocal by default
                     nonlocal_extractors.append(extractor)
+                    all_nonlocal_names.update(extractor.fnames(wmap.keys()))
 
         self._local = ModelContainer(wmap, local_extractors)
         self._nonlocal = ModelContainer(wmap, nonlocal_extractors)
+        self._local_names = all_local_names
+        self._nonlocal_names = all_nonlocal_names
 
     def __getstate__(self):
         return super(ModelView, self).__getstate__(), {'local': self._local, 'nonlocal': self._nonlocal}
@@ -194,6 +203,12 @@ cdef class ModelView(ModelContainer):
         for i in range(len(extractors)):  # this the correct order!
             ordered[i] = name_to_comp[extractors[i].name]
         return FComponents(ordered)
+
+    cpdef bint is_local(self, str name):
+        return name in self._local_names
+
+    cpdef bint is_nonlocal(self, str name):
+        return name in self._nonlocal_names
 
     cpdef ModelContainer local_model(self):
         return self._local
