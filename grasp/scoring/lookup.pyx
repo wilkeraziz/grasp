@@ -14,22 +14,28 @@ CDEC_DEFAULT = 'Glue PassThrough IsSingletonF IsSingletonFE EgivenFCoherent Samp
 
 cdef class NamedFeature(TableLookup):
 
-    def __init__(self, int uid, str name, default=0.0):
+    def __init__(self, int uid, str name, str fkey='', default=0.0):
         super(NamedFeature, self).__init__(uid, name)
         self._default = default
+        if not fkey:
+            self._fkey = name
+        else:
+            self._fkey = fkey
 
     def __repr__(self):
-        return '{0}(uid={1}, name={2}, default={3})'.format(NamedFeature.__name__,
+        return '{0}(uid={1}, name={2}, fkey={3}, default={4})'.format(NamedFeature.__name__,
                                                                        repr(self.id),
                                                                        repr(self.name),
+                                                                       repr(self._fkey),
                                                                        repr(self._default))
 
     def __getstate__(self):
-        return super(NamedFeature,self).__getstate__(), {'default': self._default}
+        return super(NamedFeature,self).__getstate__(), {'default': self._default, 'fkey': self._fkey}
 
     def __setstate__(self, state):
         superstate, selfstate = state
         self._default = selfstate['default']
+        self._fkey = selfstate['fkey']
         super(NamedFeature,self).__setstate__(superstate)
 
     cpdef tuple fnames(self, wkeys):
@@ -50,7 +56,7 @@ cdef class NamedFeature(TableLookup):
         :param context: a state
         :returns: weight
         """
-        return FValue(rule.fvalue(self.name, self._default))
+        return FValue(rule.fvalue(self._fkey, self._default))
 
     cpdef FRepr constant(self, weight_t value):
         return FValue(value)
@@ -58,18 +64,22 @@ cdef class NamedFeature(TableLookup):
     @classmethod
     def construct(cls, int uid, str name, str cfgstr):
         cdef weight_t default = 0.0
+        cdef str fkey = name
+        cfgstr, value = re_key_value('key', cfgstr, optional=True)
+        if value:
+            fkey = value
         cfgstr, value = re_key_value('default', cfgstr, optional=True)
         if value:
             default = float(value)
-        return NamedFeature(uid, name, default)
+        return NamedFeature(uid, name, fkey, default)
 
     @staticmethod
     def help():
-        return "# A named feature from the rule's feature map. Use default=float to set a default value."
+        return "# A named feature from the rule's feature map. Use default=float to set a default value"
 
     @staticmethod
     def example():
-        return 'NamedFeature name=Glue default=0.0'
+        return 'NamedFeature name=GlueFeature key=Glue default=0.0'
 
 
 cdef class RuleTable(TableLookup):

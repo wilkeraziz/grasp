@@ -138,11 +138,11 @@ def get_factorised_models(model: Model, path='') -> (ModelView, ModelView):
                 elif changes is None:
                     raise ValueError('Syntax error in factorisation file')
                 elif line.startswith('local='):
-                    name = line.replace('local=', '', 1)
-                    changes['local'].add(name)
+                    names = line.replace('local=', '', 1)
+                    changes['local'].update(names.split())
                 elif line.startswith('nonlocal='):
-                    name = line.replace('nonlocal=', '', 1)
-                    changes['nonlocal'].add(name)
+                    names = line.replace('nonlocal=', '', 1)
+                    changes['nonlocal'].update(names.split())
 
     joint_model = ModelView(model.wmap, model.extractors(),
                             local_names=joint_changes['local'],

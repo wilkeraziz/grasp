@@ -545,12 +545,10 @@ def sample_derivations(seg, args, staticdir, forest_path, components_path,
     result.forest = forest
     result.iidsamples = iidsamples
     result.d_groups = d_groups
-    if mean is None:
-        result.expected_fvec = expected_fvec
-    else:
+    if args.impsamp_estimates and mean is not None:
         result.expected_fvec = mean
-        print('E', expected_fvec)
-        print('M', mean)
+    else:
+        result.expected_fvec = expected_fvec
     result.f_vectors = f_vectors
     result.posterior = posterior
     result.entropy = -H
