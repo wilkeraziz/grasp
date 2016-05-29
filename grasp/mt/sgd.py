@@ -62,7 +62,7 @@ from grasp.cfg.srule import OutputView
 from grasp.alg.deduction import NederhofParser, EarleyParser, EarleyRescorer
 from grasp.alg.inference import viterbi_derivation, AncestralSampler
 from grasp.alg.value import acyclic_value_recursion, acyclic_reversed_value_recursion, compute_edge_expectation
-from grasp.alg.rescoring2 import SlicedRescoring
+
 from grasp.alg.rescoring import stateless_rescoring
 from grasp.alg.chain import apply_filters, group_by_identity, group_by_projection
 from grasp.alg.expectation import expected_components
@@ -70,6 +70,7 @@ from grasp.alg.expectation import expected_components
 from grasp.scoring.frepr import FComponents
 from grasp.scoring.model import ModelView
 from grasp.scoring.parameter import SymmetricGuassianPrior, AsymmetricGuassianPrior
+from grasp.scoring.fvecfunc import derivation_fvec
 
 from grasp.io.results import save_mcmc_yields, save_mcmc_derivations, save_markov_chain
 
@@ -213,6 +214,8 @@ def cmd_slice(group):
     group.add_argument('--within',
                        type=str, default='importance', choices=['exact', 'importance', 'uniform', 'cimportance'],
                        help='how to sample within the slice')
+    group.add_argument('--impsamp-estimates', action='store_true',
+                       help='Use the importance sampling estimate of the expected feature vectors')
     group.add_argument('--slice-size',
                        type=int, default=100, metavar='K',
                        help='number of samples from slice (for importance and uniform sampling)')
@@ -443,31 +446,35 @@ def sample_derivations(seg, args, staticdir, forest_path, components_path,
     lfunc = TableLookupFunction(np.array([model.local_model().score(fcomp)
                                           for fcomp in local_components], dtype=ptypes.weight))
 
+    from grasp.alg.rescoring2 import SlicedRescoring
+    from grasp.alg.rescoring2 import LocalDistribution
+    from grasp.scoring.fvecfunc import TableLookupFVecFunction
+    from grasp.alg.rescoring2 import SampleReturn
+
+    local_fvecfunc = TableLookupFVecFunction(local_components,
+                                             model.local_model().constant(semiring.inside.one),
+                                             semiring.inside)
+
     if not model.nonlocal_model():  # with local models only we can do ancestral sampling (or even exact computations)
+        logging.info('[%d] Ancestral sampling from f(d) = l(d)', seg.id)
         sampler = AncestralSampler(forest, tsort, lfunc)
         raw = sampler.sample(sample_size)
 
-        # TODO: create code to produce SampleReturn objects and reconstruct components
-        from grasp.alg.rescoring import SampleReturn
         iidsamples = [None] * len(raw)
         for i, edges in enumerate(raw):
-            score = lfunc.reduce(semiring.inside.times, edges)
-            sample = SampleReturn(edges, score, FComponents([]))
+            sample = SampleReturn(edges, lfunc.reduce(semiring.inside.times, edges), local_fvecfunc.reduce(edges))
             iidsamples[i] = sample
+
+        mean = None
 
     else:  # with nonlocal models we need slice sampling
 
         # 3. Sample from f(d) = n(d) * l(d)
-        logging.debug('[%d] Sampling from f(d) = n(d) * l(d)', seg.id)
+        logging.info('[%d] Slice sampling from f(d) = n(d) * l(d)', seg.id)
 
         goal_maker = GoalRuleMaker(args.goal, args.start, n=n_top)  # 2 or 3
-
-        slice_sampler = SlicedRescoring(forest,
-                                        lfunc,
-                                        tsort,
-                                        TableLookupScorer(model.nonlocal_model().lookup),
-                                        StatelessScorer(model.nonlocal_model().stateless),
-                                        StatefulScorer(model.nonlocal_model().stateful),
+        slice_sampler = SlicedRescoring(model,
+                                        LocalDistribution(forest, tsort, lfunc, local_fvecfunc),
                                         semiring.inside,
                                         goal_maker.get_oview(),
                                         OutputView(make_dead_srule()))
@@ -479,10 +486,9 @@ def sample_derivations(seg, args, staticdir, forest_path, components_path,
         gamma_scale_type = args.gamma_scale[0]
         gamma_scale_parameter = float(args.gamma_scale[1])
 
-
         t0 = time()
         # here samples are represented as sequences of edge ids
-        d0, markov_chain = slice_sampler.sample(n_samples=sample_size,
+        d0, markov_chain, mean_chain = slice_sampler.sample(n_samples=sample_size,
                                                 batch_size=args.slice_size,
                                                 within=args.within,
                                                 initial=args.initial,
@@ -499,6 +505,12 @@ def sample_derivations(seg, args, staticdir, forest_path, components_path,
                                 lag=args.lag)
         shuffle(iidsamples)  # make it look like MC samples
 
+        mean = model.constant(semiring.prob.zero)
+        for fvec in mean_chain:
+            mean = mean.hadamard(fvec, semiring.prob.plus)
+        mean = mean.prod(1.0/len(mean_chain))
+
+
     n_samples = len(iidsamples)
 
     # 4. Complete feature vectors and compute expectation
@@ -510,18 +522,10 @@ def sample_derivations(seg, args, staticdir, forest_path, components_path,
 
     for i, d_group in enumerate(d_groups):
         derivation = d_group.key
-        # print(derivation)
-        # reconstruct components
-        # TODO: create code to reconstruct components
-        local_vec = model.local_model().constant(semiring.inside.one)
-        for e in derivation.edges:
-            # print('e_%d' % e, coarse_components[e])
-            local_vec = local_vec.hadamard(local_components[e], semiring.inside.times)
-        # print('D', comps)
-
+        ####local_vec = derivation_fvec(model.local_model(), semiring.inside, local_components, derivation.edges)
         # complete components
         # note that here we are updating derivation.components!
-        derivation.components = model.merge(local_vec, derivation.components)
+        ####derivation.components = model.merge(local_vec, derivation.components)
         # print('D', derivation.components)
         # incorporate sample frequency
         prob = float(d_group.count) / n_samples
@@ -534,7 +538,12 @@ def sample_derivations(seg, args, staticdir, forest_path, components_path,
     result.forest = forest
     result.iidsamples = iidsamples
     result.d_groups = d_groups
-    result.expected_fvec = expected_fvec
+    if mean is None:
+        result.expected_fvec = expected_fvec
+    else:
+        result.expected_fvec = mean
+        print('E', expected_fvec)
+        print('M', mean)
     result.f_vectors = f_vectors
     result.posterior = posterior
     result.entropy = -H
