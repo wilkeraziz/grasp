@@ -5,6 +5,7 @@ import grasp.ptypes as ptypes
 from grasp.semiring.operator cimport ProbPlus, ProbTimes
 from grasp.semiring.operator cimport LogProbPlus, LogProbTimes
 from grasp.semiring.operator cimport ViterbiPlus, ViterbiTimes
+cimport libc.math as cppmath
 
 cdef class Semiring:
 
@@ -69,10 +70,10 @@ cdef class LogProb(Semiring):
         super(LogProb, self).__init__(LogProbPlus(), LogProbTimes(), LOG=True)
 
     cpdef weight_t as_real(self, weight_t x):
-        return np.exp(x)
+        return cppmath.exp(x)
 
     cpdef weight_t from_real(self, weight_t x):
-        return np.log(x)
+        return cppmath.log(x)
 
     cpdef bint gt(self, weight_t x, weight_t y):
         return x > y
@@ -87,10 +88,10 @@ cdef class Viterbi(Semiring):
         super(Viterbi, self).__init__(ViterbiPlus(), ViterbiTimes(), LOG=True)
 
     cpdef weight_t as_real(self, weight_t x):
-        return np.exp(x)
+        return cppmath.exp(x)
 
     cpdef weight_t from_real(self, weight_t x):
-        return np.log(x)
+        return cppmath.log(x)
 
     cpdef bint gt(self, weight_t x, weight_t y):
         return x > y

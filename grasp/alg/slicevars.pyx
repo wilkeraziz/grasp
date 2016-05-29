@@ -337,6 +337,20 @@ cdef class SliceVariables:
         raise NotImplementedError()
 
 
+cdef class Assignment:
+
+    cdef public weight_t u
+    cdef public object parameter
+
+    def __init__(self):
+        self.u = -1
+        self.parameter = None
+
+    cdef bint is_defined(self):
+        return self.u >= 0
+
+
+
 cdef class SpanSliceVariables(SliceVariables):
     """
     A general slice variable.
@@ -409,7 +423,6 @@ cdef class SpanSliceVariables(SliceVariables):
             raise ValueError('Variable outside the slice: s=%s theta=%s u=%s param=%s' % (key, theta,
                                                                                           assignment.u,
                                                                                           assignment.parameter))
-            return -999999
         else:
             return 0.0
 
@@ -422,7 +435,6 @@ cdef class SpanSliceVariables(SliceVariables):
             raise ValueError('Variable outside the slice: s=%s theta=%s u=%s param=%s' % (key, theta,
                                                                                           assignment.u,
                                                                                           assignment.parameter))
-            return -999999
         else:
             return -np.infty
 

@@ -8,13 +8,14 @@ We also have an implementation which is robust to the presence of cycles.
 :Authors: - Wilker Aziz
 """
 
-from grasp.ptypes cimport weight_t, id_t
+from grasp.ptypes cimport weight_t, id_t, boolean_t
 from grasp.formal.hg cimport Hypergraph
 from grasp.formal.topsort cimport AcyclicTopSortTable, RobustTopSortTable
 from grasp.formal.wfunc cimport HypergraphLookupFunction
 
 import numpy as np
 cimport numpy as np
+cimport cython
 
 
 cdef weight_t node_value(Hypergraph forest,
@@ -27,14 +28,17 @@ cdef weight_t node_value(Hypergraph forest,
         return semiring.one if forest.is_terminal(parent) else semiring.zero
 
     cdef:
-        weight_t[::1] partials = semiring.zeros(forest.n_incoming(parent))
-        size_t i = 0
         id_t e, child
-    for e in forest.iterbs(parent):
-        partials[i] = semiring.times(omega.value(e),
-                                     semiring.times.reduce([values[child] for child in forest.tail(e)]))
-        i += 1
-    return semiring.plus.reduce(partials)
+        weight_t value = semiring.zero
+        weight_t value_e
+
+    with cython.boundscheck(False):
+        for e in forest.iterbs(parent):
+            value_e = omega.value(e)
+            for child in forest.tail(e):
+                value_e = semiring.times.evaluate(value_e, values[child])
+            value = semiring.plus.evaluate(value, value_e)
+    return value
 
 
 cpdef weight_t[::1] acyclic_value_recursion(Hypergraph forest,
@@ -63,8 +67,72 @@ cpdef weight_t[::1] acyclic_value_recursion(Hypergraph forest,
         weight_t[::1] partials
 
     # we go bottom-up
-    for parent in tsort.iternodes(reverse=False, skip=1):  # skipping useless nodes in level 0
-        values[parent] = node_value(forest, omega, semiring, values, parent)
+    with cython.boundscheck(False):
+        for parent in tsort.iternodes(reverse=False, skip=1):  # skipping useless nodes in level 0
+            values[parent] = node_value(forest, omega, semiring, values, parent)
+
+    return values
+
+
+cdef weight_t sliced_node_value(Hypergraph forest,
+                                boolean_t[::1] mask_nodes,
+                                boolean_t[::1] mask_edges,
+                                WeightFunction omega,
+                                Semiring semiring,
+                                weight_t[::1] values,
+                                id_t parent):
+
+    if forest.is_source(parent):
+        return semiring.one if forest.is_terminal(parent) else semiring.zero
+
+    cdef:
+        id_t e, child
+        weight_t value = semiring.zero
+        weight_t value_e
+
+    with cython.boundscheck(False):
+        for e in forest.iterbs(parent):
+            if mask_edges[e]:  # check whether the edge is still in the program
+                value_e = omega.value(e)
+                for child in forest.tail(e):
+                    if mask_nodes[child]:  # check whether the node is still in the program
+                        value_e = semiring.times.evaluate(value_e, values[child])
+                    else:
+                        value_e = semiring.zero
+                        break
+                value = semiring.plus.evaluate(value, value_e)
+    return value
+
+
+cpdef weight_t[::1] sliced_acyclic_value_recursion(Hypergraph forest,
+                                                   boolean_t[::1] mask_nodes,
+                                                   boolean_t[::1] mask_edges,
+                                                   AcyclicTopSortTable tsort,
+                                                   Semiring semiring,
+                                                   WeightFunction omega):
+    """
+    Returns items' values in a given semiring.
+    This is a bottom-up pass through the forest which runs in O(|forest|).
+    :param forest: an acyclic hypergraph-like object.
+    :param tsort: a TopSortTable object.
+    :param semiring: must define zero, one, sum and times.
+    :param omega: a function that weighs edges/rules (defaults to the edge's weight).
+        You might want to use this to, for instance, convert between semirings.
+    :return:
+    """
+
+    cdef:
+        weight_t[::1] values = semiring.zeros(forest.n_nodes())
+        size_t i
+        id_t parent, child, e
+        weight_t[::1] partials
+
+    # we go bottom-up
+    with cython.boundscheck(False):
+        for parent in tsort.iternodes(reverse=False, skip=1):  # skipping useless nodes in level 0
+            if not mask_nodes[parent]:  # this nodes was pruned, thus we assign it zero weight
+                continue
+            values[parent] = sliced_node_value(forest, mask_nodes, mask_edges, omega, semiring, values, parent)
 
     return values
 
@@ -101,13 +169,13 @@ cpdef weight_t[::1] acyclic_reversed_value_recursion(Hypergraph forest,
         for e in forest.iterbs(parent):
             for child in forest.tail(e):
                 # start from parent's outside and the edge's weight
-                partial = semiring.times(omega.value(e), reversed_values[parent])
+                partial = semiring.times.evaluate(omega.value(e), reversed_values[parent])
                 for sister in forest.tail(e):
                     if child != sister:
                         # incorporate inside of sister: note that every sister participates in the tail, thus semiring.times
-                        partial = semiring.times(partial, values[sister])
+                        partial = semiring.times.evaluate(partial, values[sister])
                 # update child's outside: note that edges contribute with alternative paths, thus we use semiring.plus
-                reversed_values[child] = semiring.plus(reversed_values[child], partial)
+                reversed_values[child] = semiring.plus.evaluate(reversed_values[child], partial)
 
     return reversed_values
 
@@ -222,6 +290,39 @@ cpdef weight_t[::1] compute_edge_values(Hypergraph forest,
             edge_values[e] = w
 
     return edge_values
+
+
+cpdef weight_t[::1] sliced_edge_values(Hypergraph forest,
+                                        boolean_t[::1] mask_nodes,
+                                        boolean_t[::1] mask_edges,
+                                        Semiring semiring,
+                                        weight_t[::1] node_values,
+                                        WeightFunction omega,
+                                        bint normalise=False):
+    cdef:
+        weight_t[::1] edge_values = semiring.zeros(forest.n_edges())
+        id_t e, child
+        weight_t tail_value, w
+
+    with cython.boundscheck(False):
+        for e in range(forest.n_edges()):
+            if not mask_nodes[forest.head(e)]:  # if the head has been pruned, the edge must be pruned
+                continue
+            if not mask_edges[e]:  # pruned edge gets 0 weight
+                continue
+            w = omega.value(e)
+            for child in forest.tail(e):
+                if not mask_nodes[child]:  # if a child has been pruned, the edge must be pruned
+                    w = semiring.zero
+                    break
+                else:
+                    w = semiring.times.evaluate(w, node_values[child])
+            if normalise:
+                edge_values[e] = semiring.divide(w, node_values[forest.head(e)])
+            else:
+                edge_values[e] = w
+    return edge_values
+
 
 
 cpdef weight_t[::1] compute_edge_expectation(Hypergraph forest,

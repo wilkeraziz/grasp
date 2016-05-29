@@ -10,9 +10,57 @@ from libcpp.vector cimport vector
 import grasp.ptypes as ptypes
 import grasp.semiring as semiring
 from grasp.formal.topsort cimport AcyclicTopSortTable, RobustTopSortTable
-from grasp.formal.wfunc cimport HypergraphLookupFunction, TableLookupFunction, ThresholdFunction
+from grasp.formal.wfunc cimport HypergraphLookupFunction, TableLookupFunction, ThresholdFunction, BooleanFunction
 from grasp.alg.value cimport LazyEdgeValues, acyclic_value_recursion, robust_value_recursion, compute_edge_values
-from grasp.ptypes cimport weight_t, id_t
+from grasp.ptypes cimport weight_t, id_t, boolean_t
+from grasp.alg.value cimport sliced_acyclic_value_recursion, sliced_edge_values
+
+
+cpdef tuple sliced_sample(Hypergraph forest,
+                          boolean_t[::1] mask_nodes,
+                          boolean_t[::1] mask_edges,
+                   id_t root,
+                   Semiring semiring,
+                   WeightFunction omega):
+    """
+    Samples (in a generalised sense) a derivation from the forest.
+    The outcome depends on the semiring. For instance, with semiring.viterbi we get the 1-best,
+    with semiring.inside we get an independent sample.
+
+    :param forest: a hypergraph
+    :param root: its root
+    :param semiring: a numerical semiring
+    :param omega: the value (in the given semiring) of edges in the forest
+    :return: a sequence of edges
+    """
+
+    cdef:
+        vector[id_t] derivation
+        id_t parent, child, e
+        size_t i
+        queue[id_t] Q
+        list bs
+    Q.push(root)
+    while not Q.empty():
+        parent = Q.front()
+        Q.pop()
+        if forest.is_source(parent):
+            continue
+        # clean BS
+        bs = [e for e in forest.iterbs(parent) if mask_edges[e]]
+
+        if not bs:
+            raise ValueError('A node has an empty BS in the slice')
+
+        i = semiring.plus.choice(np.array([omega.value(e) for e in bs],
+                                          dtype=ptypes.weight))
+        e = bs[i]
+        derivation.push_back(e)
+        for child in forest.tail(e):
+            if not mask_nodes[child]:
+                raise ValueError('I have selected a node outside the slice')
+            Q.push(child)
+    return tuple(derivation)
 
 
 cpdef tuple sample(Hypergraph forest,
@@ -262,3 +310,103 @@ cdef class AncestralSampler:
 
     cpdef int n_derivations(self):
         return self._counter.n_derivations()
+
+
+cdef class SlicedAncestralSampler:
+
+    def __init__(self,
+                 Hypergraph forest,
+                 TopSortTable tsort,
+                 WeightFunction omega,
+                 boolean_t[::1] mask_nodes,
+                 boolean_t[::1] mask_edges):
+        self._forest = forest
+        self._tsort = tsort
+        self._root = self._tsort.root()
+        if not mask_nodes[self._root]:
+            raise ValueError('You cannot prune the root of the forest.')
+        self._mask_nodes = mask_nodes
+        self._mask_edges = mask_edges
+        self._omega = omega
+        self._counts_computed = False
+        if isinstance(tsort, AcyclicTopSortTable):
+            self._node_values = sliced_acyclic_value_recursion(forest,
+                                                               mask_nodes,
+                                                               mask_edges,
+                                                               <AcyclicTopSortTable>tsort,
+                                                               semiring.inside,
+                                                               omega)
+        else:
+            raise ValueError('I do not yet support cyclic hypergraphs: implement a sliced robust value recursion.')
+
+        self._edge_values = TableLookupFunction(sliced_edge_values(self._forest,
+                                               mask_nodes,
+                                               mask_edges,
+                                               semiring.inside,
+                                               self._node_values,
+                                               self._omega,
+                                               normalise=not semiring.inside.idempotent))
+
+    property Z:
+        def __get__(self):
+            """Return the partition function."""
+            return self._node_values[self._root]
+
+    cpdef list sample(self, size_t n):
+        """Draw samples from the inverted CDF."""
+        cdef list derivations = [None] * n
+        cdef size_t i
+        for i in range(n):
+            derivations[i] = sliced_sample(self._forest, self._mask_nodes, self._mask_edges,
+                                           self._root, semiring.inside, self._edge_values)
+        return derivations
+
+    cpdef list sample_without_replacement(self, size_t n, int attempts, set seen=set()):
+        """
+        Sample without replacement - by rejection sampling.
+
+        :param n: number of samples
+        :param batch: number of samples per trial
+        :param attempts: maximal number of attempts (use 0 or less for unbounded -- be careful with it!)
+        :param seen: exclude these derivations
+        :return:
+        """
+        cdef list derivations = []
+        cdef tuple d
+        cdef size_t my_n = 0
+        cdef size_t i = 0
+        while True:  # implement "no replacement" by rejection sampling
+            i += 1
+            d = sliced_sample(self._forest, self._mask_nodes, self._mask_edges,
+                              self._root, semiring.inside, self._edge_values)
+            my_n = len(seen)
+            seen.add(d)
+            if len(seen) > my_n:  # accept if new
+                my_n += 1
+                derivations.append(d)
+
+            if my_n == n:
+                break
+
+            if attempts > 0 and i == attempts:
+                break
+
+        return derivations
+
+    cpdef weight_t prob(self, tuple d):
+        cdef weight_t w = self._omega.reduce(semiring.inside.times, d)
+        return semiring.inside.as_real(semiring.inside.divide(w, self.Z))
+
+    cpdef int n_derivations(self):
+        cdef WeightFunction omega
+        if not self._counts_computed:
+            # this emulates the Counting semiring
+            omega = BooleanFunction(self._mask_edges, semiring.inside.zero, semiring.inside.one)
+            self._count_values = sliced_acyclic_value_recursion(self._forest,
+                                                                self._mask_nodes,
+                                                                self._mask_edges,
+                                                                <AcyclicTopSortTable>self._tsort,
+                                                                semiring.inside,
+                                                                omega)
+            self._counts_computed = True
+        return semiring.inside.as_real(self._count_values[self._root])

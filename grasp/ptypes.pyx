@@ -7,3 +7,5 @@ Primitive types: constructors.
 
 import numpy as np
 weight = np.double
+boolean = np.int8
+status = np.int8

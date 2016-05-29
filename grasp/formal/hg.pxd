@@ -3,7 +3,7 @@ from grasp.cfg.rule cimport Rule
 from grasp.ptypes cimport id_t, weight_t
 
 
-ctypedef tuple tail_t
+ctypedef tuple tail_t  # TODO: change to id_t[::1]
 
 cdef class Node:
 
@@ -21,7 +21,7 @@ cdef class Hypergraph:
 
     cdef list _nodes
     cdef list _edges
-    cdef list _bs
+    cdef list _bs  # TODO: change to id_t[::1]
     cdef list _fs
     cdef list _deps
 

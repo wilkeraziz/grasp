@@ -2,7 +2,8 @@ cimport numpy as np
 import numpy as np
 from grasp.ptypes cimport weight_t
 import grasp.ptypes as ptypes
-
+cimport libc.math as cppmath
+cimport cython
 
 cdef class UnaryOperator:
 
@@ -71,7 +72,6 @@ cdef class Times(BinaryOperator):
         self.power = power
 
 
-
 cdef class ProbPower(BinaryOperator):
 
     def __init__(self):
@@ -114,7 +114,7 @@ cdef class ProbTimes(Times):
         super(ProbTimes, self).__init__(1.0, ProbInverse(), ProbPower())
 
     cdef weight_t evaluate(self, weight_t a, weight_t b):
-        return np.multiply(a, b)
+        return a * b
 
     cpdef weight_t reduce(self, sequence) except *:
         return np.multiply.reduce(sequence)
@@ -126,7 +126,7 @@ cdef class LogProbTimes(Times):
         super(LogProbTimes, self).__init__(0.0, LogProbInverse(), LogProbPower())
 
     cdef weight_t evaluate(self, weight_t a, weight_t b):
-        return np.add(a, b)
+        return a + b
 
     cpdef weight_t reduce(self, sequence) except *:
         return np.add.reduce(sequence)
@@ -138,7 +138,7 @@ cdef class ViterbiTimes(Times):
         super(ViterbiTimes, self).__init__(0.0, LogProbInverse(), LogProbPower())
 
     cdef weight_t evaluate(self, weight_t a, weight_t b):
-        return np.add(a, b)
+        return a + b
 
     cpdef weight_t reduce(self, sequence) except *:
         return np.add.reduce(sequence)
@@ -150,7 +150,7 @@ cdef class ProbPlus(Plus):
         super(ProbPlus, self).__init__(0.0, False)
 
     cdef weight_t evaluate(self, weight_t a, weight_t b):
-        return np.add(a, b)
+        return a + b
 
     cpdef weight_t reduce(self, sequence) except *:
         return np.add.reduce(sequence)
@@ -159,14 +159,14 @@ cdef class ProbPlus(Plus):
         cdef:
             weight_t threshold = np.random.uniform()
             weight_t acc = 0
-            weight_t p
-            size_t i = 0
-        for p in values:
-            acc += p
-            if acc > threshold:
-                return i
-            i += 1
-        return i - 1  # last
+            size_t i
+            size_t n = values.shape[0]
+        with cython.boundscheck(False), cython.nonecheck(False):
+            for i in range(n):
+                acc += values[i]
+                if acc > threshold:
+                    return i
+        return n - 1
 
 
 cdef class LogProbPlus(Plus):
@@ -175,6 +175,18 @@ cdef class LogProbPlus(Plus):
         super(LogProbPlus, self).__init__(-np.inf, False)
 
     cdef weight_t evaluate(self, weight_t a, weight_t b):
+        """
+        Here we do
+            cppmath.log(cppmath.exp(a) + cppmath.exp(b))
+        or using the identity log(a + b) = log(a) + log(1 + b/a)
+            a + cppmath.log1p(cppmath.exp(b - a))
+        or using numpy
+            np.logaddexp(a, b)
+
+        :param a:
+        :param b:
+        :return:
+        """
         return np.logaddexp(a, b)
 
     cpdef weight_t reduce(self, sequence) except *:
@@ -188,14 +200,14 @@ cdef class LogProbPlus(Plus):
             weight_t threshold = np.random.uniform()
             weight_t[::1] probs = np.exp(values)
             weight_t acc = 0
-            weight_t p
             size_t i = 0
-        for p in probs:
-            acc += p
-            if acc > threshold:
-                return i
-            i += 1
-        return i - 1  # last
+            size_t n = probs.shape[0]
+        with cython.boundscheck(False), cython.nonecheck(False):
+            for i in range(n):
+                acc += probs[i]
+                if acc > threshold:
+                    return i
+        return n - 1  # last
 
 
 cdef class ViterbiPlus(Plus):
@@ -204,7 +216,7 @@ cdef class ViterbiPlus(Plus):
         super(ViterbiPlus, self).__init__(-np.inf, True)
 
     cdef weight_t evaluate(self, weight_t a, weight_t b):
-        return np.max([a, b])
+        return cppmath.fmax(a, b)
 
     cpdef weight_t reduce(self, sequence) except *:
         try:

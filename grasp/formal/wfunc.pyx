@@ -3,7 +3,7 @@
 :Authors: - Wilker Aziz
 """
 
-from grasp.ptypes cimport weight_t, id_t
+from grasp.ptypes cimport weight_t, id_t, boolean_t
 
 import numpy as np
 cimport numpy as np
@@ -89,6 +89,20 @@ cdef class TableLookupFunction(WeightFunction):
 
     def __repr__(self):
         return '%s(...)' % TableLookupFunction.__name__
+
+
+cdef class BooleanFunction(WeightFunction):
+
+    def __init__(self, boolean_t[::1] table, weight_t zero, weight_t one):
+        self.table = table
+        self.zero = zero
+        self.one = one
+
+    cpdef weight_t value(self, id_t e):
+        if self.table[e]:
+            return self.one
+        else:
+            return self.zero
 
 
 cdef class HypergraphLookupFunction(WeightFunction):

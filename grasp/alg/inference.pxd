@@ -6,7 +6,8 @@ from grasp.semiring._semiring cimport Semiring
 from grasp.formal.hg cimport Hypergraph
 from grasp.formal.topsort cimport TopSortTable
 from grasp.formal.wfunc cimport WeightFunction
-from grasp.ptypes cimport weight_t, id_t
+from grasp.formal.wfunc cimport TableLookupFunction
+from grasp.ptypes cimport weight_t, id_t, boolean_t
 
 
 cpdef tuple sample(Hypergraph forest,
@@ -76,6 +77,29 @@ cdef class AncestralSampler:
     cpdef list sample(self, size_t n)
 
     cpdef list sample_without_replacement(self, size_t n, size_t batch_size, int attempts, set seen=?)
+
+    cpdef weight_t prob(self, tuple d)
+
+    cpdef int n_derivations(self)
+
+
+cdef class SlicedAncestralSampler:
+
+    cdef:
+        Hypergraph _forest
+        TopSortTable _tsort
+        WeightFunction _omega
+        weight_t[::1] _node_values
+        TableLookupFunction _edge_values
+        id_t _root
+        bint _counts_computed
+        weight_t[::1] _count_values
+        boolean_t[::1] _mask_nodes
+        boolean_t[::1] _mask_edges
+
+    cpdef list sample(self, size_t n)
+
+    cpdef list sample_without_replacement(self, size_t n, int attempts, set seen=?)
 
     cpdef weight_t prob(self, tuple d)
 

@@ -8,7 +8,7 @@ We also have an implementation which is robust to the presence of cycles.
 :Authors: - Wilker Aziz
 """
 
-from grasp.ptypes cimport weight_t, id_t
+from grasp.ptypes cimport weight_t, id_t, boolean_t
 from grasp.formal.hg cimport Hypergraph
 from grasp.formal.topsort cimport AcyclicTopSortTable, RobustTopSortTable
 from grasp.semiring._semiring cimport Semiring
@@ -32,6 +32,32 @@ cpdef weight_t[::1] acyclic_reversed_value_recursion(Hypergraph forest,
                                             Semiring semiring,
                                             weight_t[::1] values,
                                             WeightFunction omega=?)
+
+
+cdef weight_t sliced_node_value(Hypergraph forest,
+                                boolean_t[::1] mask_nodes,
+                                boolean_t[::1] mask_edges,
+                                WeightFunction omega,
+                                Semiring semiring,
+                                weight_t[::1] values,
+                                id_t parent)
+
+cpdef weight_t[::1] sliced_edge_values(Hypergraph forest,
+                                        boolean_t[::1] mask_nodes,
+                                        boolean_t[::1] mask_edges,
+                                        Semiring semiring,
+                                        weight_t[::1] node_values,
+                                        WeightFunction omega,
+                                        bint normalise=?)
+
+
+cpdef weight_t[::1] sliced_acyclic_value_recursion(Hypergraph forest,
+                                                   boolean_t[::1] mask_nodes,
+                                                   boolean_t[::1] mask_edges,
+                                                   AcyclicTopSortTable tsort,
+                                                   Semiring semiring,
+                                                   WeightFunction omega)
+
 
 cpdef weight_t[::1] robust_value_recursion(Hypergraph forest,
                                            RobustTopSortTable tsort,

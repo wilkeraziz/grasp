@@ -4,10 +4,11 @@ Weight function over edges and derivations.
 :Authors: - Wilker Aziz
 """
 
-from grasp.ptypes cimport weight_t, id_t
+from grasp.ptypes cimport weight_t, id_t, boolean_t
 from grasp.formal.hg cimport Hypergraph
 from grasp.semiring._semiring cimport Semiring
 from grasp.semiring.operator cimport BinaryOperator
+cimport numpy as np
 
 
 cdef class WeightFunction:
@@ -34,6 +35,13 @@ cdef class ReducedFunction(WeightFunction):
 cdef class TableLookupFunction(WeightFunction):
 
     cdef weight_t[::1] table
+
+
+cdef class BooleanFunction(WeightFunction):
+
+    cdef boolean_t[::1] table
+    cdef weight_t one
+    cdef weight_t zero
 
 
 cdef class HypergraphLookupFunction(WeightFunction):
