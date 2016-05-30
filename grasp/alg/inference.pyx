@@ -328,7 +328,7 @@ cdef class SlicedAncestralSampler:
         self._mask_nodes = mask_nodes
         self._mask_edges = mask_edges
         self._omega = omega
-        self._counts_computed = False
+        self._counts_computed = 0
         if isinstance(tsort, AcyclicTopSortTable):
             self._node_values = sliced_acyclic_value_recursion(forest,
                                                                mask_nodes,
@@ -399,14 +399,20 @@ cdef class SlicedAncestralSampler:
 
     cpdef int n_derivations(self):
         cdef WeightFunction omega
-        if not self._counts_computed:
+        if self._counts_computed == 0:
             # this emulates the Counting semiring
             omega = BooleanFunction(self._mask_edges, semiring.inside.zero, semiring.inside.one)
-            self._count_values = sliced_acyclic_value_recursion(self._forest,
-                                                                self._mask_nodes,
-                                                                self._mask_edges,
-                                                                <AcyclicTopSortTable>self._tsort,
-                                                                semiring.inside,
-                                                                omega)
-            self._counts_computed = True
-        return semiring.inside.as_real(self._count_values[self._root])
+            try:
+                self._count_values = sliced_acyclic_value_recursion(self._forest,
+                                                                    self._mask_nodes,
+                                                                    self._mask_edges,
+                                                                    <AcyclicTopSortTable>self._tsort,
+                                                                    semiring.inside,
+                                                                    omega)
+                self._counts_computed = 1
+            except:
+                self._counts_computed = -1  # error
+        if self._counts_computed == -1:
+            return -1
+        else:
+            return semiring.inside.as_real(self._count_values[self._root])

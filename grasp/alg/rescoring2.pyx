@@ -328,7 +328,8 @@ cdef class SlicedRescoring:
                  LocalDistribution local,
                  Semiring semiring,
                  Rule goal_rule,
-                 Rule dead_rule):
+                 Rule dead_rule,
+                 bint log_slice_size=False):
         """
         Here
             lfunc is l(d),
@@ -350,6 +351,7 @@ cdef class SlicedRescoring:
         self._semiring = semiring
         self._goal_rule = goal_rule
         self._dead_rule = dead_rule
+        self._log_slice_size = log_slice_size
 
         self._lookup = TableLookupScorer(model.nonlocal_model().lookup)
         self._stateless = StatelessScorer(model.nonlocal_model().stateless)
@@ -442,6 +444,7 @@ cdef class SlicedRescoring:
             id_t e
             tuple d, sampled_derivation
             size_t i, n
+            int slice_size
             weight_t fd
             FComponents nonlocal_comps, local_comps
             # sample from u(d)
@@ -450,8 +453,12 @@ cdef class SlicedRescoring:
                                                                     rslice.residual,
                                                                     rslice.selected_nodes,
                                                                     rslice.selected_edges)
-
-        #logging.info('[importance] Derivations in slice: %s', sampler.n_derivations())
+        if self._log_slice_size:
+            slice_size = sampler.n_derivations()
+            if slice_size >= 0:
+                logging.info('[importance] Derivations in slice: %s', slice_size)
+            else:
+                logging.info('[importance] Derivations in slice: too many', )
         if force:
             logging.debug(' [cimportance] Importance sampling %d candidates from S to against previous state', batch_size)
         else:

@@ -62,6 +62,7 @@ cdef class SlicedRescoring:
         TableLookupScorer _lookup
         StatelessScorer _stateless
         StatefulScorer _stateful
+        bint _log_slice_size
 
     cdef weight_t _nfunc(self, Hypergraph forest, tuple derivation)
 

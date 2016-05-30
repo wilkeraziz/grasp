@@ -92,7 +92,7 @@ cdef class SlicedAncestralSampler:
         weight_t[::1] _node_values
         TableLookupFunction _edge_values
         id_t _root
-        bint _counts_computed
+        int _counts_computed
         weight_t[::1] _count_values
         boolean_t[::1] _mask_nodes
         boolean_t[::1] _mask_edges

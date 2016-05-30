@@ -232,6 +232,8 @@ def cmd_slice(group):
     group.add_argument('--temperature0',
                        type=float, default=1.0,
                        help='flattens the distribution from where we obtain the initial derivation (for local initialisation only)')
+    group.add_argument('--count', action='store_true',
+                       help='Count derivations in which slice')
     group.add_argument('--normalised-svars', action='store_true',
                        help="By default slice variables are Gamma distributed over the positive real line."
                             "Alternatively, we can use Beta distributed variables over [0,1]")
@@ -469,7 +471,7 @@ def sample_derivations(seg, args, staticdir, forest_path, components_path,
                                              semiring.inside)
 
     if not model.nonlocal_model():  # with local models only we can do ancestral sampling (or even exact computations)
-        logging.info('[%d] Ancestral sampling from f(d) = l(d)', seg.id)
+        logging.debug('[%d] Ancestral sampling from f(d) = l(d)', seg.id)
         sampler = AncestralSampler(forest, tsort, lfunc)
         raw = sampler.sample(sample_size)
 
@@ -483,14 +485,15 @@ def sample_derivations(seg, args, staticdir, forest_path, components_path,
     else:  # with nonlocal models we need slice sampling
 
         # 3. Sample from f(d) = n(d) * l(d)
-        logging.info('[%d] Slice sampling from f(d) = n(d) * l(d)', seg.id)
+        logging.debug('[%d] Slice sampling from f(d) = n(d) * l(d)', seg.id)
 
         goal_maker = GoalRuleMaker(args.goal, args.start, n=n_top)  # 2 or 3
         slice_sampler = SlicedRescoring(model,
                                         LocalDistribution(forest, tsort, lfunc, local_fvecfunc),
                                         semiring.inside,
                                         goal_maker.get_oview(),
-                                        OutputView(make_dead_srule()))
+                                        OutputView(make_dead_srule()),
+                                        log_slice_size=args.count)
 
         shape_type = args.shape[0]
         shape_parameter = float(args.shape[1])
