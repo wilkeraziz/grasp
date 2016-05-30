@@ -63,8 +63,6 @@ cdef class SlicedRescoring:
         StatelessScorer _stateless
         StatefulScorer _stateful
 
-    cdef _make_slice_variables(self, conditions, float shape, str scale_type, float scale_parameter)
-
     cdef weight_t _nfunc(self, Hypergraph forest, tuple derivation)
 
     cdef tuple _nfunc_and_component(self, Hypergraph forest, tuple derivation)
@@ -75,6 +73,10 @@ cdef class SlicedRescoring:
 
     cdef _sample(self, SliceReturn rslice, int batch_size, str algorithm)
 
-    cpdef sample(self, size_t n_samples, size_t batch_size, str within,
-                 str initial, float gamma_shape, str gamma_scale_type,
-                 float gamma_scale_parameter, size_t burn, size_t lag, weight_t temperature0)
+    cpdef sample(self,
+                 size_t n_samples, size_t burn, size_t lag,  # Markov chain
+                 size_t batch_size, str within,  # Slice sampler
+                 str initial, weight_t temperature0,  # Initial state of the Markov chain
+                 bint normalised_svars,  # nature of slice variables (Gamma or Beta)
+                 str shape_type, float shape_parameter,  # distribution over the first parameter
+                 str scale_type, float scale_parameter)

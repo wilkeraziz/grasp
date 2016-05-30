@@ -13,6 +13,8 @@ TODO:
 """
 
 from grasp.ptypes cimport weight_t
+from grasp.ptypes cimport id_t
+from grasp.cfg.symbol cimport Symbol
 cimport numpy as np
 import numpy as np
 import scipy.stats as st
@@ -332,6 +334,9 @@ cdef class SliceVariables:
         """
         raise NotImplementedError()
 
+    cpdef weight_t correct_pdf_semiring(self, s, Semiring semiring):
+        raise NotImplementedError()
+
     cpdef reset(self, conditions=None, parameter=None):
         """Reset slice variables assignments and their priors' parameters."""
         raise NotImplementedError()
@@ -396,18 +401,24 @@ cdef class SpanSliceVariables(SliceVariables):
         :param s: slice variable
         :return: SimpleNamespace(u, exp_rate)
         """
+
         assignment = self._assignments[key]
         if assignment.u is None:  # we need to sample an assignment of the slice variable
+            ##print('s=%s' % key)
             condition = self._conditions.get(key, None)
             assignment.parameter = self._prior.sample(key)
             if condition is None:  # and there are no conditions
                 assignment.u = self._dist.sample(assignment.parameter)
+                ##print(' unconstrained=%s' % assignment.u)
             else:  # we have a condition, thus we sample uniformly
                 try:
                     assignment.u = np.random.uniform(0, condition)
+                    ##print(' constrained=%s condition=%s' % (assignment.u, condition))
                     assert assignment.u < condition, 'Numpy is going crazy with floats: %r < %r' % (assignment.u, condition)
                 except Exception as ex:
                     raise ValueError('Something went wrong: assignment=%s condition=%s.\n%s' % (assignment.u, condition, ex))
+        ##else:
+        ##    print('s=%s assignment=%s' % (key, assignment))
         return assignment
 
     def __getitem__(self, key):
@@ -459,6 +470,18 @@ cdef class SpanSliceVariables(SliceVariables):
         else:
             return semiring.zero
 
+    cpdef weight_t correct_pdf_semiring(self, s, Semiring semiring):
+        """
+        :param s: the slice variable
+        :param semiring: given semiring
+        :return: pdf(u_s) in the given semiring
+        """
+        assignment = self.get_assignment(s)
+        if semiring.LOG:  # small optimisation for Log transformed values
+            return self._dist.logpdf(assignment.u, assignment.parameter)
+        else:
+            return semiring.from_real(self._dist.pdf(assignment.u, assignment.parameter))
+
     cpdef reset(self, conditions=None, parameter=None):
         if conditions is not None:
             self._conditions = defaultdict(None, conditions)
@@ -488,6 +511,16 @@ cdef class BetaSpanSliceVariables(SpanSliceVariables):
                                                      prior=VectorOfPriors(prior_a, prior_b))
 
 
+cdef class BetaSpanNormalisedSliceVariables(SpanSliceVariables):
+
+    def __init__(self, conditions, prior_a, prior_b, normalisers):
+        super(BetaSpanNormalisedSliceVariables, self).__init__({s: us/normalisers[s] for s, us in conditions.items()},
+                                                     dist=Beta(),
+                                                     prior=VectorOfPriors(prior_a, prior_b))
+        self._normalisers = normalisers
+
+
+
 cpdef Prior get_prior(prior_type, prior_parameter):
     if prior_type == 'const':
         return ConstantPrior(float(prior_parameter))
@@ -507,3 +540,84 @@ cpdef Distribution get_distribution(dist_type):
     if dist_type == 'exponential':
         return Exponential()
     raise ValueError('I do not know this distribution: %s' % dist_type)
+
+
+cdef class SliceCheckFunction(WeightFunction):
+    """
+    A value function that returns the residual value of slice check, namely,
+
+        1/pdf(u_s) * Indicator[u_s < phi(v_s(x))]
+
+    """
+
+    def __init__(self, Hypergraph forest,
+                 WeightFunction omega,
+                 SliceVariables svars,
+                 Semiring semiring):
+        self.forest = forest
+        self.omega = omega
+        self.semiring = semiring
+        self.svars = svars
+
+    cpdef weight_t value(self, id_t e):
+        cdef Symbol s = self.forest.label(self.forest.head(e))
+        cdef weight_t w = self.omega.value(e)
+        cdef weight_t pdf, residual
+        if self.svars.is_inside(s, self.semiring.as_real(w)):  # slice check
+            #print('I s=%s e=%d real(w)=%s' % (s, e, self.semiring.as_real(w)))
+            pdf = self.svars.correct_pdf_semiring(s, self.semiring)
+            residual = self.semiring.times.inverse.evaluate(pdf)
+            if residual == self.semiring.zero:
+                raise ValueError('p(u_s) = 0 for u_s in the slice: s=%s' % s)
+            return residual
+        else:
+            #print('O s=%s e=%d real(w)=%s' % (s, e, self.semiring.as_real(w)))
+            return self.semiring.zero
+
+
+cdef class NormalisedSliceCheckFunction(WeightFunction):
+    """
+    A value function that returns the residual value of a (normalised) slice check, namely,
+
+        z(s)/pdf(u_s) * Indicator[u_s < phi(v_s(x))]
+
+    where z(s) is the normalisation constant associated with s
+        z(s) = sum_{v_s(x)} phi(v_s(x))
+
+    """
+
+    def __init__(self, Hypergraph forest,
+                 WeightFunction omega,
+                 dict normalisers,
+                 SliceVariables svars,
+                 Semiring semiring):
+        """
+
+        :param forest:
+        :param omega: the local potential function
+        :param normalisers: normalisers (in given semiring) for each slice variable
+        :param svars: slice variables
+        :param semiring: a semiring
+        """
+        self.forest = forest
+        self.omega = omega
+        self.normalisers = normalisers
+        self.semiring = semiring
+        self.svars = svars
+
+    cpdef weight_t value(self, id_t e):
+        cdef Symbol s = self.forest.label(self.forest.head(e))
+        cdef weight_t w = self.omega.value(e)
+        cdef weight_t pdf, residual
+        cdef weight_t z = self.normalisers[s]
+        # here we first normalise the potential w, i.e., w/z
+        # then we perform a slice check
+        if self.svars.is_inside(s, self.semiring.as_real(self.semiring.divide(w, z))):  # slice check
+            # if e passes the slice check, then we return z(s)/pdf(u_s)
+            pdf = self.svars.correct_pdf_semiring(s, self.semiring)
+            residual = self.semiring.divide(z, pdf)
+            if residual == self.semiring.zero:
+                raise ValueError('p(u_s) = 0 for u_s in the slice: s=%s' % s)
+            return residual
+        else:
+            return self.semiring.zero

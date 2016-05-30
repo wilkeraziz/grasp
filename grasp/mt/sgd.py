@@ -232,13 +232,19 @@ def cmd_slice(group):
     group.add_argument('--temperature0',
                        type=float, default=1.0,
                        help='flattens the distribution from where we obtain the initial derivation (for local initialisation only)')
-    group.add_argument('--gamma-shape', type=float, default=0,
-                       help="Unconstrained slice variables are sampled from a Gamma(shape, scale)."
-                            "By default, the shape is the number of local components.")
-    group.add_argument('--gamma-scale', nargs=2, default=['const', '1'],
-                       help="Unconstrained slice variables are sampled from a Gamma(shape, scale)."
-                            "The scale can be either a constant, or it can be itself sampled from a Gamma(1, scale')."
-                            "For the former use for example 'const 1', for the latter use 'gamma 1'")
+    group.add_argument('--normalised-svars', action='store_true',
+                       help="By default slice variables are Gamma distributed over the positive real line."
+                            "Alternatively, we can use Beta distributed variables over [0,1]")
+    group.add_argument('--shape', nargs=2, default=['const', '1'],
+                       help="Unconstrained slice variables are sampled from Gamma(shape > 0, scale > 0) "
+                            "or Beta(shape > 0, scale > 0). "
+                            "The shape can be either a constant, or it can be itself sampled from Gamma(1, scale > 0)."
+                            "For example, use 'const 1' for the former, and 'gamma 1' for the latter.")
+    group.add_argument('--scale', nargs=2, default=['const', '1'],
+                       help="Unconstrained slice variables are sampled from Gamma(shape > 0, scale > 0) "
+                            "or Beta(shape > 0, scale > 0)."
+                            "The scale can be either a constant, or it can be itself sampled from Gamma(1, scale > 0)."
+                            "For example, use 'const 1' the former, and 'gamma 1' for the latter.")
 
 def get_argparser():
     parser = argparse.ArgumentParser(description='Training by MLE',
@@ -332,7 +338,7 @@ def sanity_checks(args):
         logging.error('Model parameters not found: %s', args.proxy_weights)
         failed = True
 
-    if float(args.gamma_scale[1]) <= 0:
+    if float(args.scale[1]) <= 0:
         raise ValueError('The scale parameter of a Gamma distribution must be strictly positive')
 
     #if args.joint and not os.path.exists(args.joint):
@@ -486,37 +492,29 @@ def sample_derivations(seg, args, staticdir, forest_path, components_path,
                                         goal_maker.get_oview(),
                                         OutputView(make_dead_srule()))
 
-        if args.gamma_shape > 0:
-            gamma_shape = args.gamma_shape
-        else:
-            gamma_shape = len(model.local_model())  # number of local components
-        gamma_scale_type = args.gamma_scale[0]
-        gamma_scale_parameter = float(args.gamma_scale[1])
+        shape_type = args.shape[0]
+        shape_parameter = float(args.shape[1])
+        scale_type = args.scale[0]
+        scale_parameter = float(args.scale[1])
 
         t0 = time()
         # here samples are represented as sequences of edge ids
-        d0, markov_chain, mean_chain = slice_sampler.sample(n_samples=sample_size,
-                                                batch_size=args.slice_size,
-                                                within=args.within,
-                                                initial=args.initial,
-                                                gamma_shape=gamma_shape,
-                                                gamma_scale_type=gamma_scale_type,
-                                                gamma_scale_parameter=gamma_scale_parameter,
-                                                burn=args.burn,
-                                                lag=args.lag,
-                                                temperature0=args.temperature0)
+        d0, markov_chain, mean_chain = slice_sampler.sample(
+            n_samples=sample_size, burn=args.burn, lag=args.lag,
+            batch_size=args.slice_size, within=args.within,
+            initial=args.initial, temperature0=args.temperature0,
+            normalised_svars=args.normalised_svars,
+            shape_type=shape_type, shape_parameter=shape_parameter,
+            scale_type=scale_type, scale_parameter=scale_parameter)
         logging.info('[%d] Slice sampling took %s seconds', seg.id, time() - t0)
 
-        iidsamples = apply_filters(markov_chain,
-                                burn=args.burn,
-                                lag=args.lag)
+        iidsamples = apply_filters(markov_chain, burn=args.burn, lag=args.lag)
         shuffle(iidsamples)  # make it look like MC samples
 
         mean = model.constant(semiring.prob.zero)
         for fvec in mean_chain:
             mean = mean.hadamard(fvec, semiring.prob.plus)
         mean = mean.prod(1.0/len(mean_chain))
-
 
     n_samples = len(iidsamples)
 
@@ -786,7 +784,7 @@ def core(args):
         os.makedirs(epoch_dir, exist_ok=True)
         # save weights
         with smart_wopen('{0}/weights.txt'.format(epoch_dir)) as fw:
-            for fname, fvalue in zip(fnames, avg):
+            for fname, fvalue in zip(fnames, weights):
                 print('{0} {1}'.format(fname, repr(fvalue)), file=fw)
 
         # evaluate with initial weights

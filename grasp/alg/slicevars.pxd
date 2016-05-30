@@ -1,7 +1,7 @@
 from grasp.ptypes cimport weight_t
 from grasp.semiring._semiring cimport Semiring
-cimport numpy as np
-import numpy as np
+from grasp.formal.wfunc cimport WeightFunction
+from grasp.formal.hg cimport Hypergraph
 
 
 cdef class Prior:
@@ -100,6 +100,8 @@ cdef class SliceVariables:
 
     cpdef weight_t pdf_semiring(self, s, weight_t theta, Semiring semiring, bint slice_only=?) except? -999999
 
+    cpdef weight_t correct_pdf_semiring(self, s, Semiring semiring)
+
     cpdef reset(self, conditions=?, parameter=?)
 
 
@@ -133,6 +135,25 @@ cdef class GammaSpanSliceVariables(SpanSliceVariables):
 cdef class BetaSpanSliceVariables(SpanSliceVariables):
 
     pass
+
+
+cdef class SliceCheckFunction(WeightFunction):
+
+    cdef:
+        Hypergraph forest
+        WeightFunction omega
+        Semiring semiring
+        SliceVariables svars
+
+
+cdef class NormalisedSliceCheckFunction(WeightFunction):
+
+    cdef:
+        Hypergraph forest
+        WeightFunction omega
+        Semiring semiring
+        SliceVariables svars
+        dict normalisers
 
 
 cpdef Prior get_prior(prior_type, prior_parameter)

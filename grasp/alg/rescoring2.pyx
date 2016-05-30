@@ -1,4 +1,8 @@
 cimport grasp.alg.slicevars as sv
+from grasp.alg.slicevars cimport NormalisedSliceCheckFunction
+from grasp.alg.slicevars cimport SliceCheckFunction
+from grasp.alg.slicevars cimport SliceVariables
+from grasp.alg.slicevars cimport Prior as SlicePrior
 from grasp.alg.deduction cimport EarleyRescorer
 from grasp.alg.slicing2 cimport slice_forest
 from grasp.alg.inference cimport AncestralSampler
@@ -81,17 +85,74 @@ cpdef Hypergraph stateless_rescoring(Hypergraph hg,
                                             [HypergraphLookupFunction(hg), StatelessValueFunction(hg, stateless)]))
 
 
-cdef dict make_span_conditions(Hypergraph forest, WeightFunction omega, tuple raw_derivation, Semiring semiring):
+cdef dict make_local_normalisers(Hypergraph forest, WeightFunction omega, Semiring semiring):
+    """
+    Sum potentials associated with each slice variable.
+
+    :param forest: a forest
+    :param omega: edge potentials
+    :param semiring: a given semiring
+    :return: array Z(s) of normalisers (in the given semiring)
+    """
+    cdef:
+        dict normalisers = dict()
+        id_t node, edge
+        weight_t bs_sum, z_s
+        size_t i
+    for node in range(forest.n_nodes()):
+        bs_sum = 0.0
+        # sum omega(e) for e in BS(node)
+        for i in range(forest.n_incoming(node)):
+            edge = forest.bs_i(node, i)
+            bs_sum = semiring.plus.evaluate(bs_sum, omega.value(edge))
+        # accumulate the result in Z(s)
+        z_s = semiring.plus.evaluate(normalisers.get(forest.label(node), semiring.zero), bs_sum)
+        normalisers[forest.label(node)] = z_s
+    return normalisers
+
+
+cdef dict make_span_conditions(Hypergraph forest,
+                               WeightFunction omega,
+                               tuple raw_derivation,
+                               Semiring semiring):
     """
     Return a map of conditions based on the head symbols participating in a given derivation.
     The conditions are indexed by the symbols themselves, because their ids are not consistent across slices.
     :param forest: a hypergraph forest
     :param raw_derivation: a raw derivation from this forest (edges are numbered consistently with the forest)
     :param semiring:
-    :return: dict mapping a head Symbol onto an edge score
+    :return: conditions (as a Real value) on some of the slice variables
     """
     cdef id_t e
-    return {forest.label(forest.head(e)): semiring.as_real(omega.value(e)) for e in raw_derivation}
+    cdef dict conditions =  {forest.label(forest.head(e)): semiring.as_real(omega.value(e)) for e in raw_derivation}
+    #for e in raw_derivation:
+    #    print('e=%d s=%s phi(e)=%s' % (e, forest.label(forest.head(e)), semiring.as_real(omega.value(e))))
+    #    print('')
+    return conditions
+
+
+cdef dict make_span_normalised_conditions(Hypergraph forest,
+                                          WeightFunction omega,
+                                          object normalisers,
+                                          tuple raw_derivation,
+                                          Semiring semiring):
+    """
+    Return a map of conditions based on the head symbols participating in a given derivation.
+    The conditions are indexed by the symbols themselves, because their ids are not consistent across slices.
+    :param forest: a hypergraph forest
+    :param raw_derivation: a raw derivation from this forest (edges are numbered consistently with the forest)
+    :param semiring:
+    :return: (normalised) conditions (as a Real value) on some of the slice variables
+    """
+    cdef id_t e
+    cdef dict conditions = {forest.label(forest.head(e)):
+                semiring.as_real(semiring.divide(omega.value(e), normalisers[forest.label(forest.head(e))]))
+            for e in raw_derivation}
+    #for e in raw_derivation:
+    #    print('e=%d s=%s phi(e)=%s' % (e, forest.label(forest.head(e)), conditions[forest.label(forest.head(e))]))
+    #    print('')
+    return conditions
+
 
 
 cdef gamma_priors(Hypergraph forest, Semiring semiring, weight_t percentile=-1):
@@ -153,6 +214,54 @@ cdef class LocalDistribution:
         self.tsort = tsort
         self.wfunc = wfunc
         self.ffunc = ffunc
+
+
+cdef SlicePrior make_prior(str prior_type, float prior_parameter):
+    if prior_type == 'const':
+        return sv.ConstantPrior(prior_parameter)
+    elif prior_type == 'gamma':
+        return sv.SymmetricGamma(scale=prior_parameter)
+    else:
+        raise ValueError('I do not know this type of Prior: %s' % prior_type)
+
+cdef tuple make_slice_priors(str shape_type, float shape_parameter, str scale_type, float scale_parameter):
+    """
+    Make priors for unconstrained slice variables.
+
+    :param shape: shape parameter of the distribution over unconstrained slice variables
+    :param scale_type: type of scale parameters (e.g. const or sampled from a certain distribution)
+    :param scale_parameter: scale parameter of the distribution over unconstrained slice variables
+    :return: a shape prior and a scale prior
+    """
+
+    cdef SlicePrior shape_prior = make_prior(shape_type, shape_parameter)
+    cdef SlicePrior scale_prior = make_prior(scale_type, scale_parameter)
+    return shape_prior, scale_prior
+
+
+cdef make_slice_check_function(Hypergraph forest,
+                               WeightFunction potential,
+                               dict normalisers,
+                               Semiring semiring,
+                               SlicePrior shape_prior,
+                               SlicePrior scale_prior,
+                               tuple edges):
+    if normalisers:
+        # make normalised conditions (in the Real semiring)
+        normalised_conditions = make_span_normalised_conditions(forest, potential, normalisers, edges, semiring)
+        # make slice variables based on normalised conditions
+        # normalised variables are Beta distributed
+        slicevars = sv.BetaSpanSliceVariables(normalised_conditions, shape_prior, scale_prior)
+        # make a normalised slice check function
+        return NormalisedSliceCheckFunction(forest, potential, normalisers, slicevars, semiring)
+    else:
+        # make conditions (in the Real semiring)
+        conditions = make_span_conditions(forest, potential, edges, semiring)
+        # make slice variables based on conditions
+        # unnormalised variables are Gamma distributed
+        slicevars = sv.GammaSpanSliceVariables(conditions, sv.VectorOfPriors(shape_prior, scale_prior))
+        # make a slice check function
+        return SliceCheckFunction(forest, potential, slicevars, semiring)
 
 
 cdef class SlicedRescoring:
@@ -245,17 +354,6 @@ cdef class SlicedRescoring:
         self._lookup = TableLookupScorer(model.nonlocal_model().lookup)
         self._stateless = StatelessScorer(model.nonlocal_model().stateless)
         self._stateful = StatefulScorer(model.nonlocal_model().stateful)
-
-
-    cdef _make_slice_variables(self, conditions, float shape, str scale_type, float scale_parameter):
-        shape_prior = sv.ConstantPrior(shape)
-        if scale_type == 'const':
-            scale_prior = sv.ConstantPrior(scale_parameter)
-        elif scale_type == 'sym' or scale_type == 'gamma':
-            scale_prior = sv.SymmetricGamma(scale=scale_parameter)
-        else:
-            raise ValueError('I do not know this type of Prior of the scale parameter: %s' % scale_type)
-        return sv.GammaSpanSliceVariables(conditions, sv.VectorOfPriors(shape_prior, scale_prior))
 
     cdef weight_t _nfunc(self, Hypergraph forest, tuple derivation):
         """
@@ -353,7 +451,7 @@ cdef class SlicedRescoring:
                                                                     rslice.selected_nodes,
                                                                     rslice.selected_edges)
 
-        #logging.info('[importance] Derivations in slice: %s', sampler.n_derivations())
+        logging.info('[importance] Derivations in slice: %s', sampler.n_derivations())
         if force:
             logging.debug(' [cimportance] Importance sampling %d candidates from S to against previous state', batch_size)
         else:
@@ -461,26 +559,47 @@ cdef class SlicedRescoring:
         fd = semiring.times(nonlocal_score, local_score)
         return SampleReturn(d, fd, fvec), semiring.as_real(sampler.Z)
 
+    cpdef sample(self,
+                 size_t n_samples, size_t burn, size_t lag,  # Markov chain
+                 size_t batch_size, str within,  # Slice sampler
+                 str initial, weight_t temperature0,  # Initial state of the Markov chain
+                 bint normalised_svars,  # nature of slice variables (Gamma or Beta)
+                 str shape_type, float shape_parameter,  # distribution over the first parameter
+                 str scale_type, float scale_parameter):  # distribution over the second parameter
 
-    cpdef sample(self, size_t n_samples, size_t batch_size, str within,
-                 str initial, float gamma_shape, str gamma_scale_type,
-                 float gamma_scale_parameter, size_t burn, size_t lag, weight_t temperature0):
 
-        cdef Hypergraph D = self._local.forest
-        cdef WeightFunction lfunc = self._local.wfunc
-        cdef TopSortTable tsort_D = self._local.tsort
-        cdef Semiring semiring = self._semiring
-        cdef object markov_chain = deque([])
-        cdef object mean_chain = deque([])
         cdef:
-            sv.SpanSliceVariables slicevars
+            Hypergraph D = self._local.forest
+            WeightFunction lfunc = self._local.wfunc
+            TopSortTable tsort_D = self._local.tsort
+            Semiring semiring = self._semiring
+            object markov_chain = deque([])
+            object mean_chain = deque([])
+            dict conditions
             SliceReturn slice_return
+            SlicePrior shape_prior
+            SlicePrior scale_prior
+            WeightFunction slice_check
+            dict local_normalisers = {}
+
+        shape_prior, scale_prior = make_slice_priors(shape_type, shape_parameter, scale_type, scale_parameter)
 
         # Draw the initial sample
         (d0, n_derivations) = self._initialise(semiring, initial, temperature0)
-        # Prepare slice variables
-        slicevars = self._make_slice_variables(make_span_conditions(D, lfunc, d0.edges, semiring),
-                                               gamma_shape, gamma_scale_type, gamma_scale_parameter)
+
+        if normalised_svars:
+            # Here we get normalisers z(s) = sum_{v=v_s(x)} phi(v) for the purpose of slicing
+            local_normalisers = make_local_normalisers(D, lfunc, semiring)
+
+        # Make a slice check function
+        # which also creates appropriate slice variables depending on
+        #  whether or not variables are to be normalised (Beta vs Gamma distributed)
+        #  priors for shape and scale parameters
+        #  conditions (in the Real semiring) associated with d0.edges
+        #   conditions are normalised if necessary
+        slice_check = make_slice_check_function(D, lfunc, local_normalisers, semiring,
+                                                shape_prior, scale_prior, d0.edges)
+
         # Initialise the Markov chain
         markov_chain.append(d0)
 
@@ -515,9 +634,8 @@ cdef class SlicedRescoring:
             # 1. First we obtain the slice
             logging.debug('1a. Computing the slice')
 
-            slice_return = slice_forest(D, lfunc, tsort_D,
-                                        markov_chain[-1].edges, slicevars,
-                                        semiring, self._dead_rule)
+            slice_return = slice_forest(D, lfunc, slice_check, tsort_D,
+                                        markov_chain[-1].edges, semiring, self._dead_rule)
 
             # Slice returns contains
             #   S: the support
@@ -536,8 +654,9 @@ cdef class SlicedRescoring:
             markov_chain.append(d_in_D)
             mean_chain.append(mean_in_D)
             # reset slice variables based on the sampled derivation
-            slicevars.reset(make_span_conditions(D, lfunc, d_in_D.edges, semiring))
-
+            slice_check = make_slice_check_function(D, lfunc, local_normalisers,
+                                                    semiring, shape_prior, scale_prior,
+                                                    d_in_D.edges)
 
         #logging.info('Slice size: mean=%s std=%s', np.mean(slices_sizes[1:]), np.std(slices_sizes[1:]))
         # I always burn the initial derivation (because it is always byproduct of some heuristic)

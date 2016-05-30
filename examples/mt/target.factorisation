@@ -4,7 +4,7 @@
 
 [joint]
 nonlocal=KenLM
-nonlocal=TM01 TM02 TM03 TM04 TM05 TM06 TM07 TM08 TM09 TM10 TM11
+#nonlocal=TM01 TM02 TM03 TM04 TM05 TM06 TM07 TM08 TM09 TM10 TM11
 
 [conditional]
 local=KenLM

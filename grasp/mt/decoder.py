@@ -138,6 +138,7 @@ def decode(seg, args, model, outdir):
         logging.info('Sliced rescoring...')
         from grasp.alg.rescoring import SlicedRescoring
         goal_maker = GoalRuleMaker(goal_str=args.goal, start_str=args.start, n=1)
+
         rescorer = SlicedRescoring(tgt_forest,
                                    HypergraphLookupFunction(tgt_forest),
                                    tsort,

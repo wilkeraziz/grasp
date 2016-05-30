@@ -1,20 +1,13 @@
-from grasp.alg.slicevars cimport SliceVariables
 from grasp.formal.wfunc cimport WeightFunction
 from grasp.formal.wfunc cimport TableLookupFunction
-
 from grasp.formal.hg cimport Hypergraph
 from grasp.formal.topsort cimport TopSortTable
-
 from grasp.semiring._semiring cimport Semiring
 from grasp.cfg.rule cimport Rule
-from grasp.cfg.symbol cimport Symbol
 from grasp.ptypes cimport weight_t, id_t, boolean_t, status_t
 import grasp.ptypes as ptypes
 import numpy as np
 cimport numpy as np
-cimport cython
-
-import logging
 
 
 cdef class SliceReturn:
@@ -42,7 +35,7 @@ cdef class SliceReturn:
         return d_in_S
 
 
-cdef void visit_edge(Hypergraph forest, SliceVariables slicevars, WeightFunction omega, Semiring semiring,
+cdef void visit_edge(Hypergraph forest, WeightFunction slice_check, Semiring semiring,
                      id_t edge,
                      status_t[::1] node_colour, status_t[::1] edge_colour,
                      boolean_t[::1] selected_nodes, boolean_t[::1] selected_edges,
@@ -56,10 +49,11 @@ cdef void visit_edge(Hypergraph forest, SliceVariables slicevars, WeightFunction
 
     # Perform the slice check
     cdef:
-        Symbol cell = forest.label(forest.head(edge))
-        weight_t w_e = omega.value(edge)
+        #Symbol cell = forest.label(forest.head(edge))
+        weight_t residual = slice_check.value(edge)
 
-    if not slicevars.is_inside(cell, semiring.as_real(w_e)):  # slice check
+    #if not slicevars.is_inside(cell, semiring.as_real(w_e)):  # slice check
+    if residual == semiring.zero:  # failed slice check
         # we have finished visiting the edge
         # and it has not been selected, because it did not pass the slice check
         edge_colour[edge] = 2
@@ -74,7 +68,7 @@ cdef void visit_edge(Hypergraph forest, SliceVariables slicevars, WeightFunction
         # we do not visit nodes that have been visited (2) or are being visited (1)
         if node_colour[child] == 0:  # only those that have not been visited (0)
             # visit the node
-            visit_node(forest, slicevars, omega, semiring, child,
+            visit_node(forest, slice_check, semiring, child,
                        node_colour, edge_colour,
                        selected_nodes, selected_edges, new_weights)
         # if the node has been visited (2), but not selected
@@ -85,14 +79,15 @@ cdef void visit_edge(Hypergraph forest, SliceVariables slicevars, WeightFunction
             return
     # at this point we know that all children are in the slice, thus so is the edge
     selected_edges[edge] = True
-    # TODO: change the name of this method, this is not the pdf value
-    # this is actually 1.0/phi(u_s)
-    new_weights[edge] = slicevars.pdf_semiring(cell, w_e, semiring)
+    #new_weights[edge] = slicevars.pdf_semiring(cell, w_e, semiring)
+    new_weights[edge] = residual
     # and we finish visiting the edge
     edge_colour[edge] = 2
 
 
-cdef void visit_node(Hypergraph forest, SliceVariables slicevars, WeightFunction omega, Semiring semiring,
+cdef void visit_node(Hypergraph forest,
+                     WeightFunction slice_check,
+                     Semiring semiring,
                      id_t node,
                      status_t[::1] node_colour,
                      status_t[::1] edge_colour,
@@ -117,7 +112,7 @@ cdef void visit_node(Hypergraph forest, SliceVariables slicevars, WeightFunction
         size_t selected = 0
         id_t edge
     for edge in forest.iterbs(node):
-        visit_edge(forest, slicevars, omega, semiring, edge,
+        visit_edge(forest, slice_check, semiring, edge,
                    node_colour, edge_colour,
                    selected_nodes, selected_edges,
                    new_weights)
@@ -131,9 +126,9 @@ cdef void visit_node(Hypergraph forest, SliceVariables slicevars, WeightFunction
 
 cdef SliceReturn slice_forest(Hypergraph forest,
                               WeightFunction omega,
+                              WeightFunction slice_check,
                               TopSortTable tsort,
                               tuple d0,
-                              SliceVariables slicevars,
                               Semiring semiring,
                               Rule dead_rule):
     """
@@ -142,7 +137,6 @@ cdef SliceReturn slice_forest(Hypergraph forest,
     :param forest: weighted forest
     :param omega: a value function over edges in D
     :param tsort: forest's top-sort table
-    :param slicevars: an instance of SliceVariable
     :param semiring: the appropriate semiring
     :param dead_terminal: a Terminal symbol which represents a dead-end.
     :return: pruned forest (edges are weighted by omega) and weight table mapping edges to u(e) weights.
@@ -162,7 +156,7 @@ cdef SliceReturn slice_forest(Hypergraph forest,
     # we go top-down visiting nodes and edges
     # selecting them and computing new weights for edges in the slice
     for parent in tsort.iternodes(reverse=True):
-        visit_node(forest, slicevars, omega, semiring, parent,
+        visit_node(forest, slice_check, semiring, parent,
                    node_colour, edge_colour,
                    selected_nodes, selected_edges,
                    new_weights)
