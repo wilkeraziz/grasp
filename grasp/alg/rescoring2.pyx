@@ -451,7 +451,7 @@ cdef class SlicedRescoring:
                                                                     rslice.selected_nodes,
                                                                     rslice.selected_edges)
 
-        logging.info('[importance] Derivations in slice: %s', sampler.n_derivations())
+        #logging.info('[importance] Derivations in slice: %s', sampler.n_derivations())
         if force:
             logging.debug(' [cimportance] Importance sampling %d candidates from S to against previous state', batch_size)
         else:
