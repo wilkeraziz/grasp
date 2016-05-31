@@ -619,9 +619,12 @@ def _gradient(seg: SegmentMetaData, args, staticdir: str,
     negH_derivative = negative_entropy_derivative(joint.expected_fvec, joint.d_groups, joint.posterior, joint.entropy, joint_model)
     entropy_vec = np.array(list(negH_derivative.densify()), dtype=ptypes.weight)
 
-    print('[{0}] ||| conditional ||| {1}'.format(seg.id, conditional.expected_fvec))
-    print('[{0}] ||| joint ||| {1}'.format(seg.id, joint.expected_fvec))
-    print('[{0}] ||| entropy ||| {1}'.format(seg.id, negH_derivative))
+    print('[{0}] ||| conditional ||| {1}'.format(seg.id, npvec2str(conditional_vec,
+                                                                   conditional_model.fnames())))
+    print('[{0}] ||| joint ||| {1}'.format(seg.id, npvec2str(joint_vec,
+                                                             joint_model.fnames())))
+    print('[{0}] ||| entropy ||| {1}'.format(seg.id, npvec2str(entropy_vec,
+                                                               joint_model.fnames())))
 
     return gradient_vector, entropy_vec
 

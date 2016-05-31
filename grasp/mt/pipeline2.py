@@ -153,7 +153,7 @@ def get_factorised_models(model: Model, path='') -> (ModelView, ModelView):
     return joint_model, conditional_model
 
 
-def load_model(description, weights, init, temperature=1.0):
+def load_model(description, weights, init='', temperature=1.0):
     """
 
     :param description: path to Extractor constructors

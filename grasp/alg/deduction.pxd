@@ -187,7 +187,7 @@ cdef class Rescorer(DeductiveIntersection):
 
 
 
-    cdef weight_t score_on_creation(self, id_t e, list parts)
+    cdef weight_t score_on_creation(self, id_t e, list parts, bint initial=?)
 
     cdef bint scan(self, Item item)
 

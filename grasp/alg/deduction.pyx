@@ -393,7 +393,9 @@ cdef class DeductiveIntersection:
             id_t n_items0 = self.n_items()
             Item incomplete
         for incomplete in self._agenda.waiting(self._hg.head(item.edge), item.start):
-            self.advance(incomplete, item.end, incomplete.weight, item.frepr)
+            # the incomplete item maintains its own weight and features
+            # it only uses the complete item's end state to advance along the edge
+            self.advance(incomplete, item.end, incomplete.weight, incomplete.frepr)
         return n_items0 < self.n_items()
 
     cdef void process(self, Item item):
@@ -714,12 +716,20 @@ cdef class Rescorer(DeductiveIntersection):
             self._components = None
 
 
-    cdef weight_t score_on_creation(self, id_t e, list parts):
-        cdef weight_t score
+    cdef weight_t score_on_creation(self, id_t e, list parts, bint initial=False):
+        """
+        The score associated with an item when it is created.
+
+        :param e:  the edge (used to retrieve the underlying rule)
+        :param parts: components to be set
+        :param initial: stateful scorers can only contribute to this score if this item will start a derivation
+        :return:
+        """
+        cdef weight_t score = self._semiring.one
         cdef FComponents components
         cdef weight_t lookup_score = self._semiring.one
         cdef weight_t stateless_score = self._semiring.one
-        # stateful scorers never have anything to contribute here
+        cdef weight_t stateful_score = self._semiring.one
 
         if self._keep_frepr:
             if self._lookup:
@@ -729,13 +739,21 @@ cdef class Rescorer(DeductiveIntersection):
                 # TODO: pass (head label, tail labels, and rule)
                 components, stateless_score = self._stateless.featurize_and_score(self._hg.rule(e))
                 parts[1] = components
+            if initial and self._stateful:
+                components = self._stateful.featurize_initial()
+                stateful_score = self._stateful.initial_score()
+                parts[2] = components
         else:
             if self._lookup:
                 lookup_score = self._lookup.score(self._hg.rule(e))
             if self._stateless:
                 stateless_score = self._stateless.score(self._hg.rule(e))  # TODO: pass (head label, tail labels, and rule)
+            if initial and self._stateful:
+                stateful_score = self._stateful.initial_score()
 
-        return self._semiring.times(self._omega.value(e), self._semiring.times(lookup_score, stateless_score))
+        score = self._semiring.times.evaluate(self._semiring.times.evaluate(lookup_score, stateless_score),
+                                              stateful_score)
+        return self._semiring.times(self._omega.value(e), score)
 
     cdef bint scan(self, Item item):
         cdef FComponents components, combined
@@ -838,7 +856,7 @@ cdef class EarleyRescorer(Rescorer):
             # I don't see a real good reason for that and I don't want to program bypasses, thus
             # I score top rules normally as follows
             parts = self.skeleton_components()
-            score = self.score_on_creation(e, parts)
+            score = self.score_on_creation(e, parts, initial=True)
             self.insert(e, (start,), score, tuple(parts))
             self._predictions.add((root, start))
 

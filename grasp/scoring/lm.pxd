@@ -38,3 +38,8 @@ cdef class KenLM(Stateful):
         object _initial
 
     cdef _load_model(self)
+
+
+cdef class ConstantLM(Stateful):
+
+    cdef float _constant

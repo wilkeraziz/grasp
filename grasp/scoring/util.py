@@ -69,6 +69,7 @@ def get_extractor_implementation(cls, pkg=None):
     from grasp.scoring.stateless import ArityPenalty
     from grasp.scoring.lm import StatelessLM
     from grasp.scoring.lm import KenLM
+    from grasp.scoring.lm import ConstantLM
     # others must be fully specified through pkg.cls
     if pkg:
         try:

@@ -6,7 +6,7 @@ A language model scorer using kenlm.
 import kenlm as klm
 from grasp.ptypes cimport weight_t
 from grasp.cfg.symbol cimport Symbol, Terminal
-from grasp.scoring.frepr cimport FRepr, FVec
+from grasp.scoring.frepr cimport FRepr, FVec, FValue
 from grasp.scoring.extractor cimport StatefulFRepr
 from grasp.recipes import re_key_value
 import os
@@ -323,3 +323,89 @@ cdef class KenLM(Stateful):
     @staticmethod
     def example():
         return 'KenLM order=3 path=trigrams.klm bos=<s> eos=</s>'
+
+
+
+
+cdef class ConstantLM(Stateful):
+
+    def __init__(self, int uid,
+                 str name,
+                 float constant=0.0):
+        super(ConstantLM, self).__init__(uid, name)
+        self._constant = constant
+
+    def __getstate__(self):
+        return super(ConstantLM,self).__getstate__(), {'constant': self._constant}
+
+    def __setstate__(self, state):
+        superstate, d = state
+        self._constant = d['constant']
+        super(ConstantLM,self).__setstate__(superstate)
+
+    def __repr__(self):
+        return '{0}(uid={1}, name={2}, constant={3})'.format(ConstantLM.__name__,
+                                                             repr(self.id),
+                                                             repr(self.name),
+                                                             repr(self._constant))
+
+    cpdef tuple fnames(self, wkeys):
+        return tuple([self.name])
+
+    cpdef tuple features(self):
+        return tuple([self.name])
+
+    cpdef FRepr weights(self, dict wmap):  # using dense representation
+        cdef float fvalue = 0.0
+        try:
+            fvalue = wmap[self.name]
+        except KeyError:
+            raise KeyError('Missing ConstantLM feature: %s' % self.name)
+        return FValue(fvalue)
+
+    cpdef object initial(self):
+        return 0
+
+    cpdef object final(self):
+        return 0
+
+    cpdef FRepr featurize_initial(self):
+        return FValue(self._constant)
+
+    cpdef FRepr featurize_final(self, context):
+        """
+        :param context: a state
+        :return:
+        """
+        return FValue(0.0)
+
+    cpdef StatefulFRepr featurize(self, word, context):
+        return StatefulFRepr(FValue(0.0), 0)
+
+    cpdef FRepr featurize_yield(self, derivation_yield):
+        """
+        :param words: sequence of Terminal objects
+        :return: weight
+        """
+        return FValue(self._constant)
+
+    cpdef FRepr constant(self, weight_t value):
+        return FValue(value)
+
+    @classmethod
+    def construct(cls, int uid, str name, str cfgstr):
+        cdef float constant = 0.0
+        cfgstr, value = re_key_value('constant', cfgstr, optional=True)
+        if value:
+            constant = float(value)
+        return ConstantLM(uid, name, constant)
+
+    @staticmethod
+    def help():
+        help_msg = ["# A constant for each yield.",
+                    "# This is a dummy stateful feature that illustrates the Stateful interface."]
+        return '\n'.join(help_msg)
+
+    @staticmethod
+    def example():
+        return 'ConstantLM name=DummyStateful constant=1.0'
