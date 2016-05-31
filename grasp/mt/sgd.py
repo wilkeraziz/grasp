@@ -852,9 +852,8 @@ def core(args):
                                                    joint_model, fnames,
                                                    local_gaussian_prior,
                                                    nonlocal_gaussian_prior)
-                logging.info('Epoch %d/%d - Time %d - Batch %d/%d - Temperature %f - Gamma %s', epoch,
+                logging.info('Epoch %d/%d - Time %d - Batch %d/%d - Temperature %f - Gamma %s', epoch, args.maxiter,
                              t,
-                             args.maxiter,
                              b,
                              n_batches,
                              temperature,
