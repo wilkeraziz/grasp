@@ -718,6 +718,15 @@ def get_prior_mean_and_variance(model: ModelView, fnames: list,
 
 
 def get_learning_rates(decaying: bool, gamma0: float, t: int,
+                       variances: 'np.array',
+                       batch_coeff=1.0):
+    if decaying:
+        return np.array([gamma0 / (1.0 + gamma0 * (batch_coeff / var) * t) for var in variances], dtype=ptypes.weight)
+    else:
+        return gamma0
+
+
+def _get_learning_rates(decaying: bool, gamma0: float, t: int,
                        model: ModelView, fnames: list,
                        local_prior: GaussianPrior, nonlocal_prior: GaussianPrior):
     if not decaying:
@@ -836,7 +845,11 @@ def core(args):
     # udpate parameters
     for epoch in range(1, args.maxiter + 1):
 
-        if epoch > args.resume:
+        if epoch <= args.resume:
+            # here we don't really do anything other than counting the time steps
+            for b, first in enumerate(range(0, len(training), args.batch_size), 1):
+                t += 1
+        else:
             # where we store everything related to this iteration
             epoch_dir = '{0}/epoch{1}'.format(workspace, epoch)
             os.makedirs(epoch_dir, exist_ok=True)
@@ -848,16 +861,18 @@ def core(args):
             for b, first in enumerate(range(0, len(training), args.batch_size), 1):
                 # gather segments in this batch
                 batch = [training[ith] for ith in range(first, min(first + args.batch_size, len(training)))]
+                # batch importance
+                batch_coeff = float(len(batch)) / len(training)
+                # learning rate
                 learning_rate = get_learning_rates(args.decaying_lrate, gamma0, t,
-                                                   joint_model, fnames,
-                                                   local_gaussian_prior,
-                                                   nonlocal_gaussian_prior)
-                logging.info('Epoch %d/%d - Time %d - Batch %d/%d - Temperature %f - Gamma %s', epoch, args.maxiter,
+                                                   prior_var, batch_coeff)
+                logging.info('Epoch %d/%d - Time %d - Batch %d/%d (%.4f) - Temperature %f', epoch, args.maxiter,
                              t,
                              b,
                              n_batches,
-                             temperature,
-                             learning_rate)
+                             batch_coeff,
+                             temperature)
+                logging.info('Learning rate %d: %s', t, npvec2str(learning_rate, fnames))
                 #print([seg.id for seg in batch])
                 #batch_dir = '{0}/batch{0}'.format(epoch, b)
                 #os.makedirs(batch_dir, exist_ok=True)
@@ -866,8 +881,6 @@ def core(args):
                 likelihood_gradient = likelihood_gradient_vectors.mean(0)  # normalise for batch size
                 negative_entropy_gradient = negative_entropy_gradient_vectors.mean(0)  # normalise for batch size
 
-                # batch importance
-                batch_coeff = float(len(batch)) / len(training)
                 # The gradient of the prior with respect to component k is: - (w_k - mean_k) / var
                 # we also normalise for the importance of the batch
                 prior_gradient = - (weights - prior_mean) / prior_var * batch_coeff
@@ -882,8 +895,8 @@ def core(args):
                 weights += learning_rate * gradient_vec
 
                 print('{0} ||| batch{1} ||| L2={2} ||| {3} ||| '.format(epoch, b,
-                                                                                      np.linalg.norm(weights - prior_mean, 2),
-                                                                                      npvec2str(weights, fnames)))
+                                                                        np.linalg.norm(weights - prior_mean, 2),
+                                                                        npvec2str(weights, fnames)))
                 # recursive average (Polyak and Juditsky, 1992)
                 avg = t / (t + 1) * avg + 1.0 / (t + 1) * weights
                 t += 1
