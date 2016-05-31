@@ -281,6 +281,8 @@ def get_argparser():
                         help="Validation set")
     parser.add_argument('--validation-alias', type=str, default='validation',
             help='Change the alias of the validation set')
+    parser.add_argument('--assess-training', action='store_true',
+                        help='Assess external loss in training set after each epoch')
     parser.add_argument('--redo', action='store_true',
                         help='overwrite already computed files (by default we do not repeat computation)')
     cmd_parser(parser.add_argument_group('Parser'))
@@ -859,6 +861,14 @@ def core(args):
             with smart_wopen('{0}/weights.txt'.format(epoch_dir)) as fw:
                 for fname, fvalue in zip(fnames, avg):
                     print('{0} {1}'.format(fname, repr(fvalue)), file=fw)
+
+            # decode training set
+            if args.assess_training:
+                logging.info('Evaluating training set')
+                mteval_dir = '{0}/mteval-{1}'.format(epoch_dir, args.training_alias)
+                os.makedirs(epoch_dir, exist_ok=True)
+                bleu = decode_and_eval(training, args, joint_model, training_dir, mteval_dir)
+                logging.info('Epoch %d - Training BLEU %s', epoch, bleu)
 
             # decode validation set
             if validation:
