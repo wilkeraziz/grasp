@@ -134,6 +134,10 @@ def cmd_optimisation(parser):
                         help="We cool the temperature in epochs multiple of this number")
     parser.add_argument("--assess-epoch0", '-0', action='store_true',
                         help="Assess the initial model")
+    parser.add_argument("--decaying-lrate", action='store_true',
+                        help="Use a decaying learning rate of the form gamma_0 (1 + gamma_0 * lambda * t)^-1."
+                             "Gamma_0 is the initial learning rate, t is the update counter, "
+                             "lambda is the inverse of the variance of the Gaussian prior.")
     parser.add_argument("--resume", type=int, default=0,
                         help="Pick up from the end of a certain iteration")
 
@@ -713,6 +717,30 @@ def get_prior_mean_and_variance(model: ModelView, fnames: list,
     return np.array(mean, dtype=ptypes.weight), np.array(var, dtype=ptypes.weight)
 
 
+def get_learning_rates(decaying: bool, gamma0: float, t: int,
+                       model: ModelView, fnames: list,
+                       local_prior: GaussianPrior, nonlocal_prior: GaussianPrior):
+    if not decaying:
+        return gamma0
+
+    if local_prior.var() == nonlocal_prior.var():
+        general_lambda = 1.0 / local_prior.var()
+        return gamma0 / (1.0 + gamma0 * general_lambda * t)
+
+    local_lambda = 1.0 / local_prior.var()
+    local_rate = gamma0 / (1.0 + gamma0 * local_lambda * t)
+    nonlocal_lambda = 1.0 / nonlocal_prior.var()
+    nonlocal_rate = gamma0 / (1.0 + gamma0 * nonlocal_lambda * t)
+
+    rates = []
+    for name in fnames:
+        if model.is_local(name):
+            rates.append(local_rate)
+        else:
+            rates.append(nonlocal_rate)
+    return np.array(rates, dtype=ptypes.weight)
+
+
 def core(args):
 
     workspace = make_dirs(args)
@@ -781,7 +809,7 @@ def core(args):
     logging.info('Prior var:  %s', npvec2str(prior_var, fnames))
     dimensionality = len(weights)
     avg = np.zeros(dimensionality, dtype=ptypes.weight)
-    learning_rate = args.learning_rate
+    gamma0 = args.learning_rate  # initial learning rate
 
     t = 0
     n_batches = np.ceil(len(training) / float(args.batch_size))
@@ -820,7 +848,16 @@ def core(args):
             for b, first in enumerate(range(0, len(training), args.batch_size), 1):
                 # gather segments in this batch
                 batch = [training[ith] for ith in range(first, min(first + args.batch_size, len(training)))]
-                logging.info('Epoch %d/%d - Batch %d/%d - Temperature %f', epoch, args.maxiter, b, n_batches, temperature)
+                learning_rate = get_learning_rates(args.decaying_lrate, gamma0, t,
+                                                   joint_model, fnames,
+                                                   local_gaussian_prior,
+                                                   nonlocal_gaussian_prior)
+                logging.info('Epoch %d/%d - Batch %d/%d - Temperature %f - Gamma %s', epoch,
+                             args.maxiter,
+                             b,
+                             n_batches,
+                             temperature,
+                             learning_rate)
                 #print([seg.id for seg in batch])
                 #batch_dir = '{0}/batch{0}'.format(epoch, b)
                 #os.makedirs(batch_dir, exist_ok=True)
@@ -844,8 +881,9 @@ def core(args):
                 # finally, the SGD (maximisation) update is w = w + learning_rate * gradient
                 weights += learning_rate * gradient_vec
 
-                print('{0} ||| batch{1} ||| L2={2} ||| {3} ||| '.format(epoch, b, np.linalg.norm(weights - prior_mean, 2),
-                                                                        npvec2str(weights, fnames)))
+                print('{0} ||| batch{1} ||| L2={2} ||| {3} ||| '.format(epoch, b,
+                                                                                      np.linalg.norm(weights - prior_mean, 2),
+                                                                                      npvec2str(weights, fnames)))
                 # recursive average (Polyak and Juditsky, 1992)
                 avg = t / (t + 1) * avg + 1.0 / (t + 1) * weights
                 t += 1
