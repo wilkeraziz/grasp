@@ -56,6 +56,7 @@ cdef class AdaGrad(SGD):
 
     cpdef update(self, parameters, gradients):
         self._accumulator += np.square(gradients)
-        parameters + self._gamma0 * gradients / (np.sqrt(self._accumulator) + 1e-6)
         self._t += 1
-        return parameters
+        return parameters + self._gamma0 * gradients / (np.sqrt(self._accumulator) + 1e-6)
+
+
