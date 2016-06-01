@@ -49,14 +49,33 @@ cdef class DecayingLearningRateSGD(SGD):
 
 cdef class AdaGrad(SGD):
 
-    def __init__(self, accumulator, float gamma0, size_t t=0):
-        self._accumulator = accumulator
+    def __init__(self, accumulator, float gamma0, size_t t=0, float epsilon=1e-6):
+        self._squared_gradient = accumulator
         self._gamma0 = gamma0
         self._t = t
+        self._epsilon = epsilon
 
     cpdef update(self, parameters, gradients):
-        self._accumulator += np.square(gradients)
+        self._squared_gradient += np.square(gradients)
         self._t += 1
-        return parameters + self._gamma0 * gradients / (np.sqrt(self._accumulator) + 1e-6)
+        return parameters + self._gamma0 * gradients / (np.sqrt(self._squared_gradient) + self._epsilon)
+
+
+cdef class AdaDelta(SGD):
+
+    def __init__(self, squared_gradient, float gamma0, size_t t=0, float epsilon=1e-6, float rho=0.95):
+        self._squared_gradient = squared_gradient
+        self._squared_delta = np.zeros(self._squared_gradient.shape[0], dtype=ptypes.weight)
+        self._gamma0 = gamma0
+        self._t = t
+        self._epsilon = epsilon
+        self._rho = rho
+
+    cpdef update(self, parameters, gradients):
+        self._squared_gradient = self._rho * self._squared_gradient + (1 - self._rho) * np.square(gradients)
+        delta = np.sqrt(self._squared_delta + self._epsilon) / np.sqrt(self._squared_gradient + self._epsilon) * gradients
+        self._squared_delta = self._rho * self._squared_delta + (1 - self._rho) * np.square(delta)
+        self._t += 1
+        return parameters + delta
 
 

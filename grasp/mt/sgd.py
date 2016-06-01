@@ -86,6 +86,7 @@ from grasp.optimisation.sgd import SGD
 from grasp.optimisation.sgd import FlatLearningRateSGD
 from grasp.optimisation.sgd import DecayingLearningRateSGD
 from grasp.optimisation.sgd import AdaGrad
+from grasp.optimisation.sgd import AdaDelta
 
 def npvec2str(nparray, fnames=None, separator=' '):
     """converts an array of feature values into a string (fnames can be provided)"""
@@ -137,9 +138,13 @@ def cmd_optimisation(parser):
                         help="We cool the temperature in epochs multiple of this number")
     parser.add_argument("--assess-epoch0", '-0', action='store_true',
                         help="Assess the initial model")
-    parser.add_argument("--optimiser", default='flat', choices=['flat', 'decaying', 'adagrad'],
+    parser.add_argument("--optimiser", default='flat', choices=['flat', 'decaying', 'adagrad', 'adadelta'],
                         type=str,
                         help="Choose the update strategy: flat learning rate, decaying or AdaGrad.")
+    parser.add_argument("--ada-epsilon", type=float, default=1e-6,
+                        help="Epsilon parameter for AdaGrad and AdaDelta")
+    parser.add_argument("--ada-rho", type=float, default=0.95,
+                        help="Momentum-like parameter for AdaDelta")
     parser.add_argument("--resume", type=int, default=0,
                         help="Pick up from the end of a certain iteration (avoid it for now!!!)")
 
@@ -719,14 +724,17 @@ def get_prior_mean_and_variance(model: ModelView, fnames: list,
     return np.array(mean, dtype=ptypes.weight), np.array(var, dtype=ptypes.weight)
 
 
-def get_optimiser(parameters, mean, variance, gamma0, t=0, optimiser_type='flat') -> SGD:
+def get_optimiser(parameters, mean, variance, gamma0, epsilon, rho, t=0, optimiser_type='flat') -> SGD:
     if optimiser_type == 'flat':
         return FlatLearningRateSGD(gamma0, t)
     elif optimiser_type == 'decaying':
         return DecayingLearningRateSGD(variance, gamma0, t)
     elif optimiser_type == 'adagrad':
         return AdaGrad(np.zeros(parameters.shape[0], dtype=ptypes.weight),
-                                  gamma0, t)
+                       gamma0, t, epsilon=epsilon)
+    elif optimiser_type == 'adadelta':
+        return AdaDelta(np.zeros(parameters.shape[0], dtype=ptypes.weight),
+                        gamma0, t, epsilon=epsilon, rho=rho)
     else:
         raise ValueError('I do not know this optimiser: %s' % optimiser_type)
 
@@ -822,7 +830,9 @@ def core(args):
 
     temperature = args.max_temperature
 
-    optimiser = get_optimiser(weights, prior_mean, prior_var, args.learning_rate, optimiser_type=args.optimiser)
+    optimiser = get_optimiser(weights, prior_mean, prior_var,
+                              args.learning_rate, args.ada_epsilon, args.ada_rho,
+                              optimiser_type=args.optimiser)
 
     # udpate parameters
     for epoch in range(1, args.maxiter + 1):

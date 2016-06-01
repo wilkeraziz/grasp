@@ -20,7 +20,18 @@ cdef class DecayingLearningRateSGD(SGD):
 
 cdef class AdaGrad(SGD):
 
-    cdef object _accumulator
+    cdef object _squared_gradient
     cdef float _gamma0
     cdef size_t _t
+    cdef float _epsilon
+
+
+cdef class AdaDelta(SGD):
+
+    cdef object _squared_gradient
+    cdef object _squared_delta
+    cdef float _gamma0
+    cdef size_t _t
+    cdef float _epsilon
+    cdef float _rho
 
