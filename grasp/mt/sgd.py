@@ -82,7 +82,10 @@ from time import time, strftime
 from types import SimpleNamespace
 
 import grasp.mt.pipeline2 as pipeline
-
+from grasp.optimisation.sgd import SGD
+from grasp.optimisation.sgd import FlatLearningRateSGD
+from grasp.optimisation.sgd import DecayingLearningRateSGD
+from grasp.optimisation.sgd import AdaGrad
 
 def npvec2str(nparray, fnames=None, separator=' '):
     """converts an array of feature values into a string (fnames can be provided)"""
@@ -134,12 +137,11 @@ def cmd_optimisation(parser):
                         help="We cool the temperature in epochs multiple of this number")
     parser.add_argument("--assess-epoch0", '-0', action='store_true',
                         help="Assess the initial model")
-    parser.add_argument("--decaying-lrate", action='store_true',
-                        help="Use a decaying learning rate of the form gamma_0 (1 + gamma_0 * lambda * t)^-1."
-                             "Gamma_0 is the initial learning rate, t is the update counter, "
-                             "lambda is the inverse of the variance of the Gaussian prior.")
+    parser.add_argument("--optimiser", default='flat', choices=['flat', 'decaying', 'adagrad'],
+                        type=str,
+                        help="Choose the update strategy: flat learning rate, decaying or AdaGrad.")
     parser.add_argument("--resume", type=int, default=0,
-                        help="Pick up from the end of a certain iteration")
+                        help="Pick up from the end of a certain iteration (avoid it for now!!!)")
 
 def cmd_logging(parser):
     parser.add_argument('--save-d',
@@ -717,37 +719,16 @@ def get_prior_mean_and_variance(model: ModelView, fnames: list,
     return np.array(mean, dtype=ptypes.weight), np.array(var, dtype=ptypes.weight)
 
 
-def get_learning_rates(decaying: bool, gamma0: float, t: int,
-                       variances: 'np.array',
-                       batch_coeff=1.0):
-    if decaying:
-        return np.array([gamma0 / (1.0 + gamma0 * (batch_coeff / var) * t) for var in variances], dtype=ptypes.weight)
+def get_optimiser(parameters, mean, variance, gamma0, t=0, optimiser_type='flat') -> SGD:
+    if optimiser_type == 'flat':
+        return FlatLearningRateSGD(gamma0, t)
+    elif optimiser_type == 'decaying':
+        return DecayingLearningRateSGD(variance, gamma0, t)
+    elif optimiser_type == 'adagrad':
+        return AdaGrad(np.zeros(parameters.shape[0], dtype=ptypes.weight),
+                                  gamma0, t)
     else:
-        return gamma0
-
-
-def _get_learning_rates(decaying: bool, gamma0: float, t: int,
-                       model: ModelView, fnames: list,
-                       local_prior: GaussianPrior, nonlocal_prior: GaussianPrior):
-    if not decaying:
-        return gamma0
-
-    if local_prior.var() == nonlocal_prior.var():
-        general_lambda = 1.0 / local_prior.var()
-        return gamma0 / (1.0 + gamma0 * general_lambda * t)
-
-    local_lambda = 1.0 / local_prior.var()
-    local_rate = gamma0 / (1.0 + gamma0 * local_lambda * t)
-    nonlocal_lambda = 1.0 / nonlocal_prior.var()
-    nonlocal_rate = gamma0 / (1.0 + gamma0 * nonlocal_lambda * t)
-
-    rates = []
-    for name in fnames:
-        if model.is_local(name):
-            rates.append(local_rate)
-        else:
-            rates.append(nonlocal_rate)
-    return np.array(rates, dtype=ptypes.weight)
+        raise ValueError('I do not know this optimiser: %s' % optimiser_type)
 
 
 def core(args):
@@ -818,7 +799,6 @@ def core(args):
     logging.info('Prior var:  %s', npvec2str(prior_var, fnames))
     dimensionality = len(weights)
     avg = np.zeros(dimensionality, dtype=ptypes.weight)
-    gamma0 = args.learning_rate  # initial learning rate
 
     t = 0
     n_batches = np.ceil(len(training) / float(args.batch_size))
@@ -842,6 +822,8 @@ def core(args):
 
     temperature = args.max_temperature
 
+    optimiser = get_optimiser(weights, prior_mean, prior_var, args.learning_rate, optimiser_type=args.optimiser)
+
     # udpate parameters
     for epoch in range(1, args.maxiter + 1):
 
@@ -864,15 +846,15 @@ def core(args):
                 # batch importance
                 batch_coeff = float(len(batch)) / len(training)
                 # learning rate
-                learning_rate = get_learning_rates(args.decaying_lrate, gamma0, t,
-                                                   prior_var, batch_coeff)
+                #learning_rate = get_learning_rates(args.decaying_lrate, gamma0, t, prior_var,
+                #                                   batch_coeff=1.0) # I am deliberately not adjusting for batch size
                 logging.info('Epoch %d/%d - Time %d - Batch %d/%d (%.4f) - Temperature %f', epoch, args.maxiter,
                              t,
                              b,
                              n_batches,
                              batch_coeff,
                              temperature)
-                logging.info('Learning rate %d: %s', t, npvec2str(learning_rate, fnames))
+                #logging.info('Learning rate %d: %s', t, npvec2str(learning_rate, fnames))
                 #print([seg.id for seg in batch])
                 #batch_dir = '{0}/batch{0}'.format(epoch, b)
                 #os.makedirs(batch_dir, exist_ok=True)
@@ -892,7 +874,8 @@ def core(args):
                     gradient_vec += temperature * negative_entropy_gradient
 
                 # finally, the SGD (maximisation) update is w = w + learning_rate * gradient
-                weights += learning_rate * gradient_vec
+                #weights += learning_rate * gradient_vec
+                weights = optimiser.update(weights, gradient_vec)
 
                 print('{0} ||| batch{1} ||| L2={2} ||| {3} ||| '.format(epoch, b,
                                                                         np.linalg.norm(weights - prior_mean, 2),
