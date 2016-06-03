@@ -734,7 +734,7 @@ def get_optimiser(parameters, mean, variance, gamma0, epsilon, rho, t=0, optimis
                        gamma0, t, epsilon=epsilon)
     elif optimiser_type == 'adadelta':
         return AdaDelta(np.zeros(parameters.shape[0], dtype=ptypes.weight),
-                        gamma0, t, epsilon=epsilon, rho=rho)
+                        t, epsilon=epsilon, rho=rho)
     else:
         raise ValueError('I do not know this optimiser: %s' % optimiser_type)
 
