@@ -923,6 +923,8 @@ def core(args):
 
     last_assessment = 0
 
+    best_bleu = None
+
     # udpate parameters
     for epoch in range(1, args.maxiter + 1):
 
@@ -991,9 +993,16 @@ def core(args):
 
             # sometimes we opt for assessing the model after a number of parameter updates
             if args.eval_schedule > 0 and t % args.eval_schedule == 0:
-                run_assessments(args, epoch, t, fnames, avg, joint_model, training, validation,
-                                epoch_dir, training_dir, validation_dir)
+                _, validation_bleu = run_assessments(args, epoch, t, fnames, avg, joint_model, training, validation,
+                                                     epoch_dir, training_dir, validation_dir)
                 last_assessment = t
+                if validation_bleu is not None:
+                    if best_bleu is None or validation_bleu >= best_bleu.bleu:
+                        best_bleu = SimpleNamespace()
+                        best_bleu.epoch = epoch
+                        best_bleu.update = t
+                        best_bleu.bleu = validation_bleu
+                        best_bleu.weights = avg
 
             # sometimes we opt for cooling after a number of parameter updates
             if args.cooling_regime > 0:
@@ -1001,8 +1010,15 @@ def core(args):
 
         # we always run assessments at the end of an epoch
         if last_assessment != t:  # except if eval_schedule coincided with the end of the epoch
-            run_assessments(args, epoch, t, fnames, avg, joint_model, training, validation,
-                            epoch_dir, training_dir, validation_dir)
+            _, validation_bleu = run_assessments(args, epoch, t, fnames, avg, joint_model, training, validation,
+                                                 epoch_dir, training_dir, validation_dir)
+            if validation_bleu is not None:
+                if best_bleu is None or validation_bleu >= best_bleu.bleu:
+                    best_bleu = SimpleNamespace()
+                    best_bleu.epoch = epoch
+                    best_bleu.update = t
+                    best_bleu.bleu = validation_bleu
+                    best_bleu.weights = avg
 
         # sometimes we opt for cooling at the end of epochs
         if args.cooling_regime <= 0:
@@ -1012,6 +1028,13 @@ def core(args):
     with smart_wopen('{0}/weights-final.txt'.format(workspace)) as fw:
         for fname, fvalue in zip(fnames, avg):
             print('{0} {1}'.format(fname, repr(fvalue)), file=fw)
+
+    if best_bleu is not None:
+        with smart_wopen('{0}/weights-best.txt'.format(workspace)) as fw:
+            print('# epoch=%d update=%d BLEU=%f' % (best_bleu.epoch, best_bleu.update, best_bleu.bleu), file=fw)
+            for fname, fvalue in zip(fnames, best_bleu.weights):
+                print('{0} {1}'.format(fname, repr(fvalue)), file=fw)
+
 
 def main():
     args = get_argparser().parse_args()
