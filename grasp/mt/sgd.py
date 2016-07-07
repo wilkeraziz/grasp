@@ -135,9 +135,15 @@ def cmd_optimisation(parser):
     parser.add_argument("--cooling-factor", type=float, default=1.0,
                         help="Cooling factor (see cooling-schedule)")
     parser.add_argument("--cooling-schedule", type=int, default=1,
-                        help="We cool the temperature in epochs multiple of this number")
+                        help="If positive, we cool the temperature in epochs multiple of this number")
+    parser.add_argument("--cooling-regime", type=int, default=0,
+                        help="If positive, specifies the number of parameter updates between cooling actions."
+                             "By default we cool at the end of an epoch.")
     parser.add_argument("--assess-epoch0", '-0', action='store_true',
                         help="Assess the initial model")
+    parser.add_argument("--eval-schedule", type=int, default=0,
+                        help="If positive, specifies the number of parameter updates between assessments."
+                             "Note that we always evaluate at the end of an epoch.")
     parser.add_argument("--optimiser", default='flat', choices=['flat', 'decaying', 'adagrad', 'adadelta'],
                         type=str,
                         help="Choose the update strategy: flat learning rate, decaying or AdaGrad.")
@@ -292,6 +298,9 @@ def get_argparser():
                         help="Validation set")
     parser.add_argument('--validation-alias', type=str, default='validation',
             help='Change the alias of the validation set')
+    parser.add_argument('--preparse', action='store_true',
+                        help='Pre-compute parse forests and local components for training data.'
+                             'We always pre-compute them for validation data.')
     parser.add_argument('--assess-training', action='store_true',
                         help='Assess external loss in training set after each epoch')
     parser.add_argument('--redo', action='store_true',
@@ -435,7 +444,7 @@ def biparse(args, workingdir: str, joint_model: ModelView, conditional_model: Mo
     return [seg for seg, status in zip(segments, feedback) if status]
 
 
-def preprocess_dataset(args, path, grammars, workingdir, joint_model, conditional_model):
+def preprocess_dataset(args, path, grammars, workingdir, joint_model, conditional_model, preparse):
     """
     Apply basic pre-processing steps to a data set.
         i.e. load, save references, biparse, save forests and components.
@@ -448,27 +457,32 @@ def preprocess_dataset(args, path, grammars, workingdir, joint_model, conditiona
     """
     unconstrained_data = pipeline.read_segments_from_file(path, grammars)
     logging.info('Loaded %d segments', len(unconstrained_data))
-    # store references for evaluation purposes
-    pipeline.save_references('{0}/refs'.format(workingdir), unconstrained_data)
     # filter for length
     if args.max_length > 0:
         length_constrained = [seg for seg in unconstrained_data if len(seg.src_tokens()) <= args.max_length]
     else:
         length_constrained = unconstrained_data
+    # store references for evaluation purposes
+    pipeline.save_references('{0}/refs'.format(workingdir), unconstrained_data)
     # biparse
-    biparsable = biparse(args, workingdir, joint_model, conditional_model, length_constrained)
+    if preparse:
+        biparsable = biparse(args, workingdir, joint_model, conditional_model, length_constrained)
+    else:
+        biparsable = None
     return unconstrained_data, length_constrained, biparsable
 
 
-def sample_derivations(seg, args, staticdir, forest_path, components_path,
+def sample_derivations(seg, args, staticdir,
+                       forest, local_components,
                       model: ModelView, n_top, sample_size):
+
     # 1. Load pickled objects for the conditional distribution
-    logging.debug('[%d] Loading target forest', seg.id)
-    forest = unpickle_it(forest_path)
+    #logging.debug('[%d] Loading target forest', seg.id)
+    #forest = unpickle_it(forest_path)
     tsort = AcyclicTopSortTable(forest)  # TODO: save/load it?
 
-    logging.debug('[%d] Loading local components', seg.id)
-    local_components = unpickle_it(components_path)
+    #logging.debug('[%d] Loading local components', seg.id)
+    #local_components = unpickle_it(components_path)
 
     logging.debug('[%d] Computing l(d)', seg.id)
     lfunc = TableLookupFunction(np.array([model.local_model().score(fcomp)
@@ -570,11 +584,11 @@ def sample_derivations(seg, args, staticdir, forest_path, components_path,
     return result
 
 
-def expected_features(seg, args, staticdir, forest_path, components_path,
-                      model: ModelView, n_top):
-    result = sample_derivations(seg, args, staticdir, forest_path, components_path,
-                                              model, n_top, sample_size=args.samples[0])
-    return result.expected_fvec
+#def expected_features(seg, args, staticdir, forest_path, components_path,
+#                      model: ModelView, n_top):
+#    result = sample_derivations(seg, args, staticdir, forest_path, components_path,
+#                                              model, n_top, sample_size=args.samples[0])
+#    return result.expected_fvec
 
 
 def negative_entropy_derivative(expected_fvec: FComponents, d_groups, posterior, entropy, model: ModelView):
@@ -589,6 +603,22 @@ def negative_entropy_derivative(expected_fvec: FComponents, d_groups, posterior,
         derivative = derivative.hadamard(derivation.components.power(prob * np.log(prob), semiring.inside), semiring.prob.plus)
     derivative = derivative.hadamard(expected_fvec.power(entropy, semiring.inside), semiring.prob.plus)
     return derivative
+
+
+def get_forest_and_local_components(args, seg, joint_model: ModelView, conditional_model: ModelView, staticdir):
+
+    if args.preparse:
+        result = SimpleNamespace()
+        result.joint = SimpleNamespace()
+        result.conditional = SimpleNamespace()
+        result.conditional.forest = unpickle_it('{0}/{1}.conditional.forest'.format(staticdir, seg.id))
+        result.conditional.components = unpickle_it('{0}/{1}.conditional.components'.format(staticdir, seg.id))
+        result.joint.forest = unpickle_it('{0}/{1}.joint.forest'.format(staticdir, seg.id))
+        result.joint.components = unpickle_it('{0}/{1}.joint.components'.format(staticdir, seg.id))
+    else:
+        result = pipeline.biparse(seg, BiparserOptions(args), joint_model, conditional_model)
+
+    return result
 
 
 @traceit
@@ -606,26 +636,28 @@ def _gradient(seg: SegmentMetaData, args, staticdir: str,
     :return: np.array (gradient vector)
     """
 
+    data_structures = get_forest_and_local_components(args, seg, joint_model, conditional_model, staticdir)
+
+    if not data_structures.conditional.forest or not data_structures.joint.forest:  # not parsable
+        return False, None, None
+
     t0 = time()
     conditional = sample_derivations(seg, args, staticdir,
-                                        '{0}/{1}.conditional.forest'.format(staticdir, seg.id),
-                                        '{0}/{1}.conditional.components'.format(staticdir, seg.id),
-                                        conditional_model, 3,
-                                         args.samples[0])
+                                     data_structures.conditional.forest,
+                                     data_structures.conditional.components,
+                                     conditional_model, 3,
+                                     args.samples[0])
     logging.info('[%d] Conditional gradient took %s seconds', seg.id, time() - t0)
 
     conditional_vec = np.array(list(conditional.expected_fvec.densify()), dtype=ptypes.weight)
 
     t0 = time()
     joint = sample_derivations(seg, args, staticdir,
-                                  '{0}/{1}.joint.forest'.format(staticdir, seg.id),
-                                  '{0}/{1}.joint.components'.format(staticdir, seg.id),
-                                  joint_model, 2, args.samples[0])
+                               data_structures.joint.forest,
+                               data_structures.joint.components,
+                               joint_model, 2, args.samples[0])
     joint_vec = np.array(list(joint.expected_fvec.densify()), dtype=ptypes.weight)
     logging.info('[%d] Joint gradient took %s seconds', seg.id, time() - t0)
-
-
-
 
     gradient_vector = conditional_vec - joint_vec
 
@@ -639,7 +671,7 @@ def _gradient(seg: SegmentMetaData, args, staticdir: str,
     print('[{0}] ||| entropy ||| {1}'.format(seg.id, npvec2str(entropy_vec,
                                                                joint_model.fnames())))
 
-    return gradient_vector, entropy_vec
+    return True, gradient_vector, entropy_vec
 
 
 def gradient(segments, args, staticdir: str,
@@ -652,7 +684,10 @@ def gradient(segments, args, staticdir: str,
                                       joint_model=joint_model,
                                       conditional_model=conditional_model),
                               segments)
-    return np.array([likelihood for likelihood, entropy in derivatives]), np.array([entropy for likelihood, entropy in derivatives])
+    L = np.array([likelihood for status, likelihood, entropy in derivatives if status])
+    H = np.array([entropy for status, likelihood, entropy in derivatives if status])
+
+    return L, H
 
 
 @traceit
@@ -661,12 +696,13 @@ def _decode(seg, args, joint_model: ModelView, staticdir, outdir, sample_size):
     """
 
     # load forest and local components
+    forest = unpickle_it('{0}/{1}.joint.forest'.format(staticdir, seg.id))
+    components = unpickle_it('{0}/{1}.joint.components'.format(staticdir, seg.id))
 
     result = sample_derivations(seg, args, outdir,
-                                 '{0}/{1}.joint.forest'.format(staticdir, seg.id),
-                                 '{0}/{1}.joint.components'.format(staticdir, seg.id),
-                                 joint_model,
-                                 2, sample_size=sample_size)
+                                forest, components,
+                                joint_model,
+                                2, sample_size=sample_size)
 
     # decision rule
     from grasp.mt.pipeline import consensus
@@ -739,6 +775,44 @@ def get_optimiser(parameters, mean, variance, gamma0, epsilon, rho, t=0, optimis
         raise ValueError('I do not know this optimiser: %s' % optimiser_type)
 
 
+def run_assessments(args, epoch, update_number,
+                    fnames, avg, joint_model, training, validation,
+                    epoch_dir, training_dir, validation_dir):
+
+    # save weights
+    with smart_wopen('{0}/weights-{1}.txt'.format(epoch_dir, update_number)) as fw:
+        for fname, fvalue in zip(fnames, avg):
+            print('{0} {1}'.format(fname, repr(fvalue)), file=fw)
+
+    training_bleu, validation_bleu = None, None
+
+    # decode training set
+    if args.assess_training:
+        logging.info('Evaluating training set')
+        mteval_dir = '{0}/mteval-{1}-{2}'.format(epoch_dir, update_number, args.training_alias)
+        os.makedirs(epoch_dir, exist_ok=True)
+        training_bleu = decode_and_eval(training, args, joint_model, training_dir, mteval_dir)
+        logging.info('Epoch %d (update %d) - Training BLEU %s', epoch, update_number, training_bleu)
+
+    # decode validation set
+    if validation:
+        logging.info('Evaluating validation set')
+        mteval_dir = '{0}/mteval-{1}-{2}'.format(epoch_dir, update_number, args.validation_alias)
+        os.makedirs(epoch_dir, exist_ok=True)
+        validation_bleu = decode_and_eval(validation, args, joint_model, validation_dir, mteval_dir)
+        logging.info('Epoch %d (update %d) - Validation BLEU %s', epoch, update_number, validation_bleu)
+
+    return training_bleu, validation_bleu
+
+
+def cooling_action(args, iteration, temperature):
+    if args.cooling_schedule > 0 and iteration > 0 and iteration % args.cooling_schedule == 0:
+        temperature /= args.cooling_factor  # cool it
+        if temperature < args.min_temperature:  # check for lower bound
+            temperature = args.min_temperature
+    return temperature
+
+
 def core(args):
 
     workspace = make_dirs(args)
@@ -783,16 +857,29 @@ def core(args):
 
     # 1. Load/Parse
     # 1a. Training data (biparsable sentences)
-    _training, _, training = preprocess_dataset(args, args.training, args.training_grammars, training_dir,
-                                             joint_model, conditional_model)
+    unconstrained_training, length_constrained_training, biparsable_training = preprocess_dataset(args,
+                                                                                                  args.training,
+                                                                                                  args.training_grammars,
+                                                                                                  training_dir,
+                                                                                                  joint_model,
+                                                                                                  conditional_model,
+                                                                                                  preparse=args.preparse)
+
     # 1b. Validation data (if applicable)
     if args.validation:  # we do not need to biparse the validation set
         _validation, validation, _ = preprocess_dataset(args, args.validation, args.validation_grammars, validation_dir,
-                                                     joint_model, conditional_model=None)
+                                                     joint_model, conditional_model=None, preparse=True)
     else:
         _validation, validation = [], []
-    logging.info('This model can generate %d out of %d training instances', len(training),
-                 len(_training))
+
+    if biparsable_training is not None:
+        logging.info('This model can generate %d out of %d training instances', len(biparsable_training),
+                     len(length_constrained_training))
+        training = biparsable_training
+    else:
+        logging.info('We selected %d training instances', len(length_constrained_training))
+        training = length_constrained_training
+
     logging.info('We selected %d out of %d validation instances', len(validation),
                  len(_validation))
 
@@ -834,99 +921,97 @@ def core(args):
                               args.learning_rate, args.ada_epsilon, args.ada_rho,
                               optimiser_type=args.optimiser)
 
+    last_assessment = 0
+
     # udpate parameters
     for epoch in range(1, args.maxiter + 1):
 
-        if epoch <= args.resume:
-            # here we don't really do anything other than counting the time steps
-            for b, first in enumerate(range(0, len(training), args.batch_size), 1):
-                t += 1
-        else:
-            # where we store everything related to this iteration
-            epoch_dir = '{0}/epoch{1}'.format(workspace, epoch)
-            os.makedirs(epoch_dir, exist_ok=True)
+        # where we store everything related to this iteration
+        epoch_dir = '{0}/epoch{1}'.format(workspace, epoch)
+        os.makedirs(epoch_dir, exist_ok=True)
 
-            # first we get a random permutation of the training data
-            shuffle(training)
+        # first we get a random permutation of the training data
+        shuffle(training)
 
-            # then we operate in mini-batches
-            for b, first in enumerate(range(0, len(training), args.batch_size), 1):
-                # gather segments in this batch
-                batch = [training[ith] for ith in range(first, min(first + args.batch_size, len(training)))]
-                # batch importance
-                batch_coeff = float(len(batch)) / len(training)
-                # learning rate
-                #learning_rate = get_learning_rates(args.decaying_lrate, gamma0, t, prior_var,
-                #                                   batch_coeff=1.0) # I am deliberately not adjusting for batch size
-                logging.info('Epoch %d/%d - Time %d - Batch %d/%d (%.4f) - Temperature %f', epoch, args.maxiter,
-                             t,
-                             b,
-                             n_batches,
-                             batch_coeff,
-                             temperature)
-                #logging.info('Learning rate %d: %s', t, npvec2str(learning_rate, fnames))
-                #print([seg.id for seg in batch])
-                #batch_dir = '{0}/batch{0}'.format(epoch, b)
-                #os.makedirs(batch_dir, exist_ok=True)
+        # then we operate in mini-batches
+        for b, first in enumerate(range(0, len(training), args.batch_size), 1):
+            # gather segments in this batch
+            batch = [training[ith] for ith in range(first, min(first + args.batch_size, len(training)))]
+            # batch importance
+            batch_coeff = float(len(batch)) / len(training)
+            # learning rate
+            #learning_rate = get_learning_rates(args.decaying_lrate, gamma0, t, prior_var,
+            #                                   batch_coeff=1.0) # I am deliberately not adjusting for batch size
+            logging.info('Epoch %d/%d - Time %d - Batch %d/%d (%.4f) - Temperature %f', epoch, args.maxiter,
+                         t,
+                         b,
+                         n_batches,
+                         batch_coeff,
+                         temperature)
+            #logging.info('Learning rate %d: %s', t, npvec2str(learning_rate, fnames))
+            #print([seg.id for seg in batch])
+            #batch_dir = '{0}/batch{0}'.format(epoch, b)
+            #os.makedirs(batch_dir, exist_ok=True)
 
-                likelihood_gradient_vectors, negative_entropy_gradient_vectors = gradient(batch, args, training_dir, joint_model, conditional_model)
-                likelihood_gradient = likelihood_gradient_vectors.mean(0)  # normalise for batch size
-                negative_entropy_gradient = negative_entropy_gradient_vectors.mean(0)  # normalise for batch size
+            likelihood_gradient_vectors, negative_entropy_gradient_vectors = gradient(batch, args, training_dir, joint_model, conditional_model)
+            if len(likelihood_gradient_vectors) == 0:
+                logging.info('Epoch %d - Batch %d - skipping batch for no segment was parsable', epoch, b)
+                # when we skip a batch we do not make parameter updates, thus we do not advance t
+                continue
 
-                # The gradient of the prior with respect to component k is: - (w_k - mean_k) / var
-                # we also normalise for the importance of the batch
-                prior_gradient = - (weights - prior_mean) / prior_var * batch_coeff
-                # The gradient of the objective function decomposes as the gradient of the (log) likelihood plus
-                # the gradient of the (log) prior
-                gradient_vec = likelihood_gradient + prior_gradient
-                # if we have entropy regularisation, then we also sum the gradient of the negative entropy
-                if temperature != 0:
-                    gradient_vec += temperature * negative_entropy_gradient
+            likelihood_gradient = likelihood_gradient_vectors.mean(0)  # normalise for batch size
+            negative_entropy_gradient = negative_entropy_gradient_vectors.mean(0)  # normalise for batch size
 
-                # finally, the SGD (maximisation) update is w = w + learning_rate * gradient
-                #weights += learning_rate * gradient_vec
-                weights = optimiser.update(weights, gradient_vec)
+            # The gradient of the prior with respect to component k is: - (w_k - mean_k) / var
+            # we also normalise for the importance of the batch
+            prior_gradient = - (weights - prior_mean) / prior_var * batch_coeff
+            # The gradient of the objective function decomposes as the gradient of the (log) likelihood plus
+            # the gradient of the (log) prior
+            gradient_vec = likelihood_gradient + prior_gradient
+            # if we have entropy regularisation, then we also sum the gradient of the negative entropy
+            if temperature != 0:
+                gradient_vec += temperature * negative_entropy_gradient
 
-                print('{0} ||| batch{1} ||| L2={2} ||| {3} ||| '.format(epoch, b,
-                                                                        np.linalg.norm(weights - prior_mean, 2),
-                                                                        npvec2str(weights, fnames)))
-                # recursive average (Polyak and Juditsky, 1992)
-                avg = t / (t + 1) * avg + 1.0 / (t + 1) * weights
-                t += 1
-                print('{0} ||| avg{1} ||| L2={2} ||| {3}'.format(epoch, t, np.linalg.norm(avg - prior_mean, 2),
-                                                                 npvec2str(avg, fnames)))
+            # finally, the SGD (maximisation) update is w = w + learning_rate * gradient
+            #weights += learning_rate * gradient_vec
+            weights = optimiser.update(weights, gradient_vec)
 
+            print('{0} ||| batch{1} ||| L2={2} ||| {3} ||| '.format(epoch, b,
+                                                                    np.linalg.norm(weights - prior_mean, 2),
+                                                                    npvec2str(weights, fnames)))
+            # recursive average (Polyak and Juditsky, 1992)
+            avg = t / (t + 1) * avg + 1.0 / (t + 1) * weights
+            t += 1
+            print('{0} ||| avg{1} ||| L2={2} ||| {3}'.format(epoch, t, np.linalg.norm(avg - prior_mean, 2),
+                                                             npvec2str(avg, fnames)))
 
-                # update models
-                model = make_models(dict(zip(model.fnames(), avg)), model.extractors())
-                joint_model, conditional_model = pipeline.get_factorised_models(model, args.factorisation)
+            # update models
+            model = make_models(dict(zip(model.fnames(), avg)), model.extractors())
+            joint_model, conditional_model = pipeline.get_factorised_models(model, args.factorisation)
 
-            # save weights
-            with smart_wopen('{0}/weights.txt'.format(epoch_dir)) as fw:
-                for fname, fvalue in zip(fnames, avg):
-                    print('{0} {1}'.format(fname, repr(fvalue)), file=fw)
+            # sometimes we opt for assessing the model after a number of parameter updates
+            if args.eval_schedule > 0 and t % args.eval_schedule == 0:
+                run_assessments(args, epoch, t, fnames, avg, joint_model, training, validation,
+                                epoch_dir, training_dir, validation_dir)
+                last_assessment = t
 
-            # decode training set
-            if args.assess_training:
-                logging.info('Evaluating training set')
-                mteval_dir = '{0}/mteval-{1}'.format(epoch_dir, args.training_alias)
-                os.makedirs(epoch_dir, exist_ok=True)
-                bleu = decode_and_eval(training, args, joint_model, training_dir, mteval_dir)
-                logging.info('Epoch %d - Training BLEU %s', epoch, bleu)
+            # sometimes we opt for cooling after a number of parameter updates
+            if args.cooling_regime > 0:
+                temperature = cooling_action(args, t, temperature)
 
-            # decode validation set
-            if validation:
-                logging.info('Evaluating validation set')
-                mteval_dir = '{0}/mteval-{1}'.format(epoch_dir, args.validation_alias)
-                os.makedirs(epoch_dir, exist_ok=True)
-                bleu = decode_and_eval(validation, args, joint_model, validation_dir, mteval_dir)
-                logging.info('Epoch %d - Validation BLEU %s', epoch, bleu)
+        # we always run assessments at the end of an epoch
+        if last_assessment != t:  # except if eval_schedule coincided with the end of the epoch
+            run_assessments(args, epoch, t, fnames, avg, joint_model, training, validation,
+                            epoch_dir, training_dir, validation_dir)
 
-        if epoch % args.cooling_schedule == 0:  # whether it's time to cool
-            temperature /= args.cooling_factor  # cool it
-            if temperature < args.min_temperature:  # check for lower bound
-                temperature = args.min_temperature
+        # sometimes we opt for cooling at the end of epochs
+        if args.cooling_regime <= 0:
+            temperature = cooling_action(args, epoch, temperature)
 
+    # save final weights
+    with smart_wopen('{0}/weights-final.txt'.format(workspace)) as fw:
+        for fname, fvalue in zip(fnames, avg):
+            print('{0} {1}'.format(fname, repr(fvalue)), file=fw)
 
 def main():
     args = get_argparser().parse_args()
