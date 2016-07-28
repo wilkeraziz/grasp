@@ -29,6 +29,9 @@ cdef class NamedFeature(TableLookup):
                                                                        repr(self._fkey),
                                                                        repr(self._default))
 
+    cpdef str cfg(self):
+        return '%s name=%s key=%s default=%f' % (NamedFeature.__name__, self.name, self._fkey, self._default)
+
     def __getstate__(self):
         return super(NamedFeature,self).__getstate__(), {'default': self._default, 'fkey': self._fkey}
 
@@ -99,6 +102,9 @@ cdef class RuleTable(TableLookup):
                                                                         repr(self.name),
                                                                         repr(self._fnames),
                                                                         repr(self._default))
+
+    cpdef str cfg(self):
+        return '%s name=%s default=%f names=%s' % (RuleTable.__name__, self.name, self._default, ','.join(self._fnames))
 
     def __getstate__(self):
         return super(RuleTable,self).__getstate__(), {'fnames': self._fnames, 'default': self._default}
@@ -172,6 +178,10 @@ cdef class LogTransformedRuleTable(RuleTable):
                                                                         repr(self.name),
                                                                         repr(self._fnames),
                                                                         repr(self._default))
+
+    cpdef str cfg(self):
+        return '%s name=%s default=%f names=%s' % (LogTransformedRuleTable.__name__, self.name, self._default,
+                                                   ','.join(self._fnames))
 
     cpdef FRepr featurize(self, rule):
         """

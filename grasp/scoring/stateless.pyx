@@ -34,6 +34,9 @@ cdef class WordPenalty(Stateless):
                                                             repr(self.name),
                                                             repr(self._penalty))
 
+    cpdef str cfg(self):
+        return '%s name=%s penalty=%f' % (WordPenalty.__name__, self.name, self._penalty)
+
     cpdef tuple fnames(self, wkeys):
         return tuple([self._name])
 
@@ -109,6 +112,9 @@ cdef class ArityPenalty(Stateless):
                                                                            repr(self.name),
                                                                            repr(self._penalty),
                                                                            repr(self._max_arity))
+
+    cpdef str cfg(self):
+        return '%s name=%s penalty=%f max-arity=%d' % (ArityPenalty.__name__, self.name, self._penalty, self._max_arity)
 
     cpdef tuple fnames(self, wkeys):
         if self._max_arity < 0:

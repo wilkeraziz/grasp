@@ -9,6 +9,7 @@ from grasp.recipes import re_sub
 from grasp.recipes import re_key_value
 from grasp.scoring.extractor import TableLookup, Stateless, Stateful
 from grasp.scoring.model import ModelContainer, ModelView
+from collections import defaultdict
 
 
 def cdec_basic():
@@ -155,3 +156,81 @@ def make_models(wmap, extractors: 'list[Extractor]', uniform_weights=False) -> M
                 wmap[fname] = 1.0 / len(extractors) / len(fnames)
 
     return ModelContainer(wmap, extractors)
+
+
+def save_model(model: ModelView, path):
+    with open(path, 'w') as fo:
+        for extractor in model.extractors():
+            print(extractor.cfg(), file=fo)
+
+
+def compare_models(model: ModelView, path):
+    my_cfg = set()
+    for extractor in model.extractors():
+        my_cfg.add(extractor.cfg())
+    other_cfg = set()
+    with open(path, 'r') as fi:
+        for line in fi:
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+            other_cfg.add(line)
+    return my_cfg == other_cfg
+
+
+def save_factorisation(joint_model: ModelView, conditional_model: ModelView, path):
+    with open(path, 'w') as fo:
+        print('[joint]', file=fo)
+        print('local=%s' % ' '.join(extractor.name for extractor in joint_model.local_model().extractors()), file=fo)
+        print('nonlocal=%s' % ' '.join(extractor.name for extractor in joint_model.nonlocal_model().extractors()),
+              file=fo)
+        print(file=fo)
+        print('[conditional]', file=fo)
+        print('local=%s' % ' '.join(extractor.name for extractor in conditional_model.local_model().extractors()),
+              file=fo)
+        print('nonlocal=%s' % ' '.join(extractor.name for extractor in conditional_model.nonlocal_model().extractors()),
+              file=fo)
+
+
+def read_factorisation(path):
+    """
+    Return a joint and a conditional factorisation of the model.
+    :param path: path to a file with the complete factorisation of a model
+    """
+    joint_cfg = defaultdict(set)
+    conditional_cfg = defaultdict(set)
+    if path:
+        with smart_ropen(path) as fi:
+            changes = None
+            for line in fi:
+                line = line.strip()
+                if not line or line.startswith('#'):  # ignore comments and empty lines
+                    continue
+                if line == '[joint]':
+                    changes = joint_cfg
+                elif line == '[conditional]':
+                    changes = conditional_cfg
+                elif changes is None:
+                    raise ValueError('Syntax error in factorisation file')
+                elif line.startswith('local='):
+                    names = line.replace('local=', '', 1)
+                    changes['local'].update(names.split())
+                elif line.startswith('nonlocal='):
+                    names = line.replace('nonlocal=', '', 1)
+                    changes['nonlocal'].update(names.split())
+
+    return joint_cfg, conditional_cfg
+
+
+def compare_factorisations(joint_model: ModelView, conditional_model: ModelView, path):
+    joint_local = set(extractor.name for extractor in joint_model.local_model().extractors())
+    joint_nonlocal = set(extractor.name for extractor in joint_model.nonlocal_model().extractors())
+    conditional_local = set(extractor.name for extractor in conditional_model.local_model().extractors())
+    conditional_nonlocal = set(extractor.name for extractor in conditional_model.nonlocal_model().extractors())
+
+    other_joint, other_conditional = read_factorisation(path)
+
+    joint_status = joint_local == other_joint['local'] and joint_nonlocal == other_joint['nonlocal']
+    conditional_status = conditional_local == other_conditional['local'] and conditional_nonlocal == other_conditional[
+        'nonlocal']
+    return joint_status and conditional_status

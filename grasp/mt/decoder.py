@@ -247,6 +247,7 @@ def core(args):
     #time_report.save()
 
     print('Check output files in:', outdir, file=sys.stderr)
+    logging.info('Done.')
 
 
 def main():

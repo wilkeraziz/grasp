@@ -78,6 +78,10 @@ cdef class StatelessLM(Stateless):
                                                                                       repr(self._bos),
                                                                                       repr(self._eos))
 
+    cpdef str cfg(self):
+        return '%s name=%s order=%d bos=%s eos=%s path=%s' % (StatelessLM.__name__, self.name,
+                                                              self._order, self._bos, self._eos, self._path)
+
     cpdef tuple fnames(self, wkeys):
         return self._features
 
@@ -224,6 +228,10 @@ cdef class KenLM(Stateful):
                                                                                       repr(self._bos),
                                                                                       repr(self._eos))
 
+    cpdef str cfg(self):
+        return '%s name=%s order=%d bos=%s eos=%s path=%s' % (KenLM.__name__, self.name,
+                                                              self._order, self._bos, self._eos, self._path)
+
     cpdef tuple fnames(self, wkeys):
         return self._features
 
@@ -348,6 +356,9 @@ cdef class ConstantLM(Stateful):
                                                              repr(self.id),
                                                              repr(self.name),
                                                              repr(self._constant))
+
+    cpdef str cfg(self):
+        return '%s name=%s constant=%f' % (ConstantLM.__name__, self.name, self._constant)
 
     cpdef tuple fnames(self, wkeys):
         return tuple([self.name])

@@ -54,6 +54,9 @@ cdef class Extractor:
         """
         raise NotImplementedError('I do not know which type of FRepr to create.')
 
+    cpdef str cfg(self):
+        return NotImplementedError('I have not been configured.')
+
     @classmethod
     def construct(cls, int uid, str name, str cfgstr):
         raise NotImplementedError('I do not know how to construct an extractor from a string')

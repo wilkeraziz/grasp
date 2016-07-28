@@ -20,6 +20,8 @@ cdef class Extractor:
 
     cpdef FRepr constant(self, weight_t value)
 
+    cpdef str cfg(self)
+
 
 cdef class TableLookup(Extractor):
 

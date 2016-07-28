@@ -42,6 +42,11 @@ cdef class FMap(FRepr):
     cdef weight_t get(self, object key)
 
 
+cdef class FCSR(FRepr):
+
+    cdef readonly object csr
+
+
 cdef class FComponents(FRepr):
 
     cdef readonly list components

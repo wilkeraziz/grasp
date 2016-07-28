@@ -133,6 +133,19 @@ cdef class SCFGProduction:
             ' '.join(repr(s) if isinstance(s, Terminal) else '[%d]' % (next(A)) for s in self.orhs),
             ' '.join('{0}={1}'.format(k, v) for k, v in sorted(self._fmap.items())))
 
+    def tostr(self, bint lhs=True, bint irhs=True, bint orhs=True, bint fmap=True):
+        cdef list parts = []
+        if lhs:
+            parts.append(repr(self.lhs))
+        if irhs:
+            parts.append(' '.join(repr(s) for s in self.irhs))
+        if orhs:
+            A = iter(self.alignment)
+            parts.append(' '.join(repr(s) if isinstance(s, Terminal) else '[%d]' % (next(A)) for s in self.orhs))
+        if fmap:
+            parts.append(' '.join('{0}={1}'.format(k, v) for k, v in sorted(self._fmap.items())))
+        return ' ||| '.join(parts)
+
     def project_rhs(self):
         """Computes the target RHS by projecting source labels through nonterminal alignment."""
         alignment = iter(self.alignment)

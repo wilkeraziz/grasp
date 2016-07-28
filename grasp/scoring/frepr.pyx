@@ -8,6 +8,7 @@ from grasp.ptypes cimport weight_t
 import grasp.ptypes as ptypes
 
 from grasp.semiring.operator cimport BinaryOperator
+from scipy.sparse import csr_matrix
 
 cimport numpy as np
 import numpy as np
@@ -266,6 +267,76 @@ cdef class FMap(FRepr):
 
     def __repr__(self):
         return 'FMap(%r, default=%r)' % (self.map, self._default)
+
+
+cdef class FCSR(FRepr):
+
+    def __init__(self, csr):
+        """
+        """
+        self.csr = csr
+
+    @staticmethod
+    def construct(data, indices, max_cols):
+        if len(data) == len(indices):
+            return FCSR(csr_matrix((np.array(data), np.array(indices), np.array([0, len(indices)])),
+                              shape=(1, max_cols)))
+        else:
+            raise ValueError('`data` and `indices` should have the same length')
+
+    cpdef FRepr prod(self, weight_t scalar):
+        return FCSR(self.csr * scalar)
+
+    cpdef weight_t dot(self, FRepr w) except *:
+        cdef FCSR other = <FCSR?>w
+        return self.csr.dot(other.csr.T)[0,0]
+
+    cpdef FRepr hadamard(self, FRepr rhs, BinaryOperator op):
+        cdef FCSR other = <FCSR?> rhs
+        cdef int k
+        cols = np.unique(np.concatenate((self.csr.indices, other.csr.indices)))
+        data = np.array([op.evaluate(self.csr[0, k], other.csr[0,k]) for k in cols])
+        csr = csr_matrix((data, cols, np.array([0, cols.shape[0]])), shape=self.csr.shape)
+        csr.eliminate_zeros()
+        return FCSR(csr)
+
+    cpdef FRepr elementwise(self, UnaryOperator op):
+        cdef object csr = self.csr.copy()
+        csr.data = np.array([op.evaluate(v) for v in csr.data])
+        csr.eliminate_zeros()
+        return FCSR(csr)
+
+    cpdef FRepr elementwise_b(self, weight_t rhs, BinaryOperator op):
+        cdef object csr = self.csr.copy()
+        csr.data = np.array([op.evaluate(lhs, rhs) for lhs in csr.data])
+        csr.eliminate_zeros()
+        return FCSR(csr)
+
+    cpdef FRepr power(self, weight_t power, Semiring semiring):
+        cdef object csr = self.csr.copy()
+        csr.data = np.array([semiring.power(base, power) for base in csr.data])
+        return FCSR(csr)
+
+    cpdef FRepr densify(self):
+        return FVec(self.csr.toarray()[0])
+
+    def __getstate__(self):
+        return {'csr': self.csr}
+
+    def __setstate__(self, state):
+        self.csr = state['csr']
+
+    def __len__(self):
+        return self.csr.count_nonzero()
+
+    def __iter__(self):
+        return zip(self.csr.indices, self.csr.data)
+
+    def __str__(self):
+        return ' '.join('{0}={1}'.format(k, v) for k, v in zip(self.csr.indices, self.csr.data))
+
+    def __repr__(self):
+        return 'FCSR(%r)' % self.csr
 
 
 cdef class FComponents(FRepr):

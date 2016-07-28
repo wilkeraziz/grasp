@@ -22,7 +22,9 @@ import numpy as np
 import traceback
 from multiprocessing import Pool
 from functools import partial
-from collections import deque
+from collections import deque, defaultdict
+import shutil
+import glob
 
 
 
@@ -72,6 +74,7 @@ from grasp.scoring.model import ModelView
 from grasp.scoring.parameter import SymmetricGuassianPrior, AsymmetricGuassianPrior
 from grasp.scoring.fvecfunc import derivation_fvec
 from grasp.scoring.parameter import GaussianPrior
+from grasp.scoring.util import save_model, save_factorisation, compare_models, compare_factorisations
 
 from grasp.io.results import save_mcmc_yields, save_mcmc_derivations, save_markov_chain
 
@@ -121,12 +124,12 @@ def cmd_optimisation(parser):
     parser.add_argument("--local-gaussian-mean", type=str, default=None,
                         help="Set the mean of the Gaussian prior over parameters of the local model "
                              "to something other than 0 (format: a weight file)")
-    parser.add_argument("--local-gaussian-variance", type=float, default=1.0,
+    parser.add_argument("--local-gaussian-variance", type=float, default=float('inf'),
                         help="Variance of the Gaussian prior over parameters of the local model")
     parser.add_argument("--nonlocal-gaussian-mean", type=str, default=None,
                         help="Set the mean of the Gaussian prior over parameters of the nonlocal model "
                              "to something other than 0 (format: a weight file)")
-    parser.add_argument("--nonlocal-gaussian-variance", type=float, default=1.0,
+    parser.add_argument("--nonlocal-gaussian-variance", type=float, default=float('inf'),
                         help="Variance of the Gaussian prior over parameters of the nonlocal model")
     parser.add_argument("--max-temperature", type=float, default=0.0,
                         help="Annealing / Entropy regularisation")
@@ -144,9 +147,9 @@ def cmd_optimisation(parser):
     parser.add_argument("--eval-schedule", type=int, default=0,
                         help="If positive, specifies the number of parameter updates between assessments."
                              "Note that we always evaluate at the end of an epoch.")
-    parser.add_argument("--optimiser", default='flat', choices=['flat', 'decaying', 'adagrad', 'adadelta'],
+    parser.add_argument("--optimiser", default='adagrad', choices=['flat', 'decaying', 'adagrad', 'adadelta'],
                         type=str,
-                        help="Choose the update strategy: flat learning rate, decaying or AdaGrad.")
+                        help="Choose the update strategy.")
     parser.add_argument("--ada-epsilon", type=float, default=1e-6,
                         help="Epsilon parameter for AdaGrad and AdaDelta")
     parser.add_argument("--ada-rho", type=float, default=0.95,
@@ -813,6 +816,30 @@ def cooling_action(args, iteration, temperature):
     return temperature
 
 
+def prepare_conf_dir(workspace, args):
+    """
+    Creates a directory associated with a specific training configuration.
+
+    :param workspace:
+    :param args:
+    :return: directory path
+    """
+    conf_dirs = glob.glob('{0}/conf*'.format(workspace))
+    n_dir = len(conf_dirs) + 1
+    new_dir = '{0}/conf{1}'.format(workspace, n_dir)
+    os.makedirs(new_dir, exist_ok=False)
+    with open('{0}/args.ini'.format(new_dir), 'w') as fo:
+        for k, v in vars(args).items():
+            print('%s=%r' % (k, v), file=fo)
+
+    if args.local_gaussian_mean:
+        shutil.copy(args.local_gaussian_mean, '{0}/local_gaussian_mean'.format(new_dir))
+    if args.nonlocal_gaussian_mean:
+        shutil.copy(args.nonlocal_gaussian_mean, '{0}/nonlocal_gaussian_mean'.format(new_dir))
+
+    return new_dir
+
+
 def core(args):
 
     workspace = make_dirs(args)
@@ -838,6 +865,28 @@ def core(args):
     logging.info('Model:\n%s', model)
     logging.info('Joint view:\n%s', joint_model)
     logging.info('Conditional view:\n%s', conditional_model)
+
+    fnames = model.fnames()
+    weights = np.array(list(model.weights().densify()), dtype=ptypes.weight)
+    dimensionality = len(weights)
+    logging.info('Dimensionality: %d', dimensionality)
+
+    # Check consistency with workspace
+    if not os.path.exists('{0}/model.ini'.format(workspace)):
+        save_model(model, '{0}/model.ini'.format(workspace))
+    else:
+        # compare it
+        if not compare_models(model, '{0}/model.ini'.format(workspace)):
+            raise ValueError('You have changed the model into something incompatible with the current workspace.'
+                             " Compare '%s' and '%s'" % (args.model, '{0}/model.ini'.format(workspace)))
+
+    if not os.path.exists('{0}/factorisation.ini'.format(workspace)):
+        save_factorisation(joint_model, conditional_model, '{0}/factorisation.ini'.format(workspace))
+    else:
+        if not compare_factorisations(joint_model, conditional_model, '{0}/factorisation.ini'.format(workspace)):
+            raise ValueError('You have factorised the model in a way which is incompatible with the current workspace.'
+                             " Check '%s'" % '{0}/factorisation.ini'.format(workspace))
+    # TODO: in principle the workspace also varies according to options under Parser and Grammar, for now I will leave it to the experimenter
 
     if args.local_gaussian_mean:
         local_gaussian_prior = AsymmetricGuassianPrior(mean=pipeline.read_weights(args.local_gaussian_mean),
@@ -884,23 +933,23 @@ def core(args):
                  len(_validation))
 
     # 2. SGD
-    fnames = model.fnames()
-    #dimensionality = len(fnames)  # TODO: Sparse SGD
-    weights = np.array(list(model.weights().densify()), dtype=ptypes.weight)
+    # create folder confN where epochs will be stored
+    conf_dir = prepare_conf_dir(workspace, args)
+
     prior_mean, prior_var = get_prior_mean_and_variance(joint_model, fnames,
                                                         local_gaussian_prior, nonlocal_gaussian_prior)
+    avg = np.zeros(dimensionality, dtype=ptypes.weight)
+
     logging.info('Parameters: %s', npvec2str(weights, fnames))
     logging.info('Prior mean: %s', npvec2str(prior_mean, fnames))
     logging.info('Prior var:  %s', npvec2str(prior_var, fnames))
-    dimensionality = len(weights)
-    avg = np.zeros(dimensionality, dtype=ptypes.weight)
 
     t = 0
     n_batches = np.ceil(len(training) / float(args.batch_size))
 
     if args.resume == 0:
         # save initial weights
-        epoch_dir = '{0}/epoch{1}'.format(workspace, 0)
+        epoch_dir = '{0}/epoch{1}'.format(conf_dir, 0)
         os.makedirs(epoch_dir, exist_ok=True)
         # save weights
         with smart_wopen('{0}/weights.txt'.format(epoch_dir)) as fw:
@@ -929,7 +978,7 @@ def core(args):
     for epoch in range(1, args.maxiter + 1):
 
         # where we store everything related to this iteration
-        epoch_dir = '{0}/epoch{1}'.format(workspace, epoch)
+        epoch_dir = '{0}/epoch{1}'.format(conf_dir, epoch)
         os.makedirs(epoch_dir, exist_ok=True)
 
         # first we get a random permutation of the training data
@@ -1025,12 +1074,12 @@ def core(args):
             temperature = cooling_action(args, epoch, temperature)
 
     # save final weights
-    with smart_wopen('{0}/weights-final.txt'.format(workspace)) as fw:
+    with smart_wopen('{0}/weights-final.txt'.format(conf_dir)) as fw:
         for fname, fvalue in zip(fnames, avg):
             print('{0} {1}'.format(fname, repr(fvalue)), file=fw)
 
     if best_bleu is not None:
-        with smart_wopen('{0}/weights-best.txt'.format(workspace)) as fw:
+        with smart_wopen('{0}/weights-best.txt'.format(conf_dir)) as fw:
             print('# epoch=%d update=%d BLEU=%f' % (best_bleu.epoch, best_bleu.update, best_bleu.bleu), file=fw)
             for fname, fvalue in zip(fnames, best_bleu.weights):
                 print('{0} {1}'.format(fname, repr(fvalue)), file=fw)

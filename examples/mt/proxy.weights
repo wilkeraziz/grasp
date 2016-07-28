@@ -13,3 +13,4 @@ ArityPenalty_1 1.0
 ArityPenalty_2 1.0
 StatelessLM 1.0
 StatelessLM_OOV 1.0
+RuleIndicator 1.0
