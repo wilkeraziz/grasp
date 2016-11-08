@@ -1,0 +1,24 @@
+{
+    "docs": [
+        {
+            "location": "/",
+            "text": "Grasp: randomised semiring parsing\n\n\nGrasp is a high-level structured prediction library.",
+            "title": "Home"
+        },
+        {
+            "location": "/#grasp-randomised-semiring-parsing",
+            "text": "Grasp is a high-level structured prediction library.",
+            "title": "Grasp: randomised semiring parsing"
+        },
+        {
+            "location": "/about/",
+            "text": "Development\n\n\nGrasp is developed by \nWilker Aziz\n at UvA.",
+            "title": "About"
+        },
+        {
+            "location": "/about/#development",
+            "text": "Grasp is developed by  Wilker Aziz  at UvA.",
+            "title": "Development"
+        }
+    ]
+}
