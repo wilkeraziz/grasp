@@ -1,0 +1,9 @@
+site_name: Grasp
+theme: readthedocs
+docs_dir: source
+repo_url: http://github.com/wilkeraziz/grasp
+site_url: http://wilkeraziz.github.io/grasp
+site_description: 'Documentation for Grasp'
+pages:
+    - Home: index.md
+    - About: about.md
