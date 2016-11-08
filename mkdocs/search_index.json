@@ -2,13 +2,38 @@
     "docs": [
         {
             "location": "/",
-            "text": "Grasp: randomised semiring parsing\n\n\nGrasp is a high-level structured prediction library.",
+            "text": "Grasp: randomised semiring parsing\n\n\nGrasp is a high-level structured prediction library.\n\n\nParsing\n\n\nLocally normalised models\n\n\nGlobally normalised models\n\n\nBitext parsing\n\n\nMachine translation",
             "title": "Home"
         },
         {
             "location": "/#grasp-randomised-semiring-parsing",
             "text": "Grasp is a high-level structured prediction library.",
             "title": "Grasp: randomised semiring parsing"
+        },
+        {
+            "location": "/#parsing",
+            "text": "",
+            "title": "Parsing"
+        },
+        {
+            "location": "/#locally-normalised-models",
+            "text": "",
+            "title": "Locally normalised models"
+        },
+        {
+            "location": "/#globally-normalised-models",
+            "text": "",
+            "title": "Globally normalised models"
+        },
+        {
+            "location": "/#bitext-parsing",
+            "text": "",
+            "title": "Bitext parsing"
+        },
+        {
+            "location": "/#machine-translation",
+            "text": "",
+            "title": "Machine translation"
         },
         {
             "location": "/about/",
